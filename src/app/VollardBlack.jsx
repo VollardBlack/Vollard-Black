@@ -421,7 +421,7 @@ function CollectorsPage({data,up,bulkInsert}){
     if(model==="outright"){invoices.push({id:uid(),collectorId:cId,collectorName:name,artworkId:artId,artworkTitle:art.title,type:"Outright",amount:t40,dueDate:td(),status:"Unpaid",createdAt:td()});}
     else if(model==="deposit"){const dep=art.recommendedPrice*0.10;const mo=(t40-dep)/MAX_TERM;invoices.push({id:uid(),collectorId:cId,collectorName:name,artworkId:artId,artworkTitle:art.title,type:"Deposit",amount:dep,dueDate:td(),status:"Unpaid",createdAt:td()});for(let m=1;m<=MAX_TERM;m++){const d=new Date();d.setMonth(d.getMonth()+m);invoices.push({id:uid(),collectorId:cId,collectorName:name,artworkId:artId,artworkTitle:art.title,type:`Month ${m}`,amount:mo+ins,dueDate:d.toISOString().slice(0,10),status:"Unpaid",createdAt:td()});}}
     else{const mo=t40/MAX_TERM;for(let m=1;m<=MAX_TERM;m++){const d=new Date();d.setMonth(d.getMonth()+m);invoices.push({id:uid(),collectorId:cId,collectorName:name,artworkId:artId,artworkTitle:art.title,type:`Month ${m}`,amount:mo+ins,dueDate:d.toISOString().slice(0,10),status:"Unpaid",createdAt:td()});}}
-    bulkInsert("invoices",invoices);up("artworks",p=>p.map(a=>a.id===artId?{...a,status:"Reserved"}:a));setLink(null);
+    bulkInsert("invoices",invoices);up("artworks",p=>p.map(a=>a.id===artId?{...a,status:"Reserved"}:a));if(db.isConnected()){db.update("artworks",artId,{status:"Reserved"});}setLink(null);
   };
 
   return(<div>
@@ -594,8 +594,15 @@ function InvoicePage({data,up}){
 // ═══════════════════════════════════════════
 function SalesPage({data,up}){
   const [modal,setModal]=useState(false);
-  const sellable=data.artworks.filter(a=>a.status==="Reserved"||a.status==="In Gallery");
-  const handleSale=(sale)=>{up("sales",p=>[...p,{...sale,id:uid(),date:td()}]);up("artworks",p=>p.map(a=>a.id===sale.artworkId?{...a,status:"Sold"}:a));setModal(false);};
+  const sellable=data.artworks.filter(a=>a.status==="Reserved"||a.status==="In Gallery"||a.status==="Available");
+  const handleSale=(sale)=>{
+    // Add sale
+    up("sales",p=>[...p,{...sale,id:uid(),date:td()}]);
+    // Update artwork status to Sold - also sync directly to Supabase
+    up("artworks",p=>p.map(a=>a.id===sale.artworkId?{...a,status:"Sold"}:a));
+    if(db.isConnected()){db.update("artworks",sale.artworkId,{status:"Sold"});}
+    setModal(false);
+  };
   return(<div>
     <PT title="Sales" sub={`${data.sales.length} completed`} action={<Btn gold onClick={()=>setModal(true)}>{I.plus} Record Sale</Btn>}/>
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:14,marginBottom:24}}>
