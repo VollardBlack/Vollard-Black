@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from "react";
+import { db } from "./supabase";
 
 // ─── Constants (FAIS Compliant — no investment claims) ───
 const VB_SPLIT = 0.40;
@@ -13,8 +14,9 @@ const fmt = (n) => Number(n||0).toLocaleString("en-ZA",{minimumFractionDigits:2,
 const uid = () => "VB"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const td = () => new Date().toISOString().slice(0,10);
 const SK = "vollard_black_v3";
-const load = () => { try { const d=JSON.parse(localStorage.getItem(SK)); return d?.artworks?d:fresh(); } catch{return fresh();} };
+const loadLocal = () => { try { const d=JSON.parse(localStorage.getItem(SK)); return d?.artworks?d:fresh(); } catch{return fresh();} };
 const fresh = () => ({artworks:[],artists:[],collectors:[],invoices:[],payments:[],sales:[]});
+const TABLES = ["artworks","artists","collectors","invoices","payments","sales"];
 
 // ─── Icons ───
 const I={
@@ -55,11 +57,70 @@ const Tbl=({cols,data:rows})=><div style={{overflowX:"auto"}}><table style={{wid
 // MAIN APP
 // ═══════════════════════════════════════════
 export default function App() {
-  const [data,setData]=useState(load);
+  const [data,setData]=useState(fresh);
   const [page,setPage]=useState("dashboard");
   const [sb,setSb]=useState(false);
-  useEffect(()=>{localStorage.setItem(SK,JSON.stringify(data));},[data]);
-  const up=useCallback((k,v)=>setData(p=>({...p,[k]:typeof v==="function"?v(p[k]):v})),[]);
+  const [loading,setLoading]=useState(true);
+  const [dbMode,setDbMode]=useState(false);
+
+  // Load data: try Supabase first, fall back to localStorage
+  useEffect(()=>{
+    async function init(){
+      if(db.isConnected()){
+        try{
+          const results={};
+          for(const t of TABLES){const d=await db.getAll(t);if(d)results[t]=d;}
+          if(Object.keys(results).length>0){
+            // Ensure all tables are arrays and fix null fields
+            const safe={...fresh()};
+            for(const t of TABLES){safe[t]=Array.isArray(results[t])?results[t]:[];}
+            // Fix null linkedArtworks on collectors
+            safe.collectors=safe.collectors.map(c=>({...c,linkedArtworks:c.linkedArtworks||[]}));
+            setData(safe);setDbMode(true);
+          }
+          else{setData(loadLocal());}
+        }catch(e){console.error("Supabase load failed, using localStorage",e);setData(loadLocal());}
+      }else{setData(loadLocal());}
+      setLoading(false);
+    }
+    init();
+  },[]);
+
+  // Save to localStorage as backup
+  useEffect(()=>{if(!loading)localStorage.setItem(SK,JSON.stringify(data));},[data,loading]);
+
+  // Smart update function: updates state + syncs to Supabase
+  const up=useCallback((table,valOrFn)=>{
+    setData(prev=>{
+      const oldArr=prev[table];
+      const newArr=typeof valOrFn==="function"?valOrFn(oldArr):valOrFn;
+
+      // Sync to Supabase in background
+      if(dbMode&&Array.isArray(oldArr)&&Array.isArray(newArr)){
+        // Find added items
+        const added=newArr.filter(n=>!oldArr.find(o=>o.id===n.id));
+        // Find removed items
+        const removed=oldArr.filter(o=>!newArr.find(n=>n.id===o.id));
+        // Find updated items
+        const updated=newArr.filter(n=>{const o=oldArr.find(x=>x.id===n.id);return o&&JSON.stringify(o)!==JSON.stringify(n);});
+
+        added.forEach(item=>db.insert(table,item));
+        removed.forEach(item=>db.remove(table,item.id));
+        updated.forEach(item=>db.update(table,item.id,item));
+      }
+
+      return{...prev,[table]:newArr};
+    });
+  },[dbMode]);
+
+  // Bulk insert helper for invoices (used when linking artwork)
+  const bulkInsert=useCallback(async(table,records)=>{
+    if(dbMode){
+      const inserted=await db.insertMany(table,records);
+      if(inserted){setData(prev=>({...prev,[table]:[...prev[table],...inserted]}));return;}
+    }
+    setData(prev=>({...prev,[table]:[...prev[table],...records]}));
+  },[dbMode]);
 
   const nav=[
     {id:"dashboard",label:"Dashboard",icon:I.dash},
@@ -71,15 +132,34 @@ export default function App() {
     {id:"sales",label:"Sales",icon:I.sale},
   ];
 
-  const pg={
-    dashboard:<Dashboard data={data} setPage={setPage}/>,
-    catalogue:<Catalogue data={data} up={up}/>,
-    artists:<ArtistsPage data={data} up={up}/>,
-    collectors:<CollectorsPage data={data} up={up}/>,
-    calculator:<CalcPage/>,
-    invoices:<InvoicePage data={data} up={up}/>,
-    sales:<SalesPage data={data} up={up}/>,
+  // Safe data accessor — ensures all arrays exist
+  const d = {
+    artworks: Array.isArray(data.artworks) ? data.artworks : [],
+    artists: Array.isArray(data.artists) ? data.artists : [],
+    collectors: Array.isArray(data.collectors) ? data.collectors : [],
+    invoices: Array.isArray(data.invoices) ? data.invoices : [],
+    payments: Array.isArray(data.payments) ? data.payments : [],
+    sales: Array.isArray(data.sales) ? data.sales : [],
   };
+
+  const pg={
+    dashboard:<Dashboard data={d} setPage={setPage}/>,
+    catalogue:<Catalogue data={d} up={up}/>,
+    artists:<ArtistsPage data={d} up={up}/>,
+    collectors:<CollectorsPage data={d} up={up} bulkInsert={bulkInsert}/>,
+    calculator:<CalcPage/>,
+    invoices:<InvoicePage data={d} up={up}/>,
+    sales:<SalesPage data={d} up={up}/>,
+  };
+
+  if(loading)return(
+    <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",background:"#0c0b09",fontFamily:"'DM Sans',sans-serif"}}>
+      <div style={{textAlign:"center"}}>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:32,fontWeight:300,letterSpacing:8,color:"#f5f0e8",marginBottom:12}}>VOLLARD <span style={{color:"#b68b2e"}}>BLACK</span></div>
+        <div style={{fontSize:13,color:"#5a564e",letterSpacing:2}}>Loading platform...</div>
+      </div>
+    </div>
+  );
 
   return(
     <div style={{display:"flex",minHeight:"100vh",background:"#0c0b09",fontFamily:"'DM Sans',sans-serif",color:"#e8e2d6"}}>
@@ -95,6 +175,10 @@ export default function App() {
         <div style={{padding:"16px 24px",borderTop:"1px solid rgba(182,139,46,0.08)",fontSize:10,color:"#5a564e",letterSpacing:2}}>
           <div>VB 40% · COLLECTOR 60%</div>
           <div style={{marginTop:4}}>GALLERY 40 · VB 30 · ARTIST 30</div>
+          <div style={{marginTop:8,display:"flex",alignItems:"center",gap:6}}>
+            <div style={{width:6,height:6,borderRadius:"50%",background:dbMode?"#4a9e6b":"#b68b2e"}}/>
+            <span style={{fontSize:9}}>{dbMode?"Supabase Connected":"Local Storage"}</span>
+          </div>
         </div>
       </aside>
       <main style={{flex:1,minWidth:0}}>
@@ -322,7 +406,7 @@ function ArtistMdl({artist,onSave,onClose}){
 // ═══════════════════════════════════════════
 // COLLECTORS
 // ═══════════════════════════════════════════
-function CollectorsPage({data,up}){
+function CollectorsPage({data,up,bulkInsert}){
   const [modal,setModal]=useState(null);const [link,setLink]=useState(null);const [search,setSearch]=useState("");
   const blank={id:"",type:"individual",firstName:"",lastName:"",companyName:"",email:"",mobile:"",idNumber:"",nationality:"",address:"",linkedArtworks:[]};
   const save=(inv)=>{if(inv.id)up("collectors",p=>p.map(x=>x.id===inv.id?inv:x));else up("collectors",p=>[{...inv,id:uid(),createdAt:td()},...p]);setModal(null);};
@@ -337,7 +421,7 @@ function CollectorsPage({data,up}){
     if(model==="outright"){invoices.push({id:uid(),collectorId:cId,collectorName:name,artworkId:artId,artworkTitle:art.title,type:"Outright",amount:t40,dueDate:td(),status:"Unpaid",createdAt:td()});}
     else if(model==="deposit"){const dep=art.recommendedPrice*0.10;const mo=(t40-dep)/MAX_TERM;invoices.push({id:uid(),collectorId:cId,collectorName:name,artworkId:artId,artworkTitle:art.title,type:"Deposit",amount:dep,dueDate:td(),status:"Unpaid",createdAt:td()});for(let m=1;m<=MAX_TERM;m++){const d=new Date();d.setMonth(d.getMonth()+m);invoices.push({id:uid(),collectorId:cId,collectorName:name,artworkId:artId,artworkTitle:art.title,type:`Month ${m}`,amount:mo+ins,dueDate:d.toISOString().slice(0,10),status:"Unpaid",createdAt:td()});}}
     else{const mo=t40/MAX_TERM;for(let m=1;m<=MAX_TERM;m++){const d=new Date();d.setMonth(d.getMonth()+m);invoices.push({id:uid(),collectorId:cId,collectorName:name,artworkId:artId,artworkTitle:art.title,type:`Month ${m}`,amount:mo+ins,dueDate:d.toISOString().slice(0,10),status:"Unpaid",createdAt:td()});}}
-    up("invoices",p=>[...p,...invoices]);up("artworks",p=>p.map(a=>a.id===artId?{...a,status:"Reserved"}:a));setLink(null);
+    bulkInsert("invoices",invoices);up("artworks",p=>p.map(a=>a.id===artId?{...a,status:"Reserved"}:a));setLink(null);
   };
 
   return(<div>
