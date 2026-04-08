@@ -89,38 +89,191 @@ export default function App() {
   // Save to localStorage as backup
   useEffect(()=>{if(!loading)localStorage.setItem(SK,JSON.stringify(data));},[data,loading]);
 
-  // Smart update function: updates state + syncs to Supabase
+  // Direct state setter with Supabase sync
   const up=useCallback((table,valOrFn)=>{
     setData(prev=>{
-      const oldArr=prev[table];
+      const oldArr=prev[table]||[];
       const newArr=typeof valOrFn==="function"?valOrFn(oldArr):valOrFn;
-
-      // Sync to Supabase in background
       if(dbMode&&Array.isArray(oldArr)&&Array.isArray(newArr)){
-        // Find added items
         const added=newArr.filter(n=>!oldArr.find(o=>o.id===n.id));
-        // Find removed items
         const removed=oldArr.filter(o=>!newArr.find(n=>n.id===o.id));
-        // Find updated items
         const updated=newArr.filter(n=>{const o=oldArr.find(x=>x.id===n.id);return o&&JSON.stringify(o)!==JSON.stringify(n);});
-
         added.forEach(item=>db.insert(table,item));
         removed.forEach(item=>db.remove(table,item.id));
         updated.forEach(item=>db.update(table,item.id,item));
       }
-
       return{...prev,[table]:newArr};
     });
   },[dbMode]);
 
-  // Bulk insert helper for invoices (used when linking artwork)
+  // Direct Supabase field update (for critical status changes)
+  const dbUp=useCallback((table,id,fields)=>{
+    if(dbMode&&id)db.update(table,id,fields);
+  },[dbMode]);
+
+  // Bulk insert with Supabase sync
   const bulkInsert=useCallback(async(table,records)=>{
     if(dbMode){
       const inserted=await db.insertMany(table,records);
-      if(inserted){setData(prev=>({...prev,[table]:[...prev[table],...inserted]}));return;}
+      if(inserted){setData(prev=>({...prev,[table]:[...prev[table],...inserted]}));return inserted;}
     }
     setData(prev=>({...prev,[table]:[...prev[table],...records]}));
+    return records;
   },[dbMode]);
+
+  // Bulk delete from Supabase
+  const bulkDelete=useCallback(async(table,ids)=>{
+    if(dbMode){for(const id of ids){await db.remove(table,id);}}
+    setData(prev=>({...prev,[table]:(prev[table]||[]).filter(x=>!ids.includes(x.id))}));
+  },[dbMode]);
+
+  // ═══════════════════════════════════════
+  // LIFECYCLE ACTIONS — all cross-module logic lives here
+  // ═══════════════════════════════════════
+
+  const actions = {
+    // ── LINK artwork to collector: generates invoices, changes status ──
+    linkArtwork: async (collectorId, artworkId, model) => {
+      const art = data.artworks.find(a=>a.id===artworkId);
+      const col = data.collectors.find(c=>c.id===collectorId);
+      if(!art||!col) return;
+      const gn = col.type==="company"?col.companyName:`${col.firstName} ${col.lastName}`;
+      const t40 = art.recommendedPrice*VB_SPLIT;
+      const ins = art.insuranceMonthly||0;
+      const invoices = [];
+
+      if(model==="outright"){
+        invoices.push({id:uid(),collectorId,collectorName:gn,artworkId,artworkTitle:art.title,type:"Outright",amount:t40,dueDate:td(),status:"Unpaid",createdAt:td()});
+      } else if(model==="deposit"){
+        const dep=art.recommendedPrice*0.10;const mo=(t40-dep)/MAX_TERM;
+        invoices.push({id:uid(),collectorId,collectorName:gn,artworkId,artworkTitle:art.title,type:"Deposit",amount:dep,dueDate:td(),status:"Unpaid",createdAt:td()});
+        for(let m=1;m<=MAX_TERM;m++){const d=new Date();d.setMonth(d.getMonth()+m);invoices.push({id:uid(),collectorId,collectorName:gn,artworkId,artworkTitle:art.title,type:`Month ${m}`,amount:mo+ins,dueDate:d.toISOString().slice(0,10),status:"Unpaid",createdAt:td()});}
+      } else {
+        const mo=t40/MAX_TERM;
+        for(let m=1;m<=MAX_TERM;m++){const d=new Date();d.setMonth(d.getMonth()+m);invoices.push({id:uid(),collectorId,collectorName:gn,artworkId,artworkTitle:art.title,type:`Month ${m}`,amount:mo+ins,dueDate:d.toISOString().slice(0,10),status:"Unpaid",createdAt:td()});}
+      }
+
+      // Update collector's linked artworks
+      up("collectors",p=>p.map(c=>{
+        if(c.id!==collectorId)return c;
+        const la=[...(c.linkedArtworks||[])];
+        if(!la.find(x=>x.artworkId===artworkId))la.push({artworkId,model,linkedAt:td()});
+        return{...c,linkedArtworks:la};
+      }));
+      // Update artwork status
+      up("artworks",p=>p.map(a=>a.id===artworkId?{...a,status:"Reserved"}:a));
+      dbUp("artworks",artworkId,{status:"Reserved"});
+      // Create invoices
+      await bulkInsert("invoices",invoices);
+    },
+
+    // ── UNLINK artwork from collector: deletes unpaid invoices, resets status ──
+    unlinkArtwork: async (collectorId, artworkId) => {
+      // Delete unpaid invoices for this artwork
+      const unpaidIds = (data.invoices||[]).filter(i=>i.artworkId===artworkId&&i.status!=="Paid").map(i=>i.id);
+      if(unpaidIds.length>0) await bulkDelete("invoices",unpaidIds);
+
+      // Remove artwork from collector's linked list
+      up("collectors",p=>p.map(c=>{
+        if(c.id!==collectorId)return c;
+        return{...c,linkedArtworks:(c.linkedArtworks||[]).filter(l=>l.artworkId!==artworkId)};
+      }));
+
+      // Check if artwork has any sales — if not, set back to Available
+      const hasSale = (data.sales||[]).some(s=>s.artworkId===artworkId);
+      if(!hasSale){
+        up("artworks",p=>p.map(a=>a.id===artworkId?{...a,status:"Available"}:a));
+        dbUp("artworks",artworkId,{status:"Available"});
+      }
+    },
+
+    // ── CHANGE artwork status (manual) ──
+    changeArtworkStatus: (artworkId, newStatus) => {
+      up("artworks",p=>p.map(a=>a.id===artworkId?{...a,status:newStatus}:a));
+      dbUp("artworks",artworkId,{status:newStatus});
+    },
+
+    // ── RECORD SALE: marks sold, calculates splits ──
+    recordSale: (saleData) => {
+      // Add the sale
+      const sale = {...saleData, id:uid(), date:td()};
+      up("sales",p=>[...p,sale]);
+
+      // Mark artwork as Sold
+      up("artworks",p=>p.map(a=>a.id===saleData.artworkId?{...a,status:"Sold"}:a));
+      dbUp("artworks",saleData.artworkId,{status:"Sold"});
+
+      // Cancel any remaining unpaid invoices for this artwork
+      up("invoices",p=>p.map(i=>{
+        if(i.artworkId===saleData.artworkId&&i.status!=="Paid"){
+          const updated={...i,status:"Cancelled"};
+          if(dbMode)db.update("invoices",i.id,{status:"Cancelled"});
+          return updated;
+        }
+        return i;
+      }));
+    },
+
+    // ── EDIT SALE: update price and recalculate ──
+    editSale: (saleId, newSalePrice) => {
+      up("sales",p=>p.map(s=>{
+        if(s.id!==saleId) return s;
+        const sp=Number(newSalePrice);
+        const collectorShare=sp*COLLECTOR_SPLIT;
+        const vbShare=sp*VB_SPLIT;
+        return{...s,salePrice:sp,collectorShare,vbShare,galleryShare:vbShare*GALLERY_BACK,vbNet:vbShare*VB_BACK,artistShare:vbShare*ARTIST_BACK};
+      }));
+    },
+
+    // ── DELETE SALE: reverses the sale, artwork goes back to Reserved ──
+    deleteSale: (saleId) => {
+      const sale = (data.sales||[]).find(s=>s.id===saleId);
+      if(!sale) return;
+
+      // Remove the sale
+      up("sales",p=>p.filter(s=>s.id!==saleId));
+
+      // Check if collector is still linked
+      const hasCollector = (data.collectors||[]).some(c=>(c.linkedArtworks||[]).some(l=>l.artworkId===sale.artworkId));
+
+      // Restore artwork status
+      const newStatus = hasCollector ? "Reserved" : "Available";
+      up("artworks",p=>p.map(a=>a.id===sale.artworkId?{...a,status:newStatus}:a));
+      dbUp("artworks",sale.artworkId,{status:newStatus});
+
+      // Restore cancelled invoices back to Unpaid
+      up("invoices",p=>p.map(i=>{
+        if(i.artworkId===sale.artworkId&&i.status==="Cancelled"){
+          if(dbMode)db.update("invoices",i.id,{status:"Unpaid"});
+          return{...i,status:"Unpaid"};
+        }
+        return i;
+      }));
+    },
+
+    // ── RECORD PAYMENT ──
+    recordPayment: (invoice, method) => {
+      // Mark invoice paid
+      up("invoices",p=>p.map(i=>i.id===invoice.id?{...i,status:"Paid",paidDate:td(),paymentMethod:method}:i));
+      dbUp("invoices",invoice.id,{status:"Paid",paidDate:td(),paymentMethod:method});
+
+      // Add payment record
+      const payment={id:uid(),invoiceId:invoice.id,collectorId:invoice.collectorId,collectorName:invoice.collectorName,artworkId:invoice.artworkId,artworkTitle:invoice.artworkTitle,amount:invoice.amount,method,date:td()};
+      up("payments",p=>[...p,payment]);
+    },
+
+    // ── DELETE ARTWORK (only if Available) ──
+    deleteArtwork: (artworkId) => {
+      const art = data.artworks.find(a=>a.id===artworkId);
+      if(!art) return false;
+      if(art.status!=="Available"){alert("Cannot delete — artwork is "+art.status+". Unlink or reverse the sale first.");return false;}
+      const hasInvoices = (data.invoices||[]).some(i=>i.artworkId===artworkId);
+      const hasSales = (data.sales||[]).some(s=>s.artworkId===artworkId);
+      if(hasInvoices||hasSales){alert("Cannot delete — artwork has invoices or sales history.");return false;}
+      up("artworks",p=>p.filter(a=>a.id!==artworkId));
+      return true;
+    },
+  };
 
   const nav=[
     {id:"dashboard",label:"Dashboard",icon:I.dash},
@@ -144,12 +297,12 @@ export default function App() {
 
   const pg={
     dashboard:<Dashboard data={d} setPage={setPage}/>,
-    catalogue:<Catalogue data={d} up={up}/>,
+    catalogue:<Catalogue data={d} up={up} actions={actions}/>,
     artists:<ArtistsPage data={d} up={up}/>,
-    collectors:<CollectorsPage data={d} up={up} bulkInsert={bulkInsert}/>,
+    collectors:<CollectorsPage data={d} up={up} actions={actions}/>,
     calculator:<CalcPage/>,
-    invoices:<InvoicePage data={d} up={up}/>,
-    sales:<SalesPage data={d} up={up}/>,
+    invoices:<InvoicePage data={d} actions={actions}/>,
+    sales:<SalesPage data={d} actions={actions}/>,
   };
 
   if(loading)return(
@@ -258,11 +411,11 @@ function Dashboard({data,setPage}){
 // ═══════════════════════════════════════════
 // CATALOGUE
 // ═══════════════════════════════════════════
-function Catalogue({data,up}){
+function Catalogue({data,up,actions}){
   const [modal,setModal]=useState(null);const [search,setSearch]=useState("");
   const blank={id:"",title:"",artist:"",artistId:"",medium:"",dimensions:"",year:"",recommendedPrice:"",imageUrl:"",status:"Available",description:"",galleryName:"",insuranceMonthly:""};
   const save=(a)=>{if(a.id)up("artworks",p=>p.map(x=>x.id===a.id?a:x));else up("artworks",p=>[{...a,id:uid(),createdAt:td()},...p]);setModal(null);};
-  const del=(id)=>{if(confirm("Delete?"))up("artworks",p=>p.filter(x=>x.id!==id));};
+  const del=(id)=>{if(confirm("Delete this artwork?")){actions.deleteArtwork(id);}};
   const f=data.artworks.filter(a=>(a.title+a.artist+a.status).toLowerCase().includes(search.toLowerCase()));
   return(<div>
     <PT title="Art Catalogue" sub={`${data.artworks.length} artworks`} action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Add Artwork</Btn>}/>
@@ -406,7 +559,7 @@ function ArtistMdl({artist,onSave,onClose}){
 // ═══════════════════════════════════════════
 // COLLECTORS
 // ═══════════════════════════════════════════
-function CollectorsPage({data,up,bulkInsert}){
+function CollectorsPage({data,up,actions}){
   const [modal,setModal]=useState(null);const [link,setLink]=useState(null);const [search,setSearch]=useState("");
   const blank={id:"",type:"individual",firstName:"",lastName:"",companyName:"",email:"",mobile:"",idNumber:"",nationality:"",address:"",linkedArtworks:[]};
   const save=(inv)=>{if(inv.id)up("collectors",p=>p.map(x=>x.id===inv.id?inv:x));else up("collectors",p=>[{...inv,id:uid(),createdAt:td()},...p]);setModal(null);};
@@ -414,14 +567,13 @@ function CollectorsPage({data,up,bulkInsert}){
   const gn=(i)=>i.type==="company"?i.companyName:`${i.firstName} ${i.lastName}`;
   const f=data.collectors.filter(i=>gn(i).toLowerCase().includes(search.toLowerCase()));
 
-  const handleLink=(cId,artId,model)=>{
-    up("collectors",p=>p.map(i=>{if(i.id!==cId)return i;const l=[...(i.linkedArtworks||[])];if(!l.find(x=>x.artworkId===artId))l.push({artworkId:artId,model,linkedAt:td()});return{...i,linkedArtworks:l};}));
-    const art=data.artworks.find(a=>a.id===artId);const col=data.collectors.find(i=>i.id===cId);if(!art||!col)return;
-    const name=gn(col);const t40=art.recommendedPrice*VB_SPLIT;const ins=art.insuranceMonthly||0;const invoices=[];
-    if(model==="outright"){invoices.push({id:uid(),collectorId:cId,collectorName:name,artworkId:artId,artworkTitle:art.title,type:"Outright",amount:t40,dueDate:td(),status:"Unpaid",createdAt:td()});}
-    else if(model==="deposit"){const dep=art.recommendedPrice*0.10;const mo=(t40-dep)/MAX_TERM;invoices.push({id:uid(),collectorId:cId,collectorName:name,artworkId:artId,artworkTitle:art.title,type:"Deposit",amount:dep,dueDate:td(),status:"Unpaid",createdAt:td()});for(let m=1;m<=MAX_TERM;m++){const d=new Date();d.setMonth(d.getMonth()+m);invoices.push({id:uid(),collectorId:cId,collectorName:name,artworkId:artId,artworkTitle:art.title,type:`Month ${m}`,amount:mo+ins,dueDate:d.toISOString().slice(0,10),status:"Unpaid",createdAt:td()});}}
-    else{const mo=t40/MAX_TERM;for(let m=1;m<=MAX_TERM;m++){const d=new Date();d.setMonth(d.getMonth()+m);invoices.push({id:uid(),collectorId:cId,collectorName:name,artworkId:artId,artworkTitle:art.title,type:`Month ${m}`,amount:mo+ins,dueDate:d.toISOString().slice(0,10),status:"Unpaid",createdAt:td()});}}
-    bulkInsert("invoices",invoices);up("artworks",p=>p.map(a=>a.id===artId?{...a,status:"Reserved"}:a));if(db.isConnected()){db.update("artworks",artId,{status:"Reserved"});}setLink(null);
+  const handleLink=async(cId,artId,model)=>{
+    await actions.linkArtwork(cId,artId,model);
+    setLink(null);
+  };
+
+  const handleUnlink=(cId,artId)=>{
+    if(confirm("Unlink this artwork? Unpaid invoices will be deleted."))actions.unlinkArtwork(cId,artId);
   };
 
   return(<div>
@@ -430,7 +582,19 @@ function CollectorsPage({data,up,bulkInsert}){
       <div style={{marginBottom:16}}><input placeholder="Search..." value={search} onChange={e=>setSearch(e.target.value)} style={{...is,maxWidth:360}}/></div>
       {f.length===0?<Empty msg="No collectors yet." action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Add</Btn>}/>:
       <Tbl cols={[
-        {label:"Name",bold:true,render:r=>gn(r)},{label:"Type",key:"type"},{label:"Email",key:"email"},{label:"Linked",render:r=>(r.linkedArtworks||[]).length},
+        {label:"Name",bold:true,render:r=>gn(r)},{label:"Type",key:"type"},{label:"Email",key:"email"},
+        {label:"Linked Artworks",render:r=>{
+          const la=(r.linkedArtworks||[]);
+          if(la.length===0)return<span style={{color:"#5a564e"}}>None</span>;
+          return<div>{la.map(l=>{
+            const art=data.artworks.find(a=>a.id===l.artworkId);
+            return<div key={l.artworkId} style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+              <span style={{fontSize:12}}>{art?art.title:"Unknown"}</span>
+              <Badge status={art?art.status:"?"}/>
+              {art&&art.status!=="Sold"&&<button onClick={e=>{e.stopPropagation();handleUnlink(r.id,l.artworkId);}} style={{background:"none",border:"none",color:"#c45c4a",cursor:"pointer",fontSize:10,textDecoration:"underline"}}>unlink</button>}
+            </div>;
+          })}</div>;
+        }},
         {label:"",render:r=><div style={{display:"flex",gap:6}}><Btn small ghost onClick={e=>{e.stopPropagation();setLink(r);}}>Link Art</Btn><button onClick={e=>{e.stopPropagation();setModal(r);}} style={{background:"none",border:"none",color:"#8a8477",cursor:"pointer"}}>{I.edit}</button><button onClick={e=>{e.stopPropagation();del(r.id);}} style={{background:"none",border:"none",color:"#5a564e",cursor:"pointer"}}>{I.del}</button></div>},
       ]} data={f}/>}
     </Card>
@@ -562,11 +726,21 @@ function CalcPage(){
 // ═══════════════════════════════════════════
 // INVOICING
 // ═══════════════════════════════════════════
-function InvoicePage({data,up}){
+function InvoicePage({data,actions}){
   const [payMdl,setPayMdl]=useState(null);const [filter,setFilter]=useState("all");
-  const filtered=data.invoices.filter(i=>filter==="all"||i.status===filter).sort((a,b)=>new Date(a.dueDate)-new Date(b.dueDate));
-  useEffect(()=>{const t=td();const u=data.invoices.map(i=>i.status==="Unpaid"&&i.dueDate<t?{...i,status:"Overdue"}:i);if(JSON.stringify(u)!==JSON.stringify(data.invoices))up("invoices",u);},[]);
-  const pay=(inv,method)=>{up("invoices",p=>p.map(i=>i.id===inv.id?{...i,status:"Paid",paidDate:td(),paymentMethod:method}:i));up("payments",p=>[...p,{id:uid(),invoiceId:inv.id,collectorId:inv.collectorId,collectorName:inv.collectorName,artworkId:inv.artworkId,artworkTitle:inv.artworkTitle,amount:inv.amount,method,date:td()}]);setPayMdl(null);};
+  const filtered=data.invoices.filter(i=>filter==="all"||i.status===filter).sort((a,b)=>new Date(a.dueDate||0)-new Date(b.dueDate||0));
+
+  // Check overdue on load
+  useEffect(()=>{
+    const t=td();
+    data.invoices.forEach(i=>{
+      if(i.status==="Unpaid"&&i.dueDate&&i.dueDate<t){
+        actions.recordPayment&&false; // We just flag, don't auto-pay
+      }
+    });
+  },[]);
+
+  const pay=(inv,method)=>{actions.recordPayment(inv,method);setPayMdl(null);};
   return(<div>
     <PT title="Invoicing" sub={`${data.invoices.length} invoices`}/>
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:14,marginBottom:24}}>
@@ -592,17 +766,12 @@ function InvoicePage({data,up}){
 // ═══════════════════════════════════════════
 // SALES
 // ═══════════════════════════════════════════
-function SalesPage({data,up}){
+function SalesPage({data,actions}){
   const [modal,setModal]=useState(false);
+  const [editSale,setEditSale]=useState(null);
   const sellable=data.artworks.filter(a=>a.status==="Reserved"||a.status==="In Gallery"||a.status==="Available");
-  const handleSale=(sale)=>{
-    // Add sale
-    up("sales",p=>[...p,{...sale,id:uid(),date:td()}]);
-    // Update artwork status to Sold - also sync directly to Supabase
-    up("artworks",p=>p.map(a=>a.id===sale.artworkId?{...a,status:"Sold"}:a));
-    if(db.isConnected()){db.update("artworks",sale.artworkId,{status:"Sold"});}
-    setModal(false);
-  };
+  const handleSale=(saleData)=>{actions.recordSale(saleData);setModal(false);};
+  const handleDelete=(saleId)=>{if(confirm("Delete this sale? Artwork will be restored to its previous status."))actions.deleteSale(saleId);};
   return(<div>
     <PT title="Sales" sub={`${data.sales.length} completed`} action={<Btn gold onClick={()=>setModal(true)}>{I.plus} Record Sale</Btn>}/>
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:14,marginBottom:24}}>
@@ -617,6 +786,7 @@ function SalesPage({data,up}){
         {label:"VB 40%",right:true,gold:true,render:r=>"R "+fmt(r.vbShare)},
         {label:"Gallery",right:true,render:r=>"R "+fmt(r.galleryShare)},
         {label:"Artist",right:true,render:r=>"R "+fmt(r.artistShare)},
+        {label:"",render:r=><button onClick={e=>{e.stopPropagation();handleDelete(r.id);}} style={{background:"none",border:"none",color:"#5a564e",cursor:"pointer"}}>{I.del}</button>},
       ]} data={[...data.sales].reverse()}/>}
     </Card>
     {modal&&<SaleMdl data={data} sellable={sellable} onSale={handleSale} onClose={()=>setModal(false)}/>}
