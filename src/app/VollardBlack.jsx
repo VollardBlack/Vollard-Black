@@ -34,7 +34,6 @@ const I={
   ok:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>,
   menu:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>,
   up:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
-  ai:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>,
 };
 
 const stC={Available:{bg:"rgba(74,158,107,0.12)",c:"#4a9e6b"},Reserved:{bg:"rgba(182,139,46,0.12)",c:"#b68b2e"},"In Gallery":{bg:"rgba(100,140,200,0.12)",c:"#648cc8"},Sold:{bg:"rgba(196,92,74,0.12)",c:"#c45c4a"}};
@@ -63,7 +62,6 @@ export default function App() {
   const [loading,setLoading]=useState(true);
   const [dbMode,setDbMode]=useState(false);
 
-  // Load data: try Supabase first, fall back to localStorage
   useEffect(()=>{
     async function init(){
       if(db.isConnected()){
@@ -71,14 +69,11 @@ export default function App() {
           const results={};
           for(const t of TABLES){const d=await db.getAll(t);if(d)results[t]=d;}
           if(Object.keys(results).length>0){
-            // Ensure all tables are arrays and fix null fields
             const safe={...fresh()};
             for(const t of TABLES){safe[t]=Array.isArray(results[t])?results[t]:[];}
-            // Fix null linkedArtworks on collectors
             safe.collectors=safe.collectors.map(c=>({...c,linkedArtworks:c.linkedArtworks||[]}));
             setData(safe);setDbMode(true);
-          }
-          else{setData(loadLocal());}
+          } else{setData(loadLocal());}
         }catch(e){console.error("Supabase load failed, using localStorage",e);setData(loadLocal());}
       }else{setData(loadLocal());}
       setLoading(false);
@@ -86,10 +81,8 @@ export default function App() {
     init();
   },[]);
 
-  // Save to localStorage as backup
   useEffect(()=>{if(!loading)localStorage.setItem(SK,JSON.stringify(data));},[data,loading]);
 
-  // Direct state setter with Supabase sync
   const up=useCallback((table,valOrFn)=>{
     setData(prev=>{
       const oldArr=prev[table]||[];
@@ -106,12 +99,10 @@ export default function App() {
     });
   },[dbMode]);
 
-  // Direct Supabase field update (for critical status changes)
   const dbUp=useCallback((table,id,fields)=>{
     if(dbMode&&id)db.update(table,id,fields);
   },[dbMode]);
 
-  // Bulk insert with Supabase sync
   const bulkInsert=useCallback(async(table,records)=>{
     if(dbMode){
       const inserted=await db.insertMany(table,records);
@@ -121,18 +112,15 @@ export default function App() {
     return records;
   },[dbMode]);
 
-  // Bulk delete from Supabase
   const bulkDelete=useCallback(async(table,ids)=>{
     if(dbMode){for(const id of ids){await db.remove(table,id);}}
     setData(prev=>({...prev,[table]:(prev[table]||[]).filter(x=>!ids.includes(x.id))}));
   },[dbMode]);
 
   // ═══════════════════════════════════════
-  // LIFECYCLE ACTIONS — all cross-module logic lives here
+  // LIFECYCLE ACTIONS
   // ═══════════════════════════════════════
-
   const actions = {
-    // ── LINK artwork to collector: generates invoices, changes status ──
     linkArtwork: async (collectorId, artworkId, model) => {
       const art = data.artworks.find(a=>a.id===artworkId);
       const col = data.collectors.find(c=>c.id===collectorId);
@@ -141,7 +129,6 @@ export default function App() {
       const t40 = art.recommendedPrice*VB_SPLIT;
       const ins = art.insuranceMonthly||0;
       const invoices = [];
-
       if(model==="outright"){
         invoices.push({id:uid(),collectorId,collectorName:gn,artworkId,artworkTitle:art.title,type:"Outright",amount:t40,dueDate:td(),status:"Unpaid",createdAt:td()});
       } else if(model==="deposit"){
@@ -152,34 +139,24 @@ export default function App() {
         const mo=t40/MAX_TERM;
         for(let m=1;m<=MAX_TERM;m++){const d=new Date();d.setMonth(d.getMonth()+m);invoices.push({id:uid(),collectorId,collectorName:gn,artworkId,artworkTitle:art.title,type:`Month ${m}`,amount:mo+ins,dueDate:d.toISOString().slice(0,10),status:"Unpaid",createdAt:td()});}
       }
-
-      // Update collector's linked artworks
       up("collectors",p=>p.map(c=>{
         if(c.id!==collectorId)return c;
         const la=[...(c.linkedArtworks||[])];
         if(!la.find(x=>x.artworkId===artworkId))la.push({artworkId,model,linkedAt:td()});
         return{...c,linkedArtworks:la};
       }));
-      // Update artwork status
       up("artworks",p=>p.map(a=>a.id===artworkId?{...a,status:"Reserved"}:a));
       dbUp("artworks",artworkId,{status:"Reserved"});
-      // Create invoices
       await bulkInsert("invoices",invoices);
     },
 
-    // ── UNLINK artwork from collector: deletes unpaid invoices, resets status ──
     unlinkArtwork: async (collectorId, artworkId) => {
-      // Delete unpaid invoices for this artwork
-      const unpaidIds = (data.invoices||[]).filter(i=>i.artworkId===artworkId&&i.status!=="Paid").map(i=>i.id);
+      const unpaidIds = (data.invoices||[]).filter(i=>i.artworkId===artworkId&&i.collectorId===collectorId&&i.status!=="Paid").map(i=>i.id);
       if(unpaidIds.length>0) await bulkDelete("invoices",unpaidIds);
-
-      // Remove artwork from collector's linked list
       up("collectors",p=>p.map(c=>{
         if(c.id!==collectorId)return c;
         return{...c,linkedArtworks:(c.linkedArtworks||[]).filter(l=>l.artworkId!==artworkId)};
       }));
-
-      // Check if artwork has any sales — if not, set back to Available
       const hasSale = (data.sales||[]).some(s=>s.artworkId===artworkId);
       if(!hasSale){
         up("artworks",p=>p.map(a=>a.id===artworkId?{...a,status:"Available"}:a));
@@ -187,23 +164,16 @@ export default function App() {
       }
     },
 
-    // ── CHANGE artwork status (manual) ──
     changeArtworkStatus: (artworkId, newStatus) => {
       up("artworks",p=>p.map(a=>a.id===artworkId?{...a,status:newStatus}:a));
       dbUp("artworks",artworkId,{status:newStatus});
     },
 
-    // ── RECORD SALE: marks sold, calculates splits ──
     recordSale: (saleData) => {
-      // Add the sale
       const sale = {...saleData, id:uid(), date:td()};
       up("sales",p=>[...p,sale]);
-
-      // Mark artwork as Sold
       up("artworks",p=>p.map(a=>a.id===saleData.artworkId?{...a,status:"Sold"}:a));
       dbUp("artworks",saleData.artworkId,{status:"Sold"});
-
-      // Cancel any remaining unpaid invoices for this artwork
       up("invoices",p=>p.map(i=>{
         if(i.artworkId===saleData.artworkId&&i.status!=="Paid"){
           const updated={...i,status:"Cancelled"};
@@ -214,34 +184,23 @@ export default function App() {
       }));
     },
 
-    // ── EDIT SALE: update price and recalculate ──
     editSale: (saleId, newSalePrice) => {
       up("sales",p=>p.map(s=>{
         if(s.id!==saleId) return s;
         const sp=Number(newSalePrice);
-        const collectorShare=sp*COLLECTOR_SPLIT;
-        const vbShare=sp*VB_SPLIT;
+        const collectorShare=sp*COLLECTOR_SPLIT;const vbShare=sp*VB_SPLIT;
         return{...s,salePrice:sp,collectorShare,vbShare,galleryShare:vbShare*GALLERY_BACK,vbNet:vbShare*VB_BACK,artistShare:vbShare*ARTIST_BACK};
       }));
     },
 
-    // ── DELETE SALE: reverses the sale, artwork goes back to Reserved ──
     deleteSale: (saleId) => {
       const sale = (data.sales||[]).find(s=>s.id===saleId);
       if(!sale) return;
-
-      // Remove the sale
       up("sales",p=>p.filter(s=>s.id!==saleId));
-
-      // Check if collector is still linked
       const hasCollector = (data.collectors||[]).some(c=>(c.linkedArtworks||[]).some(l=>l.artworkId===sale.artworkId));
-
-      // Restore artwork status
       const newStatus = hasCollector ? "Reserved" : "Available";
       up("artworks",p=>p.map(a=>a.id===sale.artworkId?{...a,status:newStatus}:a));
       dbUp("artworks",sale.artworkId,{status:newStatus});
-
-      // Restore cancelled invoices back to Unpaid
       up("invoices",p=>p.map(i=>{
         if(i.artworkId===sale.artworkId&&i.status==="Cancelled"){
           if(dbMode)db.update("invoices",i.id,{status:"Unpaid"});
@@ -251,18 +210,13 @@ export default function App() {
       }));
     },
 
-    // ── RECORD PAYMENT ──
     recordPayment: (invoice, method) => {
-      // Mark invoice paid
       up("invoices",p=>p.map(i=>i.id===invoice.id?{...i,status:"Paid",paidDate:td(),paymentMethod:method}:i));
       dbUp("invoices",invoice.id,{status:"Paid",paidDate:td(),paymentMethod:method});
-
-      // Add payment record
       const payment={id:uid(),invoiceId:invoice.id,collectorId:invoice.collectorId,collectorName:invoice.collectorName,artworkId:invoice.artworkId,artworkTitle:invoice.artworkTitle,amount:invoice.amount,method,date:td()};
       up("payments",p=>[...p,payment]);
     },
 
-    // ── DELETE ARTWORK (only if Available) ──
     deleteArtwork: (artworkId) => {
       const art = data.artworks.find(a=>a.id===artworkId);
       if(!art) return false;
@@ -285,7 +239,6 @@ export default function App() {
     {id:"sales",label:"Sales",icon:I.sale},
   ];
 
-  // Safe data accessor — ensures all arrays exist
   const d = {
     artworks: Array.isArray(data.artworks) ? data.artworks : [],
     artists: Array.isArray(data.artists) ? data.artists : [],
@@ -351,16 +304,14 @@ export default function App() {
 function Dashboard({data,setPage}){
   const totalPay=data.payments.reduce((s,p)=>s+(p.amount||0),0);
   const totalSaleVB=data.sales.reduce((s,x)=>s+(x.vbShare||0),0);
-  // Monthly revenue
   const md={};
   data.payments.forEach(p=>{const k=(p.date||"").slice(0,7);if(k)md[k]=(md[k]||0)+(p.amount||0);});
   const sm=Object.keys(md).sort();
   const mx=Math.max(...Object.values(md),1);
   const months=["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  // Upcoming
   const now=td();
   const in30=new Date();in30.setDate(in30.getDate()+30);
-  const upcoming=data.invoices.filter(i=>i.status!=="Paid"&&i.dueDate>=now&&i.dueDate<=in30.toISOString().slice(0,10)).sort((a,b)=>a.dueDate.localeCompare(b.dueDate)).slice(0,8);
+  const upcoming=data.invoices.filter(i=>i.status!=="Paid"&&i.status!=="Cancelled"&&i.dueDate>=now&&i.dueDate<=in30.toISOString().slice(0,10)).sort((a,b)=>a.dueDate.localeCompare(b.dueDate)).slice(0,8);
   const overdue=data.invoices.filter(i=>i.status==="Overdue");
 
   return(<div>
@@ -409,7 +360,7 @@ function Dashboard({data,setPage}){
 }
 
 // ═══════════════════════════════════════════
-// CATALOGUE
+// CATALOGUE — AI Describe removed
 // ═══════════════════════════════════════════
 function Catalogue({data,up,actions}){
   const [modal,setModal]=useState(null);const [search,setSearch]=useState("");
@@ -438,23 +389,7 @@ function Catalogue({data,up,actions}){
 
 function ArtModal({art,artists,onSave,onClose}){
   const [f,sF]=useState({...art});const s=(k,v)=>sF(p=>({...p,[k]:v}));
-  const [aiLoad,setAiLoad]=useState(false);
   const hFile=(file)=>{if(!file?.type.startsWith("image/"))return;if(file.size>5242880)return alert("Max 5MB");const r=new FileReader();r.onload=e=>s("imageUrl",e.target.result);r.readAsDataURL(file);};
-  const aiDesc=async()=>{
-    setAiLoad(true);
-    try{
-      const imgData=f.imageUrl?.startsWith("data:")?f.imageUrl.split(",")[1]:null;
-      const mt=f.imageUrl?.startsWith("data:image/png")?"image/png":f.imageUrl?.startsWith("data:image/webp")?"image/webp":"image/jpeg";
-      const msg=[{role:"user",content:imgData?[
-        {type:"image",source:{type:"base64",media_type:mt,data:imgData}},
-        {type:"text",text:`You are a fine art expert for Vollard Black. Describe this artwork in 2-3 compelling sentences for collectors. Focus on technique, composition, mood. Also identify medium and style if possible. Respond ONLY in JSON: {"description":"...","medium":"...","style":"..."}`}
-      ]:[{type:"text",text:`Artwork: "${f.title||"Untitled"}" by ${f.artist||"Unknown"}${f.medium?", "+f.medium:""}. Write 2-3 sentences for collectors. JSON only: {"description":"...","medium":"...","style":""}`}]}];
-      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:msg})});
-      const d=await res.json();const txt=d.content?.map(i=>i.text||"").join("")||"";
-      try{const p=JSON.parse(txt.replace(/```json|```/g,"").trim());if(p.description)s("description",p.description);if(p.medium&&!f.medium)s("medium",p.medium);}catch{if(txt.length>10)s("description",txt);}
-    }catch(e){console.error(e);}
-    setAiLoad(false);
-  };
   return(
     <Modal title={art.id?"Edit Artwork":"Add Artwork"} onClose={onClose} wide>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
@@ -479,10 +414,7 @@ function ArtModal({art,artists,onSave,onClose}){
           </div>
         </Field>
         <Field label="Description" style={{gridColumn:"1/-1"}}>
-          <textarea value={f.description} onChange={e=>s("description",e.target.value)} style={{...is,minHeight:80,resize:"vertical"}} placeholder="Describe the artwork or use AI..."/>
-          <div style={{display:"flex",gap:8,marginTop:8}}>
-            <button onClick={aiDesc} disabled={aiLoad} style={{display:"inline-flex",alignItems:"center",gap:8,padding:"10px 18px",borderRadius:8,background:"linear-gradient(135deg,rgba(100,80,200,0.15),rgba(182,139,46,0.1))",border:"1px solid rgba(100,80,200,0.3)",color:"#a090e0",fontSize:12,fontWeight:600,cursor:aiLoad?"not-allowed":"pointer",fontFamily:"'DM Sans',sans-serif",opacity:aiLoad?0.6:1}}>{I.ai} {aiLoad?"Analyzing...":f.imageUrl?"AI Describe from Image":"AI Describe from Title"}</button>
-          </div>
+          <textarea value={f.description} onChange={e=>s("description",e.target.value)} style={{...is,minHeight:80,resize:"vertical"}} placeholder="Describe the artwork..."/>
         </Field>
       </div>
       <div style={{display:"flex",gap:10,marginTop:20,justifyContent:"flex-end"}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>{if(!f.title||!f.recommendedPrice)return alert("Title & price required");onSave(f);}}>{art.id?"Save":"Add"}</Btn></div>
@@ -566,16 +498,8 @@ function CollectorsPage({data,up,actions}){
   const del=(id)=>{if(confirm("Delete?"))up("collectors",p=>p.filter(x=>x.id!==id));};
   const gn=(i)=>i.type==="company"?i.companyName:`${i.firstName} ${i.lastName}`;
   const f=data.collectors.filter(i=>gn(i).toLowerCase().includes(search.toLowerCase()));
-
-  const handleLink=async(cId,artId,model)=>{
-    await actions.linkArtwork(cId,artId,model);
-    setLink(null);
-  };
-
-  const handleUnlink=(cId,artId)=>{
-    if(confirm("Unlink this artwork? Unpaid invoices will be deleted."))actions.unlinkArtwork(cId,artId);
-  };
-
+  const handleLink=async(cId,artId,model)=>{await actions.linkArtwork(cId,artId,model);setLink(null);};
+  const handleUnlink=(cId,artId)=>{if(confirm("Unlink this artwork? Unpaid invoices will be deleted."))actions.unlinkArtwork(cId,artId);};
   return(<div>
     <PT title="Collectors" sub={`${data.collectors.length} registered`} action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Add Collector</Btn>}/>
     <Card>
@@ -648,14 +572,12 @@ function CalcPage(){
   const moTotal=moBase+ins;
   const sp=Number(actualPrice)||p;const col60=sp*COLLECTOR_SPLIT;const vb40=sp*VB_SPLIT;
   const isSold=soldMonth!=="";const soldM=Number(soldMonth)||0;
-
   const rows=[];
   if(p>0){
     for(let m=0;m<=(model==="outright"?0:t);m++){
       let paid=model==="outright"?t40:model==="deposit"?dep+moTotal*m:moTotal*m;
       if(model==="monthly"&&m===0)paid=0;
-      const ret=col60-paid;
-      const retPct=paid>0?((ret/paid)*100).toFixed(0):"∞";
+      const ret=col60-paid;const retPct=paid>0?((ret/paid)*100).toFixed(0):"∞";
       const payment=model==="outright"?t40:m===0?dep:moTotal;
       rows.push({m,payment,paid,ret,retPct});
       if(isSold&&m===soldM)break;
@@ -663,7 +585,6 @@ function CalcPage(){
   }
   const sr=isSold?rows[rows.length-1]:null;
   const maxPaid=model==="outright"?t40:model==="deposit"?dep+moTotal*t:moTotal*t;
-
   return(<div>
     <PT title="Acquisition Calculator" sub="Model collector contributions & returns across all payment options"/>
     <div style={{display:"grid",gridTemplateColumns:"400px 1fr",gap:24,alignItems:"start"}}>
@@ -724,41 +645,162 @@ function CalcPage(){
 }
 
 // ═══════════════════════════════════════════
-// INVOICING
+// INVOICING — Tabbed per Collector
 // ═══════════════════════════════════════════
 function InvoicePage({data,actions}){
-  const [payMdl,setPayMdl]=useState(null);const [filter,setFilter]=useState("all");
-  const filtered=data.invoices.filter(i=>filter==="all"||i.status===filter).sort((a,b)=>new Date(a.dueDate||0)-new Date(b.dueDate||0));
-
-  // Check overdue on load
-  useEffect(()=>{
-    const t=td();
-    data.invoices.forEach(i=>{
-      if(i.status==="Unpaid"&&i.dueDate&&i.dueDate<t){
-        actions.recordPayment&&false; // We just flag, don't auto-pay
-      }
-    });
-  },[]);
+  const [payMdl,setPayMdl]=useState(null);
+  const [activeTab,setActiveTab]=useState("all");
+  const [filter,setFilter]=useState("all");
 
   const pay=(inv,method)=>{actions.recordPayment(inv,method);setPayMdl(null);};
+  const gn=c=>c.type==="company"?c.companyName:`${c.firstName} ${c.lastName}`;
+
+  // Only show tabs for collectors who have invoices
+  const collectorsWithInvoices=data.collectors.filter(c=>data.invoices.some(i=>i.collectorId===c.id));
+
+  const tabInvoices=activeTab==="all"
+    ? data.invoices
+    : data.invoices.filter(i=>i.collectorId===activeTab);
+
+  const filtered=tabInvoices
+    .filter(i=>filter==="all"||i.status===filter)
+    .sort((a,b)=>new Date(a.dueDate||0)-new Date(b.dueDate||0));
+
+  // Collector-level stats
+  const tabPaid=tabInvoices.filter(i=>i.status==="Paid").reduce((s,i)=>s+(i.amount||0),0);
+  const tabUnpaid=tabInvoices.filter(i=>i.status==="Unpaid").reduce((s,i)=>s+(i.amount||0),0);
+  const tabTotal=tabInvoices.reduce((s,i)=>s+(i.amount||0),0);
+  const tabPaidCount=tabInvoices.filter(i=>i.status==="Paid").length;
+  const tabUnpaidCount=tabInvoices.filter(i=>i.status==="Unpaid").length;
+  const progress=tabTotal>0?(tabPaid/tabTotal)*100:0;
+
+  const activeCollector=activeTab!=="all"?data.collectors.find(c=>c.id===activeTab):null;
+  const collectorArtworks=activeCollector
+    ?(activeCollector.linkedArtworks||[]).map(l=>{
+        const art=data.artworks.find(a=>a.id===l.artworkId);
+        return art?{...art,model:l.model}:null;
+      }).filter(Boolean)
+    :[];
+
   return(<div>
-    <PT title="Invoicing" sub={`${data.invoices.length} invoices`}/>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:14,marginBottom:24}}>
-      <Stat label="Unpaid" value={data.invoices.filter(i=>i.status==="Unpaid").length}/><Stat label="Overdue" value={data.invoices.filter(i=>i.status==="Overdue").length}/><Stat label="Paid" value={data.invoices.filter(i=>i.status==="Paid").length} green/><Stat label="Collected" value={"R "+fmt(data.payments.reduce((s,p)=>s+p.amount,0))} gold/>
+    <PT title="Invoicing" sub={`${data.invoices.length} total invoices`}/>
+
+    {/* Tab bar */}
+    <div style={{display:"flex",gap:0,marginBottom:24,borderBottom:"1px solid rgba(182,139,46,0.1)",overflowX:"auto"}}>
+      <button onClick={()=>{setActiveTab("all");setFilter("all");}} style={{padding:"12px 20px",border:"none",borderBottom:activeTab==="all"?"2px solid #b68b2e":"2px solid transparent",background:"transparent",color:activeTab==="all"?"#b68b2e":"#8a8477",fontSize:12,fontWeight:activeTab==="all"?600:400,cursor:"pointer",fontFamily:"'DM Sans',sans-serif",whiteSpace:"nowrap",letterSpacing:0.5}}>
+        All Collectors
+        <span style={{marginLeft:8,fontSize:10,background:"rgba(182,139,46,0.1)",color:"#b68b2e",padding:"2px 7px",borderRadius:10,fontWeight:600}}>{data.invoices.length}</span>
+      </button>
+      {collectorsWithInvoices.map(c=>{
+        const cInv=data.invoices.filter(i=>i.collectorId===c.id);
+        const cUnpaid=cInv.filter(i=>i.status==="Unpaid").length;
+        const isActive=activeTab===c.id;
+        return(
+          <button key={c.id} onClick={()=>{setActiveTab(c.id);setFilter("all");}} style={{padding:"12px 20px",border:"none",borderBottom:isActive?"2px solid #b68b2e":"2px solid transparent",background:"transparent",color:isActive?"#b68b2e":"#8a8477",fontSize:12,fontWeight:isActive?600:400,cursor:"pointer",fontFamily:"'DM Sans',sans-serif",whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:6,letterSpacing:0.5}}>
+            {gn(c)}
+            {cUnpaid>0&&<span style={{fontSize:10,background:"rgba(196,92,74,0.15)",color:"#c45c4a",padding:"2px 7px",borderRadius:10,fontWeight:700}}>{cUnpaid}</span>}
+          </button>
+        );
+      })}
     </div>
+
+    {/* Per-collector summary */}
+    {activeCollector&&(
+      <div style={{marginBottom:24}}>
+        {collectorArtworks.length>0&&(
+          <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>
+            {collectorArtworks.map(art=>(
+              <div key={art.id} style={{display:"flex",alignItems:"center",gap:10,background:"#151412",border:"1px solid rgba(182,139,46,0.12)",borderRadius:10,padding:"10px 16px"}}>
+                {art.imageUrl&&<div style={{width:32,height:32,borderRadius:6,overflow:"hidden",flexShrink:0}}><img src={art.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div>}
+                <div>
+                  <div style={{fontSize:13,fontWeight:600,color:"#f5f0e8"}}>{art.title}</div>
+                  <div style={{fontSize:10,color:"#8a8477",marginTop:2,textTransform:"uppercase",letterSpacing:0.5}}>{art.model} · <Badge status={art.status}/></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:16}}>
+          <Card style={{padding:16,textAlign:"center"}}>
+            <div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:4}}>Total Invoiced</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:600,color:"#f5f0e8"}}>R {fmt(tabTotal)}</div>
+          </Card>
+          <Card style={{padding:16,textAlign:"center"}}>
+            <div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:4}}>Paid</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:600,color:"#4a9e6b"}}>R {fmt(tabPaid)}</div>
+            <div style={{fontSize:10,color:"#5a564e",marginTop:2}}>{tabPaidCount} invoices</div>
+          </Card>
+          <Card style={{padding:16,textAlign:"center"}}>
+            <div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:4}}>Outstanding</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:600,color:"#b68b2e"}}>R {fmt(tabUnpaid)}</div>
+            <div style={{fontSize:10,color:"#5a564e",marginTop:2}}>{tabUnpaidCount} invoices</div>
+          </Card>
+          <Card style={{padding:16,textAlign:"center"}}>
+            <div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:4}}>Progress</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:600,color:"#b68b2e"}}>{progress.toFixed(0)}%</div>
+            <div style={{marginTop:8,height:4,background:"rgba(182,139,46,0.1)",borderRadius:2,overflow:"hidden"}}>
+              <div style={{height:"100%",width:`${progress}%`,background:"linear-gradient(90deg,#b68b2e,#8a6a1e)",borderRadius:2,transition:"width 0.4s"}}/>
+            </div>
+          </Card>
+        </div>
+      </div>
+    )}
+
+    {/* Global stats for All tab */}
+    {activeTab==="all"&&(
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:14,marginBottom:24}}>
+        <Stat label="Unpaid" value={data.invoices.filter(i=>i.status==="Unpaid").length}/>
+        <Stat label="Overdue" value={data.invoices.filter(i=>i.status==="Overdue").length}/>
+        <Stat label="Paid" value={data.invoices.filter(i=>i.status==="Paid").length} green/>
+        <Stat label="Collected" value={"R "+fmt(data.payments.reduce((s,p)=>s+p.amount,0))} gold/>
+      </div>
+    )}
+
+    {/* Invoice table */}
     <Card>
-      <div style={{display:"flex",gap:8,marginBottom:16}}>{["all","Unpaid","Overdue","Paid"].map(f=><Btn key={f} small ghost={filter!==f} gold={filter===f} onClick={()=>setFilter(f)}>{f==="all"?"All":f}</Btn>)}</div>
-      {filtered.length===0?<Empty msg="No invoices."/>:
-      <Tbl cols={[
-        {label:"Type",render:r=>r.type},{label:"Collector",key:"collectorName",bold:true},{label:"Artwork",key:"artworkTitle"},
-        {label:"Amount",right:true,gold:true,render:r=>"R "+fmt(r.amount)},{label:"Due",key:"dueDate"},
-        {label:"Status",render:r=><Badge status={r.status==="Paid"?"Available":r.status==="Overdue"?"Sold":"Reserved"}/>},
-        {label:"",render:r=>r.status!=="Paid"?<Btn small gold onClick={e=>{e.stopPropagation();setPayMdl(r);}}>{I.ok} Pay</Btn>:<span style={{fontSize:11,color:"#4a9e6b"}}>✓ {r.paymentMethod}</span>},
-      ]} data={filtered}/>}
+      <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
+        {["all","Unpaid","Overdue","Paid","Cancelled"].map(f=>(
+          <Btn key={f} small ghost={filter!==f} gold={filter===f} onClick={()=>setFilter(f)}>
+            {f==="all"?"All":f}
+          </Btn>
+        ))}
+      </div>
+      {filtered.length===0
+        ?<Empty msg={activeTab==="all"?"No invoices yet.":"No invoices match this filter."}/>
+        :<Tbl cols={[
+            {label:"Type",render:r=>r.type},
+            ...(activeTab==="all"?[{label:"Collector",key:"collectorName",bold:true}]:[]),
+            {label:"Artwork",key:"artworkTitle"},
+            {label:"Amount",right:true,gold:true,render:r=>"R "+fmt(r.amount)},
+            {label:"Due",key:"dueDate"},
+            {label:"Status",render:r=>{
+              const cfg={Paid:{bg:"rgba(74,158,107,0.1)",c:"#4a9e6b"},Unpaid:{bg:"rgba(182,139,46,0.1)",c:"#b68b2e"},Overdue:{bg:"rgba(196,92,74,0.1)",c:"#c45c4a"},Cancelled:{bg:"rgba(90,86,78,0.1)",c:"#5a564e"}};
+              const s=cfg[r.status]||{bg:"#1e1d1a",c:"#8a8477"};
+              return<span style={{display:"inline-block",padding:"4px 10px",borderRadius:6,fontSize:11,fontWeight:600,background:s.bg,color:s.c}}>{r.status}</span>;
+            }},
+            {label:"Paid Date",render:r=>r.paidDate?<span style={{fontSize:12,color:"#8a8477"}}>{r.paidDate}</span>:<span style={{color:"#3a3832"}}>—</span>},
+            {label:"",render:r=>r.status==="Unpaid"||r.status==="Overdue"
+              ?<Btn small gold onClick={e=>{e.stopPropagation();setPayMdl(r);}}>{I.ok} Pay</Btn>
+              :r.status==="Paid"?<span style={{fontSize:11,color:"#4a9e6b"}}>✓ {r.paymentMethod}</span>
+              :<span/>
+            },
+          ]} data={filtered}/>
+      }
     </Card>
+
+    {/* Payment modal */}
     {payMdl&&<Modal title="Record Payment" onClose={()=>setPayMdl(null)}>
-      <Card style={{background:"#1e1d1a",marginBottom:16}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:13}}><span style={{color:"#8a8477"}}>Invoice:</span><span>{payMdl.type}</span><span style={{color:"#8a8477"}}>Amount:</span><span style={{color:"#b68b2e",fontWeight:600}}>R {fmt(payMdl.amount)}</span></div></Card>
-      {payM.map(m=><button key={m} onClick={()=>pay(payMdl,m)} style={{display:"block",width:"100%",padding:12,marginBottom:8,borderRadius:8,border:"1px solid rgba(182,139,46,0.15)",background:"#1e1d1a",color:"#e8e2d6",cursor:"pointer",fontSize:13,fontFamily:"'DM Sans',sans-serif",textAlign:"left"}}>{m}</button>)}
+      <Card style={{background:"#1e1d1a",marginBottom:16}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:13}}>
+          <span style={{color:"#8a8477"}}>Collector:</span><span style={{fontWeight:600}}>{payMdl.collectorName}</span>
+          <span style={{color:"#8a8477"}}>Artwork:</span><span>{payMdl.artworkTitle}</span>
+          <span style={{color:"#8a8477"}}>Invoice:</span><span>{payMdl.type}</span>
+          <span style={{color:"#8a8477"}}>Due:</span><span>{payMdl.dueDate}</span>
+          <span style={{color:"#8a8477"}}>Amount:</span><span style={{color:"#b68b2e",fontWeight:700,fontSize:16}}>R {fmt(payMdl.amount)}</span>
+        </div>
+      </Card>
+      <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:10}}>Select Payment Method</div>
+      {payM.map(m=><button key={m} onClick={()=>pay(payMdl,m)} style={{display:"block",width:"100%",padding:12,marginBottom:8,borderRadius:8,border:"1px solid rgba(182,139,46,0.15)",background:"#1e1d1a",color:"#e8e2d6",cursor:"pointer",fontSize:13,fontFamily:"'DM Sans',sans-serif",textAlign:"left",transition:"all 0.15s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(182,139,46,0.4)";e.currentTarget.style.background="#252320";}} onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(182,139,46,0.15)";e.currentTarget.style.background="#1e1d1a";}}>{m}</button>}
     </Modal>}
   </div>);
 }
@@ -768,7 +810,6 @@ function InvoicePage({data,actions}){
 // ═══════════════════════════════════════════
 function SalesPage({data,actions}){
   const [modal,setModal]=useState(false);
-  const [editSale,setEditSale]=useState(null);
   const sellable=data.artworks.filter(a=>a.status==="Reserved"||a.status==="In Gallery"||a.status==="Available");
   const handleSale=(saleData)=>{actions.recordSale(saleData);setModal(false);};
   const handleDelete=(saleId)=>{if(confirm("Delete this sale? Artwork will be restored to its previous status."))actions.deleteSale(saleId);};
