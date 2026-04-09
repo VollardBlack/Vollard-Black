@@ -800,7 +800,7 @@ function InvoicePage({data,actions}){
         </div>
       </Card>
       <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:10}}>Select Payment Method</div>
-      {payM.map(m=><button key={m} onClick={()=>pay(payMdl,m)} style={{display:"block",width:"100%",padding:12,marginBottom:8,borderRadius:8,border:"1px solid rgba(182,139,46,0.15)",background:"#1e1d1a",color:"#e8e2d6",cursor:"pointer",fontSize:13,fontFamily:"'DM Sans',sans-serif",textAlign:"left",transition:"all 0.15s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(182,139,46,0.4)";e.currentTarget.style.background="#252320";}} onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(182,139,46,0.15)";e.currentTarget.style.background="#1e1d1a";}}>{m}</button>}
+      {payM.map(m=>{const btnStyle={display:"block",width:"100%",padding:12,marginBottom:8,borderRadius:8,border:"1px solid rgba(182,139,46,0.15)",background:"#1e1d1a",color:"#e8e2d6",cursor:"pointer",fontSize:13,fontFamily:"DM Sans,sans-serif",textAlign:"left",transition:"all 0.15s"};return<button key={m} onClick={()=>pay(payMdl,m)} style={btnStyle} onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(182,139,46,0.4)";e.currentTarget.style.background="#252320";}} onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(182,139,46,0.15)";e.currentTarget.style.background="#1e1d1a";}}>{m}</button>;})}
     </Modal>}
   </div>);
 }
