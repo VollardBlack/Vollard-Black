@@ -22,7 +22,77 @@ input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+input[type="number"] { -moz-appearance: textfield; }
 
-input[type="number"] {
-  -moz-appearance: textfield;
+/* ─── Mobile responsive ─── */
+@media (max-width: 900px) {
+  /* Calculator two-col → single col */
+  .calc-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 700px) {
+  /* Main content padding */
+  main > div {
+    padding: 20px 16px !important;
+  }
+
+  /* Page titles */
+  h1 {
+    font-size: 22px !important;
+  }
+
+  /* Stat cards — 2 per row on mobile */
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Tables — allow scroll */
+  table {
+    font-size: 12px !important;
+  }
+
+  /* Cards */
+  .vb-card {
+    padding: 16px !important;
+  }
+
+  /* Two-col grids → single col */
+  .two-col {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Modal — full width */
+  .vb-modal {
+    padding: 20px 16px !important;
+    max-height: 95vh !important;
+  }
+
+  /* Sidebar nav text size */
+  nav button span {
+    font-size: 12px !important;
+  }
+
+  /* Schedule cards action buttons wrap */
+  .sched-actions {
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Very small screens */
+  main > div {
+    padding: 16px 12px !important;
+  }
+
+  h1 {
+    font-size: 20px !important;
+  }
+
+  /* Stat grid — 1 per row */
+  .stat-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
 }
