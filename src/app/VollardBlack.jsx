@@ -19,45 +19,61 @@ const PAGE_SIZE = 50;
 // ─── Maths Engine ───
 // MODEL A: VB fee = 40% of artwork value. Collector gets 60% at sale.
 // MODEL B: VB fee = 30% of artwork value. Collector gets 70% at sale.
-// VB fee is paid monthly. Any balance unpaid at sale is deducted from sale proceeds.
-// If sale price < artwork value: collector gets colPct% of ACTUAL sale price (less, proportionally).
+// DEPOSIT TYPES:
+//   none     — no deposit, full VB fee paid monthly over term
+//   toward   — deposit counts toward VB fee, reduces monthly
+//   separate — deposit is extra commitment fee on top of VB fee
+// VB fee balance always collected from sale proceeds.
+// If sale price < artwork value: collector gets colPct% of ACTUAL sale price.
 // If sale price > artwork value: surplus split 50/50 on top of base split.
-// Collector profit at recommended price is always (colPct - vbPct) × artworkValue regardless of month.
-const calcDeal = (artworkValue, salePrice, model, monthsPaid, galleryPct, vbPct, artistPct, introFeePct) => {
+const calcDeal = (artworkValue, salePrice, model, monthsPaid, galleryPct, vbPct, artistPct, introFeePct, depositType="none", depositPct=0) => {
   const m = MODELS[model];
   const vbFee = artworkValue * m.vbPct;
-  const monthly = vbFee / m.term;
-  const paid = monthly * monthsPaid;
-  const vbBalance = Math.max(0, vbFee - paid);
+  const depositAmt = artworkValue * (depositPct / 100);
 
-  // Surplus / deficit vs recommended price
+  // Monthly depends on deposit type
+  let remainingFee, monthly, totalPaid;
+  if(depositType === "toward") {
+    remainingFee = Math.max(0, vbFee - depositAmt);
+    monthly = remainingFee / m.term;
+    // Total paid = deposit + (monthly × monthsPaid)
+    // Month 0 = deposit month, months 1+ = regular monthly
+    totalPaid = depositAmt + (monthly * monthsPaid);
+  } else if(depositType === "separate") {
+    remainingFee = vbFee;
+    monthly = vbFee / m.term;
+    // Deposit is on top — always paid regardless
+    totalPaid = depositAmt + (monthly * monthsPaid);
+  } else {
+    remainingFee = vbFee;
+    monthly = vbFee / m.term;
+    totalPaid = monthly * monthsPaid;
+  }
+
+  // VB balance = what's still owed of the VB fee at time of sale
+  const vbBalanceFromMonthly = depositType === "toward"
+    ? Math.max(0, remainingFee - (monthly * monthsPaid))
+    : Math.max(0, vbFee - (monthly * monthsPaid));
+  const vbBalance = vbBalanceFromMonthly;
+
   const surplus = Math.max(0, salePrice - artworkValue);
   const deficit = Math.max(0, artworkValue - salePrice);
   const surplusCol = surplus * 0.50;
   const surplusVB = surplus * 0.50;
 
-  // Collector base = colPct% of actual sale price (not artwork value)
-  // This means if it sells for less, collector gets less
   const colBase = salePrice * m.colPct;
-
-  // Add surplus bonus if above recommended
   const colTotal = colBase + surplusCol;
-
-  // Deduct VB balance still owed
   const colAfterBalance = colTotal - vbBalance;
 
-  // Introducer fee on what collector receives
   const introFee = Math.max(0, colAfterBalance) * (introFeePct / 100);
   const colNet = colAfterBalance - introFee;
 
-  // Collector profit = what they receive minus what they paid monthly
-  const colProfit = colNet - paid;
-  const colROI = paid > 0 ? (colProfit / paid) * 100 : 0;
+  // Profit = received minus everything paid (monthly + deposit)
+  const colProfit = colNet - totalPaid;
+  const colROI = totalPaid > 0 ? (colProfit / totalPaid) * 100 : 0;
 
-  // VB total = their fee + surplus share
-  const vbTotal = vbFee + surplusVB;
+  const vbTotal = vbFee + surplusVB + (depositType === "separate" ? depositAmt : 0);
 
-  // Backend split on VB's total
   const gPct = galleryPct / 100;
   const vPct2 = vbPct / 100;
   const aPct = artistPct / 100;
@@ -66,18 +82,19 @@ const calcDeal = (artworkValue, salePrice, model, monthsPaid, galleryPct, vbPct,
   const artistAmt = vbTotal * aPct;
 
   return {
-    vbFee, monthly, paid, vbBalance,
+    vbFee, monthly, depositAmt, totalPaid, vbBalance,
     surplus, deficit, surplusCol, surplusVB,
     colBase, colTotal, colAfterBalance,
     introFee, colNet, colProfit, colROI,
     vbTotal, galleryAmt, vbAmt, artistAmt,
+    remainingFee,
   };
 };
 
 const fmt = (n) => Number(n||0).toLocaleString("en-ZA",{minimumFractionDigits:2,maximumFractionDigits:2});
 const uid = () => "VB"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const td = () => new Date().toISOString().slice(0,10);
-const SK = "vollard_black_v7";
+const SK = "vollard_black_v8";
 const TABLES = ["artworks","artists","collectors","schedules","payments","sales","reports","buyers"];
 const fresh = () => ({artworks:[],artists:[],collectors:[],schedules:[],payments:[],sales:[],reports:[],buyers:[]});
 const loadLocal = () => { try { const d=JSON.parse(localStorage.getItem(SK)); return d?.artworks?d:fresh(); } catch{return fresh();} };
@@ -321,15 +338,33 @@ export default function App(){
   const cancelled=liveSchedules.filter(s=>s.status==="Cancelled");
 
   const actions={
-    linkArtwork:async(collectorId,artworkId,acquisitionModel)=>{
+    linkArtwork:async(collectorId,artworkId,acquisitionModel,depositType,depositPct)=>{
       const art=data.artworks.find(a=>a.id===artworkId);
       const col=data.collectors.find(c=>c.id===collectorId);
       if(!art||!col)return;
       const m=MODELS[acquisitionModel];
       const gn=col.type==="company"?col.companyName:`${col.firstName} ${col.lastName}`;
       const vbFee=art.recommendedPrice*m.vbPct;
-      const monthly=vbFee/m.term;
-      const schedule={id:uid(),collectorId,collectorName:gn,collectorEmail:col.email||"",artworkId,artworkTitle:art.title,acquisitionModel,model:acquisitionModel,totalDue:vbFee,monthlyAmount:monthly+(art.insuranceMonthly||0),insuranceMonthly:art.insuranceMonthly||0,termMonths:m.term,startDate:td(),monthsPaid:0,totalPaid:0,status:"Active",strikes:0,missedMonths:[],graceOverride:null,graceMonth:null,graceNote:"",createdAt:td()};
+      const depositAmt=art.recommendedPrice*(depositPct/100);
+      const remainingFee=depositType==="toward"?Math.max(0,vbFee-depositAmt):vbFee;
+      const monthly=remainingFee/m.term;
+      const schedule={
+        id:uid(),collectorId,collectorName:gn,collectorEmail:col.email||"",
+        artworkId,artworkTitle:art.title,
+        acquisitionModel,model:acquisitionModel,
+        depositType:depositType||"none",
+        depositPct:depositPct||0,
+        depositAmount:depositAmt,
+        depositPaid:false,
+        totalDue:depositType==="separate"?vbFee+depositAmt:vbFee,
+        monthlyAmount:monthly+(art.insuranceMonthly||0),
+        insuranceMonthly:art.insuranceMonthly||0,
+        termMonths:m.term,
+        startDate:td(),monthsPaid:0,totalPaid:0,
+        status:"Active",strikes:0,missedMonths:[],
+        graceOverride:null,graceMonth:null,graceNote:"",
+        createdAt:td()
+      };
       up("schedules",p=>[...p,schedule]);
       up("collectors",p=>p.map(c=>{if(c.id!==collectorId)return c;const la=[...(c.linkedArtworks||[])];if(!la.find(x=>x.artworkId===artworkId))la.push({artworkId,model:acquisitionModel,linkedAt:td()});return{...c,linkedArtworks:la};}));
       up("artworks",p=>p.map(a=>a.id===artworkId?{...a,status:"Reserved"}:a));
@@ -639,7 +674,7 @@ function CollectorsPage({data,up,actions}){
   const del=(id)=>{if(confirm("Delete?"))up("collectors",p=>p.filter(x=>x.id!==id));};
   const gn=(i)=>i.type==="company"?i.companyName:`${i.firstName} ${i.lastName}`;
   const f=data.collectors.filter(i=>gn(i).toLowerCase().includes(search.toLowerCase()));
-  const handleLink=async(cId,artId,model)=>{await actions.linkArtwork(cId,artId,model);setLink(null);};
+  const handleLink=async(cId,artId,model,depositType,depositPct)=>{await actions.linkArtwork(cId,artId,model,depositType,depositPct);setLink(null);};
   const handleUnlink=(schedId)=>{if(confirm("Cancel this schedule?"))actions.unlinkArtwork(schedId);};
   return(<div>
     <PT title="Collectors" sub={`${data.collectors.length} registered`} action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Add Collector</Btn>}/>
@@ -668,32 +703,83 @@ function ColMdl({col,onSave,onClose}){
 }
 
 function LinkMdl({col,arts,onLink,onClose,gn}){
-  const [artId,setArtId]=useState("");const [acqModel,setAcqModel]=useState("A");
+  const [artId,setArtId]=useState("");
+  const [acqModel,setAcqModel]=useState("A");
+  const [depositType,setDepositType]=useState("none");
+  const [depositPct,setDepositPct]=useState("10");
+
   const art=arts.find(a=>a.id===artId);
   const m=MODELS[acqModel];
+  const dp=parseFloat(depositPct)||0;
   const vbFee=art?art.recommendedPrice*m.vbPct:0;
-  const monthly=art?vbFee/m.term:0;
-  return(<Modal title={`Link Artwork — ${gn(col)}`} onClose={onClose}>
-    <Field label="Artwork"><select value={artId} onChange={e=>setArtId(e.target.value)} style={ss}><option value="">—</option>{arts.map(a=><option key={a.id} value={a.id}>{a.title} — R {fmt(a.recommendedPrice)}</option>)}</select></Field>
-    <Field label="Acquisition Model">
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-        {["A","B"].map(k=>{const mod=MODELS[k];return<button key={k} onClick={()=>setAcqModel(k)} style={{padding:14,borderRadius:10,border:acqModel===k?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:acqModel===k?"rgba(182,139,46,0.08)":"#1e1d1a",color:acqModel===k?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left"}}>
-          <div style={{fontSize:13,fontWeight:600,marginBottom:4}}>{mod.label}</div>
-          <div style={{fontSize:11,opacity:0.8}}>VB {Math.round(mod.vbPct*100)}% · Collector {Math.round(mod.colPct*100)}%</div>
-          <div style={{fontSize:11,opacity:0.8}}>{mod.term} months</div>
-          {art&&<div style={{fontSize:12,marginTop:6,color:acqModel===k?"#b68b2e":"#8a8477",fontWeight:600}}>R {fmt(art.recommendedPrice*mod.vbPct/mod.term)}/mo</div>}
-        </button>;})}
+  const depositAmt=art?art.recommendedPrice*(dp/100):0;
+  const remainingFee=depositType==="toward"?Math.max(0,vbFee-depositAmt):vbFee;
+  const monthly=art?remainingFee/m.term:0;
+  const totalDue=depositType==="separate"?vbFee+depositAmt:vbFee;
+  const colProfit=art?art.recommendedPrice*(m.colPct-m.vbPct)-(depositType==="separate"?depositAmt:0):0;
+
+  const depTypes=[
+    {id:"none",label:"No Deposit",sub:"Full fee paid monthly"},
+    {id:"toward",label:"Deposit → Toward Fee",sub:"Reduces monthly payments"},
+    {id:"separate",label:"Deposit + Full Monthly",sub:"Commitment fee on top"},
+  ];
+
+  return(<Modal title={`Link Artwork — ${gn(col)}`} onClose={onClose} wide>
+
+    {/* Step 1 — Artwork */}
+    <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:8}}>Step 1 — Artwork</div>
+    <Field label=""><select value={artId} onChange={e=>setArtId(e.target.value)} style={{...ss,marginBottom:0}}><option value="">— Select artwork</option>{arts.map(a=><option key={a.id} value={a.id}>{a.title} — R {fmt(a.recommendedPrice)}</option>)}</select></Field>
+
+    {/* Step 2 — Model */}
+    <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",margin:"16px 0 8px"}}>Step 2 — Acquisition Model</div>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+      {["A","B"].map(k=>{const mod=MODELS[k];const active=acqModel===k;return<button key={k} onClick={()=>setAcqModel(k)} style={{padding:14,borderRadius:10,border:active?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:active?"rgba(182,139,46,0.08)":"#1e1d1a",color:active?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left",transition:"all 0.15s"}}>
+        <div style={{fontSize:13,fontWeight:600,marginBottom:4}}>{mod.label}</div>
+        <div style={{fontSize:11,opacity:0.8}}>VB {Math.round(mod.vbPct*100)}% · Collector {Math.round(mod.colPct*100)}%</div>
+        <div style={{fontSize:11,opacity:0.8}}>{mod.term} month term</div>
+        {art&&<div style={{fontSize:12,marginTop:6,color:active?"#b68b2e":"#5a564e",fontWeight:600}}>R {fmt(art.recommendedPrice*mod.vbPct/mod.term)}/mo (no deposit)</div>}
+      </button>;})}
+    </div>
+
+    {/* Step 3 — Deposit */}
+    <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:8}}>Step 3 — Deposit</div>
+    <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
+      {depTypes.map(d=>{const active=depositType===d.id;return<button key={d.id} onClick={()=>setDepositType(d.id)} style={{padding:"12px 14px",borderRadius:10,border:active?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:active?"rgba(182,139,46,0.08)":"#1e1d1a",color:active?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left",display:"flex",alignItems:"center",justifyContent:"space-between",transition:"all 0.15s"}}>
+        <div><div style={{fontSize:13,fontWeight:600}}>{d.label}</div><div style={{fontSize:11,opacity:0.8,marginTop:2}}>{d.sub}</div></div>
+        {active&&art&&depositType!=="none"&&<div style={{fontSize:13,fontWeight:600,color:"#b68b2e"}}>R {fmt(depositAmt)} upfront</div>}
+      </button>;})}
+    </div>
+
+    {/* Deposit % input — only if deposit selected */}
+    {depositType!=="none"&&<Field label="Deposit Percentage">
+      <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <input type="number" value={depositPct} onChange={e=>setDepositPct(e.target.value)} style={{...is,width:100}} min={1} max={99} placeholder="10"/>
+        <span style={{fontSize:13,color:"#5a564e"}}>% of artwork value</span>
+        {art&&<span style={{fontSize:13,color:"#b68b2e",fontWeight:600,marginLeft:"auto"}}>= R {fmt(depositAmt)}</span>}
       </div>
-    </Field>
-    {art&&<Card style={{background:"#1e1d1a",marginTop:8}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:13}}>
-      <span style={{color:"#8a8477"}}>Artwork value:</span><span style={{textAlign:"right"}}>R {fmt(art.recommendedPrice)}</span>
-      <span style={{color:"#8a8477"}}>VB fee ({Math.round(m.vbPct*100)}%):</span><span style={{textAlign:"right",color:"#b68b2e",fontWeight:600}}>R {fmt(vbFee)}</span>
-      <span style={{color:"#8a8477"}}>Collector receives ({Math.round(m.colPct*100)}%):</span><span style={{textAlign:"right",color:"#4a9e6b"}}>R {fmt(art.recommendedPrice*m.colPct)}</span>
-      <span style={{color:"#8a8477"}}>Monthly over {m.term} mo:</span><span style={{textAlign:"right",fontWeight:600}}>R {fmt(monthly)}</span>
-      <span style={{color:"#8a8477"}}>Collector profit:</span><span style={{textAlign:"right",color:"#4a9e6b",fontWeight:600}}>R {fmt(art.recommendedPrice*(m.colPct-m.vbPct))} ({Math.round((m.colPct-m.vbPct)/m.vbPct*100)}% ROI)</span>
-      <span style={{color:"#8a8477"}}>If unsold:</span><span style={{textAlign:"right",fontSize:11}}>Collector takes artwork</span>
-    </div></Card>}
-    <div style={{display:"flex",gap:10,marginTop:20,justifyContent:"flex-end"}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold disabled={!artId} onClick={()=>onLink(col.id,artId,acqModel)}>Create Schedule</Btn></div>
+    </Field>}
+
+    {/* Summary card */}
+    {art&&<Card style={{background:"#1e1d1a",marginTop:8}}>
+      <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:12}}>Agreement Summary</div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:13}}>
+        <span style={{color:"#8a8477"}}>Artwork value:</span><span style={{textAlign:"right"}}>R {fmt(art.recommendedPrice)}</span>
+        <span style={{color:"#8a8477"}}>VB fee ({Math.round(m.vbPct*100)}%):</span><span style={{textAlign:"right",color:"#b68b2e",fontWeight:600}}>R {fmt(vbFee)}</span>
+        {depositType!=="none"&&<><span style={{color:"#8a8477"}}>Deposit ({dp}%) — {depositType==="toward"?"toward fee":"separate"}:</span><span style={{textAlign:"right",color:"#b68b2e"}}>R {fmt(depositAmt)}</span></>}
+        {depositType==="toward"&&<><span style={{color:"#8a8477"}}>Remaining fee after deposit:</span><span style={{textAlign:"right"}}>R {fmt(remainingFee)}</span></>}
+        <div style={{gridColumn:"1/-1",height:1,background:"rgba(182,139,46,0.1)",margin:"4px 0"}}/>
+        <span style={{color:"#b68b2e",fontWeight:600}}>Monthly payment:</span><span style={{textAlign:"right",fontWeight:600,color:"#b68b2e"}}>R {fmt(monthly)}/mo × {m.term}</span>
+        <span style={{color:"#8a8477"}}>Total paid by collector:</span><span style={{textAlign:"right"}}>R {fmt(totalDue)}</span>
+        <span style={{color:"#4a9e6b",fontWeight:600}}>Collector receives ({Math.round(m.colPct*100)}%):</span><span style={{textAlign:"right",color:"#4a9e6b"}}>R {fmt(art.recommendedPrice*m.colPct)}</span>
+        <span style={{color:"#4a9e6b",fontWeight:600}}>Collector profit:</span><span style={{textAlign:"right",color:"#4a9e6b",fontWeight:600}}>R {fmt(colProfit)}</span>
+        <span style={{color:"#8a8477"}}>If unsold after {m.term} months:</span><span style={{textAlign:"right",fontSize:11}}>Collector takes artwork</span>
+      </div>
+    </Card>}
+
+    <div style={{display:"flex",gap:10,marginTop:20,justifyContent:"flex-end"}}>
+      <Btn ghost onClick={onClose}>Cancel</Btn>
+      <Btn gold disabled={!artId} onClick={()=>onLink(col.id,artId,acqModel,depositType,dp)}>Create Schedule</Btn>
+    </div>
   </Modal>);
 }
 
@@ -793,6 +879,8 @@ function CalcPage(){
   const [saleVal,setSaleVal]=useState("");
   const [acqModel,setAcqModel]=useState("A");
   const [monthsSold,setMonthsSold]=useState("");
+  const [depositType,setDepositType]=useState("none");
+  const [depositPct,setDepositPct]=useState("10");
   const [galleryPct,setGalleryPct]=useState("");
   const [vbPct2,setVbPct2]=useState("");
   const [artistPct,setArtistPct]=useState("");
@@ -806,7 +894,8 @@ function CalcPage(){
   const vPctNum=parseFloat(vbPct2)||30;
   const aPctNum=parseFloat(artistPct)||30;
   const iPctNum=parseFloat(introPct)||0;
-  const deal=av>0?calcDeal(av,sp,acqModel,mo,gPctNum,vPctNum,aPctNum,iPctNum):{};
+  const dPctNum=parseFloat(depositPct)||0;
+  const deal=av>0?calcDeal(av,sp,acqModel,mo,gPctNum,vPctNum,aPctNum,iPctNum,depositType,dPctNum):{};
   const splitTotal=gPctNum+vPctNum+aPctNum;
   const splitOk=Math.round(splitTotal)===100;
   const scenarioMonths=[1,3,6,9,12,15,18,21,24].filter(x=>x<=m.term);
@@ -851,6 +940,19 @@ function CalcPage(){
           </Field>
         </Card>
 
+        {/* Deposit */}
+        <Card style={{marginBottom:14}}>
+          <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:12}}>Deposit</div>
+          <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:depositType!=="none"?12:0}}>
+            {[["none","No Deposit"],["toward","Toward Fee — reduces monthly"],["separate","Separate — extra on top"]].map(([id,lbl])=><button key={id} onClick={()=>setDepositType(id)} style={{padding:"10px 12px",borderRadius:8,border:depositType===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.12)",background:depositType===id?"rgba(182,139,46,0.08)":"#1e1d1a",color:depositType===id?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left",fontSize:12,fontWeight:depositType===id?600:400,transition:"all 0.15s"}}>{lbl}</button>)}
+          </div>
+          {depositType!=="none"&&<div style={{display:"flex",alignItems:"center",gap:10}}>
+            <input type="number" value={depositPct} onChange={e=>setDepositPct(e.target.value)} style={{...is,width:80}} placeholder="10" min={1} max={99}/>
+            <span style={{fontSize:13,color:"#5a564e"}}>%</span>
+            {av>0&&<span style={{fontSize:13,color:"#b68b2e",fontWeight:600,marginLeft:"auto"}}>= R {fmt(av*(dPctNum/100))}</span>}
+          </div>}
+        </Card>
+
         <Card style={{marginBottom:14}}>
           <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:12}}>Introducer Fee</div>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
@@ -888,7 +990,7 @@ function CalcPage(){
             <Card style={{padding:14,textAlign:"center",border:"1px solid rgba(182,139,46,0.2)"}}>
               <div style={{fontSize:9,letterSpacing:2,color:"#5a564e",marginBottom:6}}>VB TOTAL</div>
               <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:24,fontWeight:600,color:"#b68b2e"}}>R {fmt(deal.vbTotal||0)}</div>
-              <div style={{fontSize:10,color:"#8a8477",marginTop:4}}>R {fmt(deal.paid||0)} collected</div>
+              <div style={{fontSize:10,color:"#8a8477",marginTop:4}}>R {fmt(deal.totalPaid||0)} collected</div>
             </Card>
             <Card style={{padding:14,textAlign:"center"}}>
               <div style={{fontSize:9,letterSpacing:2,color:"#5a564e",marginBottom:6}}>SALE PRICE</div>
@@ -900,10 +1002,12 @@ function CalcPage(){
 
           {/* Settlement */}
           <Card style={{marginBottom:14}}>
-            <div style={{fontSize:12,fontWeight:600,color:"#f5f0e8",marginBottom:2}}>Settlement — Month {mo} · {m.label}</div>
+            <div style={{fontSize:12,fontWeight:600,color:"#f5f0e8",marginBottom:2}}>Settlement — Month {mo} · {m.label}{depositType!=="none"?` · ${depositType==="toward"?"Deposit toward fee":"Deposit separate"}`:" · No deposit"}</div>
             <div style={{fontSize:11,color:"#5a564e",marginBottom:14}}>What happens at point of sale</div>
+            {depositType!=="none"&&row(`Deposit (${dPctNum}%) — ${depositType==="toward"?"counts toward fee":"separate commitment"}`,`R ${fmt(deal.depositAmt)}`,`#b68b2e`)}
             {row("Monthly payment",`R ${fmt(deal.monthly)}/mo`)}
-            {row(`Collected (${mo} month${mo>1?"s":""})`,`R ${fmt(deal.paid)}`,`#b68b2e`)}
+            {row(`Monthly collected (${mo} month${mo>1?"s":""})`,`R ${fmt(deal.monthly*mo)}`,`#b68b2e`)}
+            {row("Total paid in",`R ${fmt(deal.totalPaid)}`,`#b68b2e`)}
             {row("VB balance at sale",`R ${fmt(deal.vbBalance)}`,deal.vbBalance>0?"#c45c4a":"#4a9e6b")}
             {aboveValue&&row("Surplus above value",`R ${fmt(deal.surplus)}`,`#4a9e6b`)}
             {aboveValue&&row("Collector surplus bonus (50%)",`+ R ${fmt(deal.surplusCol)}`,`#4a9e6b`)}
@@ -914,7 +1018,7 @@ function CalcPage(){
             {deal.introFee>0&&row("Less introducer fee",`− R ${fmt(deal.introFee)}`,`#c45c4a`)}
             {divider}
             {row("Collector net payout",`R ${fmt(deal.colNet)}`,`#4a9e6b`,true,20)}
-            {row("Collector paid in total",`R ${fmt(deal.paid)}`)}
+            {row("Collector total paid in",`R ${fmt(deal.totalPaid)}`)}
             {row("Collector profit",`R ${fmt(deal.colProfit)}`,deal.colProfit>=0?"#4a9e6b":"#c45c4a",true)}
             {row("Collector ROI",`${Math.round(deal.colROI)}%`,deal.colROI>=0?"#b68b2e":"#c45c4a",true)}
           </Card>
@@ -922,13 +1026,13 @@ function CalcPage(){
           {/* All scenarios */}
           <Card>
             <div style={{fontSize:12,fontWeight:600,color:"#f5f0e8",marginBottom:2}}>All Scenarios — {m.label}</div>
-            <div style={{fontSize:11,color:"#5a564e",marginBottom:14}}>Sale price R {fmt(sp)} · same result regardless of month</div>
+            <div style={{fontSize:11,color:"#5a564e",marginBottom:14}}>Sale price R {fmt(sp)} · {depositType!=="none"?`${dPctNum}% deposit (${depositType==="toward"?"toward fee":"separate"}) · `:""}same profit regardless of month</div>
             <div style={{overflowX:"auto"}}>
               <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
-                <thead><tr>{["Month","Paid In","VB Balance","Receives","Profit","ROI"].map(h=><th key={h} style={{fontSize:10,fontWeight:600,letterSpacing:1,textTransform:"uppercase",color:"#5a564e",padding:"8px 10px",textAlign:"right",borderBottom:"1px solid rgba(182,139,46,0.08)",whiteSpace:"nowrap",textAlign:h==="Month"?"left":"right"}}>{h}</th>)}</tr></thead>
-                <tbody>{scenarioMonths.map(mo2=>{const d=calcDeal(av,sp,acqModel,mo2,galleryPct,vbPct2,artistPct,introPct);const isSelected=mo2===mo;return<tr key={mo2} style={{background:isSelected?"rgba(182,139,46,0.06)":"transparent"}}>
+                <thead><tr>{["Month","Paid In","VB Balance","Receives","Profit","ROI"].map(h=><th key={h} style={{fontSize:10,fontWeight:600,letterSpacing:1,textTransform:"uppercase",color:"#5a564e",padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.08)",whiteSpace:"nowrap",textAlign:h==="Month"?"left":"right"}}>{h}</th>)}</tr></thead>
+                <tbody>{scenarioMonths.map(mo2=>{const d=calcDeal(av,sp,acqModel,mo2,gPctNum,vPctNum,aPctNum,iPctNum,depositType,dPctNum);const isSelected=mo2===mo;return<tr key={mo2} style={{background:isSelected?"rgba(182,139,46,0.06)":"transparent"}}>
                   <td style={{padding:"9px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",fontWeight:isSelected?600:400,color:isSelected?"#b68b2e":"#e8e2d6"}}>Mo {mo2}{isSelected?<span style={{fontSize:9,marginLeft:4,color:"#b68b2e"}}>◆</span>:""}</td>
-                  <td style={{padding:"9px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",textAlign:"right",color:"#8a8477"}}>R {fmt(d.paid)}</td>
+                  <td style={{padding:"9px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",textAlign:"right",color:"#8a8477"}}>R {fmt(d.totalPaid)}</td>
                   <td style={{padding:"9px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",textAlign:"right",color:d.vbBalance>0?"#c45c4a":"#4a9e6b"}}>R {fmt(d.vbBalance)}</td>
                   <td style={{padding:"9px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",textAlign:"right",color:"#4a9e6b",fontWeight:600}}>R {fmt(d.colNet)}</td>
                   <td style={{padding:"9px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",textAlign:"right",color:d.colProfit>=0?"#4a9e6b":"#c45c4a"}}>R {fmt(d.colProfit)}</td>
