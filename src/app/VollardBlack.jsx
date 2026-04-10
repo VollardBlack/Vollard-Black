@@ -15,9 +15,9 @@ const PAGE_SIZE = 50;
 const fmt = (n) => Number(n||0).toLocaleString("en-ZA",{minimumFractionDigits:2,maximumFractionDigits:2});
 const uid = () => "VB"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const td = () => new Date().toISOString().slice(0,10);
-const SK = "vollard_black_v4";
-const TABLES = ["artworks","artists","collectors","schedules","payments","sales","reports"];
-const fresh = () => ({artworks:[],artists:[],collectors:[],schedules:[],payments:[],sales:[],reports:[]});
+const SK = "vollard_black_v5";
+const TABLES = ["artworks","artists","collectors","schedules","payments","sales","reports","buyers"];
+const fresh = () => ({artworks:[],artists:[],collectors:[],schedules:[],payments:[],sales:[],reports:[],buyers:[]});
 const loadLocal = () => { try { const d=JSON.parse(localStorage.getItem(SK)); return d?.artworks?d:fresh(); } catch{return fresh();} };
 
 // ─── Date / Window Helpers ───
@@ -30,22 +30,16 @@ const getGraceEnd = (dueDate) => {
   const d = new Date(dueDate);
   return new Date(d.getFullYear(), d.getMonth()+1, 7).toISOString().slice(0,10);
 };
-
-// Report window: end of month → 8th of next month, then locks
 const getReportWindow = (yearMonth) => {
   const [y,m] = yearMonth.split("-").map(Number);
   const lastDay = new Date(y, m, 0).getDate();
   const open = `${yearMonth}-${String(lastDay).padStart(2,"0")}`;
-  const lock = new Date(y, m, 8).toISOString().slice(0,10); // 8th of next month
+  const lock = new Date(y, m, 8).toISOString().slice(0,10);
   return { open, lock };
 };
 const isReportLocked = (yearMonth) => {
   const { lock } = getReportWindow(yearMonth);
   return td() > lock;
-};
-const isReportAvailable = (yearMonth) => {
-  const { open } = getReportWindow(yearMonth);
-  return td() >= open;
 };
 const getCurrentMonth = () => new Date().toISOString().slice(0,7);
 const getMonthLabel = (ym) => {
@@ -61,13 +55,10 @@ const computeStrikes = (schedule, payments) => {
   const paidMonths = new Set(paid.map(p=>p.monthNumber));
   const missedMonths = new Set((schedule.missedMonths||[]));
   let strikes = missedMonths.size;
-  // Also auto-detect from grace window
   for(let m=1; m<=Math.max(schedule.monthsPaid+2, 3); m++){
     const due = getNextDueDate(schedule.startDate, m);
     const grace = (schedule.graceOverride && schedule.graceMonth===m) ? schedule.graceOverride : getGraceEnd(due);
-    if(today > grace && !paidMonths.has(m) && !missedMonths.has(m)){
-      strikes++;
-    }
+    if(today > grace && !paidMonths.has(m) && !missedMonths.has(m)) strikes++;
   }
   strikes = Math.min(strikes, 3);
   let status = schedule.status;
@@ -83,118 +74,55 @@ const computeStrikes = (schedule, payments) => {
 // ─── Email Templates ───
 const monthLabel = () => new Date().toLocaleDateString("en-ZA",{month:"long",year:"numeric"});
 const TEMPLATES = {
-  upcoming: (name, artwork, amount, due) => ({
-    subject: `Vollard Black — Payment Reminder | ${monthLabel()}`,
-    body: `Dear ${name},\n\nThis is a friendly reminder that your payment of R ${fmt(amount)} for "${artwork}" is due on ${due}.\n\nPayment window: 25th – 7th of following month.\n\nKind regards,\nVollard Black\n${ADMIN_EMAIL}`
-  }),
-  missed: (name, artwork, amount) => ({
-    subject: `Vollard Black — Missed Payment | ${monthLabel()}`,
-    body: `Dear ${name},\n\nWe note that your payment of R ${fmt(amount)} for "${artwork}" has not been received.\n\nPlease arrange payment urgently to avoid escalation of your account.\n\nKind regards,\nVollard Black\n${ADMIN_EMAIL}`
-  }),
-  dispute: (name, artwork, amount) => ({
-    subject: `Vollard Black — Account In Dispute | ${monthLabel()}`,
-    body: `Dear ${name},\n\nDespite previous correspondence, your account for "${artwork}" now reflects two missed payments totalling R ${fmt(amount)}.\n\nYour account is In Dispute. Please contact us urgently.\n\nVollard Black\n${ADMIN_EMAIL}`
-  }),
-  cancelled: (name, artwork) => ({
-    subject: `Vollard Black — Agreement Cancellation Notice | ${monthLabel()}`,
-    body: `Dear ${name},\n\nWe regret that your acquisition agreement for "${artwork}" has been cancelled due to three consecutive missed payments.\n\nPlease contact us to discuss the return of the artwork and settlement of any outstanding amounts.\n\nVollard Black\n${ADMIN_EMAIL}`
-  }),
-  individual_missed: (name, artwork, amount) => ({
-    subject: `Missed Payment — ${artwork} | ${name}`,
-    body: `Dear ${name},\n\nYour payment of R ${fmt(amount)} for "${artwork}" is outstanding.\n\nPlease arrange payment at your earliest convenience.\n\nKind regards,\nVollard Black\n${ADMIN_EMAIL}`
-  }),
-  individual_dispute: (name, artwork, amount) => ({
-    subject: `Account In Dispute — ${artwork} | ${name}`,
-    body: `Dear ${name},\n\nYour account for "${artwork}" is now In Dispute with two missed payments totalling R ${fmt(amount)}.\n\nImmediate action required.\n\nVollard Black\n${ADMIN_EMAIL}`
-  }),
-  individual_cancelled: (name, artwork) => ({
-    subject: `Agreement Cancelled — ${artwork} | ${name}`,
-    body: `Dear ${name},\n\nYour acquisition agreement for "${artwork}" has been cancelled.\n\nPlease contact us urgently.\n\nVollard Black\n${ADMIN_EMAIL}`
-  }),
+  upcoming:(name,artwork,amount,due)=>({subject:`Vollard Black — Payment Reminder | ${monthLabel()}`,body:`Dear ${name},\n\nThis is a friendly reminder that your payment of R ${fmt(amount)} for "${artwork}" is due on ${due}.\n\nPayment window: 25th – 7th of following month.\n\nKind regards,\nVollard Black\n${ADMIN_EMAIL}`}),
+  missed:(name,artwork,amount)=>({subject:`Vollard Black — Missed Payment | ${monthLabel()}`,body:`Dear ${name},\n\nWe note that your payment of R ${fmt(amount)} for "${artwork}" has not been received.\n\nPlease arrange payment urgently to avoid escalation.\n\nKind regards,\nVollard Black\n${ADMIN_EMAIL}`}),
+  dispute:(name,artwork,amount)=>({subject:`Vollard Black — Account In Dispute | ${monthLabel()}`,body:`Dear ${name},\n\nYour account for "${artwork}" now reflects two missed payments totalling R ${fmt(amount)}.\n\nYour account is In Dispute. Please contact us urgently.\n\nVollard Black\n${ADMIN_EMAIL}`}),
+  cancelled:(name,artwork)=>({subject:`Vollard Black — Agreement Cancellation Notice | ${monthLabel()}`,body:`Dear ${name},\n\nYour acquisition agreement for "${artwork}" has been cancelled due to three consecutive missed payments.\n\nPlease contact us urgently.\n\nVollard Black\n${ADMIN_EMAIL}`}),
+  individual_missed:(name,artwork,amount)=>({subject:`Missed Payment — ${artwork} | ${name}`,body:`Dear ${name},\n\nYour payment of R ${fmt(amount)} for "${artwork}" is outstanding.\n\nPlease arrange payment at your earliest convenience.\n\nKind regards,\nVollard Black\n${ADMIN_EMAIL}`}),
+  individual_dispute:(name,artwork,amount)=>({subject:`Account In Dispute — ${artwork} | ${name}`,body:`Dear ${name},\n\nYour account for "${artwork}" is In Dispute with two missed payments totalling R ${fmt(amount)}.\n\nImmediate action required.\n\nVollard Black\n${ADMIN_EMAIL}`}),
+  individual_cancelled:(name,artwork)=>({subject:`Agreement Cancelled — ${artwork} | ${name}`,body:`Dear ${name},\n\nYour acquisition agreement for "${artwork}" has been cancelled.\n\nPlease contact us urgently.\n\nVollard Black\n${ADMIN_EMAIL}`}),
 };
-
-const openGmail = (toEmails, subject, body) => {
-  const bcc = [ADMIN_EMAIL, ...toEmails.slice(1)].filter(Boolean).join(",");
-  const to = toEmails[0]||"";
-  const url = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(to)}&bcc=${encodeURIComponent(bcc)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+const openGmail=(toEmails,subject,body)=>{
+  const bcc=[ADMIN_EMAIL,...toEmails.slice(1)].filter(Boolean).join(",");
+  const url=`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(toEmails[0]||"")}&bcc=${encodeURIComponent(bcc)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   window.open(url,"_blank");
 };
 
 // ─── PDF Generator ───
-const generatePDF = (report) => {
-  const snap = report.snapshot;
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
-<title>Vollard Black — ${getMonthLabel(report.month)}</title>
-<style>
-  body{font-family:Georgia,serif;color:#1a1a1a;max-width:900px;margin:0 auto;padding:40px;}
-  h1{font-size:28px;font-weight:300;letter-spacing:4px;margin-bottom:4px;}
-  h2{font-size:16px;font-weight:400;color:#8a6a1e;margin:28px 0 12px;border-bottom:1px solid #ddd;padding-bottom:6px;}
-  h3{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#666;margin:0 0 4px;}
-  .header{border-bottom:2px solid #b68b2e;padding-bottom:16px;margin-bottom:24px;}
-  .sub{font-size:13px;color:#666;letter-spacing:2px;}
-  .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px;}
-  .stat{background:#f9f7f3;border:1px solid #e8e0d0;border-radius:6px;padding:14px;text-align:center;}
-  .stat-val{font-size:22px;font-weight:600;color:#b68b2e;}
-  .stat-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#999;margin-top:4px;}
-  table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px;}
-  th{background:#f5f0e8;padding:8px 10px;text-align:left;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#666;border-bottom:1px solid #ddd;}
-  td{padding:8px 10px;border-bottom:1px solid #f0ece4;}
-  tr:hover td{background:#faf8f4;}
-  .gold{color:#b68b2e;font-weight:600;}
-  .green{color:#2d7a4a;font-weight:600;}
-  .red{color:#c45c4a;font-weight:600;}
-  .orange{color:#dc7828;font-weight:600;}
-  .footer{margin-top:40px;padding-top:16px;border-top:1px solid #ddd;font-size:11px;color:#999;display:flex;justify-content:space-between;}
-  .locked{background:#fff8f0;border:1px solid #f0d080;border-radius:6px;padding:10px 16px;font-size:12px;color:#8a6a1e;margin-bottom:16px;}
-</style></head><body>
-<div class="header">
-  <h1>VOLLARD <span style="color:#b68b2e">BLACK</span></h1>
-  <div class="sub">Monthly Report — ${getMonthLabel(report.month)}</div>
-  <div style="font-size:11px;color:#999;margin-top:6px;">Generated: ${report.generatedAt} · ${report.locked?"LOCKED — Final":"Draft — Editable until 8th"}</div>
-</div>
+const generatePDF=(report)=>{
+  const snap=report.snapshot;
+  const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Vollard Black — ${getMonthLabel(report.month)}</title>
+<style>body{font-family:Georgia,serif;color:#1a1a1a;max-width:900px;margin:0 auto;padding:40px;}h1{font-size:28px;font-weight:300;letter-spacing:4px;margin-bottom:4px;}h2{font-size:16px;font-weight:400;color:#8a6a1e;margin:28px 0 12px;border-bottom:1px solid #ddd;padding-bottom:6px;}.header{border-bottom:2px solid #b68b2e;padding-bottom:16px;margin-bottom:24px;}.sub{font-size:13px;color:#666;letter-spacing:2px;}.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px;}.stat{background:#f9f7f3;border:1px solid #e8e0d0;border-radius:6px;padding:14px;text-align:center;}.stat-val{font-size:22px;font-weight:600;color:#b68b2e;}.stat-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#999;margin-top:4px;}table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px;}th{background:#f5f0e8;padding:8px 10px;text-align:left;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#666;border-bottom:1px solid #ddd;}td{padding:8px 10px;border-bottom:1px solid #f0ece4;}.gold{color:#b68b2e;font-weight:600;}.green{color:#2d7a4a;font-weight:600;}.red{color:#c45c4a;font-weight:600;}.footer{margin-top:40px;padding-top:16px;border-top:1px solid #ddd;font-size:11px;color:#999;display:flex;justify-content:space-between;}</style></head><body>
+<div class="header"><h1>VOLLARD <span style="color:#b68b2e">BLACK</span></h1><div class="sub">Monthly Report — ${getMonthLabel(report.month)}</div><div style="font-size:11px;color:#999;margin-top:6px;">Generated: ${report.generatedAt} · ${report.locked?"LOCKED — Final":"Draft"}</div></div>
 <div class="grid">
-  <div class="stat"><div class="stat-val green">${snap.activeCount||0}</div><div class="stat-lbl">Active</div></div>
-  <div class="stat"><div class="stat-val" style="color:#e6be32">${snap.chasingCount||0}</div><div class="stat-lbl">Chasing</div></div>
-  <div class="stat"><div class="stat-val orange">${snap.disputeCount||0}</div><div class="stat-lbl">In Dispute</div></div>
-  <div class="stat"><div class="stat-val red">${snap.cancelledCount||0}</div><div class="stat-lbl">Cancelled</div></div>
-  <div class="stat"><div class="stat-val gold">R ${fmt(snap.totalCollected||0)}</div><div class="stat-lbl">Collected</div></div>
+<div class="stat"><div class="stat-val green">${snap.activeCount||0}</div><div class="stat-lbl">Active</div></div>
+<div class="stat"><div class="stat-val" style="color:#e6be32">${snap.chasingCount||0}</div><div class="stat-lbl">Chasing</div></div>
+<div class="stat"><div class="stat-val" style="color:#dc7828">${snap.disputeCount||0}</div><div class="stat-lbl">In Dispute</div></div>
+<div class="stat"><div class="stat-val red">${snap.cancelledCount||0}</div><div class="stat-lbl">Cancelled</div></div>
+<div class="stat"><div class="stat-val gold">R ${fmt(snap.totalCollected||0)}</div><div class="stat-lbl">Collected</div></div>
 </div>
 <h2>Payments Received</h2>
-${snap.payments&&snap.payments.length>0?`<table><thead><tr><th>Collector</th><th>Artwork</th><th>Month</th><th>Method</th><th style="text-align:right">Amount</th></tr></thead><tbody>
-${snap.payments.map(p=>`<tr><td>${p.collectorName}</td><td>${p.artworkTitle}</td><td>Mo ${p.monthNumber}</td><td>${p.method}</td><td style="text-align:right" class="gold">R ${fmt(p.amount)}</td></tr>`).join("")}
-<tr><td colspan="4" style="font-weight:600;padding-top:12px">Total Collected</td><td style="text-align:right;font-weight:700" class="green">R ${fmt(snap.totalCollected||0)}</td></tr>
-</tbody></table>`:`<p style="color:#999;font-size:13px">No payments received this month.</p>`}
-${snap.chasing&&snap.chasing.length>0?`<h2>Chasing (Strike 1)</h2><table><thead><tr><th>Collector</th><th>Artwork</th><th>Email</th><th>Mobile</th><th>Strikes</th><th style="text-align:right">Outstanding</th></tr></thead><tbody>
-${snap.chasing.map(s=>`<tr><td>${s.collectorName}</td><td>${s.artworkTitle}</td><td>${s.collectorEmail||"—"}</td><td>${s.mobile||"—"}</td><td class="red">${s.strikes}</td><td style="text-align:right" class="red">R ${fmt((s.totalDue||0)-(s.totalPaid||0))}</td></tr>`).join("")}
-</tbody></table>`:""}
-${snap.dispute&&snap.dispute.length>0?`<h2>In Dispute (Strike 2)</h2><table><thead><tr><th>Collector</th><th>Artwork</th><th>Email</th><th>Mobile</th><th>Strikes</th><th style="text-align:right">Outstanding</th></tr></thead><tbody>
-${snap.dispute.map(s=>`<tr><td>${s.collectorName}</td><td>${s.artworkTitle}</td><td>${s.collectorEmail||"—"}</td><td>${s.mobile||"—"}</td><td class="red">${s.strikes}</td><td style="text-align:right" class="red">R ${fmt((s.totalDue||0)-(s.totalPaid||0))}</td></tr>`).join("")}
-</tbody></table>`:""}
-${snap.cancelled&&snap.cancelled.length>0?`<h2>Cancelled (Strike 3)</h2><table><thead><tr><th>Collector</th><th>Artwork</th><th>Email</th><th>Mobile</th><th style="text-align:right">Outstanding</th></tr></thead><tbody>
-${snap.cancelled.map(s=>`<tr><td>${s.collectorName}</td><td>${s.artworkTitle}</td><td>${s.collectorEmail||"—"}</td><td>${s.mobile||"—"}</td><td style="text-align:right" class="red">R ${fmt((s.totalDue||0)-(s.totalPaid||0))}</td></tr>`).join("")}
-</tbody></table>`:""}
-${snap.salesPayout&&snap.salesPayout.length>0?`<h2>Sales & Payout Summary</h2><table><thead><tr><th>Artwork</th><th>Collector</th><th style="text-align:right">Sale Price</th><th style="text-align:right">Gallery 40%</th><th style="text-align:right">VB 30%</th><th style="text-align:right">Artist 30%</th></tr></thead><tbody>
-${snap.salesPayout.map(s=>`<tr><td>${s.artworkTitle}</td><td>${s.collectorName}</td><td style="text-align:right">R ${fmt(s.salePrice)}</td><td style="text-align:right" class="gold">R ${fmt(s.galleryShare)}</td><td style="text-align:right" class="gold">R ${fmt(s.vbNet)}</td><td style="text-align:right" class="gold">R ${fmt(s.artistShare)}</td></tr>`).join("")}
-<tr style="font-weight:700"><td colspan="2">Totals</td>
-<td style="text-align:right">R ${fmt(snap.salesPayout.reduce((s,x)=>s+x.salePrice,0))}</td>
-<td style="text-align:right" class="gold">R ${fmt(snap.salesPayout.reduce((s,x)=>s+x.galleryShare,0))}</td>
-<td style="text-align:right" class="gold">R ${fmt(snap.salesPayout.reduce((s,x)=>s+x.vbNet,0))}</td>
-<td style="text-align:right" class="gold">R ${fmt(snap.salesPayout.reduce((s,x)=>s+x.artistShare,0))}</td>
-</tr></tbody></table>`:""}
+${snap.payments&&snap.payments.length>0?`<table><thead><tr><th>Collector</th><th>Artwork</th><th>Month</th><th>Method</th><th style="text-align:right">Amount</th></tr></thead><tbody>${snap.payments.map(p=>`<tr><td>${p.collectorName}</td><td>${p.artworkTitle}</td><td>Mo ${p.monthNumber}</td><td>${p.method}</td><td style="text-align:right" class="gold">R ${fmt(p.amount)}</td></tr>`).join("")}<tr><td colspan="4" style="font-weight:700;padding-top:12px">Total Collected</td><td style="text-align:right;font-weight:700" class="green">R ${fmt(snap.totalCollected||0)}</td></tr></tbody></table>`:`<p style="color:#999;font-size:13px">No payments received this month.</p>`}
+${snap.chasing&&snap.chasing.length>0?`<h2>Chasing (Strike 1)</h2><table><thead><tr><th>Collector</th><th>Artwork</th><th>Email</th><th>Mobile</th><th style="text-align:right">Outstanding</th></tr></thead><tbody>${snap.chasing.map(s=>`<tr><td>${s.collectorName}</td><td>${s.artworkTitle}</td><td>${s.collectorEmail||"—"}</td><td>${s.mobile||"—"}</td><td style="text-align:right" class="red">R ${fmt((s.totalDue||0)-(s.totalPaid||0))}</td></tr>`).join("")}</tbody></table>`:""}
+${snap.dispute&&snap.dispute.length>0?`<h2>In Dispute (Strike 2)</h2><table><thead><tr><th>Collector</th><th>Artwork</th><th>Email</th><th>Mobile</th><th style="text-align:right">Outstanding</th></tr></thead><tbody>${snap.dispute.map(s=>`<tr><td>${s.collectorName}</td><td>${s.artworkTitle}</td><td>${s.collectorEmail||"—"}</td><td>${s.mobile||"—"}</td><td style="text-align:right" class="red">R ${fmt((s.totalDue||0)-(s.totalPaid||0))}</td></tr>`).join("")}</tbody></table>`:""}
+${snap.cancelled&&snap.cancelled.length>0?`<h2>Cancelled (Strike 3)</h2><table><thead><tr><th>Collector</th><th>Artwork</th><th>Email</th><th>Mobile</th><th style="text-align:right">Outstanding</th></tr></thead><tbody>${snap.cancelled.map(s=>`<tr><td>${s.collectorName}</td><td>${s.artworkTitle}</td><td>${s.collectorEmail||"—"}</td><td>${s.mobile||"—"}</td><td style="text-align:right" class="red">R ${fmt((s.totalDue||0)-(s.totalPaid||0))}</td></tr>`).join("")}</tbody></table>`:""}
+${snap.salesPayout&&snap.salesPayout.length>0?`<h2>Sales & Payout Summary</h2><table><thead><tr><th>Artwork</th><th>Collector</th><th>Buyer</th><th style="text-align:right">Sale Price</th><th style="text-align:right">Gallery 40%</th><th style="text-align:right">VB 30%</th><th style="text-align:right">Artist 30%</th></tr></thead><tbody>${snap.salesPayout.map(s=>`<tr><td>${s.artworkTitle}</td><td>${s.collectorName}</td><td>${s.buyerName||"—"}</td><td style="text-align:right">R ${fmt(s.salePrice)}</td><td style="text-align:right" class="gold">R ${fmt(s.galleryShare)}</td><td style="text-align:right" class="gold">R ${fmt(s.vbNet)}</td><td style="text-align:right" class="gold">R ${fmt(s.artistShare)}</td></tr>`).join("")}</tbody></table>`:""}
 <div class="footer"><span>VOLLARD BLACK — Fine Art Acquisitions</span><span>${ADMIN_EMAIL}</span><span>© ${new Date().getFullYear()}</span></div>
 </body></html>`;
-  const w = window.open("","_blank");
-  w.document.write(html);
-  w.document.close();
-  w.focus();
+  const w=window.open("","_blank");
+  w.document.write(html);w.document.close();w.focus();
   setTimeout(()=>w.print(),800);
 };
+
+// ─── Buyer name helper ───
+const buyerName=(b)=>b?(b.type==="company"?b.companyName:`${b.firstName} ${b.lastName}`):"";
 
 // ─── Icons ───
 const I={
   dash:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
   art:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>,
   ppl:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>,
+  buyer:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75"/><path d="M21 21v-2a4 4 0 00-3-3.87"/></svg>,
   calc:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/></svg>,
   bill:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>,
   sale:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>,
@@ -212,6 +140,7 @@ const I={
   chevron:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>,
   lock:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>,
   dl:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+  link:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>,
 };
 
 const stC={Available:{bg:"rgba(74,158,107,0.12)",c:"#4a9e6b"},Reserved:{bg:"rgba(182,139,46,0.12)",c:"#b68b2e"},"In Gallery":{bg:"rgba(100,140,200,0.12)",c:"#648cc8"},Sold:{bg:"rgba(196,92,74,0.12)",c:"#c45c4a"}};
@@ -312,20 +241,16 @@ export default function App(){
       up("artworks",p=>p.map(a=>a.id===artworkId?{...a,status:"Reserved"}:a));
       dbUp("artworks",artworkId,{status:"Reserved"});
     },
-
     recordPayment:(schedule,monthNumber,method,amount)=>{
       const payment={id:uid(),scheduleId:schedule.id,collectorId:schedule.collectorId,collectorName:schedule.collectorName,artworkId:schedule.artworkId,artworkTitle:schedule.artworkTitle,monthNumber,amount,method,date:td(),createdAt:td()};
       up("payments",p=>[...p,payment]);
-      const newPaid=schedule.monthsPaid+1;
-      const newTotal=(schedule.totalPaid||0)+amount;
+      const newPaid=schedule.monthsPaid+1;const newTotal=(schedule.totalPaid||0)+amount;
       const newStatus=newPaid>=schedule.termMonths?"Complete":"Active";
-      // Remove from missedMonths if it was marked missed
       const newMissed=(schedule.missedMonths||[]).filter(m=>m!==monthNumber);
       up("schedules",p=>p.map(s=>s.id===schedule.id?{...s,monthsPaid:newPaid,totalPaid:newTotal,status:newStatus,strikes:Math.max(0,(s.strikes||0)-1),missedMonths:newMissed}:s));
       dbUp("schedules",schedule.id,{monthsPaid:newPaid,totalPaid:newTotal,status:newStatus,missedMonths:newMissed});
       if(newStatus==="Complete"){up("artworks",p=>p.map(a=>a.id===schedule.artworkId?{...a,status:"In Gallery"}:a));dbUp("artworks",schedule.artworkId,{status:"In Gallery"});}
     },
-
     recordMissed:(schedule,monthNumber)=>{
       const newMissed=[...new Set([...(schedule.missedMonths||[]),monthNumber])];
       const newStrikes=Math.min(newMissed.length,3);
@@ -334,26 +259,15 @@ export default function App(){
       dbUp("schedules",schedule.id,{missedMonths:newMissed,strikes:newStrikes,status:newStatus});
       if(newStatus==="Cancelled"){up("artworks",p=>p.map(a=>a.id===schedule.artworkId?{...a,status:"In Dispute"}:a));dbUp("artworks",schedule.artworkId,{status:"In Dispute"});}
     },
-
-    overrideSchedule:(scheduleId,note)=>{
-      up("schedules",p=>p.map(s=>s.id===scheduleId?{...s,status:"Active",strikes:0,missedMonths:[],overrideNote:note}:s));
-      dbUp("schedules",scheduleId,{status:"Active",strikes:0,missedMonths:[],overrideNote:note});
-    },
-
-    setGraceException:(scheduleId,graceDate,month,note)=>{
-      up("schedules",p=>p.map(s=>s.id===scheduleId?{...s,graceOverride:graceDate,graceMonth:month,graceNote:note}:s));
-      dbUp("schedules",scheduleId,{graceOverride:graceDate,graceMonth:month,graceNote:note});
-    },
-
+    overrideSchedule:(scheduleId,note)=>{up("schedules",p=>p.map(s=>s.id===scheduleId?{...s,status:"Active",strikes:0,missedMonths:[],overrideNote:note}:s));dbUp("schedules",scheduleId,{status:"Active",strikes:0,missedMonths:[],overrideNote:note});},
+    setGraceException:(scheduleId,graceDate,month,note)=>{up("schedules",p=>p.map(s=>s.id===scheduleId?{...s,graceOverride:graceDate,graceMonth:month,graceNote:note}:s));dbUp("schedules",scheduleId,{graceOverride:graceDate,graceMonth:month,graceNote:note});},
     unlinkArtwork:async(scheduleId)=>{
-      const sched=data.schedules.find(s=>s.id===scheduleId);
-      if(!sched)return;
+      const sched=data.schedules.find(s=>s.id===scheduleId);if(!sched)return;
       up("schedules",p=>p.filter(s=>s.id!==scheduleId));
       up("collectors",p=>p.map(c=>{if(c.id!==sched.collectorId)return c;return{...c,linkedArtworks:(c.linkedArtworks||[]).filter(l=>l.artworkId!==sched.artworkId)};}));
       const hasSale=(data.sales||[]).some(s=>s.artworkId===sched.artworkId);
       if(!hasSale){up("artworks",p=>p.map(a=>a.id===sched.artworkId?{...a,status:"Available"}:a));dbUp("artworks",sched.artworkId,{status:"Available"});}
     },
-
     forceDeleteArtwork:async(artworkId)=>{
       const schedIds=(data.schedules||[]).filter(s=>s.artworkId===artworkId).map(s=>s.id);
       const payIds=(data.payments||[]).filter(p=>p.artworkId===artworkId).map(p=>p.id);
@@ -362,7 +276,6 @@ export default function App(){
       up("collectors",p=>p.map(c=>({...c,linkedArtworks:(c.linkedArtworks||[]).filter(l=>l.artworkId!==artworkId)})));
       up("artworks",p=>p.filter(a=>a.id!==artworkId));
     },
-
     recordSale:(saleData)=>{
       const sale={...saleData,id:uid(),date:td()};
       up("sales",p=>[...p,sale]);
@@ -370,42 +283,43 @@ export default function App(){
       dbUp("artworks",saleData.artworkId,{status:"Sold"});
       up("schedules",p=>p.map(s=>{if(s.artworkId===saleData.artworkId&&s.status!=="Complete"){dbUp("schedules",s.id,{status:"Complete"});return{...s,status:"Complete"};}return s;}));
     },
-
     deleteSale:(saleId)=>{
-      const sale=(data.sales||[]).find(s=>s.id===saleId);
-      if(!sale)return;
+      const sale=(data.sales||[]).find(s=>s.id===saleId);if(!sale)return;
       up("sales",p=>p.filter(s=>s.id!==saleId));
       const hasCollector=(data.collectors||[]).some(c=>(c.linkedArtworks||[]).some(l=>l.artworkId===sale.artworkId));
-      const ns=hasCollector?"Reserved":"Available";
-      up("artworks",p=>p.map(a=>a.id===sale.artworkId?{...a,status:ns}:a));
-      dbUp("artworks",sale.artworkId,{status:ns});
+      up("artworks",p=>p.map(a=>a.id===sale.artworkId?{...a,status:hasCollector?"Reserved":"Available"}:a));
+      dbUp("artworks",sale.artworkId,{status:hasCollector?"Reserved":"Available"});
     },
-
-    // Generate / regenerate monthly report snapshot
-    generateReport:(yearMonth,schedules,payments,sales,collectors)=>{
+    // Buyer actions
+    saveBuyer:(buyer)=>{
+      if(buyer.id)up("buyers",p=>p.map(b=>b.id===buyer.id?buyer:b));
+      else up("buyers",p=>[{...buyer,id:uid(),createdAt:td()},...p]);
+    },
+    deleteBuyer:(id)=>{up("buyers",p=>p.filter(b=>b.id!==id));},
+    // Generate report — always allowed, warning if locked
+    generateReport:(yearMonth)=>{
       const locked=isReportLocked(yearMonth);
       const existing=(data.reports||[]).find(r=>r.month===yearMonth);
       if(existing&&locked){
-        if(!confirm(`The ${getMonthLabel(yearMonth)} report window has closed (past 8th). This report is locked.\n\nDo you want to override and regenerate anyway? This should only be done in exceptional circumstances.`))return;
+        if(!confirm(`The ${getMonthLabel(yearMonth)} report window has closed (past 8th).\n\nThis report is locked. Override and regenerate anyway?\n\nOnly do this in exceptional circumstances.`))return;
       }
-      // Build frozen snapshot
-      const monthPayments=payments.filter(p=>(p.date||"").startsWith(yearMonth));
-      const monthSales=sales.filter(s=>(s.date||"").startsWith(yearMonth));
+      const monthPayments=(data.payments||[]).filter(p=>(p.date||"").startsWith(yearMonth));
+      const monthSales=(data.sales||[]).filter(s=>(s.date||"").startsWith(yearMonth));
       const snap={
-        activeCount:schedules.filter(s=>s.status==="Active").length,
-        chasingCount:schedules.filter(s=>s.status==="Chasing").length,
-        disputeCount:schedules.filter(s=>s.status==="In Dispute").length,
-        cancelledCount:schedules.filter(s=>s.status==="Cancelled").length,
+        activeCount:liveSchedules.filter(s=>s.status==="Active").length,
+        chasingCount:liveSchedules.filter(s=>s.status==="Chasing").length,
+        disputeCount:liveSchedules.filter(s=>s.status==="In Dispute").length,
+        cancelledCount:liveSchedules.filter(s=>s.status==="Cancelled").length,
         totalCollected:monthPayments.reduce((s,p)=>s+(p.amount||0),0),
         payments:monthPayments,
-        chasing:schedules.filter(s=>s.status==="Chasing").map(s=>{const col=collectors.find(c=>c.id===s.collectorId);return{...s,mobile:col?.mobile||""};}),
-        dispute:schedules.filter(s=>s.status==="In Dispute").map(s=>{const col=collectors.find(c=>c.id===s.collectorId);return{...s,mobile:col?.mobile||""};}),
-        cancelled:schedules.filter(s=>s.status==="Cancelled").map(s=>{const col=collectors.find(c=>c.id===s.collectorId);return{...s,mobile:col?.mobile||""};}),
+        chasing:liveSchedules.filter(s=>s.status==="Chasing").map(s=>{const col=data.collectors.find(c=>c.id===s.collectorId);return{...s,mobile:col?.mobile||""};}),
+        dispute:liveSchedules.filter(s=>s.status==="In Dispute").map(s=>{const col=data.collectors.find(c=>c.id===s.collectorId);return{...s,mobile:col?.mobile||""};}),
+        cancelled:liveSchedules.filter(s=>s.status==="Cancelled").map(s=>{const col=data.collectors.find(c=>c.id===s.collectorId);return{...s,mobile:col?.mobile||""};}),
         salesPayout:monthSales,
       };
       const report={id:existing?.id||uid(),month:yearMonth,generatedAt:td(),locked,snapshot:snap,totalCollected:snap.totalCollected,activeCount:snap.activeCount,chasingCount:snap.chasingCount,disputeCount:snap.disputeCount,cancelledCount:snap.cancelledCount};
-      if(existing){up("reports",p=>p.map(r=>r.month===yearMonth?report:r));}
-      else{up("reports",p=>[...p,report]);}
+      if(existing)up("reports",p=>p.map(r=>r.month===yearMonth?report:r));
+      else up("reports",p=>[...p,report]);
     },
   };
 
@@ -414,13 +328,24 @@ export default function App(){
     {id:"catalogue",label:"Art Catalogue",icon:I.art},
     {id:"artists",label:"Artists",icon:I.star},
     {id:"collectors",label:"Collectors",icon:I.ppl},
+    {id:"buyers",label:"Buyers",icon:I.buyer},
     {id:"calculator",label:"Calculator",icon:I.calc},
     {id:"invoices",label:"Invoicing",icon:I.bill},
     {id:"sales",label:"Sales",icon:I.sale},
     {id:"reports",label:"Reports",icon:I.report},
   ];
 
-  const d={artworks:Array.isArray(data.artworks)?data.artworks:[],artists:Array.isArray(data.artists)?data.artists:[],collectors:Array.isArray(data.collectors)?data.collectors:[],schedules:liveSchedules,payments:Array.isArray(data.payments)?data.payments:[],sales:Array.isArray(data.sales)?data.sales:[],reports:Array.isArray(data.reports)?data.reports:[]};
+  const d={
+    artworks:Array.isArray(data.artworks)?data.artworks:[],
+    artists:Array.isArray(data.artists)?data.artists:[],
+    collectors:Array.isArray(data.collectors)?data.collectors:[],
+    buyers:Array.isArray(data.buyers)?data.buyers:[],
+    schedules:liveSchedules,
+    payments:Array.isArray(data.payments)?data.payments:[],
+    sales:Array.isArray(data.sales)?data.sales:[],
+    reports:Array.isArray(data.reports)?data.reports:[],
+  };
+
   const navTo=(p,filter)=>{setPage(p);if(filter)setInvoiceFilter(filter);setSb(false);};
 
   const pg={
@@ -428,6 +353,7 @@ export default function App(){
     catalogue:<Catalogue data={d} up={up} actions={actions}/>,
     artists:<ArtistsPage data={d} up={up}/>,
     collectors:<CollectorsPage data={d} up={up} actions={actions}/>,
+    buyers:<BuyersPage data={d} actions={actions}/>,
     calculator:<CalcPage/>,
     invoices:<InvoicePage data={d} actions={actions} initialFilter={invoiceFilter} clearFilter={()=>setInvoiceFilter(null)}/>,
     sales:<SalesPage data={d} actions={actions}/>,
@@ -444,7 +370,7 @@ export default function App(){
           <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:22,fontWeight:300,letterSpacing:6,color:"#f5f0e8"}}>VOLLARD <span style={{color:"#b68b2e"}}>BLACK</span></div>
           <div style={{fontSize:9,letterSpacing:3,textTransform:"uppercase",color:"#5a564e",marginTop:4}}>Fine Art Acquisitions</div>
         </div>
-        <nav style={{flex:1,padding:"16px 12px"}}>
+        <nav style={{flex:1,padding:"16px 12px",overflowY:"auto"}}>
           {nav.map(n=>{const alertCount=n.id==="invoices"?chasing.length+inDispute.length+cancelled.length:0;return<button key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:"12px 14px",background:page===n.id?"rgba(182,139,46,0.1)":"transparent",border:"none",borderRadius:10,color:page===n.id?"#b68b2e":"#8a8477",fontSize:13,fontWeight:page===n.id?600:400,cursor:"pointer",marginBottom:4,fontFamily:"DM Sans,sans-serif"}}>{n.icon}<span style={{flex:1,textAlign:"left"}}>{n.label}</span>{alertCount>0&&<span style={{fontSize:10,background:"rgba(196,92,74,0.2)",color:"#c45c4a",padding:"2px 6px",borderRadius:8,fontWeight:700}}>{alertCount}</span>}</button>;})}
         </nav>
         <div style={{padding:"16px 24px",borderTop:"1px solid rgba(182,139,46,0.08)",fontSize:10,color:"#5a564e",letterSpacing:2}}>
@@ -479,8 +405,13 @@ function Dashboard({data,navTo,chasing,inDispute,cancelled}){
     {inDispute.length>0&&<Banner type="orange" count={inDispute.length} label="accounts in dispute" onClick={()=>navTo("invoices","In Dispute")}/>}
     {chasing.length>0&&<Banner type="yellow" count={chasing.length} label="collectors being chased for payment" onClick={()=>navTo("invoices","Chasing")}/>}
     {daysTo25>0&&daysTo25<=7&&<div style={{padding:"12px 18px",background:"rgba(74,158,107,0.08)",border:"1px solid rgba(74,158,107,0.2)",borderRadius:10,marginBottom:10,fontSize:13,color:"#4a9e6b"}}>📅 Payment window opens in {daysTo25} days (25th). Consider sending upcoming payment reminders.</div>}
-    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(155px,1fr))",gap:14,marginBottom:28}}>
-      <Stat label="Artworks" value={data.artworks.length}/><Stat label="Active Schedules" value={data.schedules.filter(s=>s.status==="Active").length} green/><Stat label="Collectors" value={data.collectors.length}/><Stat label="Sales" value={data.sales.length} gold/><Stat label="Payments In" value={"R "+fmt(totalPay)} green/><Stat label="Alerts" value={chasing.length+inDispute.length+cancelled.length} orange/>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(145px,1fr))",gap:14,marginBottom:28}}>
+      <Stat label="Artworks" value={data.artworks.length}/>
+      <Stat label="Active Schedules" value={data.schedules.filter(s=>s.status==="Active").length} green/>
+      <Stat label="Collectors" value={data.collectors.length}/>
+      <Stat label="Buyers" value={data.buyers.length} gold/>
+      <Stat label="Sales" value={data.sales.length} gold/>
+      <Stat label="Collected" value={"R "+fmt(totalPay)} green/>
     </div>
     <Card style={{marginBottom:20}}>
       <div style={{fontSize:14,fontWeight:600,color:"#f5f0e8",marginBottom:16}}>Monthly Revenue</div>
@@ -490,16 +421,23 @@ function Dashboard({data,navTo,chasing,inDispute,cancelled}){
       </div>}
     </Card>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
-      <Card><div style={{fontSize:14,fontWeight:600,color:"#f5f0e8",marginBottom:16}}>Active Schedules</div>
+      <Card>
+        <div style={{fontSize:14,fontWeight:600,color:"#f5f0e8",marginBottom:16}}>Active Schedules</div>
         {upcomingSchedules.length===0?<p style={{fontSize:13,color:"#5a564e"}}>No active schedules.</p>:upcomingSchedules.map(s=>{const pct=s.termMonths>0?(s.monthsPaid/s.termMonths)*100:0;return<div key={s.id} style={{padding:"10px 0",borderBottom:"1px solid rgba(182,139,46,0.04)"}}><div style={{display:"flex",justifyContent:"space-between",fontSize:13}}><span style={{fontWeight:500}}>{s.collectorName}</span><span style={{color:"#b68b2e",fontWeight:600}}>R {fmt(s.monthlyAmount)}/mo</span></div><div style={{fontSize:11,color:"#5a564e",marginBottom:4}}>{s.artworkTitle} · Month {s.monthsPaid} of {s.termMonths}</div><ProgressBar pct={pct}/></div>;})}
       </Card>
-      <Card><div style={{fontSize:14,fontWeight:600,color:"#f5f0e8",marginBottom:16}}>Recent Activity</div>
+      <Card>
+        <div style={{fontSize:14,fontWeight:600,color:"#f5f0e8",marginBottom:16}}>Recent Activity</div>
         {data.sales.length===0&&data.payments.length===0?<p style={{fontSize:13,color:"#5a564e"}}>No activity yet.</p>:
-        [...data.sales.slice(-3).reverse().map(s=><div key={s.id} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid rgba(182,139,46,0.04)",fontSize:13}}><span>Sale: {s.artworkTitle}</span><span style={{color:"#4a9e6b",fontWeight:600}}>R {fmt(s.salePrice)}</span></div>),
-        ...data.payments.slice(-4).reverse().map(p=><div key={p.id} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid rgba(182,139,46,0.04)",fontSize:13}}><span>{p.collectorName} · Mo {p.monthNumber}</span><span style={{color:"#b68b2e",fontWeight:600}}>R {fmt(p.amount)}</span></div>)]}
+        [...data.sales.slice(-3).reverse().map(s=><div key={s.id} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid rgba(182,139,46,0.04)",fontSize:13}}><div><div>{s.artworkTitle}</div>{s.buyerName&&<div style={{fontSize:11,color:"#5a564e"}}>Buyer: {s.buyerName}</div>}</div><span style={{color:"#4a9e6b",fontWeight:600}}>R {fmt(s.salePrice)}</span></div>),
+        ...data.payments.slice(-3).reverse().map(p=><div key={p.id} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid rgba(182,139,46,0.04)",fontSize:13}}><span>{p.collectorName} · Mo {p.monthNumber}</span><span style={{color:"#b68b2e",fontWeight:600}}>R {fmt(p.amount)}</span></div>)]}
       </Card>
     </div>
-    <div style={{display:"flex",gap:10,marginTop:24}}><Btn gold onClick={()=>navTo("catalogue")}>{I.plus} Add Artwork</Btn><Btn ghost onClick={()=>navTo("collectors")}>{I.plus} Add Collector</Btn><Btn ghost onClick={()=>navTo("calculator")}>Calculator</Btn><Btn ghost onClick={()=>navTo("reports")}>{I.report} Reports</Btn></div>
+    <div style={{display:"flex",gap:10,marginTop:24,flexWrap:"wrap"}}>
+      <Btn gold onClick={()=>navTo("catalogue")}>{I.plus} Add Artwork</Btn>
+      <Btn ghost onClick={()=>navTo("collectors")}>{I.plus} Add Collector</Btn>
+      <Btn ghost onClick={()=>navTo("buyers")}>{I.plus} Add Buyer</Btn>
+      <Btn ghost onClick={()=>navTo("reports")}>{I.report} Reports</Btn>
+    </div>
   </div>);
 }
 
@@ -511,7 +449,7 @@ function Catalogue({data,up,actions}){
   const blank={id:"",title:"",artist:"",artistId:"",medium:"",dimensions:"",year:"",recommendedPrice:"",imageUrl:"",status:"Available",description:"",galleryName:"",insuranceMonthly:""};
   const save=(a)=>{if(a.id)up("artworks",p=>p.map(x=>x.id===a.id?a:x));else up("artworks",p=>[{...a,id:uid(),createdAt:td()},...p]);setModal(null);};
   const f=data.artworks.filter(a=>(a.title+a.artist+a.status).toLowerCase().includes(search.toLowerCase()));
-  const handleDelete=(art)=>{const hasSched=(data.schedules||[]).some(s=>s.artworkId===art.id);const hasSale=(data.sales||[]).some(s=>s.artworkId===art.id);if(hasSched||hasSale)setDelModal(art);else{if(confirm("Delete this artwork?"))up("artworks",p=>p.filter(a=>a.id!==art.id));}};
+  const handleDelete=(art)=>{const has=(data.schedules||[]).some(s=>s.artworkId===art.id)||(data.sales||[]).some(s=>s.artworkId===art.id);if(has)setDelModal(art);else{if(confirm("Delete this artwork?"))up("artworks",p=>p.filter(a=>a.id!==art.id));}};
   return(<div>
     <PT title="Art Catalogue" sub={`${data.artworks.length} artworks`} action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Add Artwork</Btn>}/>
     <Card>
@@ -528,7 +466,7 @@ function Catalogue({data,up,actions}){
       ]} data={f}/>}
     </Card>
     {modal&&<ArtModal art={modal==="add"?blank:modal} artists={data.artists||[]} onSave={save} onClose={()=>setModal(null)}/>}
-    {delModal&&<Modal title="Force Delete Artwork" onClose={()=>setDelModal(null)}><p style={{fontSize:14,color:"#e8e2d6",marginBottom:8}}>This artwork has active schedules or sales history.</p><p style={{fontSize:13,color:"#8a8477",marginBottom:20}}>Deleting will permanently remove the artwork, all payment schedules, and all payment records. This cannot be undone.</p><div style={{display:"flex",gap:10,justifyContent:"flex-end"}}><Btn ghost onClick={()=>setDelModal(null)}>Cancel</Btn><Btn danger onClick={()=>{actions.forceDeleteArtwork(delModal.id);setDelModal(null);}}>Force Delete Everything</Btn></div></Modal>}
+    {delModal&&<Modal title="Force Delete Artwork" onClose={()=>setDelModal(null)}><p style={{fontSize:14,color:"#e8e2d6",marginBottom:8}}>This artwork has active schedules or sales history.</p><p style={{fontSize:13,color:"#8a8477",marginBottom:20}}>Deleting will permanently remove the artwork, all payment schedules, and all payment records. Cannot be undone.</p><div style={{display:"flex",gap:10,justifyContent:"flex-end"}}><Btn ghost onClick={()=>setDelModal(null)}>Cancel</Btn><Btn danger onClick={()=>{actions.forceDeleteArtwork(delModal.id);setDelModal(null);}}>Force Delete Everything</Btn></div></Modal>}
   </div>);
 }
 
@@ -616,7 +554,7 @@ function CollectorsPage({data,up,actions}){
   const gn=(i)=>i.type==="company"?i.companyName:`${i.firstName} ${i.lastName}`;
   const f=data.collectors.filter(i=>gn(i).toLowerCase().includes(search.toLowerCase()));
   const handleLink=async(cId,artId,model)=>{await actions.linkArtwork(cId,artId,model);setLink(null);};
-  const handleUnlink=(schedId)=>{if(confirm("Cancel this schedule? Removes all payment history."))actions.unlinkArtwork(schedId);};
+  const handleUnlink=(schedId)=>{if(confirm("Cancel this schedule?"))actions.unlinkArtwork(schedId);};
   return(<div>
     <PT title="Collectors" sub={`${data.collectors.length} registered`} action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Add Collector</Btn>}/>
     <Card><div style={{marginBottom:16}}><input placeholder="Search..." value={search} onChange={e=>setSearch(e.target.value)} style={{...is,maxWidth:360}}/></div>
@@ -651,14 +589,143 @@ function LinkMdl({col,arts,onLink,onClose,gn}){
     <Field label="Artwork"><select value={artId} onChange={e=>setArtId(e.target.value)} style={ss}><option value="">—</option>{arts.map(a=><option key={a.id} value={a.id}>{a.title} — R {fmt(a.recommendedPrice)}</option>)}</select></Field>
     <Field label="Payment Model"><div style={{display:"flex",gap:8}}>{[["outright","Outright 40%"],["deposit","10% Deposit"],["monthly","Monthly"]].map(([id,l])=><button key={id} onClick={()=>setModel(id)} style={{flex:1,padding:12,borderRadius:8,border:model===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:model===id?"rgba(182,139,46,0.08)":"#1e1d1a",color:model===id?"#b68b2e":"#8a8477",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{l}</button>)}</div></Field>
     {art&&<Card style={{background:"#1e1d1a",marginTop:8}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:13}}>
-      <span style={{color:"#8a8477"}}>Artwork price:</span><span style={{textAlign:"right"}}>R {fmt(art.recommendedPrice)}</span>
+      <span style={{color:"#8a8477"}}>Price:</span><span style={{textAlign:"right"}}>R {fmt(art.recommendedPrice)}</span>
       <span style={{color:"#8a8477"}}>Collector pays (40%):</span><span style={{textAlign:"right",color:"#b68b2e",fontWeight:600}}>R {fmt(t40)}</span>
       <span style={{color:"#8a8477"}}>Collector receives (60%):</span><span style={{textAlign:"right",color:"#4a9e6b"}}>R {fmt(art.recommendedPrice*COLLECTOR_SPLIT)}</span>
       {model==="deposit"&&<><span style={{color:"#8a8477"}}>Deposit (10%):</span><span style={{textAlign:"right"}}>R {fmt(dep)}</span><span style={{color:"#8a8477"}}>Monthly ×24:</span><span style={{textAlign:"right",fontWeight:600}}>R {fmt(monthly)}</span></>}
       {model==="monthly"&&<><span style={{color:"#8a8477"}}>Monthly ×24:</span><span style={{textAlign:"right",fontWeight:600}}>R {fmt(monthly)}</span></>}
-      <span style={{color:"#8a8477"}}>Payment window:</span><span style={{textAlign:"right",fontSize:11}}>25th – 7th each month</span>
     </div></Card>}
     <div style={{display:"flex",gap:10,marginTop:20,justifyContent:"flex-end"}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold disabled={!artId} onClick={()=>onLink(col.id,artId,model)}>Create Schedule</Btn></div>
+  </Modal>);
+}
+
+// ═══════════════════════════════════════════
+// BUYERS
+// ═══════════════════════════════════════════
+function BuyersPage({data,actions}){
+  const [modal,setModal]=useState(null);
+  const [search,setSearch]=useState("");
+  const [selected,setSelected]=useState(null);
+
+  const blank={id:"",type:"individual",firstName:"",lastName:"",companyName:"",email:"",mobile:"",idNumber:"",nationality:"",address:"",city:"",country:"South Africa",notes:""};
+  const f=data.buyers.filter(b=>buyerName(b).toLowerCase().includes(search.toLowerCase())||(b.email||"").toLowerCase().includes(search.toLowerCase()));
+
+  // Purchase history per buyer
+  const getPurchases=(buyerId)=>data.sales.filter(s=>s.buyerId===buyerId);
+  const getTotalSpend=(buyerId)=>getPurchases(buyerId).reduce((s,x)=>s+(x.salePrice||0),0);
+
+  return(<div>
+    <PT title="Buyers" sub={`${data.buyers.length} registered buyers`} action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Register Buyer</Btn>}/>
+
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:14,marginBottom:28}}>
+      <Stat label="Total Buyers" value={data.buyers.length} gold/>
+      <Stat label="Repeat Buyers" value={data.buyers.filter(b=>getPurchases(b.id).length>1).length} green/>
+      <Stat label="Total Purchases" value={data.sales.filter(s=>s.buyerId).length}/>
+      <Stat label="Total Buyer Spend" value={"R "+fmt(data.sales.filter(s=>s.buyerId).reduce((s,x)=>s+(x.salePrice||0),0))} gold/>
+    </div>
+
+    <div style={{display:"grid",gridTemplateColumns:selected?"1fr 380px":"1fr",gap:20}}>
+      <Card>
+        <div style={{marginBottom:16}}><input placeholder="Search buyers..." value={search} onChange={e=>setSearch(e.target.value)} style={{...is,maxWidth:400}}/></div>
+        {f.length===0?<Empty msg="No buyers registered yet." action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Register Buyer</Btn>}/>:
+        <Tbl cols={[
+          {label:"Name",bold:true,render:r=><button onClick={()=>setSelected(selected?.id===r.id?null:r)} style={{background:"none",border:"none",color:"#b68b2e",cursor:"pointer",fontSize:13,fontWeight:600,textAlign:"left",textDecoration:"underline"}}>{buyerName(r)}</button>},
+          {label:"Type",render:r=>r.type==="company"?"Company":"Individual"},
+          {label:"Email",key:"email"},
+          {label:"Mobile",key:"mobile"},
+          {label:"Nationality",key:"nationality"},
+          {label:"Purchases",render:r=><span style={{color:"#b68b2e",fontWeight:600}}>{getPurchases(r.id).length}</span>},
+          {label:"Total Spend",right:true,gold:true,render:r=>"R "+fmt(getTotalSpend(r.id))},
+          {label:"",render:r=><div style={{display:"flex",gap:6}}>
+            <button onClick={e=>{e.stopPropagation();setModal(r);}} style={{background:"none",border:"none",color:"#8a8477",cursor:"pointer"}}>{I.edit}</button>
+            <button onClick={e=>{e.stopPropagation();if(confirm("Delete buyer?"))actions.deleteBuyer(r.id);}} style={{background:"none",border:"none",color:"#5a564e",cursor:"pointer"}}>{I.del}</button>
+          </div>},
+        ]} data={f}/>}
+      </Card>
+
+      {/* Buyer profile panel */}
+      {selected&&<BuyerProfile buyer={selected} purchases={getPurchases(selected.id)} artworks={data.artworks} collectors={data.collectors} onClose={()=>setSelected(null)} onEdit={()=>setModal(selected)}/>}
+    </div>
+
+    {modal&&<BuyerModal buyer={modal==="add"?blank:modal} onSave={(b)=>{actions.saveBuyer(b);setModal(null);if(selected?.id===b.id)setSelected(b);}} onClose={()=>setModal(null)}/>}
+  </div>);
+}
+
+function BuyerProfile({buyer,purchases,artworks,collectors,onClose,onEdit}){
+  return<Card style={{position:"sticky",top:20}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
+      <div>
+        <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:22,fontWeight:400,color:"#f5f0e8"}}>{buyerName(buyer)}</div>
+        <div style={{fontSize:11,color:"#5a564e",marginTop:2,letterSpacing:1,textTransform:"uppercase"}}>{buyer.type==="company"?"Company":"Individual"} · {buyer.nationality||"—"}</div>
+      </div>
+      <div style={{display:"flex",gap:6}}>
+        <Btn small ghost onClick={onEdit}>{I.edit}</Btn>
+        <button onClick={onClose} style={{background:"none",border:"none",color:"#8a8477",cursor:"pointer"}}>{I.x}</button>
+      </div>
+    </div>
+
+    {/* Contact details */}
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:12,marginBottom:20}}>
+      {[["Email",buyer.email],["Mobile",buyer.mobile],["ID/Passport",buyer.idNumber],["City",buyer.city],["Country",buyer.country]].map(([l,v])=>v?<div key={l}><div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:2}}>{l}</div><div style={{color:"#e8e2d6"}}>{v}</div></div>:null)}
+    </div>
+
+    {buyer.address&&<div style={{fontSize:12,color:"#8a8477",marginBottom:20,padding:"10px 12px",background:"#1e1d1a",borderRadius:8}}>{buyer.address}</div>}
+
+    {/* Purchase history */}
+    <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:12}}>Purchase History ({purchases.length})</div>
+    {purchases.length===0?<p style={{fontSize:13,color:"#5a564e"}}>No purchases yet.</p>:
+    purchases.map(sale=>{
+      const art=artworks.find(a=>a.id===sale.artworkId);
+      const col=collectors.find(c=>c.id===sale.collectorId);
+      const colName=col?(col.type==="company"?col.companyName:`${col.firstName} ${col.lastName}`):"—";
+      return<div key={sale.id} style={{padding:"12px",background:"#1e1d1a",borderRadius:8,marginBottom:8}}>
+        <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+          {art?.imageUrl&&<div style={{width:40,height:40,borderRadius:6,overflow:"hidden",flexShrink:0}}><img src={art.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div>}
+          <div style={{flex:1}}>
+            <div style={{fontSize:13,fontWeight:600,color:"#f5f0e8"}}>{sale.artworkTitle}</div>
+            <div style={{fontSize:11,color:"#5a564e",marginTop:2}}>
+              {sale.date} · Collector: {colName}
+            </div>
+            <div style={{display:"flex",gap:12,marginTop:6,fontSize:12}}>
+              <span style={{color:"#b68b2e",fontWeight:600}}>R {fmt(sale.salePrice)}</span>
+              <span style={{color:"#4a9e6b"}}>Collector 60%: R {fmt(sale.collectorShare)}</span>
+            </div>
+          </div>
+        </div>
+      </div>;
+    })}
+
+    {purchases.length>0&&<div style={{borderTop:"1px solid rgba(182,139,46,0.08)",paddingTop:12,marginTop:4,display:"flex",justifyContent:"space-between",fontSize:13}}>
+      <span style={{color:"#8a8477"}}>Total spend:</span>
+      <span style={{color:"#b68b2e",fontWeight:700}}>R {fmt(purchases.reduce((s,x)=>s+(x.salePrice||0),0))}</span>
+    </div>}
+
+    {buyer.notes&&<div style={{marginTop:16,fontSize:12,color:"#8a8477",padding:"10px 12px",background:"#1e1d1a",borderRadius:8}}>{buyer.notes}</div>}
+  </Card>;
+}
+
+function BuyerModal({buyer,onSave,onClose}){
+  const [f,sF]=useState({...buyer});const s=(k,v)=>sF(p=>({...p,[k]:v}));
+  const isNew=!buyer.id;
+  return(<Modal title={isNew?"Register Buyer":"Edit Buyer"} onClose={onClose} wide>
+    <Field label="Type"><div style={{display:"flex",gap:8}}>{[["individual","Individual"],["company","Company"]].map(([id,l])=><button key={id} onClick={()=>s("type",id)} style={{flex:1,padding:10,borderRadius:8,border:f.type===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:f.type===id?"rgba(182,139,46,0.08)":"#1e1d1a",color:f.type===id?"#b68b2e":"#8a8477",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{l}</button>)}</div></Field>
+    {f.type==="company"
+      ?<Field label="Company Name"><input value={f.companyName||""} onChange={e=>s("companyName",e.target.value)} style={is}/></Field>
+      :<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}><Field label="First Name"><input value={f.firstName||""} onChange={e=>s("firstName",e.target.value)} style={is}/></Field><Field label="Last Name"><input value={f.lastName||""} onChange={e=>s("lastName",e.target.value)} style={is}/></Field></div>}
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+      <Field label="Email"><input value={f.email||""} onChange={e=>s("email",e.target.value)} style={is}/></Field>
+      <Field label="Mobile"><input value={f.mobile||""} onChange={e=>s("mobile",e.target.value)} style={is}/></Field>
+      <Field label="ID / Passport"><input value={f.idNumber||""} onChange={e=>s("idNumber",e.target.value)} style={is}/></Field>
+      <Field label="Nationality"><input value={f.nationality||""} onChange={e=>s("nationality",e.target.value)} style={is}/></Field>
+      <Field label="City"><input value={f.city||""} onChange={e=>s("city",e.target.value)} style={is}/></Field>
+      <Field label="Country"><input value={f.country||""} onChange={e=>s("country",e.target.value)} style={is}/></Field>
+    </div>
+    <Field label="Address"><textarea value={f.address||""} onChange={e=>s("address",e.target.value)} style={{...is,minHeight:60,resize:"vertical"}}/></Field>
+    <Field label="Notes"><textarea value={f.notes||""} onChange={e=>s("notes",e.target.value)} style={{...is,minHeight:60,resize:"vertical"}} placeholder="Any additional notes about this buyer..."/></Field>
+    <div style={{display:"flex",gap:10,marginTop:20,justifyContent:"flex-end"}}>
+      <Btn ghost onClick={onClose}>Cancel</Btn>
+      <Btn gold onClick={()=>{const name=f.type==="company"?f.companyName:`${f.firstName} ${f.lastName}`;if(!name?.trim())return alert("Name required");onSave(f);}}>{isNew?"Register":"Save"} Buyer</Btn>
+    </div>
   </Modal>);
 }
 
@@ -744,13 +811,7 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
   const cancelledCount=allSchedules.filter(s=>s.status==="Cancelled").length;
   const totalCollected=data.payments.reduce((s,p)=>s+(p.amount||0),0);
   const toggleExpand=(id)=>setExpanded(p=>({...p,[id]:!p[id]}));
-
-  const getNextUnpaid=(sched)=>{
-    const paidMonths=new Set(data.payments.filter(p=>p.scheduleId===sched.id).map(p=>p.monthNumber));
-    const missedMonths=new Set(sched.missedMonths||[]);
-    for(let m=1;m<=sched.termMonths;m++){if(!paidMonths.has(m)&&!missedMonths.has(m))return m;}
-    return null;
-  };
+  const getNextUnpaid=(sched)=>{const paidMonths=new Set(data.payments.filter(p=>p.scheduleId===sched.id).map(p=>p.monthNumber));const missedMonths=new Set(sched.missedMonths||[]);for(let m=1;m<=sched.termMonths;m++){if(!paidMonths.has(m)&&!missedMonths.has(m))return m;}return null;};
   const getHistory=(schedId)=>data.payments.filter(p=>p.scheduleId===schedId).sort((a,b)=>a.monthNumber-b.monthNumber);
 
   const reportData={
@@ -761,15 +822,10 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
 
   const statusBtnCfg=[{key:"all",label:"All"},{key:"Active",label:"Active",color:"#4a9e6b"},{key:"Chasing",label:"Chasing",color:"#e6be32"},{key:"In Dispute",label:"In Dispute",color:"#dc7828"},{key:"Cancelled",label:"Cancelled",color:"#c45c4a"},{key:"Complete",label:"Complete",color:"#648cc8"}];
 
-  // Build email targets for review modal
   const buildEmailTargets=(status)=>{
     const scheds=allSchedules.filter(s=>s.status===status);
     const byCollector={};
-    scheds.forEach(s=>{
-      const col=data.collectors.find(c=>c.id===s.collectorId);
-      if(!byCollector[s.collectorId])byCollector[s.collectorId]={id:s.collectorId,name:s.collectorName,email:col?.email||"",mobile:col?.mobile||"",schedules:[]};
-      byCollector[s.collectorId].schedules.push(s);
-    });
+    scheds.forEach(s=>{const col=data.collectors.find(c=>c.id===s.collectorId);if(!byCollector[s.collectorId])byCollector[s.collectorId]={id:s.collectorId,name:s.collectorName,email:col?.email||"",mobile:col?.mobile||"",schedules:[]};byCollector[s.collectorId].schedules.push(s);});
     return Object.values(byCollector);
   };
 
@@ -778,8 +834,6 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:14,marginBottom:24}}>
       <Stat label="Active" value={active} green/><Stat label="Chasing" value={chasing} orange/><Stat label="In Dispute" value={dispute} orange/><Stat label="Cancelled" value={cancelledCount} red/><Stat label="Collected" value={"R "+fmt(totalCollected)} gold/>
     </div>
-
-    {/* Email Actions */}
     <Card style={{marginBottom:20,padding:16}}>
       <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:12}}>Mass Email Actions</div>
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
@@ -790,8 +844,6 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
         <Btn small ghost onClick={()=>setEmailModal({status:"custom",templateKey:"upcoming",targets:[]})}>{I.mail} Custom Email</Btn>
       </div>
     </Card>
-
-    {/* Monthly Report */}
     <Card style={{marginBottom:20,padding:16}}>
       <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:12}}>Monthly Report</div>
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
@@ -800,44 +852,33 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
       {reportTab&&<div style={{marginTop:16,borderTop:"1px solid rgba(182,139,46,0.08)",paddingTop:16}}>
         <div style={{fontSize:13,fontWeight:600,color:"#f5f0e8",marginBottom:12}}>{reportTab} — {reportData[reportTab].length} accounts</div>
         {reportData[reportTab].length===0?<p style={{fontSize:13,color:"#5a564e"}}>None.</p>:
-        <Tbl cols={[{label:"Collector",bold:true,render:r=>r.collectorName},{label:"Email",render:r=>r.col?.email||"—"},{label:"Mobile",render:r=>r.col?.mobile||"—"},{label:"Artwork",key:"artworkTitle"},{label:"Model",render:r=>r.model},{label:"Strikes",render:r=><span style={{color:"#c45c4a",fontWeight:700}}>{r.strikes}</span>},{label:"Monthly",right:true,gold:true,render:r=>"R "+fmt(r.monthlyAmount)},{label:"Outstanding",right:true,render:r=>"R "+fmt((r.totalDue||0)-(r.totalPaid||0))},{label:"",render:r=><Btn small ghost onClick={()=>{const col=data.collectors.find(c=>c.id===r.collectorId);const tplKey=reportTab==="Chasing"?"individual_missed":reportTab==="In Dispute"?"individual_dispute":"individual_cancelled";const tpl=TEMPLATES[tplKey](r.collectorName,r.artworkTitle,(r.totalDue||0)-(r.totalPaid||0));openGmail([col?.email||""],tpl.subject,tpl.body);}} style={{fontSize:10}}>{I.mail}</Btn>}]} data={reportData[reportTab]}/>}
+        <Tbl cols={[{label:"Collector",bold:true,render:r=>r.collectorName},{label:"Email",render:r=>r.col?.email||"—"},{label:"Mobile",render:r=>r.col?.mobile||"—"},{label:"Artwork",key:"artworkTitle"},{label:"Strikes",render:r=><span style={{color:"#c45c4a",fontWeight:700}}>{r.strikes}</span>},{label:"Monthly",right:true,gold:true,render:r=>"R "+fmt(r.monthlyAmount)},{label:"Outstanding",right:true,render:r=>"R "+fmt((r.totalDue||0)-(r.totalPaid||0))},{label:"",render:r=>{const col=data.collectors.find(c=>c.id===r.collectorId);const tplKey=reportTab==="Chasing"?"individual_missed":reportTab==="In Dispute"?"individual_dispute":"individual_cancelled";const tpl=TEMPLATES[tplKey](r.collectorName,r.artworkTitle,(r.totalDue||0)-(r.totalPaid||0));return<Btn small ghost onClick={()=>openGmail([col?.email||""],tpl.subject,tpl.body)} style={{fontSize:10}}>{I.mail}</Btn>;}}]} data={reportData[reportTab]}/>}
       </div>}
     </Card>
-
-    {/* Collector tabs */}
     <div style={{display:"flex",gap:0,marginBottom:20,borderBottom:"1px solid rgba(182,139,46,0.1)",overflowX:"auto"}}>
       <button onClick={()=>{setActiveTab("all");setPg(0);}} style={{padding:"12px 20px",border:"none",borderBottom:activeTab==="all"?"2px solid #b68b2e":"2px solid transparent",background:"transparent",color:activeTab==="all"?"#b68b2e":"#8a8477",fontSize:12,fontWeight:activeTab==="all"?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif",whiteSpace:"nowrap"}}>
         All <span style={{marginLeft:6,fontSize:10,background:"rgba(182,139,46,0.1)",color:"#b68b2e",padding:"2px 7px",borderRadius:10}}>{allSchedules.length}</span>
       </button>
       {collectorsWithSchedules.map(c=>{const cScheds=allSchedules.filter(s=>s.collectorId===c.id);const alerts=cScheds.filter(s=>["Chasing","In Dispute","Cancelled"].includes(s.status)).length;const isActive=activeTab===c.id;return<button key={c.id} onClick={()=>{setActiveTab(c.id);setPg(0);}} style={{padding:"12px 20px",border:"none",borderBottom:isActive?"2px solid #b68b2e":"2px solid transparent",background:"transparent",color:isActive?"#b68b2e":"#8a8477",fontSize:12,fontWeight:isActive?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif",whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:6}}>{gn(c)}{alerts>0&&<span style={{fontSize:10,background:"rgba(196,92,74,0.15)",color:"#c45c4a",padding:"2px 7px",borderRadius:10,fontWeight:700}}>{alerts}</span>}</button>;})}
     </div>
-
-    {/* Status filters */}
     <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
       {statusBtnCfg.map(b=><button key={b.key} onClick={()=>{setStatusFilter(b.key);setPg(0);}} style={{padding:"7px 14px",borderRadius:8,border:`1px solid ${statusFilter===b.key?(b.color||"#b68b2e"):"rgba(182,139,46,0.15)"}`,background:statusFilter===b.key?"rgba(182,139,46,0.08)":"transparent",color:statusFilter===b.key?(b.color||"#b68b2e"):"#8a8477",fontSize:11,fontWeight:statusFilter===b.key?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{b.label}</button>)}
       <input placeholder="Search..." value={search} onChange={e=>{setSearch(e.target.value);setPg(0);}} style={{...is,maxWidth:260,marginLeft:"auto",padding:"8px 12px",fontSize:12}}/>
     </div>
-
-    {/* Schedule cards */}
     {pagedSchedules.length===0?<Empty msg="No schedules match this filter."/>:
     pagedSchedules.map(sched=>{
       const pct=sched.termMonths>0?(sched.monthsPaid/sched.termMonths)*100:100;
-      const nextMonth=getNextUnpaid(sched);
-      const nextDue=nextMonth?getNextDueDate(sched.startDate,nextMonth):null;
+      const nextMonth=getNextUnpaid(sched);const nextDue=nextMonth?getNextDueDate(sched.startDate,nextMonth):null;
       const outstanding=(sched.totalDue||0)-(sched.totalPaid||0);
-      const history=getHistory(sched.id);
-      const isExpanded=expanded[sched.id];
+      const history=getHistory(sched.id);const isExpanded=expanded[sched.id];
       const sc=schedC[sched.status]||{bg:"#1e1d1a",c:"#8a8477"};
       const art=data.artworks.find(a=>a.id===sched.artworkId);
       const missedSet=new Set(sched.missedMonths||[]);
-
       return<Card key={sched.id} style={{marginBottom:12,padding:0,overflow:"hidden"}}>
         <div style={{height:3,background:sc.c,opacity:0.6}}/>
         <div style={{padding:20}}>
           <div style={{display:"flex",gap:16,alignItems:"flex-start"}}>
-            <div style={{width:52,height:52,borderRadius:8,flexShrink:0,overflow:"hidden",background:"rgba(182,139,46,0.08)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-              {art?.imageUrl?<img src={art.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span style={{fontSize:18,color:"#5a564e"}}>◆</span>}
-            </div>
+            <div style={{width:52,height:52,borderRadius:8,flexShrink:0,overflow:"hidden",background:"rgba(182,139,46,0.08)",display:"flex",alignItems:"center",justifyContent:"center"}}>{art?.imageUrl?<img src={art.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span style={{fontSize:18,color:"#5a564e"}}>◆</span>}</div>
             <div style={{flex:1,minWidth:0}}>
               <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginBottom:4}}>
                 {activeTab==="all"&&<span style={{fontSize:15,fontWeight:700,color:"#f5f0e8"}}>{sched.collectorName}</span>}
@@ -857,9 +898,9 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
                 <span>Total: <strong style={{color:"#f5f0e8"}}>R {fmt(sched.totalDue)}</strong></span>
               </div>
               <ProgressBar pct={pct} color={sc.c}/>
+              {missedSet.size>0&&<div style={{marginTop:8,display:"flex",gap:6,flexWrap:"wrap"}}>{[...missedSet].map(m=><span key={m} style={{fontSize:10,background:"rgba(196,92,74,0.12)",color:"#c45c4a",padding:"3px 8px",borderRadius:5,fontWeight:600}}>Mo {m} missed</span>)}</div>}
             </div>
-            {/* Action buttons */}
-            <div style={{display:"flex",gap:6,flexShrink:0,flexWrap:"wrap",justifyContent:"flex-end",maxWidth:320}}>
+            <div style={{display:"flex",gap:6,flexShrink:0,flexWrap:"wrap",justifyContent:"flex-end",maxWidth:300}}>
               {nextMonth&&sched.status!=="Cancelled"&&sched.status!=="Complete"&&<>
                 <Btn small gold onClick={()=>setPayModal({sched,nextMonth,nextDue})}>{I.ok} Pay Mo {nextMonth}</Btn>
                 <Btn small danger onClick={()=>setMissModal({sched,nextMonth})}>Miss Mo {nextMonth}</Btn>
@@ -867,178 +908,95 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
               {["Chasing","In Dispute","Cancelled"].includes(sched.status)&&<Btn small ghost onClick={()=>setOverrideModal(sched)} style={{borderColor:"rgba(160,100,220,0.3)",color:"#a064dc"}}>Override</Btn>}
               <Btn small ghost onClick={()=>setGraceModal(sched)}>Grace</Btn>
               <button onClick={()=>toggleExpand(sched.id)} style={{background:"none",border:"1px solid rgba(182,139,46,0.15)",borderRadius:6,color:"#8a8477",cursor:"pointer",padding:"6px 10px",display:"flex",alignItems:"center",gap:4,fontSize:11}}>
-                <span style={{transform:isExpanded?"rotate(180deg)":"none",transition:"0.2s",display:"inline-flex"}}>{I.chevron}</span>
-                {history.length} paid
+                <span style={{transform:isExpanded?"rotate(180deg)":"none",transition:"0.2s",display:"inline-flex"}}>{I.chevron}</span>{history.length} paid
               </button>
             </div>
           </div>
-          {/* Missed months indicator */}
-          {missedSet.size>0&&<div style={{marginTop:8,display:"flex",gap:6,flexWrap:"wrap"}}>
-            {[...missedSet].map(m=><span key={m} style={{fontSize:10,background:"rgba(196,92,74,0.12)",color:"#c45c4a",padding:"3px 8px",borderRadius:5,fontWeight:600}}>Mo {m} missed</span>)}
-          </div>}
-          {/* Expanded history */}
           {isExpanded&&<div style={{marginTop:16,borderTop:"1px solid rgba(182,139,46,0.06)",paddingTop:16}}>
             {history.length===0?<p style={{fontSize:13,color:"#5a564e"}}>No payments recorded yet.</p>:
-            <Tbl cols={[{label:"Month",render:r=>`Month ${r.monthNumber}`},{label:"Date Paid",key:"date"},{label:"Method",key:"method"},{label:"Amount",right:true,gold:true,render:r=>"R "+fmt(r.amount)}]} data={history}/>}
+            <Tbl cols={[{label:"Month",render:r=>`Month ${r.monthNumber}`},{label:"Date",key:"date"},{label:"Method",key:"method"},{label:"Amount",right:true,gold:true,render:r=>"R "+fmt(r.amount)}]} data={history}/>}
             {sched.graceNote&&<p style={{fontSize:12,color:"#a064dc",marginTop:8}}>Grace: {sched.graceNote}</p>}
             {sched.overrideNote&&<p style={{fontSize:12,color:"#a064dc",marginTop:4}}>Override: {sched.overrideNote}</p>}
           </div>}
         </div>
       </Card>;
     })}
+    {activeTab==="all"&&totalPages>1&&<div style={{display:"flex",justifyContent:"center",gap:8,marginTop:20}}><Btn small ghost disabled={pg===0} onClick={()=>setPg(p=>p-1)}>← Prev</Btn><span style={{padding:"8px 16px",fontSize:13,color:"#8a8477"}}>Page {pg+1} of {totalPages}</span><Btn small ghost disabled={pg>=totalPages-1} onClick={()=>setPg(p=>p+1)}>Next →</Btn></div>}
 
-    {/* Pagination */}
-    {activeTab==="all"&&totalPages>1&&<div style={{display:"flex",justifyContent:"center",gap:8,marginTop:20}}>
-      <Btn small ghost disabled={pg===0} onClick={()=>setPg(p=>p-1)}>← Prev</Btn>
-      <span style={{padding:"8px 16px",fontSize:13,color:"#8a8477"}}>Page {pg+1} of {totalPages}</span>
-      <Btn small ghost disabled={pg>=totalPages-1} onClick={()=>setPg(p=>p+1)}>Next →</Btn>
-    </div>}
-
-    {/* Pay Modal */}
     {payModal&&<Modal title={`Record Payment — Month ${payModal.nextMonth}`} onClose={()=>setPayModal(null)}>
       <Card style={{background:"#1e1d1a",marginBottom:16}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:13}}>
         <span style={{color:"#8a8477"}}>Collector:</span><span style={{fontWeight:600}}>{payModal.sched.collectorName}</span>
         <span style={{color:"#8a8477"}}>Artwork:</span><span>{payModal.sched.artworkTitle}</span>
         <span style={{color:"#8a8477"}}>Month:</span><span>{payModal.nextMonth} of {payModal.sched.termMonths}</span>
-        <span style={{color:"#8a8477"}}>Due:</span><span>{payModal.nextDue}</span>
         <span style={{color:"#8a8477"}}>Amount:</span><span style={{color:"#b68b2e",fontWeight:700,fontSize:16}}>R {fmt(payModal.sched.monthlyAmount)}</span>
       </div></Card>
       <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:10}}>Payment Method</div>
       {payM.map(m=>{const bs={display:"block",width:"100%",padding:12,marginBottom:8,borderRadius:8,border:"1px solid rgba(182,139,46,0.15)",background:"#1e1d1a",color:"#e8e2d6",cursor:"pointer",fontSize:13,fontFamily:"DM Sans,sans-serif",textAlign:"left"};return<button key={m} onClick={()=>{actions.recordPayment(payModal.sched,payModal.nextMonth,m,payModal.sched.monthlyAmount);setPayModal(null);}} style={bs} onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(182,139,46,0.4)";e.currentTarget.style.background="#252320";}} onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(182,139,46,0.15)";e.currentTarget.style.background="#1e1d1a";}}>{m}</button>;})}
     </Modal>}
 
-    {/* Miss Modal */}
     {missModal&&<Modal title={`Mark Month ${missModal.nextMonth} as Missed`} onClose={()=>setMissModal(null)}>
-      <div style={{padding:"16px",background:"rgba(196,92,74,0.08)",border:"1px solid rgba(196,92,74,0.2)",borderRadius:10,marginBottom:20}}>
+      <div style={{padding:16,background:"rgba(196,92,74,0.08)",border:"1px solid rgba(196,92,74,0.2)",borderRadius:10,marginBottom:20}}>
         <div style={{fontSize:13,color:"#e8e2d6",marginBottom:6}}><strong>{missModal.sched.collectorName}</strong> — {missModal.sched.artworkTitle}</div>
         <div style={{fontSize:13,color:"#c45c4a"}}>Recording Month {missModal.nextMonth} as missed will increment strikes.</div>
-        <div style={{fontSize:12,color:"#8a8477",marginTop:8}}>
-          Current strikes: <strong style={{color:"#c45c4a"}}>{missModal.sched.strikes}</strong> → After: <strong style={{color:"#c45c4a"}}>{Math.min((missModal.sched.strikes||0)+1,3)}</strong><br/>
-          New status: <strong style={{color:"#c45c4a"}}>{(missModal.sched.strikes||0)+1===1?"Chasing":(missModal.sched.strikes||0)+1===2?"In Dispute":"Cancelled"}</strong>
-        </div>
+        <div style={{fontSize:12,color:"#8a8477",marginTop:8}}>Current strikes: <strong style={{color:"#c45c4a"}}>{missModal.sched.strikes}</strong> → After: <strong style={{color:"#c45c4a"}}>{Math.min((missModal.sched.strikes||0)+1,3)}</strong><br/>New status: <strong style={{color:"#c45c4a"}}>{(missModal.sched.strikes||0)+1===1?"Chasing":(missModal.sched.strikes||0)+1===2?"In Dispute":"Cancelled"}</strong></div>
       </div>
-      <div style={{display:"flex",gap:10,justifyContent:"flex-end"}}>
-        <Btn ghost onClick={()=>setMissModal(null)}>Cancel</Btn>
-        <Btn danger onClick={()=>{actions.recordMissed(missModal.sched,missModal.nextMonth);setMissModal(null);}}>Confirm Miss Mo {missModal.nextMonth}</Btn>
-      </div>
+      <div style={{display:"flex",gap:10,justifyContent:"flex-end"}}><Btn ghost onClick={()=>setMissModal(null)}>Cancel</Btn><Btn danger onClick={()=>{actions.recordMissed(missModal.sched,missModal.nextMonth);setMissModal(null);}}>Confirm Miss Mo {missModal.nextMonth}</Btn></div>
     </Modal>}
 
-    {/* Override Modal */}
     {overrideModal&&<OverrideModal sched={overrideModal} onSave={(note)=>{actions.overrideSchedule(overrideModal.id,note);setOverrideModal(null);}} onClose={()=>setOverrideModal(null)}/>}
-
-    {/* Grace Modal */}
     {graceModal&&<GraceModal sched={graceModal} onSave={(date,month,note)=>{actions.setGraceException(graceModal.id,date,month,note);setGraceModal(null);}} onClose={()=>setGraceModal(null)}/>}
-
-    {/* Email Review Modal */}
     {emailModal&&<EmailReviewModal config={emailModal} collectors={data.collectors} schedules={data.schedules} onClose={()=>setEmailModal(null)}/>}
   </div>);
 }
 
 function OverrideModal({sched,onSave,onClose}){
   const [note,setNote]=useState("");
-  return<Modal title="Override Status" onClose={onClose}>
-    <p style={{fontSize:13,color:"#8a8477",marginBottom:16}}>Resets schedule to Active and clears all strikes. Use when collector has paid outstanding balance.</p>
-    <Field label="Override Note"><textarea value={note} onChange={e=>setNote(e.target.value)} style={{...is,minHeight:80,resize:"vertical"}} placeholder="e.g. Collector settled outstanding balance on 2026-04-09"/></Field>
-    <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:16}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>onSave(note)} disabled={!note}>Apply Override</Btn></div>
-  </Modal>;
+  return<Modal title="Override Status" onClose={onClose}><p style={{fontSize:13,color:"#8a8477",marginBottom:16}}>Resets schedule to Active and clears all strikes. Use when collector has settled outstanding balance.</p><Field label="Override Note"><textarea value={note} onChange={e=>setNote(e.target.value)} style={{...is,minHeight:80,resize:"vertical"}} placeholder="e.g. Collector settled balance on 2026-04-09"/></Field><div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:16}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>onSave(note)} disabled={!note}>Apply Override</Btn></div></Modal>;
 }
 
 function GraceModal({sched,onSave,onClose}){
   const [graceDate,setGraceDate]=useState("");const [month,setMonth]=useState(sched.monthsPaid+1);const [note,setNote]=useState("");
-  return<Modal title="Set Grace Exception" onClose={onClose}>
-    <p style={{fontSize:13,color:"#8a8477",marginBottom:16}}>Extend the grace period for a specific month. Collector will not be penalised if they pay by the extended date.</p>
-    <Field label="Month Number"><input type="number" value={month} onChange={e=>setMonth(Number(e.target.value))} style={is} min={1} max={sched.termMonths}/></Field>
-    <Field label="Extended Grace Date"><input type="date" value={graceDate} onChange={e=>setGraceDate(e.target.value)} style={is}/></Field>
-    <Field label="Reason"><textarea value={note} onChange={e=>setNote(e.target.value)} style={{...is,minHeight:60,resize:"vertical"}} placeholder="e.g. Collector travelling — agreed payment by 2026-04-20"/></Field>
-    <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:16}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>onSave(graceDate,month,note)} disabled={!graceDate||!note}>Set Exception</Btn></div>
-  </Modal>;
+  return<Modal title="Set Grace Exception" onClose={onClose}><p style={{fontSize:13,color:"#8a8477",marginBottom:16}}>Extend the grace period for a specific month. Collector will not be penalised if they pay by the extended date.</p><Field label="Month Number"><input type="number" value={month} onChange={e=>setMonth(Number(e.target.value))} style={is} min={1} max={sched.termMonths}/></Field><Field label="Extended Grace Date"><input type="date" value={graceDate} onChange={e=>setGraceDate(e.target.value)} style={is}/></Field><Field label="Reason"><textarea value={note} onChange={e=>setNote(e.target.value)} style={{...is,minHeight:60,resize:"vertical"}} placeholder="e.g. Collector travelling — agreed payment by 2026-04-20"/></Field><div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:16}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>onSave(graceDate,month,note)} disabled={!graceDate||!note}>Set Exception</Btn></div></Modal>;
 }
 
-// ─── Email Review Modal ───
 function EmailReviewModal({config,collectors,schedules,onClose}){
   const isCustom=config.status==="custom";
   const [selected,setSelected]=useState(isCustom?[]:config.targets.map(t=>t.id));
   const [templateKey,setTemplateKey]=useState(config.templateKey||"upcoming");
-  const [subject,setSubject]=useState("");
-  const [body,setBody]=useState("");
-  const [customCollectors,setCustomCollectors]=useState([]);
-
+  const [subject,setSubject]=useState("");const [body,setBody]=useState("");
   const allCollectors=collectors.filter(c=>c.email);
   const gn=c=>c.type==="company"?c.companyName:`${c.firstName} ${c.lastName}`;
-
-  // Build targets list
-  const targets=isCustom
-    ?allCollectors.map(c=>{const s=schedules.find(x=>x.collectorId===c.id);return{id:c.id,name:gn(c),email:c.email,mobile:c.mobile||"",schedules:s?[s]:[]};}  )
-    :config.targets;
-
+  const targets=isCustom?allCollectors.map(c=>{const s=schedules.find(x=>x.collectorId===c.id);return{id:c.id,name:gn(c),email:c.email,mobile:c.mobile||"",schedules:s?[s]:[]};})  :config.targets;
   const toggle=(id)=>setSelected(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
-  const selectAll=()=>setSelected(targets.map(t=>t.id));
-  const clearAll=()=>setSelected([]);
-
-  // Auto-generate preview from first selected
   const firstSelected=targets.find(t=>selected.includes(t.id));
-  const previewTpl=()=>{
-    if(!firstSelected)return{subject:"",body:""};
+  useEffect(()=>{
+    if(!firstSelected)return;
     const s=firstSelected.schedules[0];
-    if(!s)return TEMPLATES[templateKey]?.(firstSelected.name,"",0,"")||{subject:"",body:""};
-    const nextDue=getNextDueDate(s.startDate,s.monthsPaid+1);
-    return TEMPLATES[templateKey]?.(firstSelected.name,s.artworkTitle,s.monthlyAmount,nextDue)||{subject:"",body:""};
-  };
-
-  useEffect(()=>{const p=previewTpl();setSubject(p.subject||"");setBody(p.body||"");},[templateKey,firstSelected?.id]);
-
-  const send=()=>{
-    const emails=selected.map(id=>targets.find(t=>t.id===id)?.email).filter(Boolean);
-    if(emails.length===0)return alert("No recipients selected.");
-    openGmail(emails,subject,body);
-    onClose();
-  };
-
+    const tpl=s?TEMPLATES[templateKey]?.(firstSelected.name,s.artworkTitle,s.monthlyAmount,getNextDueDate(s.startDate,s.monthsPaid+1)):TEMPLATES[templateKey]?.(firstSelected.name,"",0,"");
+    if(tpl){setSubject(tpl.subject||"");setBody(tpl.body||"");}
+  },[templateKey,firstSelected?.id]);
+  const send=()=>{const emails=selected.map(id=>targets.find(t=>t.id===id)?.email).filter(Boolean);if(emails.length===0)return alert("No recipients selected.");openGmail(emails,subject,body);onClose();};
   return<Modal title="Review & Send Email" onClose={onClose} wide>
     <div style={{display:"grid",gridTemplateColumns:"280px 1fr",gap:20}}>
-      {/* Recipient list */}
       <div>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-          <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e"}}>Recipients ({selected.length})</div>
-          <div style={{display:"flex",gap:8}}>
-            <button onClick={selectAll} style={{background:"none",border:"none",color:"#b68b2e",cursor:"pointer",fontSize:11}}>All</button>
-            <button onClick={clearAll} style={{background:"none",border:"none",color:"#8a8477",cursor:"pointer",fontSize:11}}>None</button>
-          </div>
-        </div>
-        <div style={{maxHeight:340,overflowY:"auto",border:"1px solid rgba(182,139,46,0.1)",borderRadius:8}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}><div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e"}}>Recipients ({selected.length})</div><div style={{display:"flex",gap:8}}><button onClick={()=>setSelected(targets.map(t=>t.id))} style={{background:"none",border:"none",color:"#b68b2e",cursor:"pointer",fontSize:11}}>All</button><button onClick={()=>setSelected([])} style={{background:"none",border:"none",color:"#8a8477",cursor:"pointer",fontSize:11}}>None</button></div></div>
+        <div style={{maxHeight:320,overflowY:"auto",border:"1px solid rgba(182,139,46,0.1)",borderRadius:8}}>
           {targets.length===0?<div style={{padding:16,fontSize:13,color:"#5a564e",textAlign:"center"}}>No collectors in this group.</div>:
           targets.map(t=><label key={t.id} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 12px",cursor:"pointer",borderBottom:"1px solid rgba(182,139,46,0.04)"}}>
             <input type="checkbox" checked={selected.includes(t.id)} onChange={()=>toggle(t.id)} style={{accentColor:"#b68b2e",marginTop:2,flexShrink:0}}/>
-            <div style={{minWidth:0}}>
-              <div style={{fontSize:13,fontWeight:600,color:"#f5f0e8"}}>{t.name}</div>
-              <div style={{fontSize:11,color:"#5a564e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.email||"No email"}</div>
-              {t.schedules[0]&&<div style={{fontSize:10,color:"#8a8477"}}>{t.schedules[0].artworkTitle}</div>}
-            </div>
+            <div style={{minWidth:0}}><div style={{fontSize:13,fontWeight:600,color:"#f5f0e8"}}>{t.name}</div><div style={{fontSize:11,color:"#5a564e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.email||"No email"}</div>{t.schedules[0]&&<div style={{fontSize:10,color:"#8a8477"}}>{t.schedules[0].artworkTitle}</div>}</div>
           </label>)}
         </div>
         <div style={{fontSize:11,color:"#5a564e",marginTop:8}}>All recipients BCC'd — nobody sees each other's address.</div>
       </div>
-      {/* Email compose */}
       <div>
-        <Field label="Template">
-          <select value={templateKey} onChange={e=>setTemplateKey(e.target.value)} style={ss}>
-            <option value="upcoming">Upcoming Payment Reminder</option>
-            <option value="missed">Missed Payment</option>
-            <option value="dispute">Dispute Escalation</option>
-            <option value="cancelled">Cancellation Notice</option>
-          </select>
-        </Field>
+        <Field label="Template"><select value={templateKey} onChange={e=>setTemplateKey(e.target.value)} style={ss}><option value="upcoming">Upcoming Payment Reminder</option><option value="missed">Missed Payment</option><option value="dispute">Dispute Escalation</option><option value="cancelled">Cancellation Notice</option></select></Field>
         <Field label="Subject"><input value={subject} onChange={e=>setSubject(e.target.value)} style={is}/></Field>
-        <Field label="Message">
-          <textarea value={body} onChange={e=>setBody(e.target.value)} style={{...is,minHeight:180,resize:"vertical"}}/>
-        </Field>
-        <div style={{fontSize:11,color:"#5a564e",marginBottom:16}}>Message shown is based on first selected recipient. Gmail will open with all selected addresses.</div>
+        <Field label="Message"><textarea value={body} onChange={e=>setBody(e.target.value)} style={{...is,minHeight:180,resize:"vertical"}}/></Field>
+        <div style={{fontSize:11,color:"#5a564e"}}>Preview based on first selected recipient.</div>
       </div>
     </div>
-    <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:16,borderTop:"1px solid rgba(182,139,46,0.08)",paddingTop:16}}>
-      <Btn ghost onClick={onClose}>Cancel</Btn>
-      <Btn gold disabled={selected.length===0||!subject} onClick={send}>{I.mail} Open Gmail ({selected.length})</Btn>
-    </div>
+    <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:16,borderTop:"1px solid rgba(182,139,46,0.08)",paddingTop:16}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold disabled={selected.length===0||!subject} onClick={send}>{I.mail} Open Gmail ({selected.length})</Btn></div>
   </Modal>;
 }
 
@@ -1052,12 +1010,27 @@ function SalesPage({data,actions}){
   const handleDelete=(id)=>{if(confirm("Delete sale? Artwork will revert."))actions.deleteSale(id);};
   return(<div>
     <PT title="Sales" sub={`${data.sales.length} completed`} action={<Btn gold onClick={()=>setModal(true)}>{I.plus} Record Sale</Btn>}/>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:14,marginBottom:24}}>
-      <Stat label="Sales" value={data.sales.length}/><Stat label="Total Value" value={"R "+fmt(data.sales.reduce((s,x)=>s+x.salePrice,0))}/><Stat label="Collector 60%" value={"R "+fmt(data.sales.reduce((s,x)=>s+(x.collectorShare||0),0))} green/><Stat label="VB 40%" value={"R "+fmt(data.sales.reduce((s,x)=>s+(x.vbShare||0),0))} gold/>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:14,marginBottom:24}}>
+      <Stat label="Sales" value={data.sales.length}/>
+      <Stat label="Total Value" value={"R "+fmt(data.sales.reduce((s,x)=>s+(x.salePrice||0),0))}/>
+      <Stat label="Collector 60%" value={"R "+fmt(data.sales.reduce((s,x)=>s+(x.collectorShare||0),0))} green/>
+      <Stat label="VB 40%" value={"R "+fmt(data.sales.reduce((s,x)=>s+(x.vbShare||0),0))} gold/>
+      <Stat label="Buyers Registered" value={data.sales.filter(s=>s.buyerId).length}/>
     </div>
     <Card>
       {data.sales.length===0?<Empty msg="No sales yet." action={<Btn gold onClick={()=>setModal(true)}>{I.plus} Record Sale</Btn>}/>:
-      <Tbl cols={[{label:"Date",key:"date"},{label:"Artwork",key:"artworkTitle",bold:true},{label:"Collector",key:"collectorName"},{label:"Sale Price",right:true,render:r=>"R "+fmt(r.salePrice)},{label:"Collector 60%",right:true,render:r=><span style={{color:"#4a9e6b"}}>R {fmt(r.collectorShare)}</span>},{label:"VB 40%",right:true,gold:true,render:r=>"R "+fmt(r.vbShare)},{label:"Gallery",right:true,render:r=>"R "+fmt(r.galleryShare)},{label:"Artist",right:true,render:r=>"R "+fmt(r.artistShare)},{label:"",render:r=><button onClick={e=>{e.stopPropagation();handleDelete(r.id);}} style={{background:"none",border:"none",color:"#5a564e",cursor:"pointer"}}>{I.del}</button>}]} data={[...data.sales].reverse()}/>}
+      <Tbl cols={[
+        {label:"Date",key:"date"},
+        {label:"Artwork",key:"artworkTitle",bold:true},
+        {label:"Collector",key:"collectorName"},
+        {label:"Buyer",render:r=>r.buyerName?<span style={{color:"#b68b2e"}}>{r.buyerName}</span>:<span style={{color:"#5a564e"}}>—</span>},
+        {label:"Sale Price",right:true,render:r=>"R "+fmt(r.salePrice)},
+        {label:"Collector 60%",right:true,render:r=><span style={{color:"#4a9e6b"}}>R {fmt(r.collectorShare)}</span>},
+        {label:"VB 40%",right:true,gold:true,render:r=>"R "+fmt(r.vbShare)},
+        {label:"Gallery",right:true,render:r=>"R "+fmt(r.galleryShare)},
+        {label:"Artist",right:true,render:r=>"R "+fmt(r.artistShare)},
+        {label:"",render:r=><button onClick={e=>{e.stopPropagation();handleDelete(r.id);}} style={{background:"none",border:"none",color:"#5a564e",cursor:"pointer"}}>{I.del}</button>},
+      ]} data={[...data.sales].reverse()}/>}
     </Card>
     {modal&&<SaleMdl data={data} sellable={sellable} onSale={handleSale} onClose={()=>setModal(false)}/>}
   </div>);
@@ -1065,6 +1038,8 @@ function SalesPage({data,actions}){
 
 function SaleMdl({data,sellable,onSale,onClose}){
   const [artId,setArtId]=useState("");const [salePrice,setSalePrice]=useState("");
+  const [buyerId,setBuyerId]=useState("");const [newBuyer,setNewBuyer]=useState(false);
+  const [nb,setNb]=useState({type:"individual",firstName:"",lastName:"",companyName:"",email:"",mobile:"",nationality:"",idNumber:""});
   const art=data.artworks.find(a=>a.id===artId);
   const sched=art?data.schedules.find(s=>s.artworkId===artId&&s.status!=="Cancelled"):null;
   const col=sched?data.collectors.find(c=>c.id===sched.collectorId):null;
@@ -1073,12 +1048,54 @@ function SaleMdl({data,sellable,onSale,onClose}){
   const sp=Number(salePrice)||(art?art.recommendedPrice:0);
   const collectorShare=sp*COLLECTOR_SPLIT;const vbShare=sp*VB_SPLIT;
   const galleryShare=vbShare*GALLERY_BACK;const vbNet=vbShare*VB_BACK;const artistShare=vbShare*ARTIST_BACK;
+
+  const selectedBuyer=data.buyers.find(b=>b.id===buyerId);
+  const resolvedBuyerName=newBuyer?(nb.type==="company"?nb.companyName:`${nb.firstName} ${nb.lastName}`):selectedBuyer?buyerName(selectedBuyer):"";
+
+  const handleSale=()=>{
+    let finalBuyerId=buyerId;let finalBuyerName=resolvedBuyerName;
+    if(newBuyer&&resolvedBuyerName.trim()){
+      // New buyer will be created inline — pass as part of sale data with a temp id
+      finalBuyerId=uid();finalBuyerName=resolvedBuyerName;
+    }
+    onSale({artworkId:artId,artworkTitle:art.title,collectorId:col?.id,collectorName:gn(col),buyerId:finalBuyerId||null,buyerName:finalBuyerName||null,newBuyerData:newBuyer&&resolvedBuyerName.trim()?{...nb,id:finalBuyerId}:null,salePrice:sp,totalPaid,collectorShare,vbShare,galleryShare,vbNet,artistShare});
+  };
+
   return(<Modal title="Record Sale" onClose={onClose} wide>
     <Field label="Artwork"><select value={artId} onChange={e=>setArtId(e.target.value)} style={ss}><option value="">—</option>{sellable.map(a=><option key={a.id} value={a.id}>{a.title} — R {fmt(a.recommendedPrice)}</option>)}</select></Field>
-    {art&&<><Field label="Sale Price (R)"><input type="number" value={salePrice} onChange={e=>setSalePrice(e.target.value)} style={is} placeholder={fmt(art.recommendedPrice)}/></Field>
-      <Card style={{background:"#1e1d1a",marginTop:12}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,fontSize:14}}>
+    {art&&<>
+      <Field label="Sale Price (R)"><input type="number" value={salePrice} onChange={e=>setSalePrice(e.target.value)} style={is} placeholder={fmt(art.recommendedPrice)}/></Field>
+
+      {/* Buyer section */}
+      <div style={{marginBottom:16}}>
+        <label style={{display:"block",fontSize:10,fontWeight:500,letterSpacing:2,textTransform:"uppercase",color:"#8a8477",marginBottom:8}}>End Buyer</label>
+        <div style={{display:"flex",gap:8,marginBottom:10}}>
+          <button onClick={()=>{setNewBuyer(false);}} style={{flex:1,padding:10,borderRadius:8,border:!newBuyer?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:!newBuyer?"rgba(182,139,46,0.08)":"#1e1d1a",color:!newBuyer?"#b68b2e":"#8a8477",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>Existing Buyer</button>
+          <button onClick={()=>{setNewBuyer(true);setBuyerId("");}} style={{flex:1,padding:10,borderRadius:8,border:newBuyer?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:newBuyer?"rgba(182,139,46,0.08)":"#1e1d1a",color:newBuyer?"#b68b2e":"#8a8477",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>Register New Buyer</button>
+        </div>
+        {!newBuyer&&<select value={buyerId} onChange={e=>setBuyerId(e.target.value)} style={ss}>
+          <option value="">— No buyer / select later</option>
+          {data.buyers.map(b=><option key={b.id} value={b.id}>{buyerName(b)}{b.email?` · ${b.email}`:""}</option>)}
+        </select>}
+        {newBuyer&&<div style={{background:"#1e1d1a",border:"1px solid rgba(182,139,46,0.1)",borderRadius:10,padding:16}}>
+          <div style={{fontSize:11,color:"#b68b2e",marginBottom:12,letterSpacing:1}}>NEW BUYER REGISTRATION</div>
+          <div style={{display:"flex",gap:8,marginBottom:12}}>{[["individual","Individual"],["company","Company"]].map(([id,l])=><button key={id} onClick={()=>setNb(p=>({...p,type:id}))} style={{flex:1,padding:8,borderRadius:8,border:nb.type===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:nb.type===id?"rgba(182,139,46,0.08)":"transparent",color:nb.type===id?"#b68b2e":"#8a8477",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{l}</button>)}</div>
+          {nb.type==="company"
+            ?<input value={nb.companyName} onChange={e=>setNb(p=>({...p,companyName:e.target.value}))} placeholder="Company Name" style={{...is,marginBottom:8}}/>
+            :<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}><input value={nb.firstName} onChange={e=>setNb(p=>({...p,firstName:e.target.value}))} placeholder="First Name" style={is}/><input value={nb.lastName} onChange={e=>setNb(p=>({...p,lastName:e.target.value}))} placeholder="Last Name" style={is}/></div>}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            <input value={nb.email} onChange={e=>setNb(p=>({...p,email:e.target.value}))} placeholder="Email" style={is}/>
+            <input value={nb.mobile} onChange={e=>setNb(p=>({...p,mobile:e.target.value}))} placeholder="Mobile" style={is}/>
+            <input value={nb.nationality} onChange={e=>setNb(p=>({...p,nationality:e.target.value}))} placeholder="Nationality" style={is}/>
+            <input value={nb.idNumber} onChange={e=>setNb(p=>({...p,idNumber:e.target.value}))} placeholder="ID / Passport" style={is}/>
+          </div>
+        </div>}
+      </div>
+
+      <Card style={{background:"#1e1d1a",marginTop:4}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,fontSize:14}}>
         <span style={{color:"#8a8477"}}>Sale Price:</span><span style={{fontWeight:600}}>R {fmt(sp)}</span>
         <span style={{color:"#8a8477"}}>Collector:</span><span>{gn(col)}</span>
+        {resolvedBuyerName&&<><span style={{color:"#8a8477"}}>Buyer:</span><span style={{color:"#b68b2e"}}>{resolvedBuyerName}</span></>}
         <span style={{color:"#8a8477"}}>Total paid in:</span><span>R {fmt(totalPaid)}</span>
         <div style={{gridColumn:"1/-1",height:1,background:"rgba(182,139,46,0.1)",margin:"4px 0"}}/>
         <span style={{color:"#4a9e6b",fontWeight:600}}>Collector 60%:</span><span style={{color:"#4a9e6b",fontWeight:700,fontSize:18,fontFamily:"Cormorant Garamond,serif"}}>R {fmt(collectorShare)}</span>
@@ -1089,7 +1106,7 @@ function SaleMdl({data,sellable,onSale,onClose}){
         <span style={{color:"#8a8477",fontSize:12}}>Artist 30%:</span><span style={{fontSize:12}}>R {fmt(artistShare)}</span>
       </div></Card>
     </>}
-    <div style={{display:"flex",gap:10,marginTop:20,justifyContent:"flex-end"}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold disabled={!artId} onClick={()=>onSale({artworkId:artId,artworkTitle:art.title,collectorId:col?.id,collectorName:gn(col),salePrice:sp,totalPaid,collectorShare,vbShare,galleryShare,vbNet,artistShare})}>Confirm Sale</Btn></div>
+    <div style={{display:"flex",gap:10,marginTop:20,justifyContent:"flex-end"}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold disabled={!artId} onClick={handleSale}>Confirm Sale</Btn></div>
   </Modal>);
 }
 
@@ -1097,84 +1114,55 @@ function SaleMdl({data,sellable,onSale,onClose}){
 // REPORTS
 // ═══════════════════════════════════════════
 function ReportsPage({data,actions}){
-  const [selectedMonth,setSelectedMonth]=useState(getCurrentMonth());
+  const [selectedMonth,setSelectedMonth]=useState(null);
   const [yearFilter,setYearFilter]=useState(new Date().getFullYear().toString());
 
-  // Generate list of months from earliest schedule to now
   const generateMonthList=()=>{
-    const months=[];
-    const now=new Date();
-    let start=new Date(now.getFullYear()-1,now.getMonth(),1);
-    const earliest=data.schedules.reduce((min,s)=>s.startDate<min?s.startDate:min, td());
-    if(earliest) start=new Date(earliest.slice(0,7)+"-01");
+    const months=[];const now=new Date();
+    let start=new Date(now.getFullYear()-1,0,1);
+    const earliest=(data.schedules||[]).reduce((min,s)=>(!min||s.startDate<min)?s.startDate:min,null);
+    if(earliest)start=new Date(earliest.slice(0,7)+"-01");
     const cur=new Date(start);
-    while(cur<=now){
-      months.push(cur.toISOString().slice(0,7));
-      cur.setMonth(cur.getMonth()+1);
-    }
+    while(cur<=now){months.push(cur.toISOString().slice(0,7));cur.setMonth(cur.getMonth()+1);}
     return months.reverse();
   };
 
   const monthList=generateMonthList();
   const years=[...new Set(monthList.map(m=>m.slice(0,4)))];
   const filteredMonths=monthList.filter(m=>m.startsWith(yearFilter));
-
   const getReport=(ym)=>data.reports.find(r=>r.month===ym);
-  const available=(ym)=>isReportAvailable(ym);
   const locked=(ym)=>isReportLocked(ym);
-
-  const handleGenerate=(ym)=>{
-    actions.generateReport(ym,data.schedules,data.payments,data.sales,data.collectors);
-  };
-
-  const handleDownload=(ym)=>{
-    const report=getReport(ym);
-    if(!report)return;
-    generatePDF(report);
-  };
 
   return(<div>
     <PT title="Reports" sub="Monthly snapshots — permanent record of each period"/>
-
-    {/* Summary stats */}
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:14,marginBottom:28}}>
-      <Stat label="Reports Generated" value={data.reports.length} gold/>
-      <Stat label="Locked Reports" value={data.reports.filter(r=>r.locked).length}/>
+      <Stat label="Generated" value={data.reports.length} gold/>
+      <Stat label="Locked" value={data.reports.filter(r=>r.locked).length}/>
       <Stat label="Total Collected" value={"R "+fmt(data.reports.reduce((s,r)=>s+(r.totalCollected||0),0))} green/>
     </div>
 
     {/* Year filter */}
-    <div style={{display:"flex",gap:8,marginBottom:20,flexWrap:"wrap"}}>
+    <div style={{display:"flex",gap:8,marginBottom:20,flexWrap:"wrap",alignItems:"center"}}>
       {years.map(y=><button key={y} onClick={()=>setYearFilter(y)} style={{padding:"8px 18px",borderRadius:8,border:yearFilter===y?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:yearFilter===y?"rgba(182,139,46,0.08)":"transparent",color:yearFilter===y?"#b68b2e":"#8a8477",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{y}</button>)}
+      <Btn small gold onClick={()=>actions.generateReport(getCurrentMonth())} style={{marginLeft:"auto"}}>{I.report} Generate This Month Now</Btn>
     </div>
 
-    {/* Month list */}
-    {filteredMonths.length===0?<Empty msg="No months available yet. Schedules will generate month history."/>:
+    {filteredMonths.length===0?<Empty msg="No months available yet."/>:
     filteredMonths.map(ym=>{
-      const report=getReport(ym);
-      const isAvail=available(ym);
-      const isLocked=locked(ym);
-      const {lock}=getReportWindow(ym);
+      const report=getReport(ym);const isLocked=locked(ym);const {lock}=getReportWindow(ym);
       const isCurrent=ym===getCurrentMonth();
-
       return<Card key={ym} style={{marginBottom:12,padding:0,overflow:"hidden"}}>
-        <div style={{height:3,background:isLocked?"#648cc8":isAvail?"#b68b2e":"rgba(182,139,46,0.2)"}}/>
+        <div style={{height:3,background:isLocked?"#648cc8":report?"#b68b2e":"rgba(182,139,46,0.2)"}}/>
         <div style={{padding:20}}>
           <div style={{display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
-            {/* Month info */}
             <div style={{flex:1,minWidth:200}}>
-              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4,flexWrap:"wrap"}}>
                 <span style={{fontFamily:"Cormorant Garamond,serif",fontSize:20,fontWeight:400,color:"#f5f0e8"}}>{getMonthLabel(ym)}</span>
                 {isCurrent&&<span style={{fontSize:10,background:"rgba(182,139,46,0.15)",color:"#b68b2e",padding:"3px 8px",borderRadius:6,fontWeight:600}}>CURRENT</span>}
-                {isLocked&&<span style={{fontSize:10,background:"rgba(100,140,200,0.15)",color:"#648cc8",padding:"3px 8px",borderRadius:6,fontWeight:600,display:"flex",alignItems:"center",gap:4}}>{I.lock} LOCKED</span>}
-                {!isLocked&&isAvail&&!report&&<span style={{fontSize:10,background:"rgba(230,190,50,0.1)",color:"#e6be32",padding:"3px 8px",borderRadius:6,fontWeight:600}}>READY TO GENERATE</span>}
+                {isLocked&&<span style={{fontSize:10,background:"rgba(100,140,200,0.15)",color:"#648cc8",padding:"3px 8px",borderRadius:6,fontWeight:600,display:"inline-flex",alignItems:"center",gap:4}}>{I.lock} LOCKED</span>}
               </div>
-              {!isLocked&&isAvail&&<div style={{fontSize:11,color:"#5a564e"}}>Editable until {lock} · Lock date: 8th of following month</div>}
-              {isLocked&&<div style={{fontSize:11,color:"#5a564e"}}>Report locked — permanent record</div>}
-              {!isAvail&&<div style={{fontSize:11,color:"#5a564e"}}>Available from end of month</div>}
+              {isLocked?<div style={{fontSize:11,color:"#5a564e"}}>Permanently locked — final record</div>:<div style={{fontSize:11,color:"#5a564e"}}>Editable until {lock} · Generate anytime</div>}
             </div>
-
-            {/* Report stats (if generated) */}
             {report&&<div style={{display:"flex",gap:16,fontSize:12,flexWrap:"wrap"}}>
               <span>Collected: <strong style={{color:"#4a9e6b"}}>R {fmt(report.totalCollected)}</strong></span>
               <span>Active: <strong style={{color:"#4a9e6b"}}>{report.activeCount}</strong></span>
@@ -1183,31 +1171,23 @@ function ReportsPage({data,actions}){
               {report.cancelledCount>0&&<span>Cancelled: <strong style={{color:"#c45c4a"}}>{report.cancelledCount}</strong></span>}
               <span style={{fontSize:11,color:"#5a564e"}}>Generated: {report.generatedAt}</span>
             </div>}
-
-            {/* Actions */}
             <div style={{display:"flex",gap:8,flexShrink:0}}>
-              {isAvail&&!isLocked&&<Btn small gold onClick={()=>handleGenerate(ym)}>{report?"Regenerate":"Generate"} Report</Btn>}
-              {isLocked&&!report&&<Btn small warn onClick={()=>handleGenerate(ym)}>{I.warn} Generate (Locked)</Btn>}
-              {isLocked&&report&&<Btn small warn onClick={()=>handleGenerate(ym)} style={{fontSize:10}}>{I.warn} Override & Regen</Btn>}
-              {report&&<Btn small ghost onClick={()=>handleDownload(ym)}>{I.dl} Download PDF</Btn>}
+              {!isLocked&&<Btn small gold onClick={()=>actions.generateReport(ym)}>{report?"Regenerate":"Generate"}</Btn>}
+              {isLocked&&<Btn small warn onClick={()=>actions.generateReport(ym)}>{I.warn} Override & Regen</Btn>}
+              {report&&<Btn small ghost onClick={()=>generatePDF(report)}>{I.dl} Download PDF</Btn>}
             </div>
           </div>
-
-          {/* Inline snapshot summary */}
-          {report&&report.snapshot&&selectedMonth===ym&&(
-            <div style={{marginTop:16,borderTop:"1px solid rgba(182,139,46,0.06)",paddingTop:16}}>
-              <div style={{fontSize:12,fontWeight:600,color:"#f5f0e8",marginBottom:12}}>Snapshot Preview — {getMonthLabel(ym)}</div>
-              {report.snapshot.payments&&report.snapshot.payments.length>0?
-              <Tbl cols={[{label:"Collector",bold:true,render:r=>r.collectorName},{label:"Artwork",key:"artworkTitle"},{label:"Month",render:r=>`Mo ${r.monthNumber}`},{label:"Method",key:"method"},{label:"Amount",right:true,gold:true,render:r=>"R "+fmt(r.amount)}]} data={report.snapshot.payments}/>:
-              <p style={{fontSize:13,color:"#5a564e"}}>No payments recorded this month.</p>}
-            </div>
-          )}
-
-          {/* Toggle snapshot */}
-          {report&&<button onClick={()=>setSelectedMonth(selectedMonth===ym?null:ym)} style={{background:"none",border:"none",color:"#5a564e",cursor:"pointer",fontSize:11,marginTop:8,display:"flex",alignItems:"center",gap:4}}>
-            <span style={{transform:selectedMonth===ym?"rotate(180deg)":"none",transition:"0.2s",display:"inline-flex"}}>{I.chevron}</span>
-            {selectedMonth===ym?"Hide":"Show"} payment details
-          </button>}
+          {report&&<>
+            <button onClick={()=>setSelectedMonth(selectedMonth===ym?null:ym)} style={{background:"none",border:"none",color:"#5a564e",cursor:"pointer",fontSize:11,marginTop:12,display:"flex",alignItems:"center",gap:4}}>
+              <span style={{transform:selectedMonth===ym?"rotate(180deg)":"none",transition:"0.2s",display:"inline-flex"}}>{I.chevron}</span>
+              {selectedMonth===ym?"Hide":"Show"} payment details
+            </button>
+            {selectedMonth===ym&&<div style={{marginTop:12,borderTop:"1px solid rgba(182,139,46,0.06)",paddingTop:12}}>
+              {report.snapshot.payments&&report.snapshot.payments.length>0
+                ?<Tbl cols={[{label:"Collector",bold:true,render:r=>r.collectorName},{label:"Artwork",key:"artworkTitle"},{label:"Month",render:r=>`Mo ${r.monthNumber}`},{label:"Method",key:"method"},{label:"Amount",right:true,gold:true,render:r=>"R "+fmt(r.amount)}]} data={report.snapshot.payments}/>
+                :<p style={{fontSize:13,color:"#5a564e"}}>No payments recorded this month.</p>}
+            </div>}
+          </>}
         </div>
       </Card>;
     })}
