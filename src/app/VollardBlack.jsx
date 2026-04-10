@@ -77,7 +77,7 @@ const calcDeal = (artworkValue, salePrice, model, monthsPaid, galleryPct, vbPct,
 const fmt = (n) => Number(n||0).toLocaleString("en-ZA",{minimumFractionDigits:2,maximumFractionDigits:2});
 const uid = () => "VB"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const td = () => new Date().toISOString().slice(0,10);
-const SK = "vollard_black_v6";
+const SK = "vollard_black_v7";
 const TABLES = ["artworks","artists","collectors","schedules","payments","sales","reports","buyers"];
 const fresh = () => ({artworks:[],artists:[],collectors:[],schedules:[],payments:[],sales:[],reports:[],buyers:[]});
 const loadLocal = () => { try { const d=JSON.parse(localStorage.getItem(SK)); return d?.artworks?d:fresh(); } catch{return fresh();} };
@@ -446,7 +446,7 @@ export default function App(){
     reports:<ReportsPage data={d} actions={actions}/>,
   };
 
-  if(loading)return<div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",background:"#0c0b09"}}><div style={{textAlign:"center"}}><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:32,fontWeight:300,letterSpacing:8,color:"#f5f0e8",marginBottom:12}}>VOLLARD <span style={{color:"#b68b2e"}}>BLACK</span></div><div style={{fontSize:13,color:"#5a564e",letterSpacing:2}}>Loading platform...</div></div></div>;
+  if(loading)return<div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",background:"#0c0b09"}}><div style={{textAlign:"center"}}><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:36,fontWeight:300,letterSpacing:10,color:"#f5f0e8",marginBottom:10}}>VOLLARD <span style={{color:"#b68b2e"}}>BLACK</span></div><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:14,fontWeight:300,letterSpacing:4,color:"#b68b2e",marginBottom:20,fontStyle:"italic"}}>The Collector's Suite</div><div style={{width:32,height:1,background:"rgba(182,139,46,0.3)",margin:"0 auto 20px"}}/><div style={{fontSize:11,color:"#3a3832",letterSpacing:3,textTransform:"uppercase"}}>Loading platform...</div></div></div>;
 
   return(
     <div style={{display:"flex",minHeight:"100vh",background:"#0c0b09",fontFamily:"DM Sans,sans-serif",color:"#e8e2d6"}}>
@@ -793,17 +793,21 @@ function CalcPage(){
   const [saleVal,setSaleVal]=useState("");
   const [acqModel,setAcqModel]=useState("A");
   const [monthsSold,setMonthsSold]=useState("");
-  const [galleryPct,setGalleryPct]=useState(40);
-  const [vbPct2,setVbPct2]=useState(30);
-  const [artistPct,setArtistPct]=useState(30);
-  const [introPct,setIntroPct]=useState(0);
+  const [galleryPct,setGalleryPct]=useState("");
+  const [vbPct2,setVbPct2]=useState("");
+  const [artistPct,setArtistPct]=useState("");
+  const [introPct,setIntroPct]=useState("");
 
   const av=parseFloat(artVal)||0;
   const sp=parseFloat(saleVal)||av;
   const mo=Math.max(1,Math.min(parseInt(monthsSold)||1,MODELS[acqModel].term));
   const m=MODELS[acqModel];
-  const deal=av>0?calcDeal(av,sp,acqModel,mo,galleryPct,vbPct2,artistPct,introPct):{};
-  const splitTotal=Number(galleryPct)+Number(vbPct2)+Number(artistPct);
+  const gPctNum=parseFloat(galleryPct)||40;
+  const vPctNum=parseFloat(vbPct2)||30;
+  const aPctNum=parseFloat(artistPct)||30;
+  const iPctNum=parseFloat(introPct)||0;
+  const deal=av>0?calcDeal(av,sp,acqModel,mo,gPctNum,vPctNum,aPctNum,iPctNum):{};
+  const splitTotal=gPctNum+vPctNum+aPctNum;
   const splitOk=Math.round(splitTotal)===100;
   const scenarioMonths=[1,3,6,9,12,15,18,21,24].filter(x=>x<=m.term);
   const belowValue=av>0&&sp>0&&sp<av;
@@ -850,7 +854,7 @@ function CalcPage(){
         <Card style={{marginBottom:14}}>
           <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:12}}>Introducer Fee</div>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <input type="number" value={introPct||""} onChange={e=>setIntroPct(parseFloat(e.target.value)||0)} style={{...is,flex:1}} placeholder="0" min={0} max={50}/>
+            <input type="number" value={introPct} onChange={e=>setIntroPct(e.target.value)} style={{...is,flex:1}} placeholder="0" min={0} max={50}/>
             <span style={{fontSize:13,color:"#5a564e",flexShrink:0}}>% of payout</span>
             {av>0&&deal.introFee>0&&<span style={{fontSize:13,color:"#c45c4a",fontWeight:600,flexShrink:0}}>R {fmt(deal.introFee)}</span>}
           </div>
@@ -862,9 +866,9 @@ function CalcPage(){
           {!splitOk&&<div style={{fontSize:11,color:"#5a564e",marginBottom:10}}>Applies to VB's {Math.round(m.vbPct*100)}% fee only — not visible to collectors</div>}
           {[["Gallery",galleryPct,setGalleryPct],["Vollard Black",vbPct2,setVbPct2],["Artist",artistPct,setArtistPct]].map(([l,v,sv])=><div key={l} style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
             <span style={{fontSize:13,color:"#e8e2d6",minWidth:90,flexShrink:0}}>{l}</span>
-            <input type="number" value={v||""} onChange={e=>sv(parseFloat(e.target.value)||0)} style={{...is,width:64,padding:"8px 10px",fontSize:13,flexShrink:0}} min={0} max={100} placeholder="0"/>
+            <input type="number" value={v} onChange={e=>sv(e.target.value)} style={{...is,width:64,padding:"8px 10px",fontSize:13,flexShrink:0}} min={0} max={100} placeholder="0"/>
             <span style={{fontSize:12,color:"#5a564e",flexShrink:0}}>%</span>
-            {av>0&&deal.vbTotal>0&&splitOk&&<span style={{fontSize:12,color:"#b68b2e",marginLeft:"auto",flexShrink:0}}>R {fmt(deal.vbTotal*(v/100))}</span>}
+            {av>0&&deal.vbTotal>0&&splitOk&&<span style={{fontSize:12,color:"#b68b2e",marginLeft:"auto",flexShrink:0}}>R {fmt(deal.vbTotal*((parseFloat(v)||0)/100))}</span>}
           </div>)}
           {splitOk&&av>0&&deal.vbTotal>0&&<div style={{borderTop:"1px solid rgba(182,139,46,0.08)",paddingTop:10,marginTop:4,display:"flex",justifyContent:"space-between",fontSize:12}}><span style={{color:"#5a564e"}}>Total VB fee split</span><span style={{color:"#b68b2e",fontWeight:600}}>R {fmt(deal.vbTotal)}</span></div>}
         </Card>
@@ -1189,17 +1193,21 @@ function SalesPage({data,actions}){
 }
 
 function SettlementModal({sale,data,onClose}){
-  const [galleryPct,setGalleryPct]=useState(40);
-  const [vbPct,setVbPct]=useState(30);
-  const [artistPct,setArtistPct]=useState(30);
-  const [introPct,setIntroPct]=useState(0);
+  const [galleryPct,setGalleryPct]=useState("40");
+  const [vbPct,setVbPct]=useState("30");
+  const [artistPct,setArtistPct]=useState("30");
+  const [introPct,setIntroPct]=useState("0");
   const sched=data.schedules.find(s=>s.artworkId===sale.artworkId);
   const art=data.artworks.find(a=>a.id===sale.artworkId);
   const acqModel=sched?.acquisitionModel||sale.acquisitionModel||"A";
   const artworkValue=art?.recommendedPrice||sale.salePrice;
   const monthsPaid=sched?.monthsPaid||0;
-  const splitOk=Math.round(galleryPct+vbPct+artistPct)===100;
-  const deal=calcDeal(artworkValue,sale.salePrice,acqModel,monthsPaid,galleryPct,vbPct,artistPct,introPct);
+  const gN=parseFloat(galleryPct)||0;
+  const vN=parseFloat(vbPct)||0;
+  const aN=parseFloat(artistPct)||0;
+  const iN=parseFloat(introPct)||0;
+  const splitOk=Math.round(gN+vN+aN)===100;
+  const deal=calcDeal(artworkValue,sale.salePrice,acqModel,monthsPaid,gN,vN,aN,iN);
 
   return<Modal title="Deal Settlement Sheet" onClose={onClose} wide>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:20}}>
@@ -1242,15 +1250,15 @@ function SettlementModal({sale,data,onClose}){
         {[["Gallery",galleryPct,setGalleryPct],["Vollard Black",vbPct,setVbPct],["Artist",artistPct,setArtistPct]].map(([l,v,sv])=><div key={l} style={{background:"#1e1d1a",borderRadius:8,padding:12}}>
           <div style={{fontSize:11,color:"#5a564e",marginBottom:6}}>{l}</div>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <input type="number" value={v} onChange={e=>sv(Number(e.target.value))} style={{...is,width:60,padding:"6px 8px",fontSize:13}} min={0} max={100}/>
+            <input type="number" value={v} onChange={e=>sv(e.target.value)} style={{...is,width:60,padding:"6px 8px",fontSize:13}} min={0} max={100} placeholder="0"/>
             <span style={{fontSize:12,color:"#5a564e"}}>%</span>
-            <span style={{fontSize:14,fontWeight:600,color:"#b68b2e",marginLeft:"auto"}}>R {fmt(deal.vbTotal*(v/100))}</span>
+            <span style={{fontSize:14,fontWeight:600,color:"#b68b2e",marginLeft:"auto"}}>R {fmt(deal.vbTotal*((parseFloat(v)||0)/100))}</span>
           </div>
         </div>)}
         <div style={{background:"#1e1d1a",borderRadius:8,padding:12}}>
           <div style={{fontSize:11,color:"#5a564e",marginBottom:6}}>Introducer Fee</div>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <input type="number" value={introPct} onChange={e=>setIntroPct(Number(e.target.value))} style={{...is,width:60,padding:"6px 8px",fontSize:13}} min={0} max={50}/>
+            <input type="number" value={introPct} onChange={e=>setIntroPct(e.target.value)} style={{...is,width:60,padding:"6px 8px",fontSize:13}} min={0} max={50} placeholder="0"/>
             <span style={{fontSize:12,color:"#5a564e"}}>%</span>
             <span style={{fontSize:14,fontWeight:600,color:"#c45c4a",marginLeft:"auto"}}>R {fmt(deal.introFee)}</span>
           </div>
@@ -1260,7 +1268,7 @@ function SettlementModal({sale,data,onClose}){
 
     <div style={{display:"flex",gap:10,justifyContent:"flex-end"}}>
       <Btn ghost onClick={onClose}>Close</Btn>
-      <Btn gold onClick={()=>generateSettlementPDF(sale,artworkValue,monthsPaid,acqModel,galleryPct,vbPct,artistPct,introPct)}>{I.pdf} Download PDF</Btn>
+      <Btn gold onClick={()=>generateSettlementPDF(sale,artworkValue,monthsPaid,acqModel,gN,vN,aN,iN)}>{I.pdf} Download PDF</Btn>
     </div>
   </Modal>;
 }
@@ -1408,8 +1416,8 @@ function ReportsPage({data,actions}){
 function GalleryPage(){
   const [costs,setCosts]=useState("");
   const [price,setPrice]=useState("");
-  const [galPct,setGalPct]=useState(40);
-  const [sales,setSales]=useState(1);
+  const [galPct,setGalPct]=useState("40");
+  const [sales,setSales]=useState("1");
 
   const c=parseFloat(costs)||0;
   const p=parseFloat(price)||0;
