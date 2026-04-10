@@ -228,6 +228,7 @@ const I={
   lock:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>,
   dl:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
   pdf:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>,
+  gallery:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
 };
 
 const stC={Available:{bg:"rgba(74,158,107,0.12)",c:"#4a9e6b"},Reserved:{bg:"rgba(182,139,46,0.12)",c:"#b68b2e"},"In Gallery":{bg:"rgba(100,140,200,0.12)",c:"#648cc8"},Sold:{bg:"rgba(196,92,74,0.12)",c:"#c45c4a"},"In Dispute":{bg:"rgba(196,92,74,0.12)",c:"#c45c4a"}};
@@ -423,6 +424,7 @@ export default function App(){
     {id:"collectors",label:"Collectors",icon:I.ppl},
     {id:"buyers",label:"Buyers",icon:I.buyer},
     {id:"calculator",label:"Calculator",icon:I.calc},
+    {id:"gallery",label:"Gallery",icon:I.gallery},
     {id:"invoices",label:"Invoicing",icon:I.bill},
     {id:"sales",label:"Sales",icon:I.sale},
     {id:"reports",label:"Reports",icon:I.report},
@@ -438,6 +440,7 @@ export default function App(){
     collectors:<CollectorsPage data={d} up={up} actions={actions}/>,
     buyers:<BuyersPage data={d} actions={actions}/>,
     calculator:<CalcPage/>,
+    gallery:<GalleryPage/>,
     invoices:<InvoicePage data={d} actions={actions} initialFilter={invoiceFilter} clearFilter={()=>setInvoiceFilter(null)}/>,
     sales:<SalesPage data={d} actions={actions}/>,
     reports:<ReportsPage data={d} actions={actions}/>,
@@ -1396,5 +1399,112 @@ function ReportsPage({data,actions}){
         </div>
       </Card>;
     })}
+  </div>);
+}
+
+// ═══════════════════════════════════════════
+// GALLERY BREAK-EVEN
+// ═══════════════════════════════════════════
+function GalleryPage(){
+  const [costs,setCosts]=useState("");
+  const [price,setPrice]=useState("");
+  const [galPct,setGalPct]=useState(40);
+  const [sales,setSales]=useState(1);
+
+  const c=parseFloat(costs)||0;
+  const p=parseFloat(price)||0;
+  const gp=(parseFloat(galPct)||0)/100;
+  const s=parseFloat(sales)||0;
+
+  const vbFee=p*0.40;
+  const moPerArt=vbFee/24*gp;
+  const saleIncome=vbFee*gp;
+  const totalSalesIncome=saleIncome*s;
+  const costsAfterSales=Math.max(0,c-totalSalesIncome);
+  const neededNoSales=moPerArt>0?Math.ceil(c/moPerArt):0;
+  const neededWithSales=moPerArt>0?Math.ceil(costsAfterSales/moPerArt):0;
+  const diff=neededNoSales-neededWithSales;
+  const ready=c>0&&p>0;
+
+  const F=({label,value,onChange,suffix,prefix})=><Field label={label}>
+    <div style={{display:"flex",alignItems:"center",background:"#1e1d1a",border:"1px solid rgba(182,139,46,0.12)",borderRadius:10,overflow:"hidden"}}>
+      {prefix&&<span style={{padding:"0 14px",fontSize:13,color:"#5a564e",borderRight:"1px solid rgba(182,139,46,0.08)",height:48,display:"flex",alignItems:"center",flexShrink:0}}>{prefix}</span>}
+      <input type="number" value={value} onChange={e=>onChange(e.target.value)} min={0} placeholder="0" style={{flex:1,padding:"0 16px",height:48,background:"transparent",border:"none",color:"#f5f0e8",fontFamily:"DM Sans,sans-serif",fontSize:16,fontWeight:500,outline:"none",textAlign:"right"}}/>
+      {suffix&&<span style={{padding:"0 14px",fontSize:13,color:"#5a564e",borderLeft:"1px solid rgba(182,139,46,0.08)",height:48,display:"flex",alignItems:"center",flexShrink:0,whiteSpace:"nowrap"}}>{suffix}</span>}
+    </div>
+  </Field>;
+
+  const Row=({label,val,green})=><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 0",borderBottom:"1px solid rgba(182,139,46,0.05)"}}><span style={{fontSize:13,color:"#5a564e"}}>{label}</span><span style={{fontSize:13,fontWeight:500,color:green?"#4a9e6b":"#b68b2e"}}>{val}</span></div>;
+
+  return(<div>
+    <PT title="Gallery Break-Even" sub="How many artworks under management cover your monthly costs"/>
+    <div style={{display:"grid",gridTemplateColumns:"minmax(0,420px) minmax(0,1fr)",gap:24,alignItems:"start"}}>
+
+      {/* Inputs */}
+      <Card>
+        <F label="Monthly Costs (R)" value={costs} onChange={setCosts} prefix="R"/>
+        <F label="Artwork Price (R)" value={price} onChange={setPrice} prefix="R"/>
+        <F label="Gallery Fee" value={galPct} onChange={setGalPct} suffix="% of VB fee"/>
+        <F label="Expected Sales per Month" value={sales} onChange={setSales} suffix="sales / mo"/>
+
+        {ready&&<>
+          <div style={{height:1,background:"rgba(182,139,46,0.1)",margin:"20px 0"}}/>
+          <Row label="VB fee (40% of artwork)" val={"R "+fmt(vbFee)}/>
+          <Row label="Gallery earns per artwork /mo" val={"R "+fmt(moPerArt)}/>
+          <Row label="Gallery earns per sale" val={"R "+fmt(saleIncome)}/>
+          <Row label={`${s} sale${s!==1?"s":""}/mo income`} val={"R "+fmt(totalSalesIncome)} green/>
+        </>}
+      </Card>
+
+      {/* Results */}
+      <div>
+        {!ready?<Card style={{padding:48,textAlign:"center"}}><div style={{fontSize:36,color:"#5a564e",marginBottom:12}}>◆</div><p style={{color:"#5a564e",fontSize:14}}>Enter your monthly costs and artwork price.</p></Card>:
+        <>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:16}}>
+            {/* Without sales */}
+            <Card style={{textAlign:"center",padding:28,border:"1px solid rgba(182,139,46,0.08)"}}>
+              <div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:14}}>Without sales</div>
+              <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:64,fontWeight:300,lineHeight:1,color:"#f5f0e8"}}>{neededNoSales||"—"}</div>
+              <div style={{fontSize:11,color:"#5a564e",marginTop:10,letterSpacing:1}}>artworks needed</div>
+            </Card>
+            {/* With sales */}
+            <Card style={{textAlign:"center",padding:28,border:"1px solid rgba(182,139,46,0.35)",position:"relative",overflow:"hidden"}}>
+              <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:"linear-gradient(90deg,transparent,#b68b2e,transparent)"}}/>
+              <div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#b68b2e",marginBottom:14}}>With {s} sale{s!==1?"s":""}/mo</div>
+              <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:64,fontWeight:300,lineHeight:1,color:"#4a9e6b"}}>{neededWithSales||"—"}</div>
+              <div style={{fontSize:11,color:"#5a564e",marginTop:10,letterSpacing:1}}>artworks needed</div>
+            </Card>
+          </div>
+
+          {/* Saving strip */}
+          <Card style={{textAlign:"center",padding:18,marginBottom:14,border:diff>0?"1px solid rgba(74,158,107,0.2)":"1px solid rgba(182,139,46,0.1)",background:diff>0?"rgba(74,158,107,0.04)":"rgba(182,139,46,0.02)"}}>
+            <div style={{fontSize:14,fontWeight:500,color:diff>0?"#4a9e6b":"#b68b2e"}}>
+              {diff>0
+                ?`${s} sale${s!==1?"s":""}/mo saves you ${diff} artwork${diff!==1?"s":""} under management`
+                :`${neededNoSales} collectors × R ${fmt(moPerArt)}/mo = R ${fmt(moPerArt*neededNoSales)}/mo`}
+            </div>
+          </Card>
+
+          {/* What this looks like */}
+          <Card>
+            <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:14}}>What This Looks Like</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+              {[
+                {label:"Monthly income at break-even",val:"R "+fmt(moPerArt*neededNoSales),color:"#4a9e6b"},
+                {label:"Monthly costs",val:"R "+fmt(c),color:"#c45c4a"},
+                {label:"Total VB fee per artwork",val:"R "+fmt(vbFee),color:"#b68b2e"},
+                {label:"Gallery earns per artwork (24mo)",val:"R "+fmt(vbFee*gp),color:"#b68b2e"},
+              ].map((x,i)=><div key={i} style={{background:"#1e1d1a",borderRadius:8,padding:14}}>
+                <div style={{fontSize:10,color:"#5a564e",letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>{x.label}</div>
+                <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:22,fontWeight:400,color:x.color}}>{x.val}</div>
+              </div>)}
+            </div>
+            <div style={{fontSize:11,color:"#3a3832",marginTop:14,textAlign:"center",letterSpacing:1}}>
+              Model A · VB fee 40% · 24 month term · Gallery income = monthly collector payments × gallery %
+            </div>
+          </Card>
+        </>}
+      </div>
+    </div>
   </div>);
 }
