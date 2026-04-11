@@ -645,7 +645,11 @@ function Dashboard({data,navTo,chasing,inDispute,cancelled}){
 // CATALOGUE
 // ═══════════════════════════════════════════
 function Catalogue({data,up,actions}){
-  const [modal,setModal]=useState(null);const [search,setSearch]=useState("");const [delModal,setDelModal]=useState(null);
+  const [modal,setModal]=useState(null);
+  const [search,setSearch]=useState("");
+  const [delModal,setDelModal]=useState(null);
+  const [expanded,setExpanded]=useState({});
+
   const blank={id:"",title:"",artist:"",artistId:"",medium:"",dimensions:"",year:"",recommendedPrice:"",imageUrl:"",status:"Available",description:"",galleryName:"",insuranceMonthly:""};
   const save=(a)=>{if(a.id)up("artworks",p=>p.map(x=>x.id===a.id?a:x));else up("artworks",p=>[{...a,id:uid(),createdAt:td()},...p]);setModal(null);};
   const f=data.artworks.filter(a=>(a.title+a.artist+a.status).toLowerCase().includes(search.toLowerCase()));
@@ -656,6 +660,10 @@ function Catalogue({data,up,actions}){
   f.forEach(a=>{const key=a.artist||"Unknown Artist";if(!groups[key])groups[key]=[];groups[key].push(a);});
   const artistNames=Object.keys(groups).sort();
 
+  // All expanded by default
+  const isExpanded=(name)=>expanded[name]!==false;
+  const toggle=(name)=>setExpanded(p=>({...p,[name]:!isExpanded(name)}));
+
   return(<div>
     <PT title="Art Catalogue" sub={`${data.artworks.length} artworks`} action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Add Artwork</Btn>}/>
     <div style={{marginBottom:16}}><input placeholder="Search artworks..." value={search} onChange={e=>setSearch(e.target.value)} style={{...is,maxWidth:360}}/></div>
@@ -664,32 +672,41 @@ function Catalogue({data,up,actions}){
       const artworks=groups[artistName];
       const artistProfile=data.artists?.find(a=>a.name===artistName);
       const totalVal=artworks.reduce((s,a)=>s+(a.recommendedPrice||0),0);
-      return<div key={artistName} style={{marginBottom:24}}>
-        {/* Artist header */}
-        <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:12,padding:"14px 20px",background:"#111010",border:"1px solid rgba(182,139,46,0.12)",borderRadius:12}}>
+      const open=isExpanded(artistName);
+      return<div key={artistName} style={{marginBottom:16}}>
+        {/* Artist header — clickable to collapse */}
+        <button onClick={()=>toggle(artistName)} style={{display:"flex",alignItems:"center",gap:14,width:"100%",padding:"14px 20px",background:"#111010",border:"1px solid rgba(182,139,46,0.12)",borderRadius:open?[12,12,0,0].map(v=>v+"px").join(" "):"12px",cursor:"pointer",textAlign:"left",transition:"border-radius 0.15s"}}>
           <div style={{width:44,height:44,borderRadius:10,flexShrink:0,background:"linear-gradient(135deg,rgba(182,139,46,0.2),rgba(182,139,46,0.05))",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
             {artistProfile?.profileImageUrl?<img src={artistProfile.profileImageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span style={{fontFamily:"Cormorant Garamond,serif",fontSize:18,color:"#b68b2e",fontWeight:600}}>{artistName.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase()}</span>}
           </div>
           <div style={{flex:1}}>
             <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:18,fontWeight:400,color:"#f5f0e8"}}>{artistName}</div>
-            <div style={{fontSize:11,color:"#5a564e",marginTop:2}}>{artworks.length} work{artworks.length!==1?"s":""} · Total value R {fmt(totalVal)}{artistProfile?.medium?` · ${artistProfile.medium}`:""}</div>
+            <div style={{fontSize:11,color:"#5a564e",marginTop:2}}>{artworks.length} work{artworks.length!==1?"s":""} · R {fmt(totalVal)}{artistProfile?.medium?` · ${artistProfile.medium}`:""}</div>
           </div>
-          <div style={{fontSize:11,color:"#5a564e"}}>{artworks.filter(a=>a.status==="Available").length} available · {artworks.filter(a=>a.status==="Reserved").length} reserved · {artworks.filter(a=>a.status==="Sold").length} sold</div>
-        </div>
-        {/* Artworks under this artist */}
-        <Card style={{padding:0,overflow:"hidden"}}>
+          <div style={{fontSize:11,color:"#5a564e",marginRight:12}}>
+            {artworks.filter(a=>a.status==="Available").length} available · {artworks.filter(a=>a.status==="Reserved").length} reserved · {artworks.filter(a=>a.status==="Sold").length} sold
+          </div>
+          {/* Chevron */}
+          <span style={{color:"#5a564e",transition:"transform 0.2s",display:"inline-flex",transform:open?"rotate(180deg)":"none",flexShrink:0}}>{I.chevron}</span>
+        </button>
+
+        {/* Artworks — only shown when expanded */}
+        {open&&<Card style={{padding:0,overflow:"hidden",borderTop:"none",borderRadius:"0 0 12px 12px",border:"1px solid rgba(182,139,46,0.12)"}}>
           <Tbl cols={[
             {label:"",render:r=>r.imageUrl?<div style={{width:44,height:44,borderRadius:6,overflow:"hidden"}}><img src={r.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div>:<div style={{width:44,height:44,borderRadius:6,background:"rgba(182,139,46,0.08)",display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:16,color:"#5a564e"}}>◆</span></div>},
             {label:"Title",key:"title",bold:true},
             {label:"Medium",key:"medium"},
             {label:"Year",key:"year"},
             {label:"Price",right:true,render:r=>"R "+fmt(r.recommendedPrice)},
-            {label:"Model A · 40%",right:true,gold:true,render:r=>"R "+fmt(r.recommendedPrice*0.40)},
-            {label:"Model B · 30%",right:true,render:r=><span style={{color:"#4a9e6b"}}>R {fmt(r.recommendedPrice*0.30)}</span>},
+            {label:"Option 1 · 30%",right:true,gold:true,render:r=>"R "+fmt(r.recommendedPrice*0.30)},
+            {label:"Option 3 · 50%",right:true,render:r=><span style={{color:"#4a9e6b"}}>R {fmt(r.recommendedPrice*0.50)}</span>},
             {label:"Status",render:r=><Badge status={r.status}/>},
-            {label:"",render:r=><div style={{display:"flex",gap:6}}><button onClick={e=>{e.stopPropagation();setModal(r);}} style={{background:"none",border:"none",color:"#8a8477",cursor:"pointer"}}>{I.edit}</button><button onClick={e=>{e.stopPropagation();handleDelete(r);}} style={{background:"none",border:"none",color:"#5a564e",cursor:"pointer"}}>{I.del}</button></div>},
+            {label:"",render:r=><div style={{display:"flex",gap:6}}>
+              <button onClick={e=>{e.stopPropagation();setModal(r);}} style={{background:"none",border:"none",color:"#8a8477",cursor:"pointer"}}>{I.edit}</button>
+              <button onClick={e=>{e.stopPropagation();handleDelete(r);}} style={{background:"none",border:"none",color:"#5a564e",cursor:"pointer"}}>{I.del}</button>
+            </div>},
           ]} data={artworks}/>
-        </Card>
+        </Card>}
       </div>;
     })}
     {modal&&<ArtModal art={modal==="add"?blank:modal} artists={data.artists||[]} onSave={save} onClose={()=>setModal(null)}/>}
