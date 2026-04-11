@@ -88,7 +88,7 @@ const calcDeal = (artworkValue, salePrice, model, monthsPaid, galleryPct, vbBack
 const fmt = (n) => Number(n||0).toLocaleString("en-ZA",{minimumFractionDigits:2,maximumFractionDigits:2});
 const uid = () => "VB"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const td = () => new Date().toISOString().slice(0,10);
-const SK = "vollard_black_v12";
+const SK = "vollard_black_v13";
 const TABLES = ["artworks","artists","collectors","schedules","payments","sales","reports","buyers"];
 const fresh = () => ({artworks:[],artists:[],collectors:[],schedules:[],payments:[],sales:[],reports:[],buyers:[]});
 const loadLocal = () => { try { const d=JSON.parse(localStorage.getItem(SK)); return d?.artworks?d:fresh(); } catch{return fresh();} };
@@ -552,8 +552,8 @@ export default function App(){
     artists:<ArtistsPage data={d} up={up}/>,
     collectors:<CollectorsPage data={d} up={up} actions={actions}/>,
     buyers:<BuyersPage data={d} actions={actions}/>,
-    calculator:<CalcPage/>,
-    gallery:<GalleryPage/>,
+    calculator:<CalcPage data={d} actions={actions}/>,
+    gallery:<GalleryPage data={d} actions={actions}/>,
     invoices:<InvoicePage data={d} actions={actions} initialFilter={invoiceFilter} clearFilter={()=>setInvoiceFilter(null)}/>,
     sales:<SalesPage data={d} actions={actions}/>,
     reports:<ReportsPage data={d} actions={actions}/>,
@@ -998,7 +998,27 @@ function BuyerModal({buyer,onSave,onClose}){
 // ═══════════════════════════════════════════
 // CALCULATOR — Model A & B
 // ═══════════════════════════════════════════
-function CalcPage(){
+function CalcPage({data={},actions={}}){
+  // ── Collector lookup mode ──
+  const [mode,setMode]=useState("manual"); // "manual" | "lookup" | "new"
+  const [selectedScheduleId,setSelectedScheduleId]=useState("");
+  const [newCollectorId,setNewCollectorId]=useState("");
+  const [newArtworkId,setNewArtworkId]=useState("");
+  const [linkOption,setLinkOption]=useState("O1");
+  const [linkDeposit,setLinkDeposit]=useState("none");
+  const [linkDepPct,setLinkDepPct]=useState("10");
+  const [linkSaved,setLinkSaved]=useState(false);
+
+  const schedules=data.schedules||[];
+  const artworks=data.artworks||[];
+  const collectors=data.collectors||[];
+  const gn=c=>c?(c.type==="company"?c.companyName:`${c.firstName} ${c.lastName}`):"";
+
+  // When a schedule is selected, load its values into the calculator
+  const selectedSched=schedules.find(s=>s.id===selectedScheduleId);
+  const selectedArt=selectedSched?artworks.find(a=>a.id===selectedSched.artworkId):null;
+
+  // Auto-fill from selected schedule
   const [artVal,setArtVal]=useState("");
   const [saleVal,setSaleVal]=useState("");
   const [acqModel,setAcqModel]=useState("O1");
@@ -1032,17 +1052,103 @@ function CalcPage(){
   </div>;
 
   return(<div>
-    <PT title="Acquisition Calculator" sub="Model A · Model B · Deal Scenarios"/>
+    <PT title="Acquisition Calculator" sub="Option 1 · Option 2 · Option 3 · Deal Scenarios"/>
+
+    {/* ── Mode selector ── */}
+    <div style={{display:"flex",gap:8,marginBottom:20,borderBottom:"1px solid rgba(182,139,46,0.08)",paddingBottom:16}}>
+      {[["manual","Manual Entry"],["lookup","Load Collector Deal"],["new","Build & Link to Collector"]].map(([id,lbl])=><button key={id} onClick={()=>{setMode(id);setLinkSaved(false);}} style={{padding:"9px 18px",borderRadius:8,border:mode===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:mode===id?"rgba(182,139,46,0.08)":"transparent",color:mode===id?"#b68b2e":"#8a8477",fontSize:12,fontWeight:mode===id?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{lbl}</button>)}
+    </div>
+
+    {/* ── LOOKUP MODE ── */}
+    {mode==="lookup"&&<Card style={{marginBottom:20}}>
+      <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:12}}>Select Collector & Artwork</div>
+      <select value={selectedScheduleId} onChange={e=>{
+        const s=schedules.find(x=>x.id===e.target.value);
+        setSelectedScheduleId(e.target.value);
+        if(s){
+          const art=artworks.find(a=>a.id===s.artworkId);
+          if(art)setArtVal(String(art.recommendedPrice));
+          setAcqModel(s.acquisitionModel||"O1");
+          setMonthsSold(String(s.monthsPaid));
+          setDepositType(s.depositType||"none");
+          setDepositPct(String(s.depositPct||10));
+          setSaleVal("");
+        }
+      }} style={ss}>
+        <option value="">— Select a collector schedule</option>
+        {schedules.filter(s=>s.status!=="Complete"&&s.status!=="Cancelled").map(s=><option key={s.id} value={s.id}>{s.collectorName} · {s.artworkTitle} · {MODELS[s.acquisitionModel||"O1"]?.label} · Mo {s.monthsPaid}</option>)}
+      </select>
+      {selectedSched&&<div style={{marginTop:12,padding:"12px 14px",background:"#1e1d1a",borderRadius:8,fontSize:13}}>
+        <div style={{display:"flex",gap:16,flexWrap:"wrap"}}>
+          <span style={{color:"#5a564e"}}>Collector: <strong style={{color:"#f5f0e8"}}>{selectedSched.collectorName}</strong></span>
+          <span style={{color:"#5a564e"}}>Artwork: <strong style={{color:"#f5f0e8"}}>{selectedSched.artworkTitle}</strong></span>
+          <span style={{color:"#5a564e"}}>Paid: <strong style={{color:"#b68b2e"}}>{selectedSched.monthsPaid} of {selectedSched.termMonths} months</strong></span>
+          <span style={{color:"#5a564e"}}>Status: <Badge status={selectedSched.status} sched/></span>
+        </div>
+        <div style={{fontSize:11,color:"#4a9e6b",marginTop:8}}>Deal loaded into calculator below ↓ Enter a sale price to see the settlement.</div>
+      </div>}
+    </Card>}
+
+    {/* ── NEW + LINK MODE ── */}
+    {mode==="new"&&<Card style={{marginBottom:20}}>
+      <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:12}}>Build a New Deal & Link to Collector</div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}>
+        <Field label="Collector">
+          <select value={newCollectorId} onChange={e=>setNewCollectorId(e.target.value)} style={ss}>
+            <option value="">— Select collector</option>
+            {collectors.map(c=><option key={c.id} value={c.id}>{gn(c)}</option>)}
+          </select>
+        </Field>
+        <Field label="Artwork">
+          <select value={newArtworkId} onChange={e=>{
+            setNewArtworkId(e.target.value);
+            const art=artworks.find(a=>a.id===e.target.value);
+            if(art)setArtVal(String(art.recommendedPrice));
+          }} style={ss}>
+            <option value="">— Select artwork</option>
+            {artworks.filter(a=>a.status==="Available").map(a=><option key={a.id} value={a.id}>{a.title} — R {fmt(a.recommendedPrice)}</option>)}
+          </select>
+        </Field>
+      </div>
+      <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:8}}>Acquisition Option</div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:14}}>
+        {["O1","O2","O3"].map(k=>{const mod=MODELS[k];const on=linkOption===k;return<button key={k} onClick={()=>setLinkOption(k)} style={{padding:10,borderRadius:8,border:on?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.12)",background:on?"rgba(182,139,46,0.08)":"#1e1d1a",color:on?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"center",fontSize:11,fontWeight:on?600:400}}>
+          <div style={{fontWeight:600}}>{mod.label.split("·")[0].trim()}</div>
+          <div style={{fontSize:10,opacity:0.7}}>{Math.round(mod.vbPct*100)}/{Math.round(mod.colPct*100)} · {mod.term}mo</div>
+          {newArtworkId&&<div style={{fontSize:11,color:on?"#b68b2e":"#5a564e",marginTop:4,fontWeight:600}}>R {fmt((artworks.find(a=>a.id===newArtworkId)?.recommendedPrice||0)*mod.vbPct/mod.term)}/mo</div>}
+        </button>;})}
+      </div>
+      <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:8}}>Deposit</div>
+      <div style={{display:"flex",gap:8,marginBottom:linkDeposit!=="none"?10:0}}>
+        {[["none","No Deposit"],["toward","Deposit toward fee"]].map(([id,lbl])=><button key={id} onClick={()=>setLinkDeposit(id)} style={{flex:1,padding:"9px 12px",borderRadius:8,border:linkDeposit===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.12)",background:linkDeposit===id?"rgba(182,139,46,0.08)":"#1e1d1a",color:linkDeposit===id?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",fontSize:12,fontWeight:linkDeposit===id?600:400}}>{lbl}</button>)}
+      </div>
+      {linkDeposit!=="none"&&<div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+        <input type="number" value={linkDepPct} onChange={e=>setLinkDepPct(e.target.value)} style={{...is,width:70}} placeholder="10"/>
+        <span style={{fontSize:13,color:"#5a564e"}}>%</span>
+        {newArtworkId&&<span style={{fontSize:12,color:"#b68b2e",fontWeight:600,marginLeft:"auto"}}>= R {fmt((artworks.find(a=>a.id===newArtworkId)?.recommendedPrice||0)*(parseFloat(linkDepPct)||0)/100)}</span>}
+      </div>}
+      {linkSaved?<div style={{padding:"10px 14px",background:"rgba(74,158,107,0.08)",border:"1px solid rgba(74,158,107,0.2)",borderRadius:8,fontSize:13,color:"#4a9e6b"}}>✓ Schedule created successfully. Check Invoicing to manage payments.</div>:
+      <Btn gold disabled={!newCollectorId||!newArtworkId} onClick={async()=>{
+        await actions.linkArtwork(newCollectorId,newArtworkId,linkOption,linkDeposit,parseFloat(linkDepPct)||0);
+        setAcqModel(linkOption);
+        const art=artworks.find(a=>a.id===newArtworkId);
+        if(art)setArtVal(String(art.recommendedPrice));
+        setDepositType(linkDeposit);
+        setDepositPct(linkDepPct);
+        setMonthsSold("0");
+        setLinkSaved(true);
+      }}>Create Schedule</Btn>}
+    </Card>}
+
     <div style={{display:"grid",gridTemplateColumns:"300px 1fr",gap:24,alignItems:"start"}}>
 
       {/* ── LEFT: Inputs only ── */}
       <div>
-        {/* Model */}
+        {/* Option selector */}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:14}}>
           {["O1","O2","O3"].map(k=>{const mod=MODELS[k];const on=acqModel===k;return<button key={k} onClick={()=>{setAcqModel(k);setMonthsSold("");}} style={{padding:12,borderRadius:10,border:on?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:on?"rgba(182,139,46,0.08)":"#1e1d1a",color:on?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left"}}>
             <div style={{fontSize:12,fontWeight:600}}>{mod.label}</div>
             <div style={{fontSize:10,opacity:0.8,marginTop:2}}>VB {Math.round(mod.vbPct*100)}% · {mod.term}mo</div>
-            {k==="A36"&&<div style={{fontSize:10,color:"#5a564e",marginTop:2}}>R 100k+ only</div>}
             {av>0&&<div style={{fontSize:11,color:on?"#b68b2e":"#5a564e",marginTop:4,fontWeight:600}}>R {fmt(av*mod.vbPct/mod.term)}/mo</div>}
           </button>;})}
         </div>
@@ -1633,16 +1739,18 @@ function ReportsPage({data,actions}){
 function GalleryPage(){
   const [costs,setCosts]=useState("");
   const [price,setPrice]=useState("");
-  const [galPct,setGalPct]=useState("40");
-  const [sales,setSales]=useState("1");
+  const [galPct,setGalPct]=useState("");
+  const [sales,setSales]=useState("");
+  const [option,setOption]=useState("O1");
 
   const c=parseFloat(costs)||0;
   const p=parseFloat(price)||0;
-  const gp=(parseFloat(galPct)||0)/100;
+  const gp=(parseFloat(galPct)||40)/100;
   const s=parseFloat(sales)||0;
+  const m=MODELS[option];
 
-  const vbFee=p*0.40;
-  const moPerArt=vbFee/24*gp;
+  const vbFee=p*m.vbPct;
+  const moPerArt=vbFee/m.term*gp;
   const saleIncome=vbFee*gp;
   const totalSalesIncome=saleIncome*s;
   const costsAfterSales=Math.max(0,c-totalSalesIncome);
@@ -1651,7 +1759,7 @@ function GalleryPage(){
   const diff=neededNoSales-neededWithSales;
   const ready=c>0&&p>0;
 
-  const F=({label,value,onChange,suffix,prefix})=><Field label={label}>
+  const FI=({label,value,onChange,suffix,prefix})=><Field label={label}>
     <div style={{display:"flex",alignItems:"center",background:"#1e1d1a",border:"1px solid rgba(182,139,46,0.12)",borderRadius:10,overflow:"hidden"}}>
       {prefix&&<span style={{padding:"0 14px",fontSize:13,color:"#5a564e",borderRight:"1px solid rgba(182,139,46,0.08)",height:48,display:"flex",alignItems:"center",flexShrink:0}}>{prefix}</span>}
       <input type="number" value={value} onChange={e=>onChange(e.target.value)} min={0} placeholder="0" style={{flex:1,padding:"0 16px",height:48,background:"transparent",border:"none",color:"#f5f0e8",fontFamily:"DM Sans,sans-serif",fontSize:16,fontWeight:500,outline:"none",textAlign:"right"}}/>
@@ -1665,67 +1773,66 @@ function GalleryPage(){
     <PT title="Gallery Break-Even" sub="How many artworks under management cover your monthly costs"/>
     <div style={{display:"grid",gridTemplateColumns:"minmax(0,420px) minmax(0,1fr)",gap:24,alignItems:"start"}}>
 
-      {/* Inputs */}
       <Card>
-        <F label="Monthly Costs (R)" value={costs} onChange={setCosts} prefix="R"/>
-        <F label="Artwork Price (R)" value={price} onChange={setPrice} prefix="R"/>
-        <F label="Gallery Fee" value={galPct} onChange={setGalPct} suffix="% of VB fee"/>
-        <F label="Expected Sales per Month" value={sales} onChange={setSales} suffix="sales / mo"/>
+        {/* Option selector */}
+        <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:10}}>Acquisition Option</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:20}}>
+          {["O1","O2","O3"].map(k=>{const mod=MODELS[k];const on=option===k;return<button key={k} onClick={()=>setOption(k)} style={{padding:10,borderRadius:8,border:on?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.12)",background:on?"rgba(182,139,46,0.08)":"#1e1d1a",color:on?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"center",fontSize:11,fontWeight:on?600:400}}>
+            <div style={{fontWeight:600,marginBottom:2}}>{mod.label.split("·")[0].trim()}</div>
+            <div style={{fontSize:10,opacity:0.7}}>{Math.round(mod.vbPct*100)}/{Math.round(mod.colPct*100)} · {mod.term}mo</div>
+          </button>;})}
+        </div>
+
+        <FI label="Monthly Costs (R)" value={costs} onChange={setCosts} prefix="R"/>
+        <FI label="Artwork Price (R)" value={price} onChange={setPrice} prefix="R"/>
+        <FI label="Gallery Fee" value={galPct} onChange={setGalPct} suffix="% of VB fee"/>
+        <FI label="Expected Sales per Month" value={sales} onChange={setSales} suffix="sales / mo"/>
 
         {ready&&<>
           <div style={{height:1,background:"rgba(182,139,46,0.1)",margin:"20px 0"}}/>
-          <Row label="VB fee (40% of artwork)" val={"R "+fmt(vbFee)}/>
+          <Row label={`VB fee (${Math.round(m.vbPct*100)}% of artwork)`} val={"R "+fmt(vbFee)}/>
           <Row label="Gallery earns per artwork /mo" val={"R "+fmt(moPerArt)}/>
           <Row label="Gallery earns per sale" val={"R "+fmt(saleIncome)}/>
-          <Row label={`${s} sale${s!==1?"s":""}/mo income`} val={"R "+fmt(totalSalesIncome)} green/>
+          <Row label={`${s||0} sale${s!==1?"s":""}/mo income`} val={"R "+fmt(totalSalesIncome)} green/>
         </>}
       </Card>
 
-      {/* Results */}
       <div>
         {!ready?<Card style={{padding:48,textAlign:"center"}}><div style={{fontSize:36,color:"#5a564e",marginBottom:12}}>◆</div><p style={{color:"#5a564e",fontSize:14}}>Enter your monthly costs and artwork price.</p></Card>:
         <>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:16}}>
-            {/* Without sales */}
             <Card style={{textAlign:"center",padding:28,border:"1px solid rgba(182,139,46,0.08)"}}>
               <div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:14}}>Without sales</div>
               <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:64,fontWeight:300,lineHeight:1,color:"#f5f0e8"}}>{neededNoSales||"—"}</div>
               <div style={{fontSize:11,color:"#5a564e",marginTop:10,letterSpacing:1}}>artworks needed</div>
             </Card>
-            {/* With sales */}
             <Card style={{textAlign:"center",padding:28,border:"1px solid rgba(182,139,46,0.35)",position:"relative",overflow:"hidden"}}>
               <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:"linear-gradient(90deg,transparent,#b68b2e,transparent)"}}/>
-              <div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#b68b2e",marginBottom:14}}>With {s} sale{s!==1?"s":""}/mo</div>
+              <div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#b68b2e",marginBottom:14}}>With {s||0} sale{s!==1?"s":""}/mo</div>
               <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:64,fontWeight:300,lineHeight:1,color:"#4a9e6b"}}>{neededWithSales||"—"}</div>
               <div style={{fontSize:11,color:"#5a564e",marginTop:10,letterSpacing:1}}>artworks needed</div>
             </Card>
           </div>
-
-          {/* Saving strip */}
           <Card style={{textAlign:"center",padding:18,marginBottom:14,border:diff>0?"1px solid rgba(74,158,107,0.2)":"1px solid rgba(182,139,46,0.1)",background:diff>0?"rgba(74,158,107,0.04)":"rgba(182,139,46,0.02)"}}>
             <div style={{fontSize:14,fontWeight:500,color:diff>0?"#4a9e6b":"#b68b2e"}}>
-              {diff>0
-                ?`${s} sale${s!==1?"s":""}/mo saves you ${diff} artwork${diff!==1?"s":""} under management`
-                :`${neededNoSales} collectors × R ${fmt(moPerArt)}/mo = R ${fmt(moPerArt*neededNoSales)}/mo`}
+              {diff>0?`${s} sale${s!==1?"s":""}/mo saves you ${diff} artwork${diff!==1?"s":""} under management`:`${neededNoSales} collectors × R ${fmt(moPerArt)}/mo = R ${fmt(moPerArt*neededNoSales)}/mo`}
             </div>
           </Card>
-
-          {/* What this looks like */}
           <Card>
             <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:14}}>What This Looks Like</div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
               {[
                 {label:"Monthly income at break-even",val:"R "+fmt(moPerArt*neededNoSales),color:"#4a9e6b"},
                 {label:"Monthly costs",val:"R "+fmt(c),color:"#c45c4a"},
-                {label:"Total VB fee per artwork",val:"R "+fmt(vbFee),color:"#b68b2e"},
-                {label:"Gallery earns per artwork (24mo)",val:"R "+fmt(vbFee*gp),color:"#b68b2e"},
+                {label:`Total VB fee per artwork (${Math.round(m.vbPct*100)}%)`,val:"R "+fmt(vbFee),color:"#b68b2e"},
+                {label:`Gallery earns per artwork (${m.term}mo)`,val:"R "+fmt(vbFee*gp),color:"#b68b2e"},
               ].map((x,i)=><div key={i} style={{background:"#1e1d1a",borderRadius:8,padding:14}}>
                 <div style={{fontSize:10,color:"#5a564e",letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>{x.label}</div>
                 <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:22,fontWeight:400,color:x.color}}>{x.val}</div>
               </div>)}
             </div>
             <div style={{fontSize:11,color:"#3a3832",marginTop:14,textAlign:"center",letterSpacing:1}}>
-              Model A · VB fee 40% · 24 month term · Gallery income = monthly collector payments × gallery %
+              {m.label} · VB fee {Math.round(m.vbPct*100)}% · {m.term} month term · Gallery income = monthly payments × gallery %
             </div>
           </Card>
         </>}
