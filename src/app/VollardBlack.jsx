@@ -32,17 +32,12 @@ const calcDeal = (artworkValue, salePrice, model, monthsPaid, galleryPct, vbPct,
   const depositAmt = artworkValue * (depositPct / 100);
 
   // Monthly depends on deposit type
+  // toward: deposit counts toward VB fee, reduces monthly
+  // none: full VB fee paid monthly
   let remainingFee, monthly, totalPaid;
   if(depositType === "toward") {
     remainingFee = Math.max(0, vbFee - depositAmt);
     monthly = remainingFee / m.term;
-    // Total paid = deposit + (monthly × monthsPaid)
-    // Month 0 = deposit month, months 1+ = regular monthly
-    totalPaid = depositAmt + (monthly * monthsPaid);
-  } else if(depositType === "separate") {
-    remainingFee = vbFee;
-    monthly = vbFee / m.term;
-    // Deposit is on top — always paid regardless
     totalPaid = depositAmt + (monthly * monthsPaid);
   } else {
     remainingFee = vbFee;
@@ -50,11 +45,10 @@ const calcDeal = (artworkValue, salePrice, model, monthsPaid, galleryPct, vbPct,
     totalPaid = monthly * monthsPaid;
   }
 
-  // VB balance = what's still owed of the VB fee at time of sale
-  const vbBalanceFromMonthly = depositType === "toward"
+  // VB balance = unpaid portion of VB fee at time of sale
+  const vbBalance = depositType === "toward"
     ? Math.max(0, remainingFee - (monthly * monthsPaid))
     : Math.max(0, vbFee - (monthly * monthsPaid));
-  const vbBalance = vbBalanceFromMonthly;
 
   const surplus = Math.max(0, salePrice - artworkValue);
   const deficit = Math.max(0, artworkValue - salePrice);
@@ -68,11 +62,10 @@ const calcDeal = (artworkValue, salePrice, model, monthsPaid, galleryPct, vbPct,
   const introFee = Math.max(0, colAfterBalance) * (introFeePct / 100);
   const colNet = colAfterBalance - introFee;
 
-  // Profit = received minus everything paid (monthly + deposit)
   const colProfit = colNet - totalPaid;
   const colROI = totalPaid > 0 ? (colProfit / totalPaid) * 100 : 0;
 
-  const vbTotal = vbFee + surplusVB + (depositType === "separate" ? depositAmt : 0);
+  const vbTotal = vbFee + surplusVB;
 
   const gPct = galleryPct / 100;
   const vPct2 = vbPct / 100;
@@ -720,8 +713,7 @@ function LinkMdl({col,arts,onLink,onClose,gn}){
 
   const depTypes=[
     {id:"none",label:"No Deposit",sub:"Full fee paid monthly"},
-    {id:"toward",label:"Deposit → Toward Fee",sub:"Reduces monthly payments"},
-    {id:"separate",label:"Deposit + Full Monthly",sub:"Commitment fee on top"},
+    {id:"toward",label:"Deposit toward fee",sub:"Reduces monthly payments — same total"},
   ];
 
   return(<Modal title={`Link Artwork — ${gn(col)}`} onClose={onClose} wide>
@@ -765,7 +757,7 @@ function LinkMdl({col,arts,onLink,onClose,gn}){
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:13}}>
         <span style={{color:"#8a8477"}}>Artwork value:</span><span style={{textAlign:"right"}}>R {fmt(art.recommendedPrice)}</span>
         <span style={{color:"#8a8477"}}>VB fee ({Math.round(m.vbPct*100)}%):</span><span style={{textAlign:"right",color:"#b68b2e",fontWeight:600}}>R {fmt(vbFee)}</span>
-        {depositType!=="none"&&<><span style={{color:"#8a8477"}}>Deposit ({dp}%) — {depositType==="toward"?"toward fee":"separate"}:</span><span style={{textAlign:"right",color:"#b68b2e"}}>R {fmt(depositAmt)}</span></>}
+        {depositType!=="none"&&<><span style={{color:"#8a8477"}}>Deposit ({dp}%) — toward fee:</span><span style={{textAlign:"right",color:"#b68b2e"}}>R {fmt(depositAmt)}</span></>}
         {depositType==="toward"&&<><span style={{color:"#8a8477"}}>Remaining fee after deposit:</span><span style={{textAlign:"right"}}>R {fmt(remainingFee)}</span></>}
         <div style={{gridColumn:"1/-1",height:1,background:"rgba(182,139,46,0.1)",margin:"4px 0"}}/>
         <span style={{color:"#b68b2e",fontWeight:600}}>Monthly payment:</span><span style={{textAlign:"right",fontWeight:600,color:"#b68b2e"}}>R {fmt(monthly)}/mo × {m.term}</span>
@@ -944,7 +936,7 @@ function CalcPage(){
         <Card style={{marginBottom:14}}>
           <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:12}}>Deposit</div>
           <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:depositType!=="none"?12:0}}>
-            {[["none","No Deposit"],["toward","Toward Fee — reduces monthly"],["separate","Separate — extra on top"]].map(([id,lbl])=><button key={id} onClick={()=>setDepositType(id)} style={{padding:"10px 12px",borderRadius:8,border:depositType===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.12)",background:depositType===id?"rgba(182,139,46,0.08)":"#1e1d1a",color:depositType===id?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left",fontSize:12,fontWeight:depositType===id?600:400,transition:"all 0.15s"}}>{lbl}</button>)}
+            {[["none","No Deposit"],["toward","Deposit toward fee — reduces monthly"]].map(([id,lbl])=><button key={id} onClick={()=>setDepositType(id)} style={{padding:"10px 12px",borderRadius:8,border:depositType===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.12)",background:depositType===id?"rgba(182,139,46,0.08)":"#1e1d1a",color:depositType===id?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left",fontSize:12,fontWeight:depositType===id?600:400,transition:"all 0.15s"}}>{lbl}</button>)}
           </div>
           {depositType!=="none"&&<div style={{display:"flex",alignItems:"center",gap:10}}>
             <input type="number" value={depositPct} onChange={e=>setDepositPct(e.target.value)} style={{...is,width:80}} placeholder="10" min={1} max={99}/>
