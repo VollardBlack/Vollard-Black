@@ -7,9 +7,9 @@ import { db } from "./supabase";
 // MODEL B: VB 30%, Collector 70%, 12 months
 // Both: VB balance collected from sale proceeds. Unsold = collector takes artwork.
 const MODELS = {
-  B:  { vbPct: 0.30, colPct: 0.70, term: 12, label: "Model B · 12mo", short: "B" },
-  A:  { vbPct: 0.40, colPct: 0.60, term: 18, label: "Model A · 18mo", short: "A" },
-  C:  { vbPct: 0.45, colPct: 0.55, term: 24, label: "Model C · 24mo", short: "C" },
+  O1: { vbPct: 0.30, colPct: 0.70, term: 12, label: "Option 1 · 12mo", short: "O1" },
+  O2: { vbPct: 0.40, colPct: 0.60, term: 18, label: "Option 2 · 18mo", short: "O2" },
+  O3: { vbPct: 0.50, colPct: 0.50, term: 24, label: "Option 3 · 24mo", short: "O3" },
 };
 const GALLERY_BACK = 0.40;
 const VB_BACK = 0.30;
@@ -88,7 +88,7 @@ const calcDeal = (artworkValue, salePrice, model, monthsPaid, galleryPct, vbBack
 const fmt = (n) => Number(n||0).toLocaleString("en-ZA",{minimumFractionDigits:2,maximumFractionDigits:2});
 const uid = () => "VB"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const td = () => new Date().toISOString().slice(0,10);
-const SK = "vollard_black_v11";
+const SK = "vollard_black_v12";
 const TABLES = ["artworks","artists","collectors","schedules","payments","sales","reports","buyers"];
 const fresh = () => ({artworks:[],artists:[],collectors:[],schedules:[],payments:[],sales:[],reports:[],buyers:[]});
 const loadLocal = () => { try { const d=JSON.parse(localStorage.getItem(SK)); return d?.artworks?d:fresh(); } catch{return fresh();} };
@@ -159,9 +159,9 @@ const generatePDF=(report)=>{
 <style>body{font-family:Georgia,serif;color:#1a1a1a;max-width:900px;margin:0 auto;padding:40px;}h1{font-size:28px;font-weight:300;letter-spacing:4px;}h2{font-size:16px;font-weight:400;color:#8a6a1e;margin:28px 0 12px;border-bottom:1px solid #ddd;padding-bottom:6px;}.header{border-bottom:2px solid #b68b2e;padding-bottom:16px;margin-bottom:24px;}.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px;}.stat{background:#f9f7f3;border:1px solid #e8e0d0;border-radius:6px;padding:14px;text-align:center;}.stat-val{font-size:22px;font-weight:600;color:#b68b2e;}.stat-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#999;margin-top:4px;}table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px;}th{background:#f5f0e8;padding:8px 10px;text-align:left;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#666;border-bottom:1px solid #ddd;}td{padding:8px 10px;border-bottom:1px solid #f0ece4;}.gold{color:#b68b2e;font-weight:600;}.green{color:#2d7a4a;font-weight:600;}.red{color:#c45c4a;font-weight:600;}.footer{margin-top:40px;padding-top:16px;border-top:1px solid #ddd;font-size:11px;color:#999;display:flex;justify-content:space-between;}</style></head><body>
 <div class="header"><h1>VOLLARD <span style="color:#b68b2e">BLACK</span></h1><div style="font-size:13px;color:#666;letter-spacing:2px;">Monthly Report — ${getMonthLabel(report.month)}</div><div style="font-size:11px;color:#999;margin-top:6px;">Generated: ${report.generatedAt} · ${report.locked?"LOCKED":"Draft"}</div></div>
 <div class="grid"><div class="stat"><div class="stat-val green">${snap.activeCount||0}</div><div class="stat-lbl">Active</div></div><div class="stat"><div class="stat-val" style="color:#e6be32">${snap.chasingCount||0}</div><div class="stat-lbl">Chasing</div></div><div class="stat"><div class="stat-val" style="color:#dc7828">${snap.disputeCount||0}</div><div class="stat-lbl">In Dispute</div></div><div class="stat"><div class="stat-val red">${snap.cancelledCount||0}</div><div class="stat-lbl">Cancelled</div></div><div class="stat"><div class="stat-val gold">R ${fmt(snap.totalCollected||0)}</div><div class="stat-lbl">Collected</div></div></div>
-<h2>Payments Received</h2>${snap.payments&&snap.payments.length>0?`<table><thead><tr><th>Collector</th><th>Artwork</th><th>Model</th><th>Month</th><th>Method</th><th style="text-align:right">Amount</th></tr></thead><tbody>${snap.payments.map(p=>`<tr><td>${p.collectorName}</td><td>${p.artworkTitle}</td><td>${p.model||"A"}</td><td>Mo ${p.monthNumber}</td><td>${p.method}</td><td style="text-align:right" class="gold">R ${fmt(p.amount)}</td></tr>`).join("")}<tr><td colspan="5" style="font-weight:700;padding-top:12px">Total</td><td style="text-align:right;font-weight:700" class="green">R ${fmt(snap.totalCollected||0)}</td></tr></tbody></table>`:`<p style="color:#999;font-size:13px">No payments this month.</p>`}
-${snap.chasing&&snap.chasing.length>0?`<h2>Chasing</h2><table><thead><tr><th>Collector</th><th>Artwork</th><th>Model</th><th>Email</th><th style="text-align:right">Outstanding</th></tr></thead><tbody>${snap.chasing.map(s=>`<tr><td>${s.collectorName}</td><td>${s.artworkTitle}</td><td>${s.model||"A"}</td><td>${s.collectorEmail||"—"}</td><td style="text-align:right" class="red">R ${fmt((s.totalDue||0)-(s.totalPaid||0))}</td></tr>`).join("")}</tbody></table>`:""}
-${snap.salesPayout&&snap.salesPayout.length>0?`<h2>Sales & Payouts</h2><table><thead><tr><th>Artwork</th><th>Collector</th><th>Buyer</th><th>Model</th><th style="text-align:right">Sale</th><th style="text-align:right">Collector</th><th style="text-align:right">VB</th></tr></thead><tbody>${snap.salesPayout.map(s=>`<tr><td>${s.artworkTitle}</td><td>${s.collectorName}</td><td>${s.buyerName||"—"}</td><td>${s.acquisitionModel||"A"}</td><td style="text-align:right">R ${fmt(s.salePrice)}</td><td style="text-align:right" class="green">R ${fmt(s.collectorNet)}</td><td style="text-align:right" class="gold">R ${fmt(s.vbTotal)}</td></tr>`).join("")}</tbody></table>`:""}
+<h2>Payments Received</h2>${snap.payments&&snap.payments.length>0?`<table><thead><tr><th>Collector</th><th>Artwork</th><th>Model</th><th>Month</th><th>Method</th><th style="text-align:right">Amount</th></tr></thead><tbody>${snap.payments.map(p=>`<tr><td>${p.collectorName}</td><td>${p.artworkTitle}</td><td>${p.model||"O1"}</td><td>Mo ${p.monthNumber}</td><td>${p.method}</td><td style="text-align:right" class="gold">R ${fmt(p.amount)}</td></tr>`).join("")}<tr><td colspan="5" style="font-weight:700;padding-top:12px">Total</td><td style="text-align:right;font-weight:700" class="green">R ${fmt(snap.totalCollected||0)}</td></tr></tbody></table>`:`<p style="color:#999;font-size:13px">No payments this month.</p>`}
+${snap.chasing&&snap.chasing.length>0?`<h2>Chasing</h2><table><thead><tr><th>Collector</th><th>Artwork</th><th>Model</th><th>Email</th><th style="text-align:right">Outstanding</th></tr></thead><tbody>${snap.chasing.map(s=>`<tr><td>${s.collectorName}</td><td>${s.artworkTitle}</td><td>${s.model||"O1"}</td><td>${s.collectorEmail||"—"}</td><td style="text-align:right" class="red">R ${fmt((s.totalDue||0)-(s.totalPaid||0))}</td></tr>`).join("")}</tbody></table>`:""}
+${snap.salesPayout&&snap.salesPayout.length>0?`<h2>Sales & Payouts</h2><table><thead><tr><th>Artwork</th><th>Collector</th><th>Buyer</th><th>Model</th><th style="text-align:right">Sale</th><th style="text-align:right">Collector</th><th style="text-align:right">VB</th></tr></thead><tbody>${snap.salesPayout.map(s=>`<tr><td>${s.artworkTitle}</td><td>${s.collectorName}</td><td>${s.buyerName||"—"}</td><td>${s.acquisitionModel||"O1"}</td><td style="text-align:right">R ${fmt(s.salePrice)}</td><td style="text-align:right" class="green">R ${fmt(s.collectorNet)}</td><td style="text-align:right" class="gold">R ${fmt(s.vbTotal)}</td></tr>`).join("")}</tbody></table>`:""}
 <div class="footer"><span>VOLLARD BLACK — Fine Art Acquisitions</span><span>${ADMIN_EMAIL}</span><span>© ${new Date().getFullYear()}</span></div>
 </body></html>`;
   const w=window.open("","_blank");w.document.write(html);w.document.close();w.focus();setTimeout(()=>w.print(),800);
@@ -169,8 +169,8 @@ ${snap.salesPayout&&snap.salesPayout.length>0?`<h2>Sales & Payouts</h2><table><t
 
 // ─── Settlement Sheet PDF ───
 const generateSettlementPDF=(sale,artworkValue,monthsPaid,acquisitionModel,galleryPct,vbPct,artistPct,introFeePct)=>{
-  const m=MODELS[acquisitionModel||"A"];
-  const deal=calcDeal(artworkValue,sale.salePrice,acquisitionModel||"A",monthsPaid,galleryPct||40,vbPct||30,artistPct||30,introFeePct||0);
+  const m=MODELS[acquisitionModel||"O1"];
+  const deal=calcDeal(artworkValue,sale.salePrice,acquisitionModel||"O1",monthsPaid,galleryPct||40,vbPct||30,artistPct||30,introFeePct||0);
   const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>VB Settlement — ${sale.artworkTitle}</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap');
@@ -328,7 +328,7 @@ const I={
 
 const stC={Available:{bg:"rgba(74,158,107,0.12)",c:"#4a9e6b"},Reserved:{bg:"rgba(182,139,46,0.12)",c:"#b68b2e"},"In Gallery":{bg:"rgba(100,140,200,0.12)",c:"#648cc8"},Sold:{bg:"rgba(196,92,74,0.12)",c:"#c45c4a"},"In Dispute":{bg:"rgba(196,92,74,0.12)",c:"#c45c4a"}};
 const schedC={Active:{bg:"rgba(74,158,107,0.12)",c:"#4a9e6b"},Chasing:{bg:"rgba(230,190,50,0.15)",c:"#e6be32"},"In Dispute":{bg:"rgba(220,120,40,0.15)",c:"#dc7828"},Cancelled:{bg:"rgba(196,92,74,0.15)",c:"#c45c4a"},Complete:{bg:"rgba(100,140,200,0.12)",c:"#648cc8"},Override:{bg:"rgba(160,100,220,0.12)",c:"#a064dc"}};
-const modelC={B:{bg:"rgba(182,139,46,0.12)",c:"#b68b2e",label:"Model B · 12mo"},A:{bg:"rgba(74,158,107,0.12)",c:"#4a9e6b",label:"Model A · 18mo"},C:{bg:"rgba(100,140,200,0.12)",c:"#648cc8",label:"Model C · 24mo"}};
+const modelC={O1:{bg:"rgba(182,139,46,0.12)",c:"#b68b2e",label:"Option 1"},O2:{bg:"rgba(74,158,107,0.12)",c:"#4a9e6b",label:"Option 2"},O3:{bg:"rgba(100,140,200,0.12)",c:"#648cc8",label:"Option 3"}};
 const payM=["EFT / Bank Transfer","PayFast","Crypto (USDT)","Cash","Other"];
 
 // ─── UI ───
@@ -449,7 +449,7 @@ export default function App(){
       dbUp("artworks",artworkId,{status:"Reserved"});
     },
     recordPayment:(schedule,monthNumber,method,amount)=>{
-      const payment={id:uid(),scheduleId:schedule.id,collectorId:schedule.collectorId,collectorName:schedule.collectorName,artworkId:schedule.artworkId,artworkTitle:schedule.artworkTitle,model:schedule.acquisitionModel||"A",monthNumber,amount,method,date:td(),createdAt:td()};
+      const payment={id:uid(),scheduleId:schedule.id,collectorId:schedule.collectorId,collectorName:schedule.collectorName,artworkId:schedule.artworkId,artworkTitle:schedule.artworkTitle,model:schedule.acquisitionModel||"O1",monthNumber,amount,method,date:td(),createdAt:td()};
       up("payments",p=>[...p,payment]);
       const newPaid=schedule.monthsPaid+1;const newTotal=(schedule.totalPaid||0)+amount;
       const newStatus=newPaid>=schedule.termMonths?"Complete":"Active";
@@ -573,9 +573,9 @@ export default function App(){
           {nav.map(n=>{const alertCount=n.id==="invoices"?chasing.length+inDispute.length+cancelled.length:0;return<button key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:"12px 14px",background:page===n.id?"rgba(182,139,46,0.1)":"transparent",border:"none",borderRadius:10,color:page===n.id?"#b68b2e":"#8a8477",fontSize:13,fontWeight:page===n.id?600:400,cursor:"pointer",marginBottom:4,fontFamily:"DM Sans,sans-serif"}}>{n.icon}<span style={{flex:1,textAlign:"left"}}>{n.label}</span>{alertCount>0&&<span style={{fontSize:10,background:"rgba(196,92,74,0.2)",color:"#c45c4a",padding:"2px 6px",borderRadius:8,fontWeight:700}}>{alertCount}</span>}</button>;})}
         </nav>
         <div style={{padding:"16px 24px",borderTop:"1px solid rgba(182,139,46,0.08)",fontSize:10,color:"#5a564e",letterSpacing:2}}>
-          <div>MODEL B: 30/70 · 12 MO</div>
-          <div style={{marginTop:4}}>MODEL A: 40/60 · 18 MO</div>
-          <div style={{marginTop:4}}>MODEL C: 45/55 · 24 MO</div>
+          <div>OPT 1: 30/70 · 12 MO</div>
+          <div style={{marginTop:4}}>OPT 2: 40/60 · 18 MO</div>
+          <div style={{marginTop:4}}>OPT 3: 50/50 · 24 MO</div>
           <div style={{marginTop:4}}>GALLERY 40 · VB 30 · ARTIST 30</div>
           <div style={{marginTop:8,display:"flex",alignItems:"center",gap:6}}><div style={{width:6,height:6,borderRadius:"50%",background:dbMode?"#4a9e6b":"#b68b2e"}}/><span style={{fontSize:9}}>{dbMode?"Supabase Connected":"Local Storage"}</span></div>
         </div>
@@ -624,7 +624,7 @@ function Dashboard({data,navTo,chasing,inDispute,cancelled}){
     </Card>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
       <Card><div style={{fontSize:14,fontWeight:600,color:"#f5f0e8",marginBottom:16}}>Active Schedules</div>
-        {upcomingSchedules.length===0?<p style={{fontSize:13,color:"#5a564e"}}>No active schedules.</p>:upcomingSchedules.map(s=>{const pct=s.termMonths>0?(s.monthsPaid/s.termMonths)*100:0;return<div key={s.id} style={{padding:"10px 0",borderBottom:"1px solid rgba(182,139,46,0.04)"}}><div style={{display:"flex",justifyContent:"space-between",fontSize:13,alignItems:"center"}}><span style={{fontWeight:500}}>{s.collectorName}</span><div style={{display:"flex",alignItems:"center",gap:8}}><Badge model={s.acquisitionModel||"A"}/><span style={{color:"#b68b2e",fontWeight:600}}>R {fmt(s.monthlyAmount)}/mo</span></div></div><div style={{fontSize:11,color:"#5a564e",marginBottom:4}}>{s.artworkTitle} · Month {s.monthsPaid} of {s.termMonths}</div><ProgressBar pct={pct}/></div>;})}
+        {upcomingSchedules.length===0?<p style={{fontSize:13,color:"#5a564e"}}>No active schedules.</p>:upcomingSchedules.map(s=>{const pct=s.termMonths>0?(s.monthsPaid/s.termMonths)*100:0;return<div key={s.id} style={{padding:"10px 0",borderBottom:"1px solid rgba(182,139,46,0.04)"}}><div style={{display:"flex",justifyContent:"space-between",fontSize:13,alignItems:"center"}}><span style={{fontWeight:500}}>{s.collectorName}</span><div style={{display:"flex",alignItems:"center",gap:8}}><Badge model={s.acquisitionModel||"O1"}/><span style={{color:"#b68b2e",fontWeight:600}}>R {fmt(s.monthlyAmount)}/mo</span></div></div><div style={{fontSize:11,color:"#5a564e",marginBottom:4}}>{s.artworkTitle} · Month {s.monthsPaid} of {s.termMonths}</div><ProgressBar pct={pct}/></div>;})}
       </Card>
       <Card><div style={{fontSize:14,fontWeight:600,color:"#f5f0e8",marginBottom:16}}>Recent Activity</div>
         {data.sales.length===0&&data.payments.length===0?<p style={{fontSize:13,color:"#5a564e"}}>No activity yet.</p>:
@@ -788,7 +788,7 @@ function CollectorsPage({data,up,actions}){
       {f.length===0?<Empty msg="No collectors yet." action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Add</Btn>}/>:
       <Tbl cols={[
         {label:"Name",bold:true,render:r=>gn(r)},{label:"Type",key:"type"},{label:"Email",key:"email"},
-        {label:"Schedules",render:r=>{const scheds=data.schedules.filter(s=>s.collectorId===r.id);if(scheds.length===0)return<span style={{color:"#5a564e"}}>None</span>;return<div>{scheds.map(s=><div key={s.id} style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><span style={{fontSize:12}}>{s.artworkTitle}</span><Badge model={s.acquisitionModel||"A"}/><Badge status={s.status} sched/><button onClick={e=>{e.stopPropagation();handleUnlink(s.id);}} style={{background:"none",border:"none",color:"#c45c4a",cursor:"pointer",fontSize:10,textDecoration:"underline"}}>cancel</button></div>)}</div>;}},
+        {label:"Schedules",render:r=>{const scheds=data.schedules.filter(s=>s.collectorId===r.id);if(scheds.length===0)return<span style={{color:"#5a564e"}}>None</span>;return<div>{scheds.map(s=><div key={s.id} style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><span style={{fontSize:12}}>{s.artworkTitle}</span><Badge model={s.acquisitionModel||"O1"}/><Badge status={s.status} sched/><button onClick={e=>{e.stopPropagation();handleUnlink(s.id);}} style={{background:"none",border:"none",color:"#c45c4a",cursor:"pointer",fontSize:10,textDecoration:"underline"}}>cancel</button></div>)}</div>;}},
         {label:"",render:r=><div style={{display:"flex",gap:6}}><Btn small ghost onClick={e=>{e.stopPropagation();setLink(r);}}>Link Art</Btn><button onClick={e=>{e.stopPropagation();setModal(r);}} style={{background:"none",border:"none",color:"#8a8477",cursor:"pointer"}}>{I.edit}</button><button onClick={e=>{e.stopPropagation();del(r.id);}} style={{background:"none",border:"none",color:"#5a564e",cursor:"pointer"}}>{I.del}</button></div>},
       ]} data={f}/>}
     </Card>
@@ -829,7 +829,7 @@ function ColMdl({col,onSave,onClose}){
 
 function LinkMdl({col,arts,onLink,onClose,gn}){
   const [artId,setArtId]=useState("");
-  const [acqModel,setAcqModel]=useState("A");
+  const [acqModel,setAcqModel]=useState("O1");
   const [depositType,setDepositType]=useState("none");
   const [depositPct,setDepositPct]=useState("10");
 
@@ -857,7 +857,7 @@ function LinkMdl({col,arts,onLink,onClose,gn}){
     {/* Step 2 — Model */}
     <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",margin:"16px 0 8px"}}>Step 2 — Acquisition Model</div>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:16}}>
-      {["B","A","C"].map(k=>{const mod=MODELS[k];const active=acqModel===k;const locked=false;return<button key={k} onClick={()=>!locked&&setAcqModel(k)} style={{padding:12,borderRadius:10,border:active?"2px solid #b68b2e":locked?"1px solid rgba(182,139,46,0.06)":"1px solid rgba(182,139,46,0.15)",background:active?"rgba(182,139,46,0.08)":locked?"rgba(0,0,0,0.2)":"#1e1d1a",color:active?"#b68b2e":locked?"#3a3832":"#8a8477",cursor:locked?"not-allowed":"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left",transition:"all 0.15s",opacity:locked?0.5:1}}>
+      {["O1","O2","O3"].map(k=>{const mod=MODELS[k];const active=acqModel===k;const locked=false;return<button key={k} onClick={()=>!locked&&setAcqModel(k)} style={{padding:12,borderRadius:10,border:active?"2px solid #b68b2e":locked?"1px solid rgba(182,139,46,0.06)":"1px solid rgba(182,139,46,0.15)",background:active?"rgba(182,139,46,0.08)":locked?"rgba(0,0,0,0.2)":"#1e1d1a",color:active?"#b68b2e":locked?"#3a3832":"#8a8477",cursor:locked?"not-allowed":"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left",transition:"all 0.15s",opacity:locked?0.5:1}}>
         <div style={{fontSize:12,fontWeight:600,marginBottom:4}}>{mod.label}</div>
         <div style={{fontSize:10,opacity:0.8}}>VB {Math.round(mod.vbPct*100)}% · Col {Math.round(mod.colPct*100)}%</div>
         
@@ -965,7 +965,7 @@ function BuyerProfile({buyer,purchases,artworks,collectors,onClose,onEdit}){
             <div style={{fontSize:11,color:"#5a564e",marginTop:2}}>{sale.date} · Collector: {colName}</div>
             <div style={{display:"flex",gap:12,marginTop:4,fontSize:12}}>
               <span style={{color:"#b68b2e",fontWeight:600}}>R {fmt(sale.salePrice)}</span>
-              <Badge model={sale.acquisitionModel||"A"}/>
+              <Badge model={sale.acquisitionModel||"O1"}/>
             </div>
           </div>
         </div>
@@ -1001,7 +1001,7 @@ function BuyerModal({buyer,onSave,onClose}){
 function CalcPage(){
   const [artVal,setArtVal]=useState("");
   const [saleVal,setSaleVal]=useState("");
-  const [acqModel,setAcqModel]=useState("A");
+  const [acqModel,setAcqModel]=useState("O1");
   const [monthsSold,setMonthsSold]=useState("");
   const [depositType,setDepositType]=useState("none");
   const [depositPct,setDepositPct]=useState("10");
@@ -1039,7 +1039,7 @@ function CalcPage(){
       <div>
         {/* Model */}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:14}}>
-          {["B","A","C"].map(k=>{const mod=MODELS[k];const on=acqModel===k;return<button key={k} onClick={()=>{setAcqModel(k);setMonthsSold("");}} style={{padding:12,borderRadius:10,border:on?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:on?"rgba(182,139,46,0.08)":"#1e1d1a",color:on?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left"}}>
+          {["O1","O2","O3"].map(k=>{const mod=MODELS[k];const on=acqModel===k;return<button key={k} onClick={()=>{setAcqModel(k);setMonthsSold("");}} style={{padding:12,borderRadius:10,border:on?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:on?"rgba(182,139,46,0.08)":"#1e1d1a",color:on?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left"}}>
             <div style={{fontSize:12,fontWeight:600}}>{mod.label}</div>
             <div style={{fontSize:10,opacity:0.8,marginTop:2}}>VB {Math.round(mod.vbPct*100)}% · {mod.term}mo</div>
             {k==="A36"&&<div style={{fontSize:10,color:"#5a564e",marginTop:2}}>R 100k+ only</div>}
@@ -1228,7 +1228,7 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
       {reportTab&&<div style={{marginTop:16,borderTop:"1px solid rgba(182,139,46,0.08)",paddingTop:16}}>
         <div style={{fontSize:13,fontWeight:600,color:"#f5f0e8",marginBottom:12}}>{reportTab} — {reportData[reportTab].length}</div>
         {reportData[reportTab].length===0?<p style={{fontSize:13,color:"#5a564e"}}>None.</p>:
-        <Tbl cols={[{label:"Collector",bold:true,render:r=>r.collectorName},{label:"Model",render:r=><Badge model={r.acquisitionModel||"A"}/>},{label:"Email",render:r=>r.col?.email||"—"},{label:"Mobile",render:r=>r.col?.mobile||"—"},{label:"Artwork",key:"artworkTitle"},{label:"Strikes",render:r=><span style={{color:"#c45c4a",fontWeight:700}}>{r.strikes}</span>},{label:"Outstanding",right:true,render:r=>"R "+fmt((r.totalDue||0)-(r.totalPaid||0))},{label:"",render:r=>{const col=data.collectors.find(c=>c.id===r.collectorId);const tplKey=reportTab==="Chasing"?"individual_missed":reportTab==="In Dispute"?"individual_dispute":"individual_cancelled";const tpl=TEMPLATES[tplKey](r.collectorName,r.artworkTitle,(r.totalDue||0)-(r.totalPaid||0));return<Btn small ghost onClick={()=>openGmail([col?.email||""],tpl.subject,tpl.body)} style={{fontSize:10}}>{I.mail}</Btn>;}}]} data={reportData[reportTab]}/>}
+        <Tbl cols={[{label:"Collector",bold:true,render:r=>r.collectorName},{label:"Model",render:r=><Badge model={r.acquisitionModel||"O1"}/>},{label:"Email",render:r=>r.col?.email||"—"},{label:"Mobile",render:r=>r.col?.mobile||"—"},{label:"Artwork",key:"artworkTitle"},{label:"Strikes",render:r=><span style={{color:"#c45c4a",fontWeight:700}}>{r.strikes}</span>},{label:"Outstanding",right:true,render:r=>"R "+fmt((r.totalDue||0)-(r.totalPaid||0))},{label:"",render:r=>{const col=data.collectors.find(c=>c.id===r.collectorId);const tplKey=reportTab==="Chasing"?"individual_missed":reportTab==="In Dispute"?"individual_dispute":"individual_cancelled";const tpl=TEMPLATES[tplKey](r.collectorName,r.artworkTitle,(r.totalDue||0)-(r.totalPaid||0));return<Btn small ghost onClick={()=>openGmail([col?.email||""],tpl.subject,tpl.body)} style={{fontSize:10}}>{I.mail}</Btn>;}}]} data={reportData[reportTab]}/>}
       </div>}
     </Card>
 
@@ -1247,7 +1247,7 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
 
     {pagedSchedules.length===0?<Empty msg="No schedules match this filter."/>:
     pagedSchedules.map(sched=>{
-      const m=MODELS[sched.acquisitionModel||"A"];
+      const m=MODELS[sched.acquisitionModel||"O1"];
       const pct=sched.termMonths>0?(sched.monthsPaid/sched.termMonths)*100:100;
       const nextMonth=getNextUnpaid(sched);const nextDue=nextMonth?getNextDueDate(sched.startDate,nextMonth):null;
       const outstanding=(sched.totalDue||0)-(sched.totalPaid||0);
@@ -1264,7 +1264,7 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
               <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginBottom:4}}>
                 {activeTab==="all"&&<span style={{fontSize:15,fontWeight:700,color:"#f5f0e8"}}>{sched.collectorName}</span>}
                 <span style={{fontSize:13,color:"#8a8477"}}>{sched.artworkTitle}</span>
-                <Badge model={sched.acquisitionModel||"A"}/>
+                <Badge model={sched.acquisitionModel||"O1"}/>
                 <Badge status={sched.status} sched/>
                 {sched.strikes>0&&<span style={{fontSize:11,color:"#c45c4a",fontWeight:700}}>⚠ {sched.strikes} strike{sched.strikes>1?"s":""}</span>}
               </div>
@@ -1310,7 +1310,7 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
       <Card style={{background:"#1e1d1a",marginBottom:16}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:13}}>
         <span style={{color:"#8a8477"}}>Collector:</span><span style={{fontWeight:600}}>{payModal.sched.collectorName}</span>
         <span style={{color:"#8a8477"}}>Artwork:</span><span>{payModal.sched.artworkTitle}</span>
-        <span style={{color:"#8a8477"}}>Model:</span><span><Badge model={payModal.sched.acquisitionModel||"A"}/></span>
+        <span style={{color:"#8a8477"}}>Model:</span><span><Badge model={payModal.sched.acquisitionModel||"O1"}/></span>
         <span style={{color:"#8a8477"}}>Month:</span><span>{payModal.nextMonth} of {payModal.sched.termMonths}</span>
         <span style={{color:"#8a8477"}}>Amount:</span><span style={{color:"#b68b2e",fontWeight:700,fontSize:16}}>R {fmt(payModal.sched.monthlyAmount)}</span>
       </div></Card>
@@ -1382,9 +1382,9 @@ function SalesPage({data,actions}){
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:14,marginBottom:24}}>
       <Stat label="Sales" value={data.sales.length}/>
       <Stat label="Total Value" value={"R "+fmt(data.sales.reduce((s,x)=>s+(x.salePrice||0),0))}/>
-      <Stat label="Model B Sales" value={data.sales.filter(s=>s.acquisitionModel==="B").length} gold/>
-      <Stat label="Model A Sales" value={data.sales.filter(s=>!s.acquisitionModel||s.acquisitionModel==="A").length} green/>
-      <Stat label="Model C Sales" value={data.sales.filter(s=>s.acquisitionModel==="C").length}/>
+      <Stat label="Option 1 Sales" value={data.sales.filter(s=>s.acquisitionModel==="O1").length} gold/>
+      <Stat label="Option 2 Sales" value={data.sales.filter(s=>!s.acquisitionModel||s.acquisitionModel==="O2").length} green/>
+      <Stat label="Option 3 Sales" value={data.sales.filter(s=>s.acquisitionModel==="O3").length}/>
       <Stat label="Collector Payouts" value={"R "+fmt(data.sales.reduce((s,x)=>s+(x.colNet||x.collectorShare||0),0))} green/>
     </div>
     <Card>
@@ -1392,7 +1392,7 @@ function SalesPage({data,actions}){
       <Tbl cols={[
         {label:"Date",key:"date"},
         {label:"Artwork",key:"artworkTitle",bold:true},
-        {label:"Model",render:r=><Badge model={r.acquisitionModel||"A"}/>},
+        {label:"Model",render:r=><Badge model={r.acquisitionModel||"O1"}/>},
         {label:"Collector",key:"collectorName"},
         {label:"Buyer",render:r=>r.buyerName?<span style={{color:"#b68b2e"}}>{r.buyerName}</span>:<span style={{color:"#5a564e"}}>—</span>},
         {label:"Sale Price",right:true,render:r=>"R "+fmt(r.salePrice)},
@@ -1416,7 +1416,7 @@ function SettlementModal({sale,data,onClose}){
   const [introPct,setIntroPct]=useState("0");
   const sched=data.schedules.find(s=>s.artworkId===sale.artworkId);
   const art=data.artworks.find(a=>a.id===sale.artworkId);
-  const acqModel=sched?.acquisitionModel||sale.acquisitionModel||"A";
+  const acqModel=sched?.acquisitionModel||sale.acquisitionModel||"O1";
   const artworkValue=art?.recommendedPrice||sale.salePrice;
   const monthsPaid=sched?.monthsPaid||0;
   const gN=parseFloat(galleryPct)||0;
@@ -1498,7 +1498,7 @@ function SaleMdl({data,sellable,onSale,onClose}){
   const sched=art?data.schedules.find(s=>s.artworkId===artId&&s.status!=="Cancelled"):null;
   const col=sched?data.collectors.find(c=>c.id===sched.collectorId):null;
   const gn=c=>c?(c.type==="company"?c.companyName:`${c.firstName} ${c.lastName}`):"—";
-  const acqModel=sched?.acquisitionModel||"A";
+  const acqModel=sched?.acquisitionModel||"O1";
   const m=MODELS[acqModel];
   const artworkValue=art?.recommendedPrice||0;
   const sp=Number(salePrice)||artworkValue;
@@ -1507,7 +1507,7 @@ function SaleMdl({data,sellable,onSale,onClose}){
   const resolvedBuyerName=newBuyer?(nb.type==="company"?nb.companyName:`${nb.firstName} ${nb.lastName}`):data.buyers.find(b=>b.id===buyerId)?buyerName(data.buyers.find(b=>b.id===buyerId)):"";
 
   return(<Modal title="Record Sale" onClose={onClose} wide>
-    <Field label="Artwork"><select value={artId} onChange={e=>setArtId(e.target.value)} style={ss}><option value="">—</option>{sellable.map(a=>{const s=data.schedules.find(x=>x.artworkId===a.id);return<option key={a.id} value={a.id}>{a.title} — R {fmt(a.recommendedPrice)} {s?`(${MODELS[s.acquisitionModel||"A"].label})`:""}</option>;})} </select></Field>
+    <Field label="Artwork"><select value={artId} onChange={e=>setArtId(e.target.value)} style={ss}><option value="">—</option>{sellable.map(a=>{const s=data.schedules.find(x=>x.artworkId===a.id);return<option key={a.id} value={a.id}>{a.title} — R {fmt(a.recommendedPrice)} {s?`(${MODELS[s.acquisitionModel||"O1"].label})`:""}</option>;})} </select></Field>
 
     {art&&<>
       {sched&&<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16,padding:"10px 14px",background:"#1e1d1a",borderRadius:8}}>
@@ -1618,7 +1618,7 @@ function ReportsPage({data,actions}){
               {selectedMonth===ym?"Hide":"Show"} details
             </button>
             {selectedMonth===ym&&<div style={{marginTop:10,borderTop:"1px solid rgba(182,139,46,0.06)",paddingTop:10}}>
-              {report.snapshot.payments&&report.snapshot.payments.length>0?<Tbl cols={[{label:"Collector",bold:true,render:r=>r.collectorName},{label:"Artwork",key:"artworkTitle"},{label:"Model",render:r=><Badge model={r.model||"A"}/>},{label:"Month",render:r=>`Mo ${r.monthNumber}`},{label:"Method",key:"method"},{label:"Amount",right:true,gold:true,render:r=>"R "+fmt(r.amount)}]} data={report.snapshot.payments}/>:<p style={{fontSize:13,color:"#5a564e"}}>No payments this month.</p>}
+              {report.snapshot.payments&&report.snapshot.payments.length>0?<Tbl cols={[{label:"Collector",bold:true,render:r=>r.collectorName},{label:"Artwork",key:"artworkTitle"},{label:"Model",render:r=><Badge model={r.model||"O1"}/>},{label:"Month",render:r=>`Mo ${r.monthNumber}`},{label:"Method",key:"method"},{label:"Amount",right:true,gold:true,render:r=>"R "+fmt(r.amount)}]} data={report.snapshot.payments}/>:<p style={{fontSize:13,color:"#5a564e"}}>No payments this month.</p>}
             </div>}
           </>}
         </div>
