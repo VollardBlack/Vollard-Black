@@ -17,77 +17,77 @@ const ADMIN_EMAIL = "concierge@vollardblack.com";
 const PAGE_SIZE = 50;
 
 // ─── Maths Engine ───
-// MODEL A: VB fee = 40% of artwork value. Collector gets 60% at sale.
-// MODEL B: VB fee = 30% of artwork value. Collector gets 70% at sale.
-// DEPOSIT TYPES:
-//   none     — no deposit, full VB fee paid monthly over term
-//   toward   — deposit counts toward VB fee, reduces monthly
-//   separate — deposit is extra commitment fee on top of VB fee
-// VB fee balance always collected from sale proceeds.
-// If sale price < artwork value: collector gets colPct% of ACTUAL sale price.
-// If sale price > artwork value: surplus split 50/50 on top of base split.
-const calcDeal = (artworkValue, salePrice, model, monthsPaid, galleryPct, vbPct, artistPct, introFeePct, depositType="none", depositPct=0) => {
+// THE CORRECT MODEL:
+// R 100,000 lands in your bank at sale.
+// VB takes their balance (what's still owed of their fee).
+// Collector gets everything else.
+//
+// Example: R100k artwork, Model A, Month 1
+//   VB fee = R40,000. Monthly = R1,667. Collected = R1,667. Balance = R38,333.
+//   Sale: VB takes R38,333 from sale. Collector gets R61,667.
+//   VB total = R1,667 + R38,333 = R40,000 ✓
+//   Collector net gain = R61,667 - R1,667 paid = R60,000 ✓
+const calcDeal = (artworkValue, salePrice, model, monthsPaid, galleryPct, vbBackPct, artistPct, introFeePct, depositType="none", depositPct=0) => {
   const m = MODELS[model];
   const vbFee = artworkValue * m.vbPct;
   const depositAmt = artworkValue * (depositPct / 100);
 
-  // Monthly depends on deposit type
-  // toward: deposit counts toward VB fee, reduces monthly
-  // none: full VB fee paid monthly
-  let remainingFee, monthly, totalPaid;
+  // How much has been collected monthly (including deposit if toward fee)
+  let monthly, totalCollected;
   if(depositType === "toward") {
-    remainingFee = Math.max(0, vbFee - depositAmt);
-    monthly = remainingFee / m.term;
-    totalPaid = depositAmt + (monthly * monthsPaid);
+    const remaining = Math.max(0, vbFee - depositAmt);
+    monthly = remaining / m.term;
+    totalCollected = depositAmt + (monthly * monthsPaid);
   } else {
-    remainingFee = vbFee;
     monthly = vbFee / m.term;
-    totalPaid = monthly * monthsPaid;
+    totalCollected = monthly * monthsPaid;
   }
 
-  // VB balance = unpaid portion of VB fee at time of sale
-  const vbBalance = depositType === "toward"
-    ? Math.max(0, remainingFee - (monthly * monthsPaid))
-    : Math.max(0, vbFee - (monthly * monthsPaid));
+  // VB balance = what VB still needs at point of sale
+  const vbBalance = Math.max(0, vbFee - totalCollected);
 
+  // At sale: VB takes their balance, collector gets the rest
+  const vbAtSale = Math.min(vbBalance, salePrice);
+  const collectorAtSale = Math.max(0, salePrice - vbBalance);
+
+  // Surplus above artwork value — split 50/50
   const surplus = Math.max(0, salePrice - artworkValue);
-  const deficit = Math.max(0, artworkValue - salePrice);
   const surplusCol = surplus * 0.50;
   const surplusVB = surplus * 0.50;
 
-  const colBase = salePrice * m.colPct;
-  const colTotal = colBase + surplusCol;
-  const colAfterBalance = colTotal - vbBalance;
+  // Collector receives sale proceeds minus VB balance, plus surplus bonus
+  const colBeforeIntro = collectorAtSale;
+  const introFee = colBeforeIntro * ((introFeePct || 0) / 100);
+  const colNet = colBeforeIntro - introFee;
 
-  const introFee = Math.max(0, colAfterBalance) * (introFeePct / 100);
-  const colNet = colAfterBalance - introFee;
+  // Collector profit = received at sale minus what they paid in monthly
+  const colProfit = colNet - totalCollected;
+  const colROI = totalCollected > 0 ? (colProfit / totalCollected) * 100 : 0;
 
-  const colProfit = colNet - totalPaid;
-  const colROI = totalPaid > 0 ? (colProfit / totalPaid) * 100 : 0;
+  // VB total = all monthly collected + balance taken at sale
+  const vbTotal = totalCollected + vbAtSale;
 
-  const vbTotal = vbFee + surplusVB;
-
-  const gPct = galleryPct / 100;
-  const vPct2 = vbPct / 100;
-  const aPct = artistPct / 100;
-  const galleryAmt = vbTotal * gPct;
-  const vbAmt = vbTotal * vPct2;
-  const artistAmt = vbTotal * aPct;
+  // Backend split on VB's fee
+  const gPct = (galleryPct || 40) / 100;
+  const vPct = (vbBackPct || 30) / 100;
+  const aPct = (artistPct || 30) / 100;
+  const galleryAmt = vbFee * gPct;
+  const vbAmt = vbFee * vPct;
+  const artistAmt = vbFee * aPct;
 
   return {
-    vbFee, monthly, depositAmt, totalPaid, vbBalance,
-    surplus, deficit, surplusCol, surplusVB,
-    colBase, colTotal, colAfterBalance,
+    vbFee, monthly, depositAmt, totalCollected, vbBalance,
+    vbAtSale, collectorAtSale,
+    surplus, surplusCol, surplusVB,
     introFee, colNet, colProfit, colROI,
     vbTotal, galleryAmt, vbAmt, artistAmt,
-    remainingFee,
   };
 };
 
 const fmt = (n) => Number(n||0).toLocaleString("en-ZA",{minimumFractionDigits:2,maximumFractionDigits:2});
 const uid = () => "VB"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const td = () => new Date().toISOString().slice(0,10);
-const SK = "vollard_black_v8";
+const SK = "vollard_black_v9";
 const TABLES = ["artworks","artists","collectors","schedules","payments","sales","reports","buyers"];
 const fresh = () => ({artworks:[],artists:[],collectors:[],schedules:[],payments:[],sales:[],reports:[],buyers:[]});
 const loadLocal = () => { try { const d=JSON.parse(localStorage.getItem(SK)); return d?.artworks?d:fresh(); } catch{return fresh();} };
@@ -231,7 +231,7 @@ const generateSettlementPDF=(sale,artworkValue,monthsPaid,acquisitionModel,galle
       <tr><td class="lbl">Monthly payment</td><td>R ${fmt(deal.monthly)}/mo</td></tr>
       <tr><td class="lbl">Term</td><td>${m.term} months</td></tr>
       <tr><td class="lbl">Months paid before sale</td><td>${monthsPaid} of ${m.term}</td></tr>
-      <tr><td class="lbl">Collected via monthly payments</td><td class="gold">R ${fmt(deal.totalPaid)}</td></tr>
+      <tr><td class="lbl">Collected via monthly payments</td><td class="gold">R ${fmt(deal.totalCollected)}</td></tr>
       <tr><td class="lbl">VB balance at sale</td><td class="${deal.vbBalance>0?"red":"green"}">R ${fmt(deal.vbBalance)}</td></tr>
     </table>
   </div>
@@ -251,14 +251,14 @@ const generateSettlementPDF=(sale,artworkValue,monthsPaid,acquisitionModel,galle
   <div class="section">
     <div class="section-title">Collector Payout</div>
     <table>
-      <tr><td class="lbl">Collector ${Math.round(m.colPct*100)}% of sale price</td><td class="green">R ${fmt(deal.colBase)}</td></tr>
+      <tr><td class="lbl">Collector ${Math.round(m.colPct*100)}% of sale price</td><td class="green">R ${fmt(deal.collectorAtSale)}</td></tr>
       ${deal.surplusCol>0?`<tr><td class="lbl">Plus surplus bonus</td><td class="green">+ R ${fmt(deal.surplusCol)}</td></tr>`:""}
       ${deal.vbBalance>0?`<tr><td class="lbl">Less VB balance</td><td class="red">− R ${fmt(deal.vbBalance)}</td></tr>`:""}
       ${deal.introFee>0?`<tr><td class="lbl">Less introducer fee</td><td class="red">− R ${fmt(deal.introFee)}</td></tr>`:""}
       <tr class="total-row"><td><strong>Collector receives</strong></td><td class="green"><div class="big-num">R ${fmt(deal.colNet)}</div></td></tr>
     </table>
     <table style="margin-top:12px;">
-      <tr><td class="lbl">Total paid in by collector</td><td>R ${fmt(deal.totalPaid)}</td></tr>
+      <tr><td class="lbl">Total paid in by collector</td><td>R ${fmt(deal.totalCollected)}</td></tr>
       <tr><td class="lbl">Collector profit</td><td class="${deal.colProfit>=0?"green":"red"}">R ${fmt(deal.colProfit)}</td></tr>
       <tr><td class="lbl">Collector ROI</td><td class="${deal.colROI>=0?"green":"red"}">${Math.round(deal.colROI)}%</td></tr>
     </table>
@@ -271,7 +271,7 @@ const generateSettlementPDF=(sale,artworkValue,monthsPaid,acquisitionModel,galle
       <tr class="total-row"><td><strong>Total VB income</strong></td><td class="gold"><div class="big-num">R ${fmt(deal.vbTotal)}</div></td></tr>
     </table>
     <table style="margin-top:12px;">
-      <tr><td class="lbl">Received monthly</td><td>R ${fmt(deal.totalPaid)}</td></tr>
+      <tr><td class="lbl">Received monthly</td><td>R ${fmt(deal.totalCollected)}</td></tr>
       <tr><td class="lbl">Collected at sale</td><td>R ${fmt(deal.vbBalance+deal.surplusVB)}</td></tr>
     </table>
   </div>
@@ -1012,170 +1012,157 @@ function CalcPage(){
   const sp=parseFloat(saleVal)||av;
   const mo=Math.max(1,Math.min(parseInt(monthsSold)||1,MODELS[acqModel].term));
   const m=MODELS[acqModel];
-  const gPctNum=parseFloat(galleryPct)||40;
-  const vPctNum=parseFloat(vbPct2)||30;
-  const aPctNum=parseFloat(artistPct)||30;
-  const iPctNum=parseFloat(introPct)||0;
-  const dPctNum=parseFloat(depositPct)||0;
-  const deal=av>0?calcDeal(av,sp,acqModel,mo,gPctNum,vPctNum,aPctNum,iPctNum,depositType,dPctNum):{};
-  const splitTotal=gPctNum+vPctNum+aPctNum;
+  const gN=parseFloat(galleryPct)||40;
+  const vN=parseFloat(vbPct2)||30;
+  const aN=parseFloat(artistPct)||30;
+  const iN=parseFloat(introPct)||0;
+  const dN=parseFloat(depositPct)||0;
+  const deal=av>0?calcDeal(av,sp,acqModel,mo,gN,vN,aN,iN,depositType,dN):{};
+  const splitTotal=gN+vN+aN;
   const splitOk=Math.round(splitTotal)===100;
   const scenarioMonths=Array.from({length:m.term},(_,i)=>i+1);
-  const belowValue=av>0&&sp>0&&sp<av;
   const aboveValue=av>0&&sp>0&&sp>av;
+  const belowValue=av>0&&sp>0&&sp<av;
 
-  const row=(label,val,color,bold,size)=><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 0",borderBottom:"1px solid rgba(182,139,46,0.05)"}}>
-    <span style={{fontSize:13,color:"#8a8477"}}>{label}</span>
-    <span style={{fontSize:size||13,fontWeight:bold?700:500,color:color||"#e8e2d6",fontFamily:bold?"Cormorant Garamond,serif":"DM Sans,sans-serif"}}>{val}</span>
+  const SRow=({label,val,color,bold,sub})=><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:"1px solid rgba(182,139,46,0.05)"}}>
+    <span style={{fontSize:13,color:"#8a8477"}}>{label}{sub&&<span style={{fontSize:11,color:"#5a564e",marginLeft:6}}>{sub}</span>}</span>
+    <span style={{fontSize:bold?18:13,fontWeight:bold?600:500,color:color||"#e8e2d6",fontFamily:bold?"Cormorant Garamond,serif":"DM Sans,sans-serif"}}>{val}</span>
   </div>;
-  const divider=<div style={{height:1,background:"rgba(182,139,46,0.12)",margin:"6px 0"}}/>;
 
   return(<div>
     <PT title="Acquisition Calculator" sub="Model A · Model B · Deal Scenarios"/>
+    <div style={{display:"grid",gridTemplateColumns:"300px 1fr",gap:24,alignItems:"start"}}>
 
-    {/* Responsive grid - stacks on mobile */}
-    <div style={{display:"grid",gridTemplateColumns:"minmax(0,340px) minmax(0,1fr)",gap:20,alignItems:"start"}}>
-
-      {/* LEFT — Inputs */}
+      {/* ── LEFT: Inputs only ── */}
       <div>
-        {/* Model selector */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-          {["A","B"].map(k=>{const mod=MODELS[k];const active=acqModel===k;return<button key={k} onClick={()=>{setAcqModel(k);setMonthsSold("");}} style={{padding:14,borderRadius:10,border:active?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:active?"rgba(182,139,46,0.08)":"#1e1d1a",color:active?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left",transition:"all 0.15s"}}>
-            <div style={{fontSize:14,fontWeight:600,marginBottom:6}}>{mod.label}</div>
-            <div style={{fontSize:11,opacity:0.8}}>VB {Math.round(mod.vbPct*100)}% · Collector {Math.round(mod.colPct*100)}%</div>
-            <div style={{fontSize:11,opacity:0.8,marginTop:2}}>{mod.term} month term</div>
-            {av>0&&<div style={{fontSize:12,marginTop:8,color:active?"#b68b2e":"#8a8477",fontWeight:600}}>R {fmt(av*mod.vbPct/mod.term)}/mo</div>}
+        {/* Model */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
+          {["A","B"].map(k=>{const mod=MODELS[k];const on=acqModel===k;return<button key={k} onClick={()=>{setAcqModel(k);setMonthsSold("");}} style={{padding:12,borderRadius:10,border:on?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:on?"rgba(182,139,46,0.08)":"#1e1d1a",color:on?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left"}}>
+            <div style={{fontSize:13,fontWeight:600}}>{mod.label}</div>
+            <div style={{fontSize:11,opacity:0.8,marginTop:2}}>VB {Math.round(mod.vbPct*100)}% · {mod.term}mo</div>
+            {av>0&&<div style={{fontSize:12,color:on?"#b68b2e":"#5a564e",marginTop:6,fontWeight:600}}>R {fmt(av*mod.vbPct/mod.term)}/mo</div>}
           </button>;})}
         </div>
 
-        <Card style={{marginBottom:14}}>
-          <Field label="Artwork Value (R)">
-            <input type="number" value={artVal} onChange={e=>setArtVal(e.target.value)} style={is} placeholder="e.g. 100000"/>
-          </Field>
-          <Field label="Actual Sale Price (R)">
-            <input type="number" value={saleVal} onChange={e=>setSaleVal(e.target.value)} style={is} placeholder={artVal||"e.g. 100000"}/>
-            {belowValue&&<div style={{fontSize:11,color:"#e6be32",marginTop:4}}>Below artwork value — collector receives less</div>}
-            {aboveValue&&<div style={{fontSize:11,color:"#4a9e6b",marginTop:4}}>Above artwork value — surplus split 50/50</div>}
-          </Field>
-          <Field label={`Month Sold (1 – ${m.term})`} style={{marginBottom:0}}>
-            <input type="number" value={monthsSold} onChange={e=>setMonthsSold(e.target.value)} onBlur={e=>{const v=parseInt(e.target.value)||1;setMonthsSold(Math.max(1,Math.min(v,m.term)));}} style={is} placeholder={`1 – ${m.term}`} min={1} max={m.term}/>
-          </Field>
+        <Card style={{marginBottom:12}}>
+          <Field label="Artwork Value (R)"><input type="number" value={artVal} onChange={e=>setArtVal(e.target.value)} style={is} placeholder="e.g. 100000"/></Field>
+          <Field label="Sale Price (R)"><input type="number" value={saleVal} onChange={e=>setSaleVal(e.target.value)} style={is} placeholder={artVal||"same as artwork value"}/></Field>
+          <Field label={`Month Sold (1–${m.term})`} style={{marginBottom:0}}><input type="number" value={monthsSold} onChange={e=>setMonthsSold(e.target.value)} onBlur={e=>{const v=parseInt(e.target.value)||1;setMonthsSold(Math.max(1,Math.min(v,m.term)));}} style={is} placeholder={`1–${m.term}`} min={1} max={m.term}/></Field>
         </Card>
 
-        {/* Deposit */}
-        <Card style={{marginBottom:14}}>
-          <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:12}}>Deposit</div>
+        <Card style={{marginBottom:12}}>
+          <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:10}}>Deposit</div>
           <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:depositType!=="none"?12:0}}>
-            {[["none","No Deposit"],["toward","Deposit toward fee — reduces monthly"]].map(([id,lbl])=><button key={id} onClick={()=>setDepositType(id)} style={{padding:"10px 12px",borderRadius:8,border:depositType===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.12)",background:depositType===id?"rgba(182,139,46,0.08)":"#1e1d1a",color:depositType===id?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left",fontSize:12,fontWeight:depositType===id?600:400,transition:"all 0.15s"}}>{lbl}</button>)}
+            {[["none","No deposit"],["toward","Deposit toward fee"]].map(([id,lbl])=><button key={id} onClick={()=>setDepositType(id)} style={{padding:"9px 12px",borderRadius:8,border:depositType===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.12)",background:depositType===id?"rgba(182,139,46,0.08)":"#1e1d1a",color:depositType===id?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left",fontSize:12,fontWeight:depositType===id?600:400}}>{lbl}</button>)}
           </div>
-          {depositType!=="none"&&<div style={{display:"flex",alignItems:"center",gap:10}}>
-            <input type="number" value={depositPct} onChange={e=>setDepositPct(e.target.value)} style={{...is,width:80}} placeholder="10" min={1} max={99}/>
+          {depositType!=="none"&&<div style={{display:"flex",alignItems:"center",gap:8}}>
+            <input type="number" value={depositPct} onChange={e=>setDepositPct(e.target.value)} style={{...is,width:70}} placeholder="10"/>
             <span style={{fontSize:13,color:"#5a564e"}}>%</span>
-            {av>0&&<span style={{fontSize:13,color:"#b68b2e",fontWeight:600,marginLeft:"auto"}}>= R {fmt(av*(dPctNum/100))}</span>}
+            {av>0&&<span style={{fontSize:12,color:"#b68b2e",fontWeight:600,marginLeft:"auto"}}>R {fmt(av*(dN/100))}</span>}
           </div>}
         </Card>
 
-        <Card style={{marginBottom:14}}>
-          <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:12}}>Introducer Fee</div>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <Card style={{marginBottom:12}}>
+          <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:10}}>Introducer Fee</div>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
             <input type="number" value={introPct} onChange={e=>setIntroPct(e.target.value)} style={{...is,flex:1}} placeholder="0" min={0} max={50}/>
-            <span style={{fontSize:13,color:"#5a564e",flexShrink:0}}>% of payout</span>
-            {av>0&&deal.introFee>0&&<span style={{fontSize:13,color:"#c45c4a",fontWeight:600,flexShrink:0}}>R {fmt(deal.introFee)}</span>}
+            <span style={{fontSize:13,color:"#5a564e",flexShrink:0}}>%</span>
+            {deal.introFee>0&&<span style={{fontSize:12,color:"#c45c4a",fontWeight:600,flexShrink:0}}>R {fmt(deal.introFee)}</span>}
           </div>
         </Card>
 
         <Card>
-          <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:4}}>Backend Split — VB's fee</div>
-          {!splitOk&&<div style={{fontSize:11,color:"#c45c4a",marginBottom:10}}>⚠ Must total 100% (currently {Math.round(splitTotal)}%)</div>}
-          {!splitOk&&<div style={{fontSize:11,color:"#5a564e",marginBottom:10}}>Applies to VB's {Math.round(m.vbPct*100)}% fee only — not visible to collectors</div>}
-          {[["Gallery",galleryPct,setGalleryPct],["Vollard Black",vbPct2,setVbPct2],["Artist",artistPct,setArtistPct]].map(([l,v,sv])=><div key={l} style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-            <span style={{fontSize:13,color:"#e8e2d6",minWidth:90,flexShrink:0}}>{l}</span>
-            <input type="number" value={v} onChange={e=>sv(e.target.value)} style={{...is,width:64,padding:"8px 10px",fontSize:13,flexShrink:0}} min={0} max={100} placeholder="0"/>
-            <span style={{fontSize:12,color:"#5a564e",flexShrink:0}}>%</span>
-            {av>0&&deal.vbTotal>0&&splitOk&&<span style={{fontSize:12,color:"#b68b2e",marginLeft:"auto",flexShrink:0}}>R {fmt(deal.vbTotal*((parseFloat(v)||0)/100))}</span>}
+          <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:8}}>Backend Split</div>
+          {!splitOk&&<div style={{fontSize:11,color:"#c45c4a",marginBottom:8}}>⚠ Must total 100%</div>}
+          {[["Gallery",galleryPct,setGalleryPct],["VB",vbPct2,setVbPct2],["Artist",artistPct,setArtistPct]].map(([l,v,sv])=><div key={l} style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+            <span style={{fontSize:13,color:"#e8e2d6",minWidth:56,flexShrink:0}}>{l}</span>
+            <input type="number" value={v} onChange={e=>sv(e.target.value)} style={{...is,width:60,padding:"7px 10px",fontSize:13}} placeholder="0"/>
+            <span style={{fontSize:12,color:"#5a564e"}}>%</span>
+            {av>0&&splitOk&&<span style={{fontSize:12,color:"#b68b2e",marginLeft:"auto"}}>R {fmt(deal.vbFee*((parseFloat(v)||0)/100))}</span>}
           </div>)}
-          {splitOk&&av>0&&deal.vbTotal>0&&<div style={{borderTop:"1px solid rgba(182,139,46,0.08)",paddingTop:10,marginTop:4,display:"flex",justifyContent:"space-between",fontSize:12}}><span style={{color:"#5a564e"}}>Total VB fee split</span><span style={{color:"#b68b2e",fontWeight:600}}>R {fmt(deal.vbTotal)}</span></div>}
         </Card>
       </div>
 
-      {/* RIGHT — Results */}
+      {/* ── RIGHT: Results ── */}
       <div>
-        {av===0?<Card style={{padding:32,textAlign:"center"}}><div style={{fontSize:32,color:"#5a564e",marginBottom:12}}>◆</div><p style={{color:"#5a564e",fontSize:14}}>Enter artwork value to see deal scenarios.</p></Card>:
-        <>
-          {/* 3 key numbers */}
+        {!av?<Card style={{padding:48,textAlign:"center"}}><div style={{fontSize:36,color:"#5a564e",marginBottom:12}}>◆</div><p style={{color:"#5a564e"}}>Enter artwork value to begin.</p></Card>:<>
+
+          {/* 3 hero numbers */}
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:16}}>
-            <Card style={{padding:14,textAlign:"center",border:"1px solid rgba(74,158,107,0.2)"}}>
-              <div style={{fontSize:9,letterSpacing:2,color:"#5a564e",marginBottom:6}}>COLLECTOR RECEIVES</div>
-              <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:24,fontWeight:600,color:"#4a9e6b"}}>R {fmt(deal.colNet||0)}</div>
-              <div style={{fontSize:10,color:"#4a9e6b",marginTop:4}}>Profit R {fmt(deal.colProfit||0)} · {Math.round(deal.colROI||0)}% ROI</div>
+            <Card style={{padding:16,textAlign:"center",border:"1px solid rgba(74,158,107,0.2)"}}>
+              <div style={{fontSize:9,letterSpacing:2,color:"#5a564e",marginBottom:8}}>COLLECTOR RECEIVES</div>
+              <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:28,fontWeight:400,color:"#4a9e6b"}}>R {fmt(deal.colNet||0)}</div>
+              <div style={{fontSize:10,color:"#4a9e6b",marginTop:6}}>Profit R {fmt(deal.colProfit||0)} · {Math.round(deal.colROI||0)}% ROI</div>
             </Card>
-            <Card style={{padding:14,textAlign:"center",border:"1px solid rgba(182,139,46,0.2)"}}>
-              <div style={{fontSize:9,letterSpacing:2,color:"#5a564e",marginBottom:6}}>VB TOTAL</div>
-              <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:24,fontWeight:600,color:"#b68b2e"}}>R {fmt(deal.vbTotal||0)}</div>
-              <div style={{fontSize:10,color:"#8a8477",marginTop:4}}>R {fmt(deal.totalPaid||0)} collected</div>
+            <Card style={{padding:16,textAlign:"center",border:"1px solid rgba(182,139,46,0.2)"}}>
+              <div style={{fontSize:9,letterSpacing:2,color:"#5a564e",marginBottom:8}}>VB TOTAL</div>
+              <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:28,fontWeight:400,color:"#b68b2e"}}>R {fmt(deal.vbTotal||0)}</div>
+              <div style={{fontSize:10,color:"#8a8477",marginTop:6}}>Always R {fmt(deal.vbFee||0)}</div>
             </Card>
-            <Card style={{padding:14,textAlign:"center"}}>
-              <div style={{fontSize:9,letterSpacing:2,color:"#5a564e",marginBottom:6}}>SALE PRICE</div>
-              <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:24,fontWeight:600,color:"#f5f0e8"}}>R {fmt(sp)}</div>
-              {aboveValue&&<div style={{fontSize:10,color:"#4a9e6b",marginTop:4}}>+R {fmt(deal.surplus||0)} surplus</div>}
-              {belowValue&&<div style={{fontSize:10,color:"#e6be32",marginTop:4}}>−R {fmt(deal.deficit||0)} below value</div>}
+            <Card style={{padding:16,textAlign:"center"}}>
+              <div style={{fontSize:9,letterSpacing:2,color:"#5a564e",marginBottom:8}}>SALE PRICE</div>
+              <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:28,fontWeight:400,color:"#f5f0e8"}}>R {fmt(sp)}</div>
+              {aboveValue&&<div style={{fontSize:10,color:"#4a9e6b",marginTop:6}}>+R {fmt(deal.surplus||0)} above value</div>}
             </Card>
           </div>
 
-          {/* Settlement */}
+          {/* Settlement — clean and simple */}
           <Card style={{marginBottom:14}}>
-            <div style={{fontSize:12,fontWeight:600,color:"#f5f0e8",marginBottom:2}}>Settlement — Month {mo} · {m.label}{depositType!=="none"?` · ${depositType==="toward"?"Deposit toward fee":"Deposit separate"}`:" · No deposit"}</div>
-            <div style={{fontSize:11,color:"#5a564e",marginBottom:14}}>What happens at point of sale</div>
-            {depositType!=="none"&&row(`Deposit (${dPctNum}%) — ${depositType==="toward"?"counts toward fee":"separate commitment"}`,`R ${fmt(deal.depositAmt)}`,`#b68b2e`)}
-            {row("Monthly payment",`R ${fmt(deal.monthly)}/mo`)}
-            {row(`Monthly collected (${mo} month${mo>1?"s":""})`,`R ${fmt(deal.monthly*mo)}`,`#b68b2e`)}
-            {row("Total paid in",`R ${fmt(deal.totalPaid)}`,`#b68b2e`)}
-            {row("VB balance at sale",`R ${fmt(deal.vbBalance)}`,deal.vbBalance>0?"#c45c4a":"#4a9e6b")}
-            {aboveValue&&row("Surplus above value",`R ${fmt(deal.surplus)}`,`#4a9e6b`)}
-            {aboveValue&&row("Collector surplus bonus (50%)",`+ R ${fmt(deal.surplusCol)}`,`#4a9e6b`)}
-            {divider}
-            {row(`Collector ${Math.round(m.colPct*100)}% of sale price`,`R ${fmt(deal.colBase)}`,`#4a9e6b`)}
-            {deal.surplusCol>0&&row("Plus surplus bonus",`+ R ${fmt(deal.surplusCol)}`,`#4a9e6b`)}
-            {deal.vbBalance>0&&row("Less VB balance",`− R ${fmt(deal.vbBalance)}`,`#c45c4a`)}
-            {deal.introFee>0&&row("Less introducer fee",`− R ${fmt(deal.introFee)}`,`#c45c4a`)}
-            {divider}
-            {row("Collector net payout",`R ${fmt(deal.colNet)}`,`#4a9e6b`,true,20)}
-            {row("Collector total paid in",`R ${fmt(deal.totalPaid)}`)}
-            {row("Collector profit",`R ${fmt(deal.colProfit)}`,deal.colProfit>=0?"#4a9e6b":"#c45c4a",true)}
-            {row("Collector ROI",`${Math.round(deal.colROI)}%`,deal.colROI>=0?"#b68b2e":"#c45c4a",true)}
+            <div style={{fontSize:13,fontWeight:600,color:"#f5f0e8",marginBottom:2}}>What happens at sale — Month {mo} · {m.label}</div>
+            <div style={{fontSize:11,color:"#5a564e",marginBottom:14}}>R {fmt(sp)} lands in your bank account</div>
+
+            <div style={{background:"#1a1917",borderRadius:10,padding:"14px 16px",marginBottom:14}}>
+              <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:10}}>What you already have</div>
+              {depositType!=="none"&&<SRow label={`Deposit paid (${dN}%)`} val={`R ${fmt(deal.depositAmt)}`} color="#b68b2e"/>}
+              <SRow label={`${mo} monthly payment${mo>1?"s":""} received`} val={`R ${fmt(deal.monthly*mo)}`} color="#b68b2e"/>
+              <SRow label="Total already in your bank" val={`R ${fmt(deal.totalCollected)}`} color="#b68b2e" bold/>
+            </div>
+
+            <div style={{background:"#1a1917",borderRadius:10,padding:"14px 16px",marginBottom:14}}>
+              <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:10}}>From the R {fmt(sp)} sale</div>
+              <SRow label="VB takes their balance" val={`− R ${fmt(deal.vbBalance)}`} color="#c45c4a" sub={`(R${fmt(deal.vbFee)} fee − R${fmt(deal.totalCollected)} collected)`}/>
+              {deal.introFee>0&&<SRow label="Introducer fee deducted" val={`− R ${fmt(deal.introFee)}`} color="#c45c4a"/>}
+              {aboveValue&&<SRow label="Surplus above value (50% to each)" val={`R ${fmt(deal.surplus)}`} color="#4a9e6b"/>}
+              <div style={{height:1,background:"rgba(182,139,46,0.15)",margin:"10px 0"}}/>
+              <SRow label="Collector receives" val={`R ${fmt(deal.colNet)}`} color="#4a9e6b" bold/>
+              <SRow label="You keep from sale" val={`R ${fmt(deal.vbAtSale)}`} color="#b68b2e" bold/>
+            </div>
+
+            <div style={{background:"rgba(182,139,46,0.05)",border:"1px solid rgba(182,139,46,0.12)",borderRadius:10,padding:"14px 16px"}}>
+              <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:10}}>Final tally</div>
+              <SRow label="VB total income (monthly + sale)" val={`R ${fmt(deal.vbTotal)}`} color="#b68b2e" bold/>
+              <SRow label="Collector net gain" val={`R ${fmt(deal.colProfit)}`} color="#4a9e6b" bold/>
+              <SRow label="Collector ROI" val={`${Math.round(deal.colROI)}%`} color="#b68b2e"/>
+            </div>
           </Card>
 
-          {/* All scenarios */}
+          {/* Scenarios table */}
           <Card>
-            <div style={{fontSize:12,fontWeight:600,color:"#f5f0e8",marginBottom:2}}>All Scenarios — {m.label}</div>
-            <div style={{fontSize:11,color:"#5a564e",marginBottom:14}}>Sale price R {fmt(sp)} · {depositType!=="none"?`${dPctNum}% deposit (${depositType==="toward"?"toward fee":"separate"}) · `:""}same profit regardless of month</div>
-            <div style={{overflowX:"auto"}}>
+            <div style={{fontSize:13,fontWeight:600,color:"#f5f0e8",marginBottom:2}}>All Scenarios — {m.label} · R {fmt(sp)} sale price</div>
+            <div style={{fontSize:11,color:"#5a564e",marginBottom:14}}>What changes is timing — collector's profit is always the same</div>
+            <div style={{overflowX:"auto",maxHeight:360,overflowY:"auto"}}>
               <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
-                <thead><tr>{["Month","Paid In","VB Balance","Receives","Profit","ROI"].map(h=><th key={h} style={{fontSize:10,fontWeight:600,letterSpacing:1,textTransform:"uppercase",color:"#5a564e",padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.08)",whiteSpace:"nowrap",textAlign:h==="Month"?"left":"right"}}>{h}</th>)}</tr></thead>
-                <tbody>{scenarioMonths.map(mo2=>{const d=calcDeal(av,sp,acqModel,mo2,gPctNum,vPctNum,aPctNum,iPctNum,depositType,dPctNum);const isSelected=mo2===mo;return<tr key={mo2} style={{background:isSelected?"rgba(182,139,46,0.06)":"transparent"}}>
-                  <td style={{padding:"9px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",fontWeight:isSelected?600:400,color:isSelected?"#b68b2e":"#e8e2d6"}}>Mo {mo2}{isSelected?<span style={{fontSize:9,marginLeft:4,color:"#b68b2e"}}>◆</span>:""}</td>
-                  <td style={{padding:"9px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",textAlign:"right",color:"#8a8477"}}>R {fmt(d.totalPaid)}</td>
-                  <td style={{padding:"9px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",textAlign:"right",color:d.vbBalance>0?"#c45c4a":"#4a9e6b"}}>R {fmt(d.vbBalance)}</td>
-                  <td style={{padding:"9px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",textAlign:"right",color:"#4a9e6b",fontWeight:600}}>R {fmt(d.colNet)}</td>
-                  <td style={{padding:"9px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",textAlign:"right",color:d.colProfit>=0?"#4a9e6b":"#c45c4a"}}>R {fmt(d.colProfit)}</td>
-                  <td style={{padding:"9px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",textAlign:"right",color:"#b68b2e",fontWeight:600}}>{Math.round(d.colROI)}%</td>
-                </tr>;})}
-                </tbody>
+                <thead style={{position:"sticky",top:0,background:"#151412"}}>
+                  <tr>{[["Month","left"],["Monthly Paid","right"],["VB Balance","right"],["Collector Gets","right"],["Collector Profit","right"],["ROI","right"]].map(([h,a])=><th key={h} style={{fontSize:10,fontWeight:600,letterSpacing:1,textTransform:"uppercase",color:"#5a564e",padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.12)",whiteSpace:"nowrap",textAlign:a}}>{h}</th>)}</tr>
+                </thead>
+                <tbody>{scenarioMonths.map(mo2=>{
+                  const d=calcDeal(av,sp,acqModel,mo2,gN,vN,aN,iN,depositType,dN);
+                  const on=mo2===mo;
+                  return<tr key={mo2} style={{background:on?"rgba(182,139,46,0.06)":"transparent"}}>
+                    <td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",fontWeight:on?600:400,color:on?"#b68b2e":"#e8e2d6"}}>Mo {mo2}{on?<span style={{fontSize:9,marginLeft:4}}>◆</span>:""}</td>
+                    <td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",textAlign:"right",color:"#8a8477"}}>R {fmt(d.totalCollected)}</td>
+                    <td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",textAlign:"right",color:d.vbBalance>0?"#c45c4a":"#4a9e6b"}}>R {fmt(d.vbBalance)}</td>
+                    <td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",textAlign:"right",color:"#4a9e6b",fontWeight:600}}>R {fmt(d.colNet)}</td>
+                    <td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",textAlign:"right",color:d.colProfit>=0?"#4a9e6b":"#c45c4a"}}>R {fmt(d.colProfit)}</td>
+                    <td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",textAlign:"right",color:"#b68b2e",fontWeight:600}}>{Math.round(d.colROI)}%</td>
+                  </tr>;
+                })}</tbody>
               </table>
             </div>
-            {sp===av&&<div style={{fontSize:11,color:"#5a564e",marginTop:10,padding:"8px 10px",background:"rgba(182,139,46,0.04)",borderRadius:6}}>At recommended price, collector profit is always R {fmt(av*(m.colPct-m.vbPct))} — timing only changes the ROI %.</div>}
-            {belowValue&&<div style={{fontSize:11,color:"#e6be32",marginTop:10,padding:"8px 10px",background:"rgba(230,190,50,0.06)",borderRadius:6}}>Sale below recommended price — collector receives less than their full {Math.round(m.colPct*100)}% entitlement.</div>}
           </Card>
         </>}
       </div>
     </div>
-
-    {/* Mobile media query via inline style on wrapper */}
-    <style>{`
-      @media (max-width: 700px) {
-        .calc-grid { grid-template-columns: 1fr !important; }
-      }
-    `}</style>
   </div>);
 }
 
@@ -1457,10 +1444,10 @@ function SettlementModal({sale,data,onClose}){
     <Card style={{background:"#1e1d1a",marginBottom:16}}>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,fontSize:14}}>
         <span style={{color:"#8a8477"}}>VB fee ({Math.round(MODELS[acqModel].vbPct*100)}%):</span><span style={{textAlign:"right",color:"#b68b2e"}}>R {fmt(deal.vbFee)}</span>
-        <span style={{color:"#8a8477"}}>Already collected:</span><span style={{textAlign:"right"}}>R {fmt(deal.totalPaid)}</span>
+        <span style={{color:"#8a8477"}}>Already collected:</span><span style={{textAlign:"right"}}>R {fmt(deal.totalCollected)}</span>
         <span style={{color:"#8a8477"}}>VB balance at sale:</span><span style={{textAlign:"right",color:"#c45c4a"}}>R {fmt(deal.vbBalance)}</span>
         <div style={{gridColumn:"1/-1",height:1,background:"rgba(182,139,46,0.1)",margin:"4px 0"}}/>
-        <span style={{color:"#4a9e6b",fontWeight:600}}>Collector {Math.round(MODELS[acqModel].colPct*100)}%:</span><span style={{textAlign:"right",color:"#4a9e6b"}}>R {fmt(deal.colBase+deal.surplusCol)}</span>
+        <span style={{color:"#4a9e6b",fontWeight:600}}>Collector {Math.round(MODELS[acqModel].colPct*100)}%:</span><span style={{textAlign:"right",color:"#4a9e6b"}}>R {fmt(deal.collectorAtSale+deal.surplusCol)}</span>
         <span style={{color:"#8a8477"}}>Less VB balance:</span><span style={{textAlign:"right",color:"#c45c4a"}}>− R {fmt(deal.vbBalance)}</span>
         {deal.introFee>0&&<><span style={{color:"#8a8477"}}>Less intro fee ({introPct}%):</span><span style={{textAlign:"right",color:"#c45c4a"}}>− R {fmt(deal.introFee)}</span></>}
         <span style={{color:"#4a9e6b",fontWeight:700,fontSize:16}}>Collector receives:</span><span style={{textAlign:"right",color:"#4a9e6b",fontWeight:700,fontFamily:"Cormorant Garamond,serif",fontSize:22}}>R {fmt(deal.colNet)}</span>
@@ -1549,7 +1536,7 @@ function SaleMdl({data,sellable,onSale,onClose}){
         <span style={{color:"#8a8477"}}>Collector:</span><span>{gn(col)}</span>
         {resolvedBuyerName&&<><span style={{color:"#8a8477"}}>Buyer:</span><span style={{color:"#b68b2e"}}>{resolvedBuyerName}</span></>}
         <div style={{gridColumn:"1/-1",height:1,background:"rgba(182,139,46,0.1)",margin:"4px 0"}}/>
-        <span style={{color:"#4a9e6b",fontWeight:600}}>Collector {Math.round(m.colPct*100)}%:</span><span style={{color:"#4a9e6b"}}>R {fmt(deal.colBase+(deal.surplusCol||0))}</span>
+        <span style={{color:"#4a9e6b",fontWeight:600}}>Collector {Math.round(m.colPct*100)}%:</span><span style={{color:"#4a9e6b"}}>R {fmt(deal.collectorAtSale+(deal.surplusCol||0))}</span>
         <span style={{color:"#8a8477"}}>Less VB balance:</span><span style={{color:"#c45c4a"}}>− R {fmt(deal.vbBalance||0)}</span>
         <span style={{color:"#4a9e6b",fontWeight:700}}>Collector receives:</span><span style={{color:"#4a9e6b",fontWeight:700,fontFamily:"Cormorant Garamond,serif",fontSize:18}}>R {fmt(deal.colNet||0)}</span>
         <div style={{gridColumn:"1/-1",height:1,background:"rgba(182,139,46,0.06)",margin:"4px 0"}}/>
@@ -1564,7 +1551,7 @@ function SaleMdl({data,sellable,onSale,onClose}){
         let finalBuyerId=buyerId;let finalBuyerName=resolvedBuyerName;
         let newBuyerData=null;
         if(newBuyer&&resolvedBuyerName.trim()){finalBuyerId=uid();finalBuyerName=resolvedBuyerName;newBuyerData={...nb,id:finalBuyerId};}
-        onSale({artworkId:artId,artworkTitle:art.title,acquisitionModel:acqModel,collectorId:col?.id,collectorName:gn(col),buyerId:finalBuyerId||null,buyerName:finalBuyerName||null,newBuyerData,salePrice:sp,artworkValue,monthsPaid,colNet:deal.colNet||0,colProfit:deal.colProfit||0,colROI:deal.colROI||0,vbTotal:deal.vbTotal||0,vbBalance:deal.vbBalance||0,collectorShare:deal.colBase||0,vbShare:deal.vbFee||0,galleryShare:deal.galleryAmt||0,vbNet:deal.vbAmt||0,artistShare:deal.artistAmt||0});
+        onSale({artworkId:artId,artworkTitle:art.title,acquisitionModel:acqModel,collectorId:col?.id,collectorName:gn(col),buyerId:finalBuyerId||null,buyerName:finalBuyerName||null,newBuyerData,salePrice:sp,artworkValue,monthsPaid,colNet:deal.colNet||0,colProfit:deal.colProfit||0,colROI:deal.colROI||0,vbTotal:deal.vbTotal||0,vbBalance:deal.vbBalance||0,collectorShare:deal.colNet||0,vbShare:deal.vbFee||0,galleryShare:deal.galleryAmt||0,vbNet:deal.vbAmt||0,artistShare:deal.artistAmt||0});
       }}>Confirm Sale</Btn>
     </div>
   </Modal>);
