@@ -372,13 +372,14 @@ export default function App(){
       if(db.isConnected()){
         try{
           const results={};
-          for(const t of TABLES){const d=await db.getAll(t);if(d)results[t]=d;}
-          if(Object.keys(results).length>0){
-            const safe={...fresh()};
-            for(const t of TABLES){safe[t]=Array.isArray(results[t])?results[t]:[];}
-            safe.collectors=safe.collectors.map(c=>({...c,linkedArtworks:c.linkedArtworks||[]}));
-            setData(safe);setDbMode(true);
-          } else setData(loadLocal());
+          for(const t of TABLES){
+            try{const d=await db.getAll(t);if(d)results[t]=d;}
+            catch(e){console.warn(`Table '${t}' not found, skipping.`);results[t]=[];}
+          }
+          const safe={...fresh()};
+          for(const t of TABLES){safe[t]=Array.isArray(results[t])?results[t]:[];}
+          safe.collectors=safe.collectors.map(c=>({...c,linkedArtworks:c.linkedArtworks||[]}));
+          setData(safe);setDbMode(true);
         }catch(e){console.error(e);setData(loadLocal());}
       } else setData(loadLocal());
       setLoading(false);
@@ -386,7 +387,15 @@ export default function App(){
     init();
   },[]);
 
-  useEffect(()=>{if(!loading)localStorage.setItem(SK,JSON.stringify(data));},[data,loading]);
+  // Save to localStorage but skip large image data to avoid quota errors
+  useEffect(()=>{
+    if(!loading){
+      try{
+        const slim={...data,artworks:data.artworks.map(a=>({...a,imageUrl:a.imageUrl?.startsWith("data:")?null:a.imageUrl}))};
+        localStorage.setItem(SK,JSON.stringify(slim));
+      }catch(e){console.warn("localStorage save skipped:",e.message);}
+    }
+  },[data,loading]);
 
   const up=useCallback((table,valOrFn)=>{
     setData(prev=>{
