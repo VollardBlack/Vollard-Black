@@ -545,7 +545,7 @@ export default function App(){
     {id:"artists",label:"Artists",icon:I.star},
     {id:"collectors",label:"License Holders",icon:I.ppl},
     {id:"buyers",label:"Buyers",icon:I.buyer},
-    {id:"calculator",label:"Calculator",icon:I.calc},
+    {id:"calculator",label:"Profit Sharing",icon:I.calc},
     {id:"gallery",label:"Gallery",icon:I.gallery},
     {id:"invoices",label:"Invoicing",icon:I.bill},
     {id:"sales",label:"Sales",icon:I.sale},
@@ -1182,11 +1182,11 @@ function CalcPage({data={},actions={}}){
   </div>;
 
   return(<div>
-    <PT title="License Calculator" sub="Signature · Premier · Select · Deal Scenarios"/>
+    <PT title="Profit Sharing Agreement" sub="Signature · Premier · Select · Deal Scenarios"/>
 
     {/* ── Mode selector ── */}
     <div style={{display:"flex",gap:8,marginBottom:20,borderBottom:"1px solid rgba(182,139,46,0.18)",paddingBottom:16}}>
-      {[["manual","Manual Entry"],["lookup","Load Collector Deal"],["new","Build & Link to Collector"]].map(([id,lbl])=><button key={id} onClick={()=>{setMode(id);setLinkSaved(false);}} style={{padding:"9px 18px",borderRadius:8,border:mode===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.30)",background:mode===id?"rgba(182,139,46,0.18)":"transparent",color:mode===id?"#b68b2e":"#6b635a",fontSize:12,fontWeight:mode===id?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{lbl}</button>)}
+      {[["manual","Manual Entry"],["lookup","Load License Holder Deal"],["new","Build & Link to License Holder"]].map(([id,lbl])=><button key={id} onClick={()=>{setMode(id);setLinkSaved(false);}} style={{padding:"9px 18px",borderRadius:8,border:mode===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.30)",background:mode===id?"rgba(182,139,46,0.18)":"transparent",color:mode===id?"#b68b2e":"#6b635a",fontSize:12,fontWeight:mode===id?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{lbl}</button>)}
     </div>
 
     {/* ── LOOKUP MODE ── */}
