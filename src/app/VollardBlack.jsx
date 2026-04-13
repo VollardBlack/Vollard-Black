@@ -658,68 +658,172 @@ function Catalogue({data,up,actions}){
   const [search,setSearch]=useState("");
   const [delModal,setDelModal]=useState(null);
   const [expanded,setExpanded]=useState({});
+  const [hoveredArt,setHoveredArt]=useState(null);
+  const [lightbox,setLightbox]=useState(null);
 
   const blank={id:"",title:"",artist:"",artistId:"",medium:"",dimensions:"",year:"",recommendedPrice:"",imageUrl:"",status:"Available",description:"",galleryName:"",insuranceMonthly:""};
   const save=(a)=>{if(a.id)up("artworks",p=>p.map(x=>x.id===a.id?a:x));else up("artworks",p=>[{...a,id:uid(),createdAt:td()},...p]);setModal(null);};
   const f=data.artworks.filter(a=>(a.title+a.artist+a.status).toLowerCase().includes(search.toLowerCase()));
   const handleDelete=(art)=>{const has=(data.schedules||[]).some(s=>s.artworkId===art.id)||(data.sales||[]).some(s=>s.artworkId===art.id);if(has)setDelModal(art);else{if(confirm("Delete this artwork?"))up("artworks",p=>p.filter(a=>a.id!==art.id));}};
 
-  // Group by artist
   const groups={};
   f.forEach(a=>{const key=a.artist||"Unknown Artist";if(!groups[key])groups[key]=[];groups[key].push(a);});
   const artistNames=Object.keys(groups).sort();
+  const isOpen=(name)=>expanded[name]!==false;
+  const toggle=(name)=>setExpanded(p=>({...p,[name]:!isOpen(name)}));
 
-  // All expanded by default
-  const isExpanded=(name)=>expanded[name]!==false;
-  const toggle=(name)=>setExpanded(p=>({...p,[name]:!isExpanded(name)}));
+  const statusDot={Available:"#4a9e6b",Reserved:"#b68b2e","In Gallery":"#648cc8",Sold:"#c45c4a","In Dispute":"#c45c4a"};
 
   return(<div>
-    <PT title="Art Catalogue" sub={`${data.artworks.length} artworks`} action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Add Artwork</Btn>}/>
-    <div style={{marginBottom:16}}><input placeholder="Search artworks..." value={search} onChange={e=>setSearch(e.target.value)} style={{...is,maxWidth:360}}/></div>
-    {f.length===0?<Card><Empty msg="No artworks yet." action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Add</Btn>}/></Card>:
-    artistNames.map(artistName=>{
+    <style>{`
+      @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+      @keyframes scaleIn{from{opacity:0;transform:scale(0.96)}to{opacity:1;transform:scale(1)}}
+      .art-card{transition:transform 0.4s cubic-bezier(0.16,1,0.3,1),box-shadow 0.4s ease;}
+      .art-card:hover{transform:translateY(-6px) scale(1.01);box-shadow:0 24px 48px rgba(0,0,0,0.12)!important;}
+      .art-card:hover .art-overlay{opacity:1!important;}
+      .art-card:hover .art-img{transform:scale(1.04);}
+      .art-img{transition:transform 0.6s cubic-bezier(0.16,1,0.3,1);}
+      .art-overlay{opacity:0;transition:opacity 0.3s ease;}
+      .artist-row{transition:background 0.2s ease;}
+      .artist-row:hover{background:rgba(182,139,46,0.04)!important;}
+      .artist-row:hover .artist-name{color:#b68b2e!important;}
+      .lb-close:hover{opacity:0.7;}
+    `}</style>
+
+    {/* Lightbox */}
+    {lightbox&&<div onClick={()=>setLightbox(null)} style={{position:"fixed",inset:0,background:"rgba(15,12,8,0.96)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:40,cursor:"zoom-out"}}>
+      <button className="lb-close" onClick={()=>setLightbox(null)} style={{position:"absolute",top:24,right:28,background:"none",border:"none",color:"rgba(255,255,255,0.7)",fontSize:32,cursor:"pointer",lineHeight:1,fontWeight:300}}>×</button>
+      <div onClick={e=>e.stopPropagation()} style={{display:"flex",gap:48,alignItems:"center",maxWidth:1100,width:"100%",animation:"scaleIn 0.35s cubic-bezier(0.16,1,0.3,1)"}}>
+        <div style={{flex:"0 0 auto",maxWidth:520}}>
+          {lightbox.imageUrl?<img src={lightbox.imageUrl} alt={lightbox.title} style={{width:"100%",maxHeight:"75vh",objectFit:"contain",display:"block"}}/>:
+          <div style={{width:420,height:420,background:"rgba(182,139,46,0.08)",display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:64,color:"rgba(182,139,46,0.3)"}}>◆</span></div>}
+        </div>
+        <div style={{flex:1,color:"#f5f0e8"}}>
+          <div style={{fontSize:11,letterSpacing:4,textTransform:"uppercase",color:"#b68b2e",marginBottom:16}}>{lightbox.artist}</div>
+          <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:38,fontWeight:300,lineHeight:1.15,color:"#f5f0e8",marginBottom:8}}>{lightbox.title}</div>
+          {lightbox.year&&<div style={{fontSize:13,color:"rgba(245,240,232,0.5)",marginBottom:28}}>{lightbox.year}{lightbox.medium?` · ${lightbox.medium}`:""}{lightbox.dimensions?` · ${lightbox.dimensions}`:""}</div>}
+          <div style={{height:1,background:"rgba(182,139,46,0.2)",marginBottom:28}}/>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:28}}>
+            {[["Price",`R ${fmt(lightbox.recommendedPrice)}`],["Status",lightbox.status],["Gallery",lightbox.galleryName||"—"],["Option 1 (30%)",`R ${fmt(lightbox.recommendedPrice*0.30)}`]].map(([l,v])=><div key={l}><div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"rgba(245,240,232,0.35)",marginBottom:4}}>{l}</div><div style={{fontSize:15,color:"#f5f0e8",fontWeight:500}}>{v}</div></div>)}
+          </div>
+          <div style={{display:"flex",gap:10}}>
+            <button onClick={()=>{setLightbox(null);setModal(lightbox);}} style={{padding:"10px 20px",background:"rgba(182,139,46,0.15)",border:"1px solid rgba(182,139,46,0.4)",borderRadius:8,color:"#b68b2e",fontSize:12,fontWeight:600,letterSpacing:1,textTransform:"uppercase",cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>Edit Artwork</button>
+            <button onClick={()=>setLightbox(null)} style={{padding:"10px 20px",background:"transparent",border:"1px solid rgba(245,240,232,0.15)",borderRadius:8,color:"rgba(245,240,232,0.5)",fontSize:12,letterSpacing:1,textTransform:"uppercase",cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>Close</button>
+          </div>
+        </div>
+      </div>
+    </div>}
+
+    {/* Header */}
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:32,paddingBottom:20,borderBottom:"1px solid rgba(182,139,46,0.15)"}}>
+      <div>
+        <div style={{fontSize:10,letterSpacing:4,textTransform:"uppercase",color:"#b68b2e",marginBottom:6}}>Vollard Black</div>
+        <h1 style={{fontFamily:"Cormorant Garamond,serif",fontSize:36,fontWeight:300,color:"#1a1714",margin:0,letterSpacing:1}}>Art Catalogue</h1>
+        <div style={{fontSize:12,color:"#8a8070",marginTop:4}}>{data.artworks.length} works · {artistNames.length} artists</div>
+      </div>
+      <div style={{display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{position:"relative"}}>
+          <input placeholder="Search artworks…" value={search} onChange={e=>setSearch(e.target.value)} style={{...is,width:240,paddingLeft:36,background:"#ffffff",border:"1px solid rgba(182,139,46,0.2)"}}/>
+          <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:"#8a8070",fontSize:14,pointerEvents:"none"}}>⌕</span>
+        </div>
+        <Btn gold onClick={()=>setModal("add")}>{I.plus} Add Artwork</Btn>
+      </div>
+    </div>
+
+    {f.length===0?<div style={{textAlign:"center",padding:"80px 20px"}}><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:64,color:"rgba(182,139,46,0.15)",marginBottom:16}}>◆</div><p style={{color:"#8a8070",fontSize:15}}>No artworks yet.</p><div style={{marginTop:20}}><Btn gold onClick={()=>setModal("add")}>{I.plus} Add First Artwork</Btn></div></div>:
+    <div>{artistNames.map((artistName,ai)=>{
       const artworks=groups[artistName];
       const artistProfile=data.artists?.find(a=>a.name===artistName);
       const totalVal=artworks.reduce((s,a)=>s+(a.recommendedPrice||0),0);
-      const open=isExpanded(artistName);
-      return<div key={artistName} style={{marginBottom:16}}>
-        {/* Artist header — clickable to collapse */}
-        <button onClick={()=>toggle(artistName)} style={{display:"flex",alignItems:"center",gap:14,width:"100%",padding:"14px 20px",background:"#ffffff",border:"1px solid rgba(182,139,46,0.25)",borderRadius:open?[12,12,0,0].map(v=>v+"px").join(" "):"12px",cursor:"pointer",textAlign:"left",transition:"border-radius 0.15s"}}>
-          <div style={{width:44,height:44,borderRadius:10,flexShrink:0,background:"linear-gradient(135deg,rgba(182,139,46,0.50),rgba(182,139,46,0.12))",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
-            {artistProfile?.profileImageUrl?<img src={artistProfile.profileImageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span style={{fontFamily:"Cormorant Garamond,serif",fontSize:18,color:"#b68b2e",fontWeight:600}}>{artistName.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase()}</span>}
+      const open=isOpen(artistName);
+      const initials=artistName.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase();
+
+      return<div key={artistName} style={{marginBottom:8,animation:`fadeUp 0.5s ease ${ai*0.06}s both`}}>
+
+        {/* Artist row */}
+        <button className="artist-row" onClick={()=>toggle(artistName)} style={{display:"flex",alignItems:"center",gap:20,width:"100%",padding:"18px 24px",background:"#ffffff",border:"1px solid rgba(182,139,46,0.2)",borderRadius:open?"14px 14px 0 0":"14px",cursor:"pointer",textAlign:"left",borderBottom:open?"1px solid rgba(182,139,46,0.08)":undefined}}>
+          {/* Avatar */}
+          <div style={{width:52,height:52,borderRadius:12,flexShrink:0,overflow:"hidden",background:"linear-gradient(135deg,#f5f0e8,#ede8df)",display:"flex",alignItems:"center",justifyContent:"center",border:"1px solid rgba(182,139,46,0.2)"}}>
+            {artistProfile?.profileImageUrl?<img src={artistProfile.profileImageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:
+            <span style={{fontFamily:"Cormorant Garamond,serif",fontSize:20,color:"#b68b2e",fontWeight:500,letterSpacing:1}}>{initials}</span>}
           </div>
-          <div style={{flex:1}}>
-            <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:18,fontWeight:400,color:"#1a1714"}}>{artistName}</div>
-            <div style={{fontSize:11,color:"#8a8070",marginTop:2}}>{artworks.length} work{artworks.length!==1?"s":""} · R {fmt(totalVal)}{artistProfile?.medium?` · ${artistProfile.medium}`:""}</div>
+
+          {/* Name + meta */}
+          <div style={{flex:1,minWidth:0}}>
+            <div className="artist-name" style={{fontFamily:"Cormorant Garamond,serif",fontSize:22,fontWeight:400,color:"#1a1714",letterSpacing:0.5,transition:"color 0.2s"}}>{artistName}</div>
+            <div style={{fontSize:11,color:"#8a8070",marginTop:3,letterSpacing:0.5}}>
+              {artworks.length} work{artworks.length!==1?"s":""} · R {fmt(totalVal)} total
+              {artistProfile?.medium?` · ${artistProfile.medium}`:""}
+            </div>
           </div>
-          <div style={{fontSize:11,color:"#8a8070",marginRight:12}}>
-            {artworks.filter(a=>a.status==="Available").length} available · {artworks.filter(a=>a.status==="Reserved").length} reserved · {artworks.filter(a=>a.status==="Sold").length} sold
+
+          {/* Status pills */}
+          <div style={{display:"flex",gap:6,flexShrink:0}}>
+            {[["Available","#4a9e6b"],["Reserved","#b68b2e"],["Sold","#c45c4a"]].map(([st,col])=>{
+              const count=artworks.filter(a=>a.status===st).length;
+              return count>0?<span key={st} style={{fontSize:10,fontWeight:600,letterSpacing:1,textTransform:"uppercase",padding:"4px 10px",borderRadius:20,background:`${col}18`,color:col,border:`1px solid ${col}30`}}>{count} {st}</span>:null;
+            })}
           </div>
+
           {/* Chevron */}
-          <span style={{color:"#8a8070",transition:"transform 0.2s",display:"inline-flex",transform:open?"rotate(180deg)":"none",flexShrink:0}}>{I.chevron}</span>
+          <span style={{color:"#b68b2e",opacity:0.6,transition:"transform 0.3s cubic-bezier(0.16,1,0.3,1)",transform:open?"rotate(180deg)":"rotate(0deg)",display:"inline-flex",flexShrink:0,marginLeft:8}}>{I.chevron}</span>
         </button>
 
-        {/* Artworks — only shown when expanded */}
-        {open&&<Card style={{padding:0,overflow:"hidden",borderTop:"none",borderRadius:"0 0 12px 12px",border:"1px solid rgba(182,139,46,0.25)"}}>
-          <Tbl cols={[
-            {label:"",render:r=>r.imageUrl?<div style={{width:44,height:44,borderRadius:6,overflow:"hidden"}}><img src={r.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div>:<div style={{width:44,height:44,borderRadius:6,background:"rgba(182,139,46,0.18)",display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:16,color:"#8a8070"}}>◆</span></div>},
-            {label:"Title",key:"title",bold:true},
-            {label:"Medium",key:"medium"},
-            {label:"Year",key:"year"},
-            {label:"Price",right:true,render:r=>"R "+fmt(r.recommendedPrice)},
-            {label:"Option 1 · 30%",right:true,gold:true,render:r=>"R "+fmt(r.recommendedPrice*0.30)},
-            {label:"Option 3 · 50%",right:true,render:r=><span style={{color:"#4a9e6b"}}>R {fmt(r.recommendedPrice*0.50)}</span>},
-            {label:"Status",render:r=><Badge status={r.status}/>},
-            {label:"",render:r=><div style={{display:"flex",gap:6}}>
-              <button onClick={e=>{e.stopPropagation();setModal(r);}} style={{background:"none",border:"none",color:"#6b635a",cursor:"pointer"}}>{I.edit}</button>
-              <button onClick={e=>{e.stopPropagation();handleDelete(r);}} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer"}}>{I.del}</button>
-            </div>},
-          ]} data={artworks}/>
-        </Card>}
+        {/* Artwork grid */}
+        {open&&<div style={{background:"#faf8f5",border:"1px solid rgba(182,139,46,0.2)",borderTop:"none",borderRadius:"0 0 14px 14px",padding:24}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:16}}>
+            {artworks.map((art,idx)=>(
+              <div key={art.id} className="art-card" style={{borderRadius:12,overflow:"hidden",background:"#ffffff",border:"1px solid rgba(182,139,46,0.15)",cursor:"zoom-in",animation:`fadeUp 0.4s ease ${idx*0.05}s both`,boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}
+                onClick={()=>setLightbox(art)}
+                onMouseEnter={()=>setHoveredArt(art.id)}
+                onMouseLeave={()=>setHoveredArt(null)}>
+
+                {/* Image */}
+                <div style={{position:"relative",paddingBottom:"75%",overflow:"hidden",background:"linear-gradient(135deg,#f0ede8,#e8e4dd)"}}>
+                  {art.imageUrl?
+                    <img className="art-img" src={art.imageUrl} alt={art.title} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>:
+                    <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <span style={{fontFamily:"Cormorant Garamond,serif",fontSize:40,color:"rgba(182,139,46,0.2)"}}>◆</span>
+                    </div>}
+
+                  {/* Hover overlay */}
+                  <div className="art-overlay" style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(15,12,8,0.85) 0%,rgba(15,12,8,0.2) 50%,transparent 100%)",display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:14}}>
+                    <div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"rgba(245,240,232,0.6)",marginBottom:4}}>View Details</div>
+                    <div style={{display:"flex",gap:6}} onClick={e=>e.stopPropagation()}>
+                      <button onClick={e=>{e.stopPropagation();setModal(art);}} style={{flex:1,padding:"6px 0",background:"rgba(182,139,46,0.2)",border:"1px solid rgba(182,139,46,0.4)",borderRadius:6,color:"#b68b2e",fontSize:10,fontWeight:600,letterSpacing:1,textTransform:"uppercase",cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>Edit</button>
+                      <button onClick={e=>{e.stopPropagation();handleDelete(art);}} style={{padding:"6px 10px",background:"rgba(196,92,74,0.15)",border:"1px solid rgba(196,92,74,0.3)",borderRadius:6,color:"#c45c4a",fontSize:10,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>✕</button>
+                    </div>
+                  </div>
+
+                  {/* Status dot */}
+                  <div style={{position:"absolute",top:10,right:10,width:8,height:8,borderRadius:"50%",background:statusDot[art.status]||"#8a8070",boxShadow:`0 0 0 2px rgba(255,255,255,0.8)`}}/>
+                </div>
+
+                {/* Info */}
+                <div style={{padding:"12px 14px"}}>
+                  <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:15,fontWeight:500,color:"#1a1714",marginBottom:2,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{art.title||"Untitled"}</div>
+                  <div style={{fontSize:11,color:"#8a8070",marginBottom:8}}>{art.medium||""}{art.year?` · ${art.year}`:""}</div>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <span style={{fontFamily:"Cormorant Garamond,serif",fontSize:15,fontWeight:500,color:"#b68b2e"}}>R {fmt(art.recommendedPrice)}</span>
+                    <span style={{fontSize:10,fontWeight:600,letterSpacing:1,textTransform:"uppercase",padding:"3px 8px",borderRadius:20,background:`${statusDot[art.status]||"#8a8070"}18`,color:statusDot[art.status]||"#8a8070"}}>{art.status}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>}
       </div>;
-    })}
+    })}</div>}
+
     {modal&&<ArtModal art={modal==="add"?blank:modal} artists={data.artists||[]} onSave={save} onClose={()=>setModal(null)}/>}
-    {delModal&&<Modal title="Force Delete Artwork" onClose={()=>setDelModal(null)}><p style={{fontSize:14,color:"#2a2622",marginBottom:8}}>This artwork has active schedules or sales history.</p><p style={{fontSize:13,color:"#6b635a",marginBottom:20}}>Deleting will permanently remove all associated data. Cannot be undone.</p><div style={{display:"flex",gap:10,justifyContent:"flex-end"}}><Btn ghost onClick={()=>setDelModal(null)}>Cancel</Btn><Btn danger onClick={()=>{actions.forceDeleteArtwork(delModal.id);setDelModal(null);}}>Force Delete</Btn></div></Modal>}
+    {delModal&&<Modal title="Force Delete Artwork" onClose={()=>setDelModal(null)}>
+      <p style={{fontSize:14,color:"#2a2622",marginBottom:8}}>This artwork has active schedules or sales history.</p>
+      <p style={{fontSize:13,color:"#6b635a",marginBottom:20}}>Deleting will permanently remove all associated data. Cannot be undone.</p>
+      <div style={{display:"flex",gap:10,justifyContent:"flex-end"}}>
+        <Btn ghost onClick={()=>setDelModal(null)}>Cancel</Btn>
+        <Btn danger onClick={()=>{actions.forceDeleteArtwork(delModal.id);setDelModal(null);}}>Force Delete</Btn>
+      </div>
+    </Modal>}
   </div>);
 }
 
@@ -734,8 +838,8 @@ function ArtModal({art,artists,onSave,onClose}){
       <Field label="Medium"><input value={f.medium} onChange={e=>s("medium",e.target.value)} style={is}/></Field>
       <Field label="Dimensions"><input value={f.dimensions} onChange={e=>s("dimensions",e.target.value)} style={is}/></Field>
       <Field label="Year"><input value={f.year} onChange={e=>s("year",e.target.value)} style={is}/></Field>
-      <Field label="Price (R)"><input type="number" value={f.recommendedPrice} onChange={e=>s("recommendedPrice",Number(e.target.value))} style={is}/></Field>
-      <Field label="Insurance/mo (R)"><input type="number" value={f.insuranceMonthly} onChange={e=>s("insuranceMonthly",Number(e.target.value))} style={is}/></Field>
+      <Field label="Price (R)"><input type="text" inputMode="decimal" value={f.recommendedPrice} onChange={e=>s("recommendedPrice",Number(e.target.value))} style={is}/></Field>
+      <Field label="Insurance/mo (R)"><input type="text" inputMode="decimal" value={f.insuranceMonthly} onChange={e=>s("insuranceMonthly",Number(e.target.value))} style={is}/></Field>
       <Field label="Gallery"><input value={f.galleryName} onChange={e=>s("galleryName",e.target.value)} style={is}/></Field>
       <Field label="Status"><select value={f.status} onChange={e=>s("status",e.target.value)} style={ss}><option>Available</option><option>Reserved</option><option>In Gallery</option><option>Sold</option></select></Field>
       <Field label="Image" style={{gridColumn:"1/-1"}}>
@@ -903,7 +1007,7 @@ function LinkMdl({col,arts,onLink,onClose,gn}){
     {/* Deposit % input — only if deposit selected */}
     {depositType!=="none"&&<Field label="Deposit Percentage">
       <div style={{display:"flex",alignItems:"center",gap:10}}>
-        <input type="number" value={depositPct} onChange={e=>setDepositPct(e.target.value)} style={{...is,width:100}} min={1} max={99} placeholder="10"/>
+        <input type="text" inputMode="decimal" value={depositPct} onChange={e=>setDepositPct(e.target.value)} style={{...is,width:100}} min={1} max={99} placeholder="10"/>
         <span style={{fontSize:13,color:"#8a8070"}}>% of artwork value</span>
         {art&&<span style={{fontSize:13,color:"#b68b2e",fontWeight:600,marginLeft:"auto"}}>= R {fmt(depositAmt)}</span>}
       </div>
@@ -1149,7 +1253,7 @@ function CalcPage({data={},actions={}}){
         {[["none","No Deposit"],["toward","Deposit toward fee"]].map(([id,lbl])=><button key={id} onClick={()=>setLinkDeposit(id)} style={{flex:1,padding:"9px 12px",borderRadius:8,border:linkDeposit===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.25)",background:linkDeposit===id?"rgba(182,139,46,0.18)":"#e8e4dd",color:linkDeposit===id?"#b68b2e":"#6b635a",cursor:"pointer",fontFamily:"DM Sans,sans-serif",fontSize:12,fontWeight:linkDeposit===id?600:400}}>{lbl}</button>)}
       </div>
       {linkDeposit!=="none"&&<div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
-        <input type="number" value={linkDepPct} onChange={e=>setLinkDepPct(e.target.value)} style={{...is,width:70}} placeholder="10"/>
+        <input type="text" inputMode="decimal" value={linkDepPct} onChange={e=>setLinkDepPct(e.target.value)} style={{...is,width:70}} placeholder="10"/>
         <span style={{fontSize:13,color:"#8a8070"}}>%</span>
         {newArtworkId&&<span style={{fontSize:12,color:"#b68b2e",fontWeight:600,marginLeft:"auto"}}>= R {fmt((artworks.find(a=>a.id===newArtworkId)?.recommendedPrice||0)*(parseFloat(linkDepPct)||0)/100)}</span>}
       </div>}
@@ -1180,9 +1284,9 @@ function CalcPage({data={},actions={}}){
         </div>
 
         <Card style={{marginBottom:12}}>
-          <Field label="Artwork Value (R)"><input type="number" value={artVal} onChange={e=>setArtVal(e.target.value)} style={is} placeholder="e.g. 100000"/></Field>
-          <Field label="Sale Price (R)"><input type="number" value={saleVal} onChange={e=>setSaleVal(e.target.value)} style={is} placeholder={artVal||"same as artwork value"}/></Field>
-          <Field label={`Month Sold (1–${m.term})`} style={{marginBottom:0}}><input type="number" value={monthsSold} onChange={e=>setMonthsSold(e.target.value)} onBlur={e=>{const v=parseInt(e.target.value)||1;setMonthsSold(Math.max(1,Math.min(v,m.term)));}} style={is} placeholder={`1–${m.term}`} min={1} max={m.term}/></Field>
+          <Field label="Artwork Value (R)"><input type="text" inputMode="decimal" value={artVal} onChange={e=>setArtVal(e.target.value)} style={is} placeholder="e.g. 100000"/></Field>
+          <Field label="Sale Price (R)"><input type="text" inputMode="decimal" value={saleVal} onChange={e=>setSaleVal(e.target.value)} style={is} placeholder={artVal||"same as artwork value"}/></Field>
+          <Field label={`Month Sold (1–${m.term})`} style={{marginBottom:0}}><input type="text" inputMode="decimal" value={monthsSold} onChange={e=>setMonthsSold(e.target.value)} onBlur={e=>{const v=parseInt(e.target.value)||1;setMonthsSold(Math.max(1,Math.min(v,m.term)));}} style={is} placeholder={`1–${m.term}`} min={1} max={m.term}/></Field>
         </Card>
 
         <Card style={{marginBottom:12}}>
@@ -1191,7 +1295,7 @@ function CalcPage({data={},actions={}}){
             {[["none","No deposit"],["toward","Deposit toward fee"]].map(([id,lbl])=><button key={id} onClick={()=>setDepositType(id)} style={{padding:"9px 12px",borderRadius:8,border:depositType===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.25)",background:depositType===id?"rgba(182,139,46,0.18)":"#e8e4dd",color:depositType===id?"#b68b2e":"#6b635a",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left",fontSize:12,fontWeight:depositType===id?600:400}}>{lbl}</button>)}
           </div>
           {depositType!=="none"&&<div style={{display:"flex",alignItems:"center",gap:8}}>
-            <input type="number" value={depositPct} onChange={e=>setDepositPct(e.target.value)} style={{...is,width:70}} placeholder="10"/>
+            <input type="text" inputMode="decimal" value={depositPct} onChange={e=>setDepositPct(e.target.value)} style={{...is,width:70}} placeholder="10"/>
             <span style={{fontSize:13,color:"#8a8070"}}>%</span>
             {av>0&&<span style={{fontSize:12,color:"#b68b2e",fontWeight:600,marginLeft:"auto"}}>R {fmt(av*(dN/100))}</span>}
           </div>}
@@ -1200,7 +1304,7 @@ function CalcPage({data={},actions={}}){
         <Card style={{marginBottom:12}}>
           <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>Introducer Fee</div>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <input type="number" value={introPct} onChange={e=>setIntroPct(e.target.value)} style={{...is,flex:1}} placeholder="0" min={0} max={50}/>
+            <input type="text" inputMode="decimal" value={introPct} onChange={e=>setIntroPct(e.target.value)} style={{...is,flex:1}} placeholder="0" min={0} max={50}/>
             <span style={{fontSize:13,color:"#8a8070",flexShrink:0}}>%</span>
             {deal.introFee>0&&<span style={{fontSize:12,color:"#c45c4a",fontWeight:600,flexShrink:0}}>R {fmt(deal.introFee)}</span>}
           </div>
@@ -1211,7 +1315,7 @@ function CalcPage({data={},actions={}}){
           {!splitOk&&<div style={{fontSize:11,color:"#c45c4a",marginBottom:8}}>⚠ Must total 100%</div>}
           {[["Gallery",galleryPct,setGalleryPct],["VB",vbPct2,setVbPct2],["Artist",artistPct,setArtistPct]].map(([l,v,sv])=><div key={l} style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
             <span style={{fontSize:13,color:"#2a2622",minWidth:56,flexShrink:0}}>{l}</span>
-            <input type="number" value={v} onChange={e=>sv(e.target.value)} style={{...is,width:60,padding:"7px 10px",fontSize:13}} placeholder="0"/>
+            <input type="text" inputMode="decimal" value={v} onChange={e=>sv(e.target.value)} style={{...is,width:60,padding:"7px 10px",fontSize:13}} placeholder="0"/>
             <span style={{fontSize:12,color:"#8a8070"}}>%</span>
             {av>0&&splitOk&&<span style={{fontSize:12,color:"#b68b2e",marginLeft:"auto"}}>R {fmt(deal.vbFee*((parseFloat(v)||0)/100))}</span>}
           </div>)}
@@ -1465,7 +1569,7 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
 }
 
 function OverrideModal({sched,onSave,onClose}){const [note,setNote]=useState("");return<Modal title="Override Status" onClose={onClose}><p style={{fontSize:13,color:"#6b635a",marginBottom:16}}>Resets to Active and clears all strikes.</p><Field label="Note"><textarea value={note} onChange={e=>setNote(e.target.value)} style={{...is,minHeight:80,resize:"vertical"}} placeholder="e.g. Collector settled balance on 2026-04-09"/></Field><div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:16}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>onSave(note)} disabled={!note}>Apply Override</Btn></div></Modal>;}
-function GraceModal({sched,onSave,onClose}){const [graceDate,setGraceDate]=useState("");const [month,setMonth]=useState(sched.monthsPaid+1);const [note,setNote]=useState("");return<Modal title="Set Grace Exception" onClose={onClose}><Field label="Month Number"><input type="number" value={month} onChange={e=>setMonth(Number(e.target.value))} style={is} min={1} max={sched.termMonths}/></Field><Field label="Extended Grace Date"><input type="date" value={graceDate} onChange={e=>setGraceDate(e.target.value)} style={is}/></Field><Field label="Reason"><textarea value={note} onChange={e=>setNote(e.target.value)} style={{...is,minHeight:60,resize:"vertical"}}/></Field><div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:16}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>onSave(graceDate,month,note)} disabled={!graceDate||!note}>Set Exception</Btn></div></Modal>;}
+function GraceModal({sched,onSave,onClose}){const [graceDate,setGraceDate]=useState("");const [month,setMonth]=useState(sched.monthsPaid+1);const [note,setNote]=useState("");return<Modal title="Set Grace Exception" onClose={onClose}><Field label="Month Number"><input type="text" inputMode="decimal" value={month} onChange={e=>setMonth(Number(e.target.value))} style={is} min={1} max={sched.termMonths}/></Field><Field label="Extended Grace Date"><input type="date" value={graceDate} onChange={e=>setGraceDate(e.target.value)} style={is}/></Field><Field label="Reason"><textarea value={note} onChange={e=>setNote(e.target.value)} style={{...is,minHeight:60,resize:"vertical"}}/></Field><div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:16}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>onSave(graceDate,month,note)} disabled={!graceDate||!note}>Set Exception</Btn></div></Modal>;}
 
 function EmailReviewModal({config,collectors,schedules,onClose}){
   const isCustom=config.status==="custom";
@@ -1599,7 +1703,7 @@ function SettlementModal({sale,data,onClose}){
         {[["Gallery",galleryPct,setGalleryPct],["Vollard Black",vbPct,setVbPct],["Artist",artistPct,setArtistPct]].map(([l,v,sv])=><div key={l} style={{background:"#e8e4dd",borderRadius:8,padding:12}}>
           <div style={{fontSize:11,color:"#8a8070",marginBottom:6}}>{l}</div>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <input type="number" value={v} onChange={e=>sv(e.target.value)} style={{...is,width:60,padding:"6px 8px",fontSize:13}} min={0} max={100} placeholder="0"/>
+            <input type="text" inputMode="decimal" value={v} onChange={e=>sv(e.target.value)} style={{...is,width:60,padding:"6px 8px",fontSize:13}} min={0} max={100} placeholder="0"/>
             <span style={{fontSize:12,color:"#8a8070"}}>%</span>
             <span style={{fontSize:14,fontWeight:600,color:"#b68b2e",marginLeft:"auto"}}>R {fmt(deal.vbTotal*((parseFloat(v)||0)/100))}</span>
           </div>
@@ -1607,7 +1711,7 @@ function SettlementModal({sale,data,onClose}){
         <div style={{background:"#e8e4dd",borderRadius:8,padding:12}}>
           <div style={{fontSize:11,color:"#8a8070",marginBottom:6}}>Introducer Fee</div>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <input type="number" value={introPct} onChange={e=>setIntroPct(e.target.value)} style={{...is,width:60,padding:"6px 8px",fontSize:13}} min={0} max={50} placeholder="0"/>
+            <input type="text" inputMode="decimal" value={introPct} onChange={e=>setIntroPct(e.target.value)} style={{...is,width:60,padding:"6px 8px",fontSize:13}} min={0} max={50} placeholder="0"/>
             <span style={{fontSize:12,color:"#8a8070"}}>%</span>
             <span style={{fontSize:14,fontWeight:600,color:"#c45c4a",marginLeft:"auto"}}>R {fmt(deal.introFee)}</span>
           </div>
@@ -1648,7 +1752,7 @@ function SaleMdl({data,sellable,onSale,onClose}){
         <span style={{fontSize:13,color:"#b68b2e",marginLeft:"auto"}}>VB balance: R {fmt(deal.vbBalance||0)}</span>
       </div>}
 
-      <Field label="Sale Price (R)"><input type="number" value={salePrice} onChange={e=>setSalePrice(e.target.value)} style={is} placeholder={fmt(artworkValue)}/></Field>
+      <Field label="Sale Price (R)"><input type="text" inputMode="decimal" value={salePrice} onChange={e=>setSalePrice(e.target.value)} style={is} placeholder={fmt(artworkValue)}/></Field>
 
       {/* Buyer */}
       <div style={{marginBottom:16}}>
@@ -1788,7 +1892,7 @@ function GalleryPage(){
   const FI=({label,value,onChange,suffix,prefix})=><Field label={label}>
     <div style={{display:"flex",alignItems:"center",background:"#e8e4dd",border:"1px solid rgba(182,139,46,0.25)",borderRadius:10,overflow:"hidden"}}>
       {prefix&&<span style={{padding:"0 14px",fontSize:13,color:"#8a8070",borderRight:"1px solid rgba(182,139,46,0.18)",height:48,display:"flex",alignItems:"center",flexShrink:0}}>{prefix}</span>}
-      <input type="number" value={value} onChange={e=>onChange(e.target.value)} min={0} placeholder="0" style={{flex:1,padding:"0 16px",height:48,background:"transparent",border:"none",color:"#1a1714",fontFamily:"DM Sans,sans-serif",fontSize:16,fontWeight:500,outline:"none",textAlign:"right"}}/>
+      <input type="text" inputMode="decimal" value={value} onChange={e=>onChange(e.target.value.replace(/[^0-9.]/g,""))} placeholder="0" style={{flex:1,padding:"0 16px",height:48,background:"transparent",border:"none",color:"#1a1714",fontFamily:"DM Sans,sans-serif",fontSize:16,fontWeight:500,outline:"none",textAlign:"right"}}/>
       {suffix&&<span style={{padding:"0 14px",fontSize:13,color:"#8a8070",borderLeft:"1px solid rgba(182,139,46,0.18)",height:48,display:"flex",alignItems:"center",flexShrink:0,whiteSpace:"nowrap"}}>{suffix}</span>}
     </div>
   </Field>;
