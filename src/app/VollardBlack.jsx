@@ -506,9 +506,9 @@ export default function App(){
     deleteSale:(saleId)=>{
       const sale=(data.sales||[]).find(s=>s.id===saleId);if(!sale)return;
       up("sales",p=>p.filter(s=>s.id!==saleId));
-      const hasLicense Holder=(data.collectors||[]).some(c=>(c.linkedArtworks||[]).some(l=>l.artworkId===sale.artworkId));
-      up("artworks",p=>p.map(a=>a.id===sale.artworkId?{...a,status:hasLicense Holder?"Reserved":"Available"}:a));
-      dbUp("artworks",sale.artworkId,{status:hasLicense Holder?"Reserved":"Available"});
+      const hasLicenseHolder=(data.collectors||[]).some(c=>(c.linkedArtworks||[]).some(l=>l.artworkId===sale.artworkId));
+      up("artworks",p=>p.map(a=>a.id===sale.artworkId?{...a,status:hasLicenseHolder?"Reserved":"Available"}:a));
+      dbUp("artworks",sale.artworkId,{status:hasLicenseHolder?"Reserved":"Available"});
     },
     saveBuyer:(buyer)=>{
       if(buyer.id)up("buyers",p=>p.map(b=>b.id===buyer.id?buyer:b));
@@ -1852,9 +1852,9 @@ export default function App(){
     deleteSale:(saleId)=>{
       const sale=(data.sales||[]).find(s=>s.id===saleId);if(!sale)return;
       up("sales",p=>p.filter(s=>s.id!==saleId));
-      const hasLicense Holder=(data.collectors||[]).some(c=>(c.linkedArtworks||[]).some(l=>l.artworkId===sale.artworkId));
-      up("artworks",p=>p.map(a=>a.id===sale.artworkId?{...a,status:hasLicense Holder?"Reserved":"Available"}:a));
-      dbUp("artworks",sale.artworkId,{status:hasLicense Holder?"Reserved":"Available"});
+      const hasLicenseHolder=(data.collectors||[]).some(c=>(c.linkedArtworks||[]).some(l=>l.artworkId===sale.artworkId));
+      up("artworks",p=>p.map(a=>a.id===sale.artworkId?{...a,status:hasLicenseHolder?"Reserved":"Available"}:a));
+      dbUp("artworks",sale.artworkId,{status:hasLicenseHolder?"Reserved":"Available"});
     },
     saveBuyer:(buyer)=>{
       if(buyer.id)up("buyers",p=>p.map(b=>b.id===buyer.id?buyer:b));
@@ -1964,7 +1964,7 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
 
   useEffect(()=>{if(initialFilter){setStatusFilter(initialFilter);clearFilter();}},[initialFilter]);
   const gn=c=>c?c.type==="company"?c.companyName:`${c.firstName} ${c.lastName}`:"";
-  const license holdersWithSchedules=data.collectors.filter(c=>data.schedules.some(s=>s.collectorId===c.id));
+  const licenseHoldersWithSchedules=data.collectors.filter(c=>data.schedules.some(s=>s.collectorId===c.id));
   const allSchedules=data.schedules;
   const tabSchedules=activeTab==="all"?allSchedules:allSchedules.filter(s=>s.collectorId===activeTab);
   const filteredSchedules=tabSchedules.filter(s=>{const matchStatus=statusFilter==="all"||s.status===statusFilter;const matchSearch=!search||(s.collectorName+s.artworkTitle).toLowerCase().includes(search.toLowerCase());return matchStatus&&matchSearch;});
