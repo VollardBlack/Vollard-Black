@@ -326,34 +326,34 @@ const I={
   gallery:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
 };
 
-const stC={Available:{bg:"rgba(74,158,107,0.12)",c:"#4a9e6b"},Reserved:{bg:"rgba(182,139,46,0.12)",c:"#b68b2e"},"In Gallery":{bg:"rgba(100,140,200,0.12)",c:"#648cc8"},Sold:{bg:"rgba(196,92,74,0.12)",c:"#c45c4a"},"In Dispute":{bg:"rgba(196,92,74,0.12)",c:"#c45c4a"}};
+const stC={Available:{bg:"rgba(74,158,107,0.12)",c:"#4a9e6b"},Reserved:{bg:"rgba(182,139,46,0.25)",c:"#b68b2e"},"In Gallery":{bg:"rgba(100,140,200,0.12)",c:"#648cc8"},Sold:{bg:"rgba(196,92,74,0.12)",c:"#c45c4a"},"In Dispute":{bg:"rgba(196,92,74,0.12)",c:"#c45c4a"}};
 const schedC={Active:{bg:"rgba(74,158,107,0.12)",c:"#4a9e6b"},Chasing:{bg:"rgba(230,190,50,0.15)",c:"#e6be32"},"In Dispute":{bg:"rgba(220,120,40,0.15)",c:"#dc7828"},Cancelled:{bg:"rgba(196,92,74,0.15)",c:"#c45c4a"},Complete:{bg:"rgba(100,140,200,0.12)",c:"#648cc8"},Override:{bg:"rgba(160,100,220,0.12)",c:"#a064dc"}};
-const modelC={O1:{bg:"rgba(182,139,46,0.12)",c:"#b68b2e",label:"Option 1"},O2:{bg:"rgba(74,158,107,0.12)",c:"#4a9e6b",label:"Option 2"},O3:{bg:"rgba(100,140,200,0.12)",c:"#648cc8",label:"Option 3"}};
+const modelC={O1:{bg:"rgba(182,139,46,0.25)",c:"#b68b2e",label:"Option 1"},O2:{bg:"rgba(74,158,107,0.12)",c:"#4a9e6b",label:"Option 2"},O3:{bg:"rgba(100,140,200,0.12)",c:"#648cc8",label:"Option 3"}};
 const payM=["EFT / Bank Transfer","PayFast","Crypto (USDT)","Cash","Other"];
 
 // ─── UI ───
-const is={width:"100%",padding:"12px 14px",background:"#1e1d1a",border:"1px solid rgba(182,139,46,0.1)",borderRadius:8,color:"#f5f0e8",fontFamily:"DM Sans,sans-serif",fontSize:14,outline:"none"};
+const is={width:"100%",padding:"12px 14px",background:"#e8e4dd",border:"1px solid rgba(182,139,46,0.20)",borderRadius:8,color:"#1a1714",fontFamily:"DM Sans,sans-serif",fontSize:14,outline:"none"};
 const ss={...is,cursor:"pointer",appearance:"none",WebkitAppearance:"none"};
-const Card=({children,style:s})=><div style={{background:"#151412",border:"1px solid rgba(182,139,46,0.1)",borderRadius:14,padding:24,...s}}>{children}</div>;
+const Card=({children,style:s})=><div style={{background:"#f7f5f1",border:"1px solid rgba(182,139,46,0.20)",borderRadius:14,padding:24,...s}}>{children}</div>;
 const Btn=({children,gold,ghost,small,danger,warn,onClick,style:s,disabled:d})=>{
-  const bg=gold?"linear-gradient(135deg,#b68b2e,#8a6a1e)":danger?"rgba(196,92,74,0.15)":warn?"rgba(220,120,40,0.12)":ghost?"transparent":"#1e1d1a";
-  const cl=gold?"#0c0b09":danger?"#c45c4a":warn?"#dc7828":ghost?"#b68b2e":"#e8e2d6";
-  const br=ghost?"1px solid rgba(182,139,46,0.2)":danger?"1px solid rgba(196,92,74,0.3)":warn?"1px solid rgba(220,120,40,0.3)":"none";
+  const bg=gold?"linear-gradient(135deg,#b68b2e,#8a6a1e)":danger?"rgba(196,92,74,0.15)":warn?"rgba(220,120,40,0.12)":ghost?"transparent":"#e8e4dd";
+  const cl=gold?"#f5f3ef":danger?"#c45c4a":warn?"#dc7828":ghost?"#b68b2e":"#2a2622";
+  const br=ghost?"1px solid rgba(182,139,46,0.50)":danger?"1px solid rgba(196,92,74,0.3)":warn?"1px solid rgba(220,120,40,0.3)":"none";
   return<button disabled={d} onClick={onClick} style={{display:"inline-flex",alignItems:"center",gap:6,padding:small?"8px 14px":"12px 22px",borderRadius:8,border:br,cursor:d?"not-allowed":"pointer",fontSize:small?11:12,fontWeight:600,letterSpacing:1,textTransform:"uppercase",fontFamily:"DM Sans,sans-serif",transition:"all 0.2s",opacity:d?0.4:1,background:bg,color:cl,...s}}>{children}</button>;
 };
 const Badge=({status,sched,model})=>{
   const cfg=model?modelC:sched?schedC:stC;
   const key=model||status;
-  const s=cfg[key]||{bg:"#1e1d1a",c:"#8a8477"};
+  const s=cfg[key]||{bg:"#e8e4dd",c:"#6b635a"};
   return<span style={{display:"inline-block",padding:"4px 10px",borderRadius:6,fontSize:11,fontWeight:600,background:s.bg,color:s.c}}>{model?s.label:status}</span>;
 };
-const Field=({label,children,style:s})=><div style={{marginBottom:16,...s}}><label style={{display:"block",fontSize:10,fontWeight:500,letterSpacing:2,textTransform:"uppercase",color:"#8a8477",marginBottom:6}}>{label}</label>{children}</div>;
-const Stat=({label,value,gold,green,red,orange})=><Card style={{padding:18,textAlign:"center"}}><div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:6}}>{label}</div><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:26,fontWeight:600,color:gold?"#b68b2e":green?"#4a9e6b":red?"#c45c4a":orange?"#dc7828":"#f5f0e8"}}>{value}</div></Card>;
-const Empty=({msg,action})=><div style={{textAlign:"center",padding:"48px 20px",color:"#5a564e"}}><div style={{fontSize:42,marginBottom:12,opacity:0.3}}>◆</div><p style={{fontSize:14,marginBottom:16}}>{msg}</p>{action}</div>;
-const Modal=({title,onClose,children,wide})=><div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}><div style={{background:"#151412",border:"1px solid rgba(182,139,46,0.15)",borderRadius:16,width:"100%",maxWidth:wide?780:520,maxHeight:"90vh",overflow:"auto",padding:28}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}><h2 style={{fontFamily:"Cormorant Garamond,serif",fontSize:22,fontWeight:400,color:"#f5f0e8",margin:0}}>{title}</h2><button onClick={onClose} style={{background:"none",border:"none",color:"#8a8477",cursor:"pointer"}}>{I.x}</button></div>{children}</div></div>;
-const PT=({title,sub,action})=><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:28,flexWrap:"wrap",gap:12}}><div><h1 style={{fontFamily:"Cormorant Garamond,serif",fontSize:28,fontWeight:400,color:"#f5f0e8",letterSpacing:1,margin:0}}>{title}</h1>{sub&&<p style={{fontSize:12,color:"#5a564e",marginTop:4,letterSpacing:1}}>{sub}</p>}</div>{action}</div>;
-const Tbl=({cols,data:rows})=><div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse"}}><thead><tr>{cols.map((c,i)=><th key={i} style={{fontSize:10,fontWeight:600,letterSpacing:1.5,textTransform:"uppercase",color:"#5a564e",padding:"10px 12px",textAlign:c.right?"right":"left",borderBottom:"1px solid rgba(182,139,46,0.08)",whiteSpace:"nowrap"}}>{c.label}</th>)}</tr></thead><tbody>{rows.map((row,ri)=><tr key={ri} onMouseEnter={e=>e.currentTarget.style.background="rgba(182,139,46,0.03)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>{cols.map((c,ci)=><td key={ci} style={{fontSize:13,color:c.gold?"#b68b2e":c.green?"#4a9e6b":"#e8e2d6",fontWeight:c.bold?600:400,padding:"12px",textAlign:c.right?"right":"left",borderBottom:"1px solid rgba(182,139,46,0.04)",whiteSpace:"nowrap"}}>{c.render?c.render(row):row[c.key]}</td>)}</tr>)}</tbody></table></div>;
-const ProgressBar=({pct,color})=><div style={{height:4,background:"rgba(182,139,46,0.1)",borderRadius:2,overflow:"hidden",marginTop:6}}><div style={{height:"100%",width:`${Math.min(pct,100)}%`,background:color||"linear-gradient(90deg,#b68b2e,#8a6a1e)",borderRadius:2,transition:"width 0.4s"}}/></div>;
+const Field=({label,children,style:s})=><div style={{marginBottom:16,...s}}><label style={{display:"block",fontSize:10,fontWeight:500,letterSpacing:2,textTransform:"uppercase",color:"#6b635a",marginBottom:6}}>{label}</label>{children}</div>;
+const Stat=({label,value,gold,green,red,orange})=><Card style={{padding:18,textAlign:"center"}}><div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:6}}>{label}</div><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:26,fontWeight:600,color:gold?"#b68b2e":green?"#4a9e6b":red?"#c45c4a":orange?"#dc7828":"#1a1714"}}>{value}</div></Card>;
+const Empty=({msg,action})=><div style={{textAlign:"center",padding:"48px 20px",color:"#8a8070"}}><div style={{fontSize:42,marginBottom:12,opacity:0.3}}>◆</div><p style={{fontSize:14,marginBottom:16}}>{msg}</p>{action}</div>;
+const Modal=({title,onClose,children,wide})=><div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}><div style={{background:"#f7f5f1",border:"1px solid rgba(182,139,46,0.30)",borderRadius:16,width:"100%",maxWidth:wide?780:520,maxHeight:"90vh",overflow:"auto",padding:28}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}><h2 style={{fontFamily:"Cormorant Garamond,serif",fontSize:22,fontWeight:400,color:"#1a1714",margin:0}}>{title}</h2><button onClick={onClose} style={{background:"none",border:"none",color:"#6b635a",cursor:"pointer"}}>{I.x}</button></div>{children}</div></div>;
+const PT=({title,sub,action})=><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:28,flexWrap:"wrap",gap:12}}><div><h1 style={{fontFamily:"Cormorant Garamond,serif",fontSize:28,fontWeight:400,color:"#1a1714",letterSpacing:1,margin:0}}>{title}</h1>{sub&&<p style={{fontSize:12,color:"#8a8070",marginTop:4,letterSpacing:1}}>{sub}</p>}</div>{action}</div>;
+const Tbl=({cols,data:rows})=><div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse"}}><thead><tr>{cols.map((c,i)=><th key={i} style={{fontSize:10,fontWeight:600,letterSpacing:1.5,textTransform:"uppercase",color:"#8a8070",padding:"10px 12px",textAlign:c.right?"right":"left",borderBottom:"1px solid rgba(182,139,46,0.18)",whiteSpace:"nowrap"}}>{c.label}</th>)}</tr></thead><tbody>{rows.map((row,ri)=><tr key={ri} onMouseEnter={e=>e.currentTarget.style.background="rgba(182,139,46,0.03)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>{cols.map((c,ci)=><td key={ci} style={{fontSize:13,color:c.gold?"#b68b2e":c.green?"#4a9e6b":"#2a2622",fontWeight:c.bold?600:400,padding:"12px",textAlign:c.right?"right":"left",borderBottom:"1px solid rgba(182,139,46,0.10)",whiteSpace:"nowrap"}}>{c.render?c.render(row):row[c.key]}</td>)}</tr>)}</tbody></table></div>;
+const ProgressBar=({pct,color})=><div style={{height:4,background:"rgba(182,139,46,0.20)",borderRadius:2,overflow:"hidden",marginTop:6}}><div style={{height:"100%",width:`${Math.min(pct,100)}%`,background:color||"linear-gradient(90deg,#b68b2e,#8a6a1e)",borderRadius:2,transition:"width 0.4s"}}/></div>;
 const Banner=({type,count,label,onClick})=>{const cfg={yellow:{bg:"rgba(230,190,50,0.1)",border:"rgba(230,190,50,0.3)",c:"#e6be32"},orange:{bg:"rgba(220,120,40,0.1)",border:"rgba(220,120,40,0.3)",c:"#dc7828"},red:{bg:"rgba(196,92,74,0.1)",border:"rgba(196,92,74,0.3)",c:"#c45c4a"}};const s=cfg[type];return<div onClick={onClick} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 18px",background:s.bg,border:`1px solid ${s.border}`,borderRadius:10,cursor:"pointer",marginBottom:10}}><span style={{color:s.c}}>{I.warn}</span><span style={{fontSize:13,color:s.c,fontWeight:600}}>{count} {label}</span><span style={{fontSize:11,color:s.c,marginLeft:"auto",opacity:0.7}}>Click to view →</span></div>;};
 
 // ═══════════════════════════════════════════
@@ -568,20 +568,20 @@ export default function App(){
     reports:<ReportsPage data={d} actions={actions}/>,
   };
 
-  if(loading)return<div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",background:"#0c0b09"}}><div style={{textAlign:"center"}}><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:36,fontWeight:300,letterSpacing:10,color:"#f5f0e8",marginBottom:10}}>VOLLARD <span style={{color:"#b68b2e"}}>BLACK</span></div><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:14,fontWeight:300,letterSpacing:4,color:"#b68b2e",marginBottom:20,fontStyle:"italic"}}>The Collector's Suite</div><div style={{width:32,height:1,background:"rgba(182,139,46,0.3)",margin:"0 auto 20px"}}/><div style={{fontSize:11,color:"#3a3832",letterSpacing:3,textTransform:"uppercase"}}>Loading platform...</div></div></div>;
+  if(loading)return<div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",background:"#f5f3ef"}}><div style={{textAlign:"center"}}><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:36,fontWeight:300,letterSpacing:10,color:"#1a1714",marginBottom:10}}>VOLLARD <span style={{color:"#b68b2e"}}>BLACK</span></div><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:14,fontWeight:300,letterSpacing:4,color:"#b68b2e",marginBottom:20,fontStyle:"italic"}}>The Collector's Suite</div><div style={{width:32,height:1,background:"rgba(182,139,46,0.3)",margin:"0 auto 20px"}}/><div style={{fontSize:11,color:"#a09890",letterSpacing:3,textTransform:"uppercase"}}>Loading platform...</div></div></div>;
 
   return(
-    <div style={{display:"flex",minHeight:"100vh",background:"#0c0b09",fontFamily:"DM Sans,sans-serif",color:"#e8e2d6"}}>
-      {sb&&<div onClick={()=>setSb(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:98}}/>}
-      <aside style={{width:240,minHeight:"100vh",background:"#111010",borderRight:"1px solid rgba(182,139,46,0.1)",display:"flex",flexDirection:"column",position:"fixed",left:sb?0:"-240px",top:0,bottom:0,zIndex:99,transition:"left 0.3s",...(typeof window!=="undefined"&&window.innerWidth>900?{position:"relative",left:0}:{})}}>
-        <div style={{padding:"28px 24px 20px",borderBottom:"1px solid rgba(182,139,46,0.08)"}}>
-          <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:22,fontWeight:300,letterSpacing:6,color:"#f5f0e8"}}>VOLLARD <span style={{color:"#b68b2e"}}>BLACK</span></div>
-          <div style={{fontSize:9,letterSpacing:3,textTransform:"uppercase",color:"#5a564e",marginTop:4}}>Fine Art Acquisitions</div>
+    <div style={{display:"flex",minHeight:"100vh",background:"#f5f3ef",fontFamily:"DM Sans,sans-serif",color:"#2a2622"}}>
+      {sb&&<div onClick={()=>setSb(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",zIndex:98}}/>}
+      <aside style={{width:240,minHeight:"100vh",background:"#ffffff",borderRight:"1px solid rgba(182,139,46,0.20)",display:"flex",flexDirection:"column",position:"fixed",left:sb?0:"-240px",top:0,bottom:0,zIndex:99,transition:"left 0.3s",...(typeof window!=="undefined"&&window.innerWidth>900?{position:"relative",left:0}:{})}}>
+        <div style={{padding:"28px 24px 20px",borderBottom:"1px solid rgba(182,139,46,0.18)"}}>
+          <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:22,fontWeight:300,letterSpacing:6,color:"#1a1714"}}>VOLLARD <span style={{color:"#b68b2e"}}>BLACK</span></div>
+          <div style={{fontSize:9,letterSpacing:3,textTransform:"uppercase",color:"#8a8070",marginTop:4}}>Fine Art Acquisitions</div>
         </div>
         <nav style={{flex:1,padding:"16px 12px",overflowY:"auto"}}>
-          {nav.map(n=>{const alertCount=n.id==="invoices"?chasing.length+inDispute.length+cancelled.length:0;return<button key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:"12px 14px",background:page===n.id?"rgba(182,139,46,0.1)":"transparent",border:"none",borderRadius:10,color:page===n.id?"#b68b2e":"#8a8477",fontSize:13,fontWeight:page===n.id?600:400,cursor:"pointer",marginBottom:4,fontFamily:"DM Sans,sans-serif"}}>{n.icon}<span style={{flex:1,textAlign:"left"}}>{n.label}</span>{alertCount>0&&<span style={{fontSize:10,background:"rgba(196,92,74,0.2)",color:"#c45c4a",padding:"2px 6px",borderRadius:8,fontWeight:700}}>{alertCount}</span>}</button>;})}
+          {nav.map(n=>{const alertCount=n.id==="invoices"?chasing.length+inDispute.length+cancelled.length:0;return<button key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:"12px 14px",background:page===n.id?"rgba(182,139,46,0.20)":"transparent",border:"none",borderRadius:10,color:page===n.id?"#b68b2e":"#6b635a",fontSize:13,fontWeight:page===n.id?600:400,cursor:"pointer",marginBottom:4,fontFamily:"DM Sans,sans-serif"}}>{n.icon}<span style={{flex:1,textAlign:"left"}}>{n.label}</span>{alertCount>0&&<span style={{fontSize:10,background:"rgba(196,92,74,0.2)",color:"#c45c4a",padding:"2px 6px",borderRadius:8,fontWeight:700}}>{alertCount}</span>}</button>;})}
         </nav>
-        <div style={{padding:"16px 24px",borderTop:"1px solid rgba(182,139,46,0.08)",fontSize:10,color:"#5a564e",letterSpacing:2}}>
+        <div style={{padding:"16px 24px",borderTop:"1px solid rgba(182,139,46,0.18)",fontSize:10,color:"#8a8070",letterSpacing:2}}>
           <div>OPT 1: 30/70 · 12 MO</div>
           <div style={{marginTop:4}}>OPT 2: 40/60 · 18 MO</div>
           <div style={{marginTop:4}}>OPT 3: 50/50 · 24 MO</div>
@@ -590,9 +590,9 @@ export default function App(){
         </div>
       </aside>
       <main style={{flex:1,minWidth:0}}>
-        <div style={{display:typeof window!=="undefined"&&window.innerWidth>900?"none":"flex",alignItems:"center",padding:"16px 20px",borderBottom:"1px solid rgba(182,139,46,0.08)",background:"#111010"}}>
+        <div style={{display:typeof window!=="undefined"&&window.innerWidth>900?"none":"flex",alignItems:"center",padding:"16px 20px",borderBottom:"1px solid rgba(182,139,46,0.18)",background:"#ffffff"}}>
           <button onClick={()=>setSb(true)} style={{background:"none",border:"none",color:"#b68b2e",cursor:"pointer",padding:4}}>{I.menu}</button>
-          <span style={{fontFamily:"Cormorant Garamond,serif",fontSize:16,letterSpacing:4,marginLeft:12,color:"#f5f0e8"}}>VOLLARD <span style={{color:"#b68b2e"}}>BLACK</span></span>
+          <span style={{fontFamily:"Cormorant Garamond,serif",fontSize:16,letterSpacing:4,marginLeft:12,color:"#1a1714"}}>VOLLARD <span style={{color:"#b68b2e"}}>BLACK</span></span>
         </div>
         <div style={{padding:"32px 28px",maxWidth:1200,margin:"0 auto"}}>{pg[page]}</div>
       </main>
@@ -625,20 +625,20 @@ function Dashboard({data,navTo,chasing,inDispute,cancelled}){
       <Stat label="Collected" value={"R "+fmt(totalPay)} green/>
     </div>
     <Card style={{marginBottom:20}}>
-      <div style={{fontSize:14,fontWeight:600,color:"#f5f0e8",marginBottom:16}}>Monthly Revenue</div>
-      {sm.length===0?<div style={{textAlign:"center",padding:"32px 0",color:"#5a564e",fontSize:13}}>No payment data yet.</div>:
+      <div style={{fontSize:14,fontWeight:600,color:"#1a1714",marginBottom:16}}>Monthly Revenue</div>
+      {sm.length===0?<div style={{textAlign:"center",padding:"32px 0",color:"#8a8070",fontSize:13}}>No payment data yet.</div>:
       <div style={{display:"flex",alignItems:"flex-end",gap:6,height:160,padding:"0 8px"}}>
-        {sm.map(m=>{const v=md[m];const h=Math.max((v/mx)*130,4);return<div key={m} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,maxWidth:60}}><div style={{fontSize:10,color:"#b68b2e",fontWeight:600}}>R{(v/1000).toFixed(0)}k</div><div style={{width:"100%",height:h,background:"linear-gradient(180deg,#b68b2e,#8a6a1e)",borderRadius:"4px 4px 0 0",minWidth:20}}/><div style={{fontSize:9,color:"#5a564e"}}>{months[parseInt(m.slice(5))]||m.slice(5)}</div></div>;})}
+        {sm.map(m=>{const v=md[m];const h=Math.max((v/mx)*130,4);return<div key={m} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,maxWidth:60}}><div style={{fontSize:10,color:"#b68b2e",fontWeight:600}}>R{(v/1000).toFixed(0)}k</div><div style={{width:"100%",height:h,background:"linear-gradient(180deg,#b68b2e,#8a6a1e)",borderRadius:"4px 4px 0 0",minWidth:20}}/><div style={{fontSize:9,color:"#8a8070"}}>{months[parseInt(m.slice(5))]||m.slice(5)}</div></div>;})}
       </div>}
     </Card>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
-      <Card><div style={{fontSize:14,fontWeight:600,color:"#f5f0e8",marginBottom:16}}>Active Schedules</div>
-        {upcomingSchedules.length===0?<p style={{fontSize:13,color:"#5a564e"}}>No active schedules.</p>:upcomingSchedules.map(s=>{const pct=s.termMonths>0?(s.monthsPaid/s.termMonths)*100:0;return<div key={s.id} style={{padding:"10px 0",borderBottom:"1px solid rgba(182,139,46,0.04)"}}><div style={{display:"flex",justifyContent:"space-between",fontSize:13,alignItems:"center"}}><span style={{fontWeight:500}}>{s.collectorName}</span><div style={{display:"flex",alignItems:"center",gap:8}}><Badge model={s.acquisitionModel||"O1"}/><span style={{color:"#b68b2e",fontWeight:600}}>R {fmt(s.monthlyAmount)}/mo</span></div></div><div style={{fontSize:11,color:"#5a564e",marginBottom:4}}>{s.artworkTitle} · Month {s.monthsPaid} of {s.termMonths}</div><ProgressBar pct={pct}/></div>;})}
+      <Card><div style={{fontSize:14,fontWeight:600,color:"#1a1714",marginBottom:16}}>Active Schedules</div>
+        {upcomingSchedules.length===0?<p style={{fontSize:13,color:"#8a8070"}}>No active schedules.</p>:upcomingSchedules.map(s=>{const pct=s.termMonths>0?(s.monthsPaid/s.termMonths)*100:0;return<div key={s.id} style={{padding:"10px 0",borderBottom:"1px solid rgba(182,139,46,0.10)"}}><div style={{display:"flex",justifyContent:"space-between",fontSize:13,alignItems:"center"}}><span style={{fontWeight:500}}>{s.collectorName}</span><div style={{display:"flex",alignItems:"center",gap:8}}><Badge model={s.acquisitionModel||"O1"}/><span style={{color:"#b68b2e",fontWeight:600}}>R {fmt(s.monthlyAmount)}/mo</span></div></div><div style={{fontSize:11,color:"#8a8070",marginBottom:4}}>{s.artworkTitle} · Month {s.monthsPaid} of {s.termMonths}</div><ProgressBar pct={pct}/></div>;})}
       </Card>
-      <Card><div style={{fontSize:14,fontWeight:600,color:"#f5f0e8",marginBottom:16}}>Recent Activity</div>
-        {data.sales.length===0&&data.payments.length===0?<p style={{fontSize:13,color:"#5a564e"}}>No activity yet.</p>:
-        [...data.sales.slice(-3).reverse().map(s=><div key={s.id} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid rgba(182,139,46,0.04)",fontSize:13}}><div><div>{s.artworkTitle}</div>{s.buyerName&&<div style={{fontSize:11,color:"#5a564e"}}>Buyer: {s.buyerName}</div>}</div><span style={{color:"#4a9e6b",fontWeight:600}}>R {fmt(s.salePrice)}</span></div>),
-        ...data.payments.slice(-3).reverse().map(p=><div key={p.id} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid rgba(182,139,46,0.04)",fontSize:13}}><span>{p.collectorName} · Mo {p.monthNumber}</span><span style={{color:"#b68b2e",fontWeight:600}}>R {fmt(p.amount)}</span></div>)]}
+      <Card><div style={{fontSize:14,fontWeight:600,color:"#1a1714",marginBottom:16}}>Recent Activity</div>
+        {data.sales.length===0&&data.payments.length===0?<p style={{fontSize:13,color:"#8a8070"}}>No activity yet.</p>:
+        [...data.sales.slice(-3).reverse().map(s=><div key={s.id} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid rgba(182,139,46,0.10)",fontSize:13}}><div><div>{s.artworkTitle}</div>{s.buyerName&&<div style={{fontSize:11,color:"#8a8070"}}>Buyer: {s.buyerName}</div>}</div><span style={{color:"#4a9e6b",fontWeight:600}}>R {fmt(s.salePrice)}</span></div>),
+        ...data.payments.slice(-3).reverse().map(p=><div key={p.id} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid rgba(182,139,46,0.10)",fontSize:13}}><span>{p.collectorName} · Mo {p.monthNumber}</span><span style={{color:"#b68b2e",fontWeight:600}}>R {fmt(p.amount)}</span></div>)]}
       </Card>
     </div>
     <div style={{display:"flex",gap:10,marginTop:24,flexWrap:"wrap"}}>
@@ -684,25 +684,25 @@ function Catalogue({data,up,actions}){
       const open=isExpanded(artistName);
       return<div key={artistName} style={{marginBottom:16}}>
         {/* Artist header — clickable to collapse */}
-        <button onClick={()=>toggle(artistName)} style={{display:"flex",alignItems:"center",gap:14,width:"100%",padding:"14px 20px",background:"#111010",border:"1px solid rgba(182,139,46,0.12)",borderRadius:open?[12,12,0,0].map(v=>v+"px").join(" "):"12px",cursor:"pointer",textAlign:"left",transition:"border-radius 0.15s"}}>
-          <div style={{width:44,height:44,borderRadius:10,flexShrink:0,background:"linear-gradient(135deg,rgba(182,139,46,0.2),rgba(182,139,46,0.05))",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
+        <button onClick={()=>toggle(artistName)} style={{display:"flex",alignItems:"center",gap:14,width:"100%",padding:"14px 20px",background:"#ffffff",border:"1px solid rgba(182,139,46,0.25)",borderRadius:open?[12,12,0,0].map(v=>v+"px").join(" "):"12px",cursor:"pointer",textAlign:"left",transition:"border-radius 0.15s"}}>
+          <div style={{width:44,height:44,borderRadius:10,flexShrink:0,background:"linear-gradient(135deg,rgba(182,139,46,0.50),rgba(182,139,46,0.12))",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
             {artistProfile?.profileImageUrl?<img src={artistProfile.profileImageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span style={{fontFamily:"Cormorant Garamond,serif",fontSize:18,color:"#b68b2e",fontWeight:600}}>{artistName.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase()}</span>}
           </div>
           <div style={{flex:1}}>
-            <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:18,fontWeight:400,color:"#f5f0e8"}}>{artistName}</div>
-            <div style={{fontSize:11,color:"#5a564e",marginTop:2}}>{artworks.length} work{artworks.length!==1?"s":""} · R {fmt(totalVal)}{artistProfile?.medium?` · ${artistProfile.medium}`:""}</div>
+            <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:18,fontWeight:400,color:"#1a1714"}}>{artistName}</div>
+            <div style={{fontSize:11,color:"#8a8070",marginTop:2}}>{artworks.length} work{artworks.length!==1?"s":""} · R {fmt(totalVal)}{artistProfile?.medium?` · ${artistProfile.medium}`:""}</div>
           </div>
-          <div style={{fontSize:11,color:"#5a564e",marginRight:12}}>
+          <div style={{fontSize:11,color:"#8a8070",marginRight:12}}>
             {artworks.filter(a=>a.status==="Available").length} available · {artworks.filter(a=>a.status==="Reserved").length} reserved · {artworks.filter(a=>a.status==="Sold").length} sold
           </div>
           {/* Chevron */}
-          <span style={{color:"#5a564e",transition:"transform 0.2s",display:"inline-flex",transform:open?"rotate(180deg)":"none",flexShrink:0}}>{I.chevron}</span>
+          <span style={{color:"#8a8070",transition:"transform 0.2s",display:"inline-flex",transform:open?"rotate(180deg)":"none",flexShrink:0}}>{I.chevron}</span>
         </button>
 
         {/* Artworks — only shown when expanded */}
-        {open&&<Card style={{padding:0,overflow:"hidden",borderTop:"none",borderRadius:"0 0 12px 12px",border:"1px solid rgba(182,139,46,0.12)"}}>
+        {open&&<Card style={{padding:0,overflow:"hidden",borderTop:"none",borderRadius:"0 0 12px 12px",border:"1px solid rgba(182,139,46,0.25)"}}>
           <Tbl cols={[
-            {label:"",render:r=>r.imageUrl?<div style={{width:44,height:44,borderRadius:6,overflow:"hidden"}}><img src={r.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div>:<div style={{width:44,height:44,borderRadius:6,background:"rgba(182,139,46,0.08)",display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:16,color:"#5a564e"}}>◆</span></div>},
+            {label:"",render:r=>r.imageUrl?<div style={{width:44,height:44,borderRadius:6,overflow:"hidden"}}><img src={r.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div>:<div style={{width:44,height:44,borderRadius:6,background:"rgba(182,139,46,0.18)",display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:16,color:"#8a8070"}}>◆</span></div>},
             {label:"Title",key:"title",bold:true},
             {label:"Medium",key:"medium"},
             {label:"Year",key:"year"},
@@ -711,15 +711,15 @@ function Catalogue({data,up,actions}){
             {label:"Option 3 · 50%",right:true,render:r=><span style={{color:"#4a9e6b"}}>R {fmt(r.recommendedPrice*0.50)}</span>},
             {label:"Status",render:r=><Badge status={r.status}/>},
             {label:"",render:r=><div style={{display:"flex",gap:6}}>
-              <button onClick={e=>{e.stopPropagation();setModal(r);}} style={{background:"none",border:"none",color:"#8a8477",cursor:"pointer"}}>{I.edit}</button>
-              <button onClick={e=>{e.stopPropagation();handleDelete(r);}} style={{background:"none",border:"none",color:"#5a564e",cursor:"pointer"}}>{I.del}</button>
+              <button onClick={e=>{e.stopPropagation();setModal(r);}} style={{background:"none",border:"none",color:"#6b635a",cursor:"pointer"}}>{I.edit}</button>
+              <button onClick={e=>{e.stopPropagation();handleDelete(r);}} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer"}}>{I.del}</button>
             </div>},
           ]} data={artworks}/>
         </Card>}
       </div>;
     })}
     {modal&&<ArtModal art={modal==="add"?blank:modal} artists={data.artists||[]} onSave={save} onClose={()=>setModal(null)}/>}
-    {delModal&&<Modal title="Force Delete Artwork" onClose={()=>setDelModal(null)}><p style={{fontSize:14,color:"#e8e2d6",marginBottom:8}}>This artwork has active schedules or sales history.</p><p style={{fontSize:13,color:"#8a8477",marginBottom:20}}>Deleting will permanently remove all associated data. Cannot be undone.</p><div style={{display:"flex",gap:10,justifyContent:"flex-end"}}><Btn ghost onClick={()=>setDelModal(null)}>Cancel</Btn><Btn danger onClick={()=>{actions.forceDeleteArtwork(delModal.id);setDelModal(null);}}>Force Delete</Btn></div></Modal>}
+    {delModal&&<Modal title="Force Delete Artwork" onClose={()=>setDelModal(null)}><p style={{fontSize:14,color:"#2a2622",marginBottom:8}}>This artwork has active schedules or sales history.</p><p style={{fontSize:13,color:"#6b635a",marginBottom:20}}>Deleting will permanently remove all associated data. Cannot be undone.</p><div style={{display:"flex",gap:10,justifyContent:"flex-end"}}><Btn ghost onClick={()=>setDelModal(null)}>Cancel</Btn><Btn danger onClick={()=>{actions.forceDeleteArtwork(delModal.id);setDelModal(null);}}>Force Delete</Btn></div></Modal>}
   </div>);
 }
 
@@ -743,9 +743,9 @@ function ArtModal({art,artists,onSave,onClose}){
           <div style={{flex:1,display:"flex",flexDirection:"column",gap:8}}>
             <Btn ghost onClick={()=>document.getElementById("imgUp").click()} style={{justifyContent:"center",width:"100%",padding:"14px"}}>{I.up} {f.imageUrl?"Change":"Upload"}</Btn>
             <input id="imgUp" type="file" accept="image/*" onChange={e=>hFile(e.target.files[0])} style={{display:"none"}}/>
-            <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:9,color:"#5a564e",letterSpacing:1,textTransform:"uppercase",whiteSpace:"nowrap"}}>URL:</span><input value={f.imageUrl?.startsWith("data:")?"":f.imageUrl||""} onChange={e=>s("imageUrl",e.target.value)} style={{...is,marginBottom:0,fontSize:12}} placeholder="https://..."/></div>
+            <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:9,color:"#8a8070",letterSpacing:1,textTransform:"uppercase",whiteSpace:"nowrap"}}>URL:</span><input value={f.imageUrl?.startsWith("data:")?"":f.imageUrl||""} onChange={e=>s("imageUrl",e.target.value)} style={{...is,marginBottom:0,fontSize:12}} placeholder="https://..."/></div>
           </div>
-          {f.imageUrl&&<div style={{position:"relative",flexShrink:0}}><div style={{width:130,height:130,borderRadius:10,overflow:"hidden",border:"1px solid rgba(182,139,46,0.15)"}}><img src={f.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div><button onClick={()=>s("imageUrl","")} style={{position:"absolute",top:4,right:4,width:22,height:22,borderRadius:6,background:"rgba(0,0,0,0.7)",border:"none",color:"#c45c4a",cursor:"pointer",fontSize:14}}>×</button></div>}
+          {f.imageUrl&&<div style={{position:"relative",flexShrink:0}}><div style={{width:130,height:130,borderRadius:10,overflow:"hidden",border:"1px solid rgba(182,139,46,0.30)"}}><img src={f.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div><button onClick={()=>s("imageUrl","")} style={{position:"absolute",top:4,right:4,width:22,height:22,borderRadius:6,background:"rgba(0,0,0,0.7)",border:"none",color:"#c45c4a",cursor:"pointer",fontSize:14}}>×</button></div>}
         </div>
       </Field>
       <Field label="Description" style={{gridColumn:"1/-1"}}><textarea value={f.description} onChange={e=>s("description",e.target.value)} style={{...is,minHeight:80,resize:"vertical"}} placeholder="Describe the artwork..."/></Field>
@@ -770,11 +770,11 @@ function ArtistsPage({data,up}){
     <Card><div style={{marginBottom:16}}><input placeholder="Search..." value={search} onChange={e=>setSearch(e.target.value)} style={{...is,maxWidth:400}}/></div>
       {f.length===0?<Empty msg="No artists yet." action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Add</Btn>}/>:
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:16}}>
-        {f.map(a=><div key={a.id} style={{background:"#1e1d1a",border:"1px solid rgba(182,139,46,0.08)",borderRadius:12,padding:20}} onMouseEnter={e=>e.currentTarget.style.borderColor="rgba(182,139,46,0.25)"} onMouseLeave={e=>e.currentTarget.style.borderColor="rgba(182,139,46,0.08)"}>
+        {f.map(a=><div key={a.id} style={{background:"#e8e4dd",border:"1px solid rgba(182,139,46,0.18)",borderRadius:12,padding:20}} onMouseEnter={e=>e.currentTarget.style.borderColor="rgba(182,139,46,0.25)"} onMouseLeave={e=>e.currentTarget.style.borderColor="rgba(182,139,46,0.18)"}>
           <div style={{display:"flex",gap:14}}>
-            <div style={{width:56,height:56,borderRadius:12,flexShrink:0,background:"linear-gradient(135deg,rgba(182,139,46,0.2),rgba(182,139,46,0.05))",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>{a.profileImageUrl?<img src={a.profileImageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span style={{fontFamily:"Cormorant Garamond,serif",fontSize:22,color:"#b68b2e",fontWeight:600}}>{a.name.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase()}</span>}</div>
-            <div style={{flex:1}}><div style={{fontSize:16,fontWeight:600,color:"#f5f0e8"}}>{a.name}</div><div style={{fontSize:12,color:"#8a8477"}}>{[a.medium,a.city].filter(Boolean).join(" · ")}</div><div style={{display:"flex",gap:12,marginTop:8,fontSize:11}}><span style={{color:"#b68b2e"}}>{cnt(a.id)} works</span><span style={{color:"#8a8477"}}>R {fmt(val(a.id))}</span></div></div>
-            <div style={{display:"flex",gap:4}}><button onClick={e=>{e.stopPropagation();setModal(a);}} style={{background:"none",border:"none",color:"#8a8477",cursor:"pointer"}}>{I.edit}</button><button onClick={e=>{e.stopPropagation();del(a.id);}} style={{background:"none",border:"none",color:"#5a564e",cursor:"pointer"}}>{I.del}</button></div>
+            <div style={{width:56,height:56,borderRadius:12,flexShrink:0,background:"linear-gradient(135deg,rgba(182,139,46,0.50),rgba(182,139,46,0.12))",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>{a.profileImageUrl?<img src={a.profileImageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span style={{fontFamily:"Cormorant Garamond,serif",fontSize:22,color:"#b68b2e",fontWeight:600}}>{a.name.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase()}</span>}</div>
+            <div style={{flex:1}}><div style={{fontSize:16,fontWeight:600,color:"#1a1714"}}>{a.name}</div><div style={{fontSize:12,color:"#6b635a"}}>{[a.medium,a.city].filter(Boolean).join(" · ")}</div><div style={{display:"flex",gap:12,marginTop:8,fontSize:11}}><span style={{color:"#b68b2e"}}>{cnt(a.id)} works</span><span style={{color:"#6b635a"}}>R {fmt(val(a.id))}</span></div></div>
+            <div style={{display:"flex",gap:4}}><button onClick={e=>{e.stopPropagation();setModal(a);}} style={{background:"none",border:"none",color:"#6b635a",cursor:"pointer"}}>{I.edit}</button><button onClick={e=>{e.stopPropagation();del(a.id);}} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer"}}>{I.del}</button></div>
           </div>
         </div>)}
       </div>}
@@ -786,8 +786,8 @@ function ArtistsPage({data,up}){
 function ArtistMdl({artist,onSave,onClose}){
   const [f,sF]=useState({...artist});const s=(k,v)=>sF(p=>({...p,[k]:v}));const [tab,setTab]=useState("personal");
   return(<Modal title={artist.id?"Edit Artist":"Add Artist"} onClose={onClose} wide>
-    <div style={{display:"flex",gap:4,marginBottom:20,borderBottom:"1px solid rgba(182,139,46,0.08)",paddingBottom:12}}>
-      {[["personal","Personal"],["art","Artistic"],["bank","Banking"]].map(([id,l])=><button key={id} onClick={()=>setTab(id)} style={{padding:"8px 16px",borderRadius:6,border:"none",cursor:"pointer",fontSize:12,fontWeight:tab===id?600:400,fontFamily:"DM Sans,sans-serif",background:tab===id?"rgba(182,139,46,0.12)":"transparent",color:tab===id?"#b68b2e":"#8a8477"}}>{l}</button>)}
+    <div style={{display:"flex",gap:4,marginBottom:20,borderBottom:"1px solid rgba(182,139,46,0.18)",paddingBottom:12}}>
+      {[["personal","Personal"],["art","Artistic"],["bank","Banking"]].map(([id,l])=><button key={id} onClick={()=>setTab(id)} style={{padding:"8px 16px",borderRadius:6,border:"none",cursor:"pointer",fontSize:12,fontWeight:tab===id?600:400,fontFamily:"DM Sans,sans-serif",background:tab===id?"rgba(182,139,46,0.25)":"transparent",color:tab===id?"#b68b2e":"#6b635a"}}>{l}</button>)}
     </div>
     {tab==="personal"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}><Field label="Full Name" style={{gridColumn:"1/-1"}}><input value={f.name} onChange={e=>s("name",e.target.value)} style={is}/></Field><Field label="Email"><input value={f.email} onChange={e=>s("email",e.target.value)} style={is}/></Field><Field label="Mobile"><input value={f.mobile} onChange={e=>s("mobile",e.target.value)} style={is}/></Field><Field label="City"><input value={f.city} onChange={e=>s("city",e.target.value)} style={is}/></Field><Field label="Country"><input value={f.country} onChange={e=>s("country",e.target.value)} style={is}/></Field><Field label="Profile Image URL" style={{gridColumn:"1/-1"}}><input value={f.profileImageUrl} onChange={e=>s("profileImageUrl",e.target.value)} style={is}/></Field></div>}
     {tab==="art"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}><Field label="Medium"><input value={f.medium} onChange={e=>s("medium",e.target.value)} style={is}/></Field><Field label="Style"><input value={f.style} onChange={e=>s("style",e.target.value)} style={is}/></Field><Field label="Website"><input value={f.website} onChange={e=>s("website",e.target.value)} style={is}/></Field><Field label="Instagram"><input value={f.instagram} onChange={e=>s("instagram",e.target.value)} style={is}/></Field><Field label="Bio" style={{gridColumn:"1/-1"}}><textarea value={f.bio} onChange={e=>s("bio",e.target.value)} style={{...is,minHeight:100,resize:"vertical"}}/></Field></div>}
@@ -814,8 +814,8 @@ function CollectorsPage({data,up,actions}){
       {f.length===0?<Empty msg="No collectors yet." action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Add</Btn>}/>:
       <Tbl cols={[
         {label:"Name",bold:true,render:r=>gn(r)},{label:"Type",key:"type"},{label:"Email",key:"email"},
-        {label:"Schedules",render:r=>{const scheds=data.schedules.filter(s=>s.collectorId===r.id);if(scheds.length===0)return<span style={{color:"#5a564e"}}>None</span>;return<div>{scheds.map(s=><div key={s.id} style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><span style={{fontSize:12}}>{s.artworkTitle}</span><Badge model={s.acquisitionModel||"O1"}/><Badge status={s.status} sched/><button onClick={e=>{e.stopPropagation();handleUnlink(s.id);}} style={{background:"none",border:"none",color:"#c45c4a",cursor:"pointer",fontSize:10,textDecoration:"underline"}}>cancel</button></div>)}</div>;}},
-        {label:"",render:r=><div style={{display:"flex",gap:6}}><Btn small ghost onClick={e=>{e.stopPropagation();setLink(r);}}>Link Art</Btn><button onClick={e=>{e.stopPropagation();setModal(r);}} style={{background:"none",border:"none",color:"#8a8477",cursor:"pointer"}}>{I.edit}</button><button onClick={e=>{e.stopPropagation();del(r.id);}} style={{background:"none",border:"none",color:"#5a564e",cursor:"pointer"}}>{I.del}</button></div>},
+        {label:"Schedules",render:r=>{const scheds=data.schedules.filter(s=>s.collectorId===r.id);if(scheds.length===0)return<span style={{color:"#8a8070"}}>None</span>;return<div>{scheds.map(s=><div key={s.id} style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><span style={{fontSize:12}}>{s.artworkTitle}</span><Badge model={s.acquisitionModel||"O1"}/><Badge status={s.status} sched/><button onClick={e=>{e.stopPropagation();handleUnlink(s.id);}} style={{background:"none",border:"none",color:"#c45c4a",cursor:"pointer",fontSize:10,textDecoration:"underline"}}>cancel</button></div>)}</div>;}},
+        {label:"",render:r=><div style={{display:"flex",gap:6}}><Btn small ghost onClick={e=>{e.stopPropagation();setLink(r);}}>Link Art</Btn><button onClick={e=>{e.stopPropagation();setModal(r);}} style={{background:"none",border:"none",color:"#6b635a",cursor:"pointer"}}>{I.edit}</button><button onClick={e=>{e.stopPropagation();del(r.id);}} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer"}}>{I.del}</button></div>},
       ]} data={f}/>}
     </Card>
     {modal&&<ColMdl col={modal==="add"?blank:modal} onSave={save} onClose={()=>setModal(null)}/>}
@@ -830,7 +830,7 @@ function ColMdl({col,onSave,onClose}){
   return(<Modal title={isNew?"Add Collector":"Edit Collector"} onClose={onClose} wide>
     <Field label="Type">
       <div style={{display:"flex",gap:8}}>
-        {[["individual","Individual"],["company","Company"]].map(([id,l])=><button key={id} onClick={()=>s("type",id)} style={{flex:1,padding:10,borderRadius:8,border:f.type===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:f.type===id?"rgba(182,139,46,0.08)":"#1e1d1a",color:f.type===id?"#b68b2e":"#8a8477",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{l}</button>)}
+        {[["individual","Individual"],["company","Company"]].map(([id,l])=><button key={id} onClick={()=>s("type",id)} style={{flex:1,padding:10,borderRadius:8,border:f.type===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.30)",background:f.type===id?"rgba(182,139,46,0.18)":"#e8e4dd",color:f.type===id?"#b68b2e":"#6b635a",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{l}</button>)}
       </div>
     </Field>
     {f.type==="company"
@@ -877,24 +877,24 @@ function LinkMdl({col,arts,onLink,onClose,gn}){
   return(<Modal title={`Link Artwork — ${gn(col)}`} onClose={onClose} wide>
 
     {/* Step 1 — Artwork */}
-    <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:8}}>Step 1 — Artwork</div>
+    <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:8}}>Step 1 — Artwork</div>
     <Field label=""><select value={artId} onChange={e=>setArtId(e.target.value)} style={{...ss,marginBottom:0}}><option value="">— Select artwork</option>{arts.map(a=><option key={a.id} value={a.id}>{a.title} — R {fmt(a.recommendedPrice)}</option>)}</select></Field>
 
     {/* Step 2 — Model */}
-    <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",margin:"16px 0 8px"}}>Step 2 — Acquisition Model</div>
+    <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",margin:"16px 0 8px"}}>Step 2 — Acquisition Model</div>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:16}}>
-      {["O1","O2","O3"].map(k=>{const mod=MODELS[k];const active=acqModel===k;const locked=false;return<button key={k} onClick={()=>!locked&&setAcqModel(k)} style={{padding:12,borderRadius:10,border:active?"2px solid #b68b2e":locked?"1px solid rgba(182,139,46,0.06)":"1px solid rgba(182,139,46,0.15)",background:active?"rgba(182,139,46,0.08)":locked?"rgba(0,0,0,0.2)":"#1e1d1a",color:active?"#b68b2e":locked?"#3a3832":"#8a8477",cursor:locked?"not-allowed":"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left",transition:"all 0.15s",opacity:locked?0.5:1}}>
+      {["O1","O2","O3"].map(k=>{const mod=MODELS[k];const active=acqModel===k;const locked=false;return<button key={k} onClick={()=>!locked&&setAcqModel(k)} style={{padding:12,borderRadius:10,border:active?"2px solid #b68b2e":locked?"1px solid rgba(182,139,46,0.14)":"1px solid rgba(182,139,46,0.30)",background:active?"rgba(182,139,46,0.18)":locked?"rgba(0,0,0,0.06)":"#e8e4dd",color:active?"#b68b2e":locked?"#a09890":"#6b635a",cursor:locked?"not-allowed":"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left",transition:"all 0.15s",opacity:locked?0.5:1}}>
         <div style={{fontSize:12,fontWeight:600,marginBottom:4}}>{mod.label}</div>
         <div style={{fontSize:10,opacity:0.8}}>VB {Math.round(mod.vbPct*100)}% · Col {Math.round(mod.colPct*100)}%</div>
         
-        {art&&!locked&&<div style={{fontSize:11,marginTop:6,color:active?"#b68b2e":"#5a564e",fontWeight:600}}>R {fmt(art.recommendedPrice*mod.vbPct/mod.term)}/mo</div>}
+        {art&&!locked&&<div style={{fontSize:11,marginTop:6,color:active?"#b68b2e":"#8a8070",fontWeight:600}}>R {fmt(art.recommendedPrice*mod.vbPct/mod.term)}/mo</div>}
       </button>;})}
     </div>
 
     {/* Step 3 — Deposit */}
-    <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:8}}>Step 3 — Deposit</div>
+    <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:8}}>Step 3 — Deposit</div>
     <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
-      {depTypes.map(d=>{const active=depositType===d.id;return<button key={d.id} onClick={()=>setDepositType(d.id)} style={{padding:"12px 14px",borderRadius:10,border:active?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:active?"rgba(182,139,46,0.08)":"#1e1d1a",color:active?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left",display:"flex",alignItems:"center",justifyContent:"space-between",transition:"all 0.15s"}}>
+      {depTypes.map(d=>{const active=depositType===d.id;return<button key={d.id} onClick={()=>setDepositType(d.id)} style={{padding:"12px 14px",borderRadius:10,border:active?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.30)",background:active?"rgba(182,139,46,0.18)":"#e8e4dd",color:active?"#b68b2e":"#6b635a",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left",display:"flex",alignItems:"center",justifyContent:"space-between",transition:"all 0.15s"}}>
         <div><div style={{fontSize:13,fontWeight:600}}>{d.label}</div><div style={{fontSize:11,opacity:0.8,marginTop:2}}>{d.sub}</div></div>
         {active&&art&&depositType!=="none"&&<div style={{fontSize:13,fontWeight:600,color:"#b68b2e"}}>R {fmt(depositAmt)} upfront</div>}
       </button>;})}
@@ -904,25 +904,25 @@ function LinkMdl({col,arts,onLink,onClose,gn}){
     {depositType!=="none"&&<Field label="Deposit Percentage">
       <div style={{display:"flex",alignItems:"center",gap:10}}>
         <input type="number" value={depositPct} onChange={e=>setDepositPct(e.target.value)} style={{...is,width:100}} min={1} max={99} placeholder="10"/>
-        <span style={{fontSize:13,color:"#5a564e"}}>% of artwork value</span>
+        <span style={{fontSize:13,color:"#8a8070"}}>% of artwork value</span>
         {art&&<span style={{fontSize:13,color:"#b68b2e",fontWeight:600,marginLeft:"auto"}}>= R {fmt(depositAmt)}</span>}
       </div>
     </Field>}
 
     {/* Summary card */}
-    {art&&<Card style={{background:"#1e1d1a",marginTop:8}}>
-      <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:12}}>Agreement Summary</div>
+    {art&&<Card style={{background:"#e8e4dd",marginTop:8}}>
+      <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:12}}>Agreement Summary</div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:13}}>
-        <span style={{color:"#8a8477"}}>Artwork value:</span><span style={{textAlign:"right"}}>R {fmt(art.recommendedPrice)}</span>
-        <span style={{color:"#8a8477"}}>VB fee ({Math.round(m.vbPct*100)}%):</span><span style={{textAlign:"right",color:"#b68b2e",fontWeight:600}}>R {fmt(vbFee)}</span>
-        {depositType!=="none"&&<><span style={{color:"#8a8477"}}>Deposit ({dp}%) — toward fee:</span><span style={{textAlign:"right",color:"#b68b2e"}}>R {fmt(depositAmt)}</span></>}
-        {depositType==="toward"&&<><span style={{color:"#8a8477"}}>Remaining fee after deposit:</span><span style={{textAlign:"right"}}>R {fmt(remainingFee)}</span></>}
-        <div style={{gridColumn:"1/-1",height:1,background:"rgba(182,139,46,0.1)",margin:"4px 0"}}/>
+        <span style={{color:"#6b635a"}}>Artwork value:</span><span style={{textAlign:"right"}}>R {fmt(art.recommendedPrice)}</span>
+        <span style={{color:"#6b635a"}}>VB fee ({Math.round(m.vbPct*100)}%):</span><span style={{textAlign:"right",color:"#b68b2e",fontWeight:600}}>R {fmt(vbFee)}</span>
+        {depositType!=="none"&&<><span style={{color:"#6b635a"}}>Deposit ({dp}%) — toward fee:</span><span style={{textAlign:"right",color:"#b68b2e"}}>R {fmt(depositAmt)}</span></>}
+        {depositType==="toward"&&<><span style={{color:"#6b635a"}}>Remaining fee after deposit:</span><span style={{textAlign:"right"}}>R {fmt(remainingFee)}</span></>}
+        <div style={{gridColumn:"1/-1",height:1,background:"rgba(182,139,46,0.20)",margin:"4px 0"}}/>
         <span style={{color:"#b68b2e",fontWeight:600}}>Monthly payment:</span><span style={{textAlign:"right",fontWeight:600,color:"#b68b2e"}}>R {fmt(monthly)}/mo × {m.term}</span>
-        <span style={{color:"#8a8477"}}>Total paid by collector:</span><span style={{textAlign:"right"}}>R {fmt(totalDue)}</span>
+        <span style={{color:"#6b635a"}}>Total paid by collector:</span><span style={{textAlign:"right"}}>R {fmt(totalDue)}</span>
         <span style={{color:"#4a9e6b",fontWeight:600}}>Collector receives ({Math.round(m.colPct*100)}%):</span><span style={{textAlign:"right",color:"#4a9e6b"}}>R {fmt(art.recommendedPrice*m.colPct)}</span>
         <span style={{color:"#4a9e6b",fontWeight:600}}>Collector profit:</span><span style={{textAlign:"right",color:"#4a9e6b",fontWeight:600}}>R {fmt(colProfit)}</span>
-        <span style={{color:"#8a8477"}}>If unsold after {m.term} months:</span><span style={{textAlign:"right",fontSize:11}}>Collector takes artwork</span>
+        <span style={{color:"#6b635a"}}>If unsold after {m.term} months:</span><span style={{textAlign:"right",fontSize:11}}>Collector takes artwork</span>
       </div>
     </Card>}
 
@@ -960,7 +960,7 @@ function BuyersPage({data,actions}){
           {label:"Email",key:"email"},{label:"Nationality",key:"nationality"},
           {label:"Purchases",render:r=><span style={{color:"#b68b2e",fontWeight:600}}>{getPurchases(r.id).length}</span>},
           {label:"Total Spend",right:true,gold:true,render:r=>"R "+fmt(getTotalSpend(r.id))},
-          {label:"",render:r=><div style={{display:"flex",gap:6}}><button onClick={e=>{e.stopPropagation();setModal(r);}} style={{background:"none",border:"none",color:"#8a8477",cursor:"pointer"}}>{I.edit}</button><button onClick={e=>{e.stopPropagation();if(confirm("Delete buyer?"))actions.deleteBuyer(r.id);}} style={{background:"none",border:"none",color:"#5a564e",cursor:"pointer"}}>{I.del}</button></div>},
+          {label:"",render:r=><div style={{display:"flex",gap:6}}><button onClick={e=>{e.stopPropagation();setModal(r);}} style={{background:"none",border:"none",color:"#6b635a",cursor:"pointer"}}>{I.edit}</button><button onClick={e=>{e.stopPropagation();if(confirm("Delete buyer?"))actions.deleteBuyer(r.id);}} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer"}}>{I.del}</button></div>},
         ]} data={f}/>}
       </Card>
       {selected&&<BuyerProfile buyer={selected} purchases={getPurchases(selected.id)} artworks={data.artworks} collectors={data.collectors} onClose={()=>setSelected(null)} onEdit={()=>setModal(selected)}/>}
@@ -972,23 +972,23 @@ function BuyersPage({data,actions}){
 function BuyerProfile({buyer,purchases,artworks,collectors,onClose,onEdit}){
   return<Card style={{position:"sticky",top:20}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
-      <div><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:20,fontWeight:400,color:"#f5f0e8"}}>{buyerName(buyer)}</div><div style={{fontSize:11,color:"#5a564e",marginTop:2,letterSpacing:1,textTransform:"uppercase"}}>{buyer.type==="company"?"Company":"Individual"} · {buyer.nationality||"—"}</div></div>
-      <div style={{display:"flex",gap:6}}><Btn small ghost onClick={onEdit}>{I.edit}</Btn><button onClick={onClose} style={{background:"none",border:"none",color:"#8a8477",cursor:"pointer"}}>{I.x}</button></div>
+      <div><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:20,fontWeight:400,color:"#1a1714"}}>{buyerName(buyer)}</div><div style={{fontSize:11,color:"#8a8070",marginTop:2,letterSpacing:1,textTransform:"uppercase"}}>{buyer.type==="company"?"Company":"Individual"} · {buyer.nationality||"—"}</div></div>
+      <div style={{display:"flex",gap:6}}><Btn small ghost onClick={onEdit}>{I.edit}</Btn><button onClick={onClose} style={{background:"none",border:"none",color:"#6b635a",cursor:"pointer"}}>{I.x}</button></div>
     </div>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:12,marginBottom:16}}>
-      {[["Email",buyer.email],["Mobile",buyer.mobile],["ID",buyer.idNumber],["City",buyer.city],["Country",buyer.country]].map(([l,v])=>v?<div key={l}><div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:2}}>{l}</div><div style={{color:"#e8e2d6"}}>{v}</div></div>:null)}
+      {[["Email",buyer.email],["Mobile",buyer.mobile],["ID",buyer.idNumber],["City",buyer.city],["Country",buyer.country]].map(([l,v])=>v?<div key={l}><div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:2}}>{l}</div><div style={{color:"#2a2622"}}>{v}</div></div>:null)}
     </div>
-    <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:10}}>Purchase History ({purchases.length})</div>
-    {purchases.length===0?<p style={{fontSize:13,color:"#5a564e"}}>No purchases yet.</p>:purchases.map(sale=>{
+    <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>Purchase History ({purchases.length})</div>
+    {purchases.length===0?<p style={{fontSize:13,color:"#8a8070"}}>No purchases yet.</p>:purchases.map(sale=>{
       const art=artworks.find(a=>a.id===sale.artworkId);
       const col=collectors.find(c=>c.id===sale.collectorId);
       const colName=col?(col.type==="company"?col.companyName:`${col.firstName} ${col.lastName}`):"—";
-      return<div key={sale.id} style={{padding:12,background:"#1e1d1a",borderRadius:8,marginBottom:8}}>
+      return<div key={sale.id} style={{padding:12,background:"#e8e4dd",borderRadius:8,marginBottom:8}}>
         <div style={{display:"flex",gap:10}}>
           {art?.imageUrl&&<div style={{width:40,height:40,borderRadius:6,overflow:"hidden",flexShrink:0}}><img src={art.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div>}
           <div style={{flex:1}}>
-            <div style={{fontSize:13,fontWeight:600,color:"#f5f0e8"}}>{sale.artworkTitle}</div>
-            <div style={{fontSize:11,color:"#5a564e",marginTop:2}}>{sale.date} · Collector: {colName}</div>
+            <div style={{fontSize:13,fontWeight:600,color:"#1a1714"}}>{sale.artworkTitle}</div>
+            <div style={{fontSize:11,color:"#8a8070",marginTop:2}}>{sale.date} · Collector: {colName}</div>
             <div style={{display:"flex",gap:12,marginTop:4,fontSize:12}}>
               <span style={{color:"#b68b2e",fontWeight:600}}>R {fmt(sale.salePrice)}</span>
               <Badge model={sale.acquisitionModel||"O1"}/>
@@ -997,15 +997,15 @@ function BuyerProfile({buyer,purchases,artworks,collectors,onClose,onEdit}){
         </div>
       </div>;
     })}
-    {purchases.length>0&&<div style={{borderTop:"1px solid rgba(182,139,46,0.08)",paddingTop:10,marginTop:4,display:"flex",justifyContent:"space-between",fontSize:13}}><span style={{color:"#8a8477"}}>Total spend:</span><span style={{color:"#b68b2e",fontWeight:700}}>R {fmt(purchases.reduce((s,x)=>s+(x.salePrice||0),0))}</span></div>}
-    {buyer.notes&&<div style={{marginTop:12,fontSize:12,color:"#8a8477",padding:"10px 12px",background:"#1e1d1a",borderRadius:8}}>{buyer.notes}</div>}
+    {purchases.length>0&&<div style={{borderTop:"1px solid rgba(182,139,46,0.18)",paddingTop:10,marginTop:4,display:"flex",justifyContent:"space-between",fontSize:13}}><span style={{color:"#6b635a"}}>Total spend:</span><span style={{color:"#b68b2e",fontWeight:700}}>R {fmt(purchases.reduce((s,x)=>s+(x.salePrice||0),0))}</span></div>}
+    {buyer.notes&&<div style={{marginTop:12,fontSize:12,color:"#6b635a",padding:"10px 12px",background:"#e8e4dd",borderRadius:8}}>{buyer.notes}</div>}
   </Card>;
 }
 
 function BuyerModal({buyer,onSave,onClose}){
   const [f,sF]=useState({...buyer});const s=(k,v)=>sF(p=>({...p,[k]:v}));const isNew=!buyer.id;
   return(<Modal title={isNew?"Register Buyer":"Edit Buyer"} onClose={onClose} wide>
-    <Field label="Type"><div style={{display:"flex",gap:8}}>{[["individual","Individual"],["company","Company"]].map(([id,l])=><button key={id} onClick={()=>s("type",id)} style={{flex:1,padding:10,borderRadius:8,border:f.type===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:f.type===id?"rgba(182,139,46,0.08)":"#1e1d1a",color:f.type===id?"#b68b2e":"#8a8477",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{l}</button>)}</div></Field>
+    <Field label="Type"><div style={{display:"flex",gap:8}}>{[["individual","Individual"],["company","Company"]].map(([id,l])=><button key={id} onClick={()=>s("type",id)} style={{flex:1,padding:10,borderRadius:8,border:f.type===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.30)",background:f.type===id?"rgba(182,139,46,0.18)":"#e8e4dd",color:f.type===id?"#b68b2e":"#6b635a",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{l}</button>)}</div></Field>
     {f.type==="company"?<Field label="Company Name"><input value={f.companyName||""} onChange={e=>s("companyName",e.target.value)} style={is}/></Field>:<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}><Field label="First Name"><input value={f.firstName||""} onChange={e=>s("firstName",e.target.value)} style={is}/></Field><Field label="Last Name"><input value={f.lastName||""} onChange={e=>s("lastName",e.target.value)} style={is}/></Field></div>}
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
       <Field label="Email"><input value={f.email||""} onChange={e=>s("email",e.target.value)} style={is}/></Field>
@@ -1072,22 +1072,22 @@ function CalcPage({data={},actions={}}){
   const aboveValue=av>0&&sp>0&&sp>av;
   const belowValue=av>0&&sp>0&&sp<av;
 
-  const SRow=({label,val,color,bold,sub})=><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:"1px solid rgba(182,139,46,0.05)"}}>
-    <span style={{fontSize:13,color:"#8a8477"}}>{label}{sub&&<span style={{fontSize:11,color:"#5a564e",marginLeft:6}}>{sub}</span>}</span>
-    <span style={{fontSize:bold?18:13,fontWeight:bold?600:500,color:color||"#e8e2d6",fontFamily:bold?"Cormorant Garamond,serif":"DM Sans,sans-serif"}}>{val}</span>
+  const SRow=({label,val,color,bold,sub})=><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:"1px solid rgba(182,139,46,0.12)"}}>
+    <span style={{fontSize:13,color:"#6b635a"}}>{label}{sub&&<span style={{fontSize:11,color:"#8a8070",marginLeft:6}}>{sub}</span>}</span>
+    <span style={{fontSize:bold?18:13,fontWeight:bold?600:500,color:color||"#2a2622",fontFamily:bold?"Cormorant Garamond,serif":"DM Sans,sans-serif"}}>{val}</span>
   </div>;
 
   return(<div>
     <PT title="Acquisition Calculator" sub="Option 1 · Option 2 · Option 3 · Deal Scenarios"/>
 
     {/* ── Mode selector ── */}
-    <div style={{display:"flex",gap:8,marginBottom:20,borderBottom:"1px solid rgba(182,139,46,0.08)",paddingBottom:16}}>
-      {[["manual","Manual Entry"],["lookup","Load Collector Deal"],["new","Build & Link to Collector"]].map(([id,lbl])=><button key={id} onClick={()=>{setMode(id);setLinkSaved(false);}} style={{padding:"9px 18px",borderRadius:8,border:mode===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:mode===id?"rgba(182,139,46,0.08)":"transparent",color:mode===id?"#b68b2e":"#8a8477",fontSize:12,fontWeight:mode===id?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{lbl}</button>)}
+    <div style={{display:"flex",gap:8,marginBottom:20,borderBottom:"1px solid rgba(182,139,46,0.18)",paddingBottom:16}}>
+      {[["manual","Manual Entry"],["lookup","Load Collector Deal"],["new","Build & Link to Collector"]].map(([id,lbl])=><button key={id} onClick={()=>{setMode(id);setLinkSaved(false);}} style={{padding:"9px 18px",borderRadius:8,border:mode===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.30)",background:mode===id?"rgba(182,139,46,0.18)":"transparent",color:mode===id?"#b68b2e":"#6b635a",fontSize:12,fontWeight:mode===id?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{lbl}</button>)}
     </div>
 
     {/* ── LOOKUP MODE ── */}
     {mode==="lookup"&&<Card style={{marginBottom:20}}>
-      <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:12}}>Select Collector & Artwork</div>
+      <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:12}}>Select Collector & Artwork</div>
       <select value={selectedScheduleId} onChange={e=>{
         const s=schedules.find(x=>x.id===e.target.value);
         setSelectedScheduleId(e.target.value);
@@ -1104,12 +1104,12 @@ function CalcPage({data={},actions={}}){
         <option value="">— Select a collector schedule</option>
         {schedules.filter(s=>s.status!=="Complete"&&s.status!=="Cancelled").map(s=><option key={s.id} value={s.id}>{s.collectorName} · {s.artworkTitle} · {MODELS[s.acquisitionModel||"O1"]?.label} · Mo {s.monthsPaid}</option>)}
       </select>
-      {selectedSched&&<div style={{marginTop:12,padding:"12px 14px",background:"#1e1d1a",borderRadius:8,fontSize:13}}>
+      {selectedSched&&<div style={{marginTop:12,padding:"12px 14px",background:"#e8e4dd",borderRadius:8,fontSize:13}}>
         <div style={{display:"flex",gap:16,flexWrap:"wrap"}}>
-          <span style={{color:"#5a564e"}}>Collector: <strong style={{color:"#f5f0e8"}}>{selectedSched.collectorName}</strong></span>
-          <span style={{color:"#5a564e"}}>Artwork: <strong style={{color:"#f5f0e8"}}>{selectedSched.artworkTitle}</strong></span>
-          <span style={{color:"#5a564e"}}>Paid: <strong style={{color:"#b68b2e"}}>{selectedSched.monthsPaid} of {selectedSched.termMonths} months</strong></span>
-          <span style={{color:"#5a564e"}}>Status: <Badge status={selectedSched.status} sched/></span>
+          <span style={{color:"#8a8070"}}>Collector: <strong style={{color:"#1a1714"}}>{selectedSched.collectorName}</strong></span>
+          <span style={{color:"#8a8070"}}>Artwork: <strong style={{color:"#1a1714"}}>{selectedSched.artworkTitle}</strong></span>
+          <span style={{color:"#8a8070"}}>Paid: <strong style={{color:"#b68b2e"}}>{selectedSched.monthsPaid} of {selectedSched.termMonths} months</strong></span>
+          <span style={{color:"#8a8070"}}>Status: <Badge status={selectedSched.status} sched/></span>
         </div>
         <div style={{fontSize:11,color:"#4a9e6b",marginTop:8}}>Deal loaded into calculator below ↓ Enter a sale price to see the settlement.</div>
       </div>}
@@ -1117,7 +1117,7 @@ function CalcPage({data={},actions={}}){
 
     {/* ── NEW + LINK MODE ── */}
     {mode==="new"&&<Card style={{marginBottom:20}}>
-      <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:12}}>Build a New Deal & Link to Collector</div>
+      <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:12}}>Build a New Deal & Link to Collector</div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}>
         <Field label="Collector">
           <select value={newCollectorId} onChange={e=>setNewCollectorId(e.target.value)} style={ss}>
@@ -1136,21 +1136,21 @@ function CalcPage({data={},actions={}}){
           </select>
         </Field>
       </div>
-      <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:8}}>Acquisition Option</div>
+      <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:8}}>Acquisition Option</div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:14}}>
-        {["O1","O2","O3"].map(k=>{const mod=MODELS[k];const on=linkOption===k;return<button key={k} onClick={()=>setLinkOption(k)} style={{padding:10,borderRadius:8,border:on?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.12)",background:on?"rgba(182,139,46,0.08)":"#1e1d1a",color:on?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"center",fontSize:11,fontWeight:on?600:400}}>
+        {["O1","O2","O3"].map(k=>{const mod=MODELS[k];const on=linkOption===k;return<button key={k} onClick={()=>setLinkOption(k)} style={{padding:10,borderRadius:8,border:on?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.25)",background:on?"rgba(182,139,46,0.18)":"#e8e4dd",color:on?"#b68b2e":"#6b635a",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"center",fontSize:11,fontWeight:on?600:400}}>
           <div style={{fontWeight:600}}>{mod.label.split("·")[0].trim()}</div>
           <div style={{fontSize:10,opacity:0.7}}>{Math.round(mod.vbPct*100)}/{Math.round(mod.colPct*100)} · {mod.term}mo</div>
-          {newArtworkId&&<div style={{fontSize:11,color:on?"#b68b2e":"#5a564e",marginTop:4,fontWeight:600}}>R {fmt((artworks.find(a=>a.id===newArtworkId)?.recommendedPrice||0)*mod.vbPct/mod.term)}/mo</div>}
+          {newArtworkId&&<div style={{fontSize:11,color:on?"#b68b2e":"#8a8070",marginTop:4,fontWeight:600}}>R {fmt((artworks.find(a=>a.id===newArtworkId)?.recommendedPrice||0)*mod.vbPct/mod.term)}/mo</div>}
         </button>;})}
       </div>
-      <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:8}}>Deposit</div>
+      <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:8}}>Deposit</div>
       <div style={{display:"flex",gap:8,marginBottom:linkDeposit!=="none"?10:0}}>
-        {[["none","No Deposit"],["toward","Deposit toward fee"]].map(([id,lbl])=><button key={id} onClick={()=>setLinkDeposit(id)} style={{flex:1,padding:"9px 12px",borderRadius:8,border:linkDeposit===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.12)",background:linkDeposit===id?"rgba(182,139,46,0.08)":"#1e1d1a",color:linkDeposit===id?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",fontSize:12,fontWeight:linkDeposit===id?600:400}}>{lbl}</button>)}
+        {[["none","No Deposit"],["toward","Deposit toward fee"]].map(([id,lbl])=><button key={id} onClick={()=>setLinkDeposit(id)} style={{flex:1,padding:"9px 12px",borderRadius:8,border:linkDeposit===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.25)",background:linkDeposit===id?"rgba(182,139,46,0.18)":"#e8e4dd",color:linkDeposit===id?"#b68b2e":"#6b635a",cursor:"pointer",fontFamily:"DM Sans,sans-serif",fontSize:12,fontWeight:linkDeposit===id?600:400}}>{lbl}</button>)}
       </div>
       {linkDeposit!=="none"&&<div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
         <input type="number" value={linkDepPct} onChange={e=>setLinkDepPct(e.target.value)} style={{...is,width:70}} placeholder="10"/>
-        <span style={{fontSize:13,color:"#5a564e"}}>%</span>
+        <span style={{fontSize:13,color:"#8a8070"}}>%</span>
         {newArtworkId&&<span style={{fontSize:12,color:"#b68b2e",fontWeight:600,marginLeft:"auto"}}>= R {fmt((artworks.find(a=>a.id===newArtworkId)?.recommendedPrice||0)*(parseFloat(linkDepPct)||0)/100)}</span>}
       </div>}
       {linkSaved?<div style={{padding:"10px 14px",background:"rgba(74,158,107,0.08)",border:"1px solid rgba(74,158,107,0.2)",borderRadius:8,fontSize:13,color:"#4a9e6b"}}>✓ Schedule created successfully. Check Invoicing to manage payments.</div>:
@@ -1172,10 +1172,10 @@ function CalcPage({data={},actions={}}){
       <div>
         {/* Option selector */}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:14}}>
-          {["O1","O2","O3"].map(k=>{const mod=MODELS[k];const on=acqModel===k;return<button key={k} onClick={()=>{setAcqModel(k);setMonthsSold("");}} style={{padding:12,borderRadius:10,border:on?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:on?"rgba(182,139,46,0.08)":"#1e1d1a",color:on?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left"}}>
+          {["O1","O2","O3"].map(k=>{const mod=MODELS[k];const on=acqModel===k;return<button key={k} onClick={()=>{setAcqModel(k);setMonthsSold("");}} style={{padding:12,borderRadius:10,border:on?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.30)",background:on?"rgba(182,139,46,0.18)":"#e8e4dd",color:on?"#b68b2e":"#6b635a",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left"}}>
             <div style={{fontSize:12,fontWeight:600}}>{mod.label}</div>
             <div style={{fontSize:10,opacity:0.8,marginTop:2}}>VB {Math.round(mod.vbPct*100)}% · {mod.term}mo</div>
-            {av>0&&<div style={{fontSize:11,color:on?"#b68b2e":"#5a564e",marginTop:4,fontWeight:600}}>R {fmt(av*mod.vbPct/mod.term)}/mo</div>}
+            {av>0&&<div style={{fontSize:11,color:on?"#b68b2e":"#8a8070",marginTop:4,fontWeight:600}}>R {fmt(av*mod.vbPct/mod.term)}/mo</div>}
           </button>;})}
         </div>
 
@@ -1186,33 +1186,33 @@ function CalcPage({data={},actions={}}){
         </Card>
 
         <Card style={{marginBottom:12}}>
-          <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:10}}>Deposit</div>
+          <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>Deposit</div>
           <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:depositType!=="none"?12:0}}>
-            {[["none","No deposit"],["toward","Deposit toward fee"]].map(([id,lbl])=><button key={id} onClick={()=>setDepositType(id)} style={{padding:"9px 12px",borderRadius:8,border:depositType===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.12)",background:depositType===id?"rgba(182,139,46,0.08)":"#1e1d1a",color:depositType===id?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left",fontSize:12,fontWeight:depositType===id?600:400}}>{lbl}</button>)}
+            {[["none","No deposit"],["toward","Deposit toward fee"]].map(([id,lbl])=><button key={id} onClick={()=>setDepositType(id)} style={{padding:"9px 12px",borderRadius:8,border:depositType===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.25)",background:depositType===id?"rgba(182,139,46,0.18)":"#e8e4dd",color:depositType===id?"#b68b2e":"#6b635a",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"left",fontSize:12,fontWeight:depositType===id?600:400}}>{lbl}</button>)}
           </div>
           {depositType!=="none"&&<div style={{display:"flex",alignItems:"center",gap:8}}>
             <input type="number" value={depositPct} onChange={e=>setDepositPct(e.target.value)} style={{...is,width:70}} placeholder="10"/>
-            <span style={{fontSize:13,color:"#5a564e"}}>%</span>
+            <span style={{fontSize:13,color:"#8a8070"}}>%</span>
             {av>0&&<span style={{fontSize:12,color:"#b68b2e",fontWeight:600,marginLeft:"auto"}}>R {fmt(av*(dN/100))}</span>}
           </div>}
         </Card>
 
         <Card style={{marginBottom:12}}>
-          <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:10}}>Introducer Fee</div>
+          <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>Introducer Fee</div>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <input type="number" value={introPct} onChange={e=>setIntroPct(e.target.value)} style={{...is,flex:1}} placeholder="0" min={0} max={50}/>
-            <span style={{fontSize:13,color:"#5a564e",flexShrink:0}}>%</span>
+            <span style={{fontSize:13,color:"#8a8070",flexShrink:0}}>%</span>
             {deal.introFee>0&&<span style={{fontSize:12,color:"#c45c4a",fontWeight:600,flexShrink:0}}>R {fmt(deal.introFee)}</span>}
           </div>
         </Card>
 
         <Card>
-          <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:8}}>Backend Split</div>
+          <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:8}}>Backend Split</div>
           {!splitOk&&<div style={{fontSize:11,color:"#c45c4a",marginBottom:8}}>⚠ Must total 100%</div>}
           {[["Gallery",galleryPct,setGalleryPct],["VB",vbPct2,setVbPct2],["Artist",artistPct,setArtistPct]].map(([l,v,sv])=><div key={l} style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-            <span style={{fontSize:13,color:"#e8e2d6",minWidth:56,flexShrink:0}}>{l}</span>
+            <span style={{fontSize:13,color:"#2a2622",minWidth:56,flexShrink:0}}>{l}</span>
             <input type="number" value={v} onChange={e=>sv(e.target.value)} style={{...is,width:60,padding:"7px 10px",fontSize:13}} placeholder="0"/>
-            <span style={{fontSize:12,color:"#5a564e"}}>%</span>
+            <span style={{fontSize:12,color:"#8a8070"}}>%</span>
             {av>0&&splitOk&&<span style={{fontSize:12,color:"#b68b2e",marginLeft:"auto"}}>R {fmt(deal.vbFee*((parseFloat(v)||0)/100))}</span>}
           </div>)}
         </Card>
@@ -1220,51 +1220,51 @@ function CalcPage({data={},actions={}}){
 
       {/* ── RIGHT: Results ── */}
       <div>
-        {!av?<Card style={{padding:48,textAlign:"center"}}><div style={{fontSize:36,color:"#5a564e",marginBottom:12}}>◆</div><p style={{color:"#5a564e"}}>Enter artwork value to begin.</p></Card>:<>
+        {!av?<Card style={{padding:48,textAlign:"center"}}><div style={{fontSize:36,color:"#8a8070",marginBottom:12}}>◆</div><p style={{color:"#8a8070"}}>Enter artwork value to begin.</p></Card>:<>
 
           {/* 3 hero numbers */}
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:16}}>
             <Card style={{padding:16,textAlign:"center",border:"1px solid rgba(74,158,107,0.2)"}}>
-              <div style={{fontSize:9,letterSpacing:2,color:"#5a564e",marginBottom:8}}>COLLECTOR RECEIVES</div>
+              <div style={{fontSize:9,letterSpacing:2,color:"#8a8070",marginBottom:8}}>COLLECTOR RECEIVES</div>
               <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:28,fontWeight:400,color:"#4a9e6b"}}>R {fmt(deal.colNet||0)}</div>
               <div style={{fontSize:10,color:"#4a9e6b",marginTop:6}}>Profit R {fmt(deal.colProfit||0)} · {Math.round(deal.colROI||0)}% ROI</div>
             </Card>
-            <Card style={{padding:16,textAlign:"center",border:"1px solid rgba(182,139,46,0.2)"}}>
-              <div style={{fontSize:9,letterSpacing:2,color:"#5a564e",marginBottom:8}}>VB TOTAL</div>
+            <Card style={{padding:16,textAlign:"center",border:"1px solid rgba(182,139,46,0.50)"}}>
+              <div style={{fontSize:9,letterSpacing:2,color:"#8a8070",marginBottom:8}}>VB TOTAL</div>
               <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:28,fontWeight:400,color:"#b68b2e"}}>R {fmt(deal.vbTotal||0)}</div>
-              <div style={{fontSize:10,color:"#8a8477",marginTop:6}}>Always R {fmt(deal.vbFee||0)}</div>
+              <div style={{fontSize:10,color:"#6b635a",marginTop:6}}>Always R {fmt(deal.vbFee||0)}</div>
             </Card>
             <Card style={{padding:16,textAlign:"center"}}>
-              <div style={{fontSize:9,letterSpacing:2,color:"#5a564e",marginBottom:8}}>SALE PRICE</div>
-              <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:28,fontWeight:400,color:"#f5f0e8"}}>R {fmt(sp)}</div>
+              <div style={{fontSize:9,letterSpacing:2,color:"#8a8070",marginBottom:8}}>SALE PRICE</div>
+              <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:28,fontWeight:400,color:"#1a1714"}}>R {fmt(sp)}</div>
               {aboveValue&&<div style={{fontSize:10,color:"#4a9e6b",marginTop:6}}>+R {fmt(deal.surplus||0)} above value</div>}
             </Card>
           </div>
 
           {/* Settlement — clean and simple */}
           <Card style={{marginBottom:14}}>
-            <div style={{fontSize:13,fontWeight:600,color:"#f5f0e8",marginBottom:2}}>What happens at sale — Month {mo} · {m.label}</div>
-            <div style={{fontSize:11,color:"#5a564e",marginBottom:14}}>R {fmt(sp)} lands in your bank account</div>
+            <div style={{fontSize:13,fontWeight:600,color:"#1a1714",marginBottom:2}}>What happens at sale — Month {mo} · {m.label}</div>
+            <div style={{fontSize:11,color:"#8a8070",marginBottom:14}}>R {fmt(sp)} lands in your bank account</div>
 
-            <div style={{background:"#1a1917",borderRadius:10,padding:"14px 16px",marginBottom:14}}>
-              <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:10}}>What you already have</div>
+            <div style={{background:"#f0ede8",borderRadius:10,padding:"14px 16px",marginBottom:14}}>
+              <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>What you already have</div>
               {depositType!=="none"&&<SRow label={`Deposit paid (${dN}%)`} val={`R ${fmt(deal.depositAmt)}`} color="#b68b2e"/>}
               <SRow label={`${mo} monthly payment${mo>1?"s":""} received`} val={`R ${fmt(deal.monthly*mo)}`} color="#b68b2e"/>
               <SRow label="Total already in your bank" val={`R ${fmt(deal.totalCollected)}`} color="#b68b2e" bold/>
             </div>
 
-            <div style={{background:"#1a1917",borderRadius:10,padding:"14px 16px",marginBottom:14}}>
-              <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:10}}>From the R {fmt(sp)} sale</div>
+            <div style={{background:"#f0ede8",borderRadius:10,padding:"14px 16px",marginBottom:14}}>
+              <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>From the R {fmt(sp)} sale</div>
               <SRow label="VB takes their balance" val={`− R ${fmt(deal.vbBalance)}`} color="#c45c4a" sub={`(R${fmt(deal.vbFee)} fee − R${fmt(deal.totalCollected)} collected)`}/>
               {deal.introFee>0&&<SRow label="Introducer fee deducted" val={`− R ${fmt(deal.introFee)}`} color="#c45c4a"/>}
               {aboveValue&&<SRow label="Surplus above value (50% to each)" val={`R ${fmt(deal.surplus)}`} color="#4a9e6b"/>}
-              <div style={{height:1,background:"rgba(182,139,46,0.15)",margin:"10px 0"}}/>
+              <div style={{height:1,background:"rgba(182,139,46,0.30)",margin:"10px 0"}}/>
               <SRow label="Collector receives" val={`R ${fmt(deal.colNet)}`} color="#4a9e6b" bold/>
               <SRow label="You keep from sale" val={`R ${fmt(deal.vbAtSale)}`} color="#b68b2e" bold/>
             </div>
 
-            <div style={{background:"rgba(182,139,46,0.05)",border:"1px solid rgba(182,139,46,0.12)",borderRadius:10,padding:"14px 16px"}}>
-              <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:10}}>Final tally</div>
+            <div style={{background:"rgba(182,139,46,0.12)",border:"1px solid rgba(182,139,46,0.25)",borderRadius:10,padding:"14px 16px"}}>
+              <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>Final tally</div>
               <SRow label="VB total income (monthly + sale)" val={`R ${fmt(deal.vbTotal)}`} color="#b68b2e" bold/>
               <SRow label="Collector net gain" val={`R ${fmt(deal.colProfit)}`} color="#4a9e6b" bold/>
               <SRow label="Collector ROI" val={`${Math.round(deal.colROI)}%`} color="#b68b2e"/>
@@ -1273,23 +1273,23 @@ function CalcPage({data={},actions={}}){
 
           {/* Scenarios table */}
           <Card>
-            <div style={{fontSize:13,fontWeight:600,color:"#f5f0e8",marginBottom:2}}>All Scenarios — {m.label} · R {fmt(sp)} sale price</div>
-            <div style={{fontSize:11,color:"#5a564e",marginBottom:14}}>What changes is timing — collector's profit is always the same</div>
+            <div style={{fontSize:13,fontWeight:600,color:"#1a1714",marginBottom:2}}>All Scenarios — {m.label} · R {fmt(sp)} sale price</div>
+            <div style={{fontSize:11,color:"#8a8070",marginBottom:14}}>What changes is timing — collector's profit is always the same</div>
             <div style={{overflowX:"auto",maxHeight:360,overflowY:"auto"}}>
               <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
-                <thead style={{position:"sticky",top:0,background:"#151412"}}>
-                  <tr>{[["Month","left"],["Monthly Paid","right"],["VB Balance","right"],["Collector Gets","right"],["Collector Profit","right"],["ROI","right"]].map(([h,a])=><th key={h} style={{fontSize:10,fontWeight:600,letterSpacing:1,textTransform:"uppercase",color:"#5a564e",padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.12)",whiteSpace:"nowrap",textAlign:a}}>{h}</th>)}</tr>
+                <thead style={{position:"sticky",top:0,background:"#f7f5f1"}}>
+                  <tr>{[["Month","left"],["Monthly Paid","right"],["VB Balance","right"],["Collector Gets","right"],["Collector Profit","right"],["ROI","right"]].map(([h,a])=><th key={h} style={{fontSize:10,fontWeight:600,letterSpacing:1,textTransform:"uppercase",color:"#8a8070",padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.25)",whiteSpace:"nowrap",textAlign:a}}>{h}</th>)}</tr>
                 </thead>
                 <tbody>{scenarioMonths.map(mo2=>{
                   const d=calcDeal(av,sp,acqModel,mo2,gN,vN,aN,iN,depositType,dN);
                   const on=mo2===mo;
-                  return<tr key={mo2} style={{background:on?"rgba(182,139,46,0.06)":"transparent"}}>
-                    <td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",fontWeight:on?600:400,color:on?"#b68b2e":"#e8e2d6"}}>Mo {mo2}{on?<span style={{fontSize:9,marginLeft:4}}>◆</span>:""}</td>
-                    <td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",textAlign:"right",color:"#8a8477"}}>R {fmt(d.totalCollected)}</td>
-                    <td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",textAlign:"right",color:d.vbBalance>0?"#c45c4a":"#4a9e6b"}}>R {fmt(d.vbBalance)}</td>
-                    <td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",textAlign:"right",color:"#4a9e6b",fontWeight:600}}>R {fmt(d.colNet)}</td>
-                    <td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",textAlign:"right",color:d.colProfit>=0?"#4a9e6b":"#c45c4a"}}>R {fmt(d.colProfit)}</td>
-                    <td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.04)",textAlign:"right",color:"#b68b2e",fontWeight:600}}>{Math.round(d.colROI)}%</td>
+                  return<tr key={mo2} style={{background:on?"rgba(182,139,46,0.14)":"transparent"}}>
+                    <td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.10)",fontWeight:on?600:400,color:on?"#b68b2e":"#2a2622"}}>Mo {mo2}{on?<span style={{fontSize:9,marginLeft:4}}>◆</span>:""}</td>
+                    <td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.10)",textAlign:"right",color:"#6b635a"}}>R {fmt(d.totalCollected)}</td>
+                    <td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.10)",textAlign:"right",color:d.vbBalance>0?"#c45c4a":"#4a9e6b"}}>R {fmt(d.vbBalance)}</td>
+                    <td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.10)",textAlign:"right",color:"#4a9e6b",fontWeight:600}}>R {fmt(d.colNet)}</td>
+                    <td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.10)",textAlign:"right",color:d.colProfit>=0?"#4a9e6b":"#c45c4a"}}>R {fmt(d.colProfit)}</td>
+                    <td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.10)",textAlign:"right",color:"#b68b2e",fontWeight:600}}>{Math.round(d.colROI)}%</td>
                   </tr>;
                 })}</tbody>
               </table>
@@ -1343,7 +1343,7 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
       <Stat label="Active" value={active} green/><Stat label="Chasing" value={chasing} orange/><Stat label="In Dispute" value={dispute} orange/><Stat label="Cancelled" value={cancelledCount} red/><Stat label="Collected" value={"R "+fmt(totalCollected)} gold/>
     </div>
     <Card style={{marginBottom:20,padding:16}}>
-      <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:12}}>Mass Email Actions</div>
+      <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:12}}>Mass Email Actions</div>
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
         <Btn small ghost onClick={()=>setEmailModal({status:"Active",templateKey:"upcoming",targets:buildEmailTargets("Active")})} style={{borderColor:"rgba(74,158,107,0.3)",color:"#4a9e6b"}}>{I.mail} Remind Active</Btn>
         <Btn small ghost onClick={()=>setEmailModal({status:"Chasing",templateKey:"missed",targets:buildEmailTargets("Chasing")})} style={{borderColor:"rgba(230,190,50,0.3)",color:"#e6be32"}}>{I.mail} Chase All</Btn>
@@ -1353,27 +1353,27 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
       </div>
     </Card>
     <Card style={{marginBottom:20,padding:16}}>
-      <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:12}}>Monthly Report</div>
+      <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:12}}>Monthly Report</div>
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
         {["Chasing","In Dispute","Cancelled"].map(k=><Btn key={k} small ghost onClick={()=>setReportTab(reportTab===k?null:k)} style={{borderColor:k==="Chasing"?"rgba(230,190,50,0.3)":k==="In Dispute"?"rgba(220,120,40,0.3)":"rgba(196,92,74,0.3)",color:k==="Chasing"?"#e6be32":k==="In Dispute"?"#dc7828":"#c45c4a"}}>{I.report} {k} ({reportData[k].length})</Btn>)}
       </div>
-      {reportTab&&<div style={{marginTop:16,borderTop:"1px solid rgba(182,139,46,0.08)",paddingTop:16}}>
-        <div style={{fontSize:13,fontWeight:600,color:"#f5f0e8",marginBottom:12}}>{reportTab} — {reportData[reportTab].length}</div>
-        {reportData[reportTab].length===0?<p style={{fontSize:13,color:"#5a564e"}}>None.</p>:
+      {reportTab&&<div style={{marginTop:16,borderTop:"1px solid rgba(182,139,46,0.18)",paddingTop:16}}>
+        <div style={{fontSize:13,fontWeight:600,color:"#1a1714",marginBottom:12}}>{reportTab} — {reportData[reportTab].length}</div>
+        {reportData[reportTab].length===0?<p style={{fontSize:13,color:"#8a8070"}}>None.</p>:
         <Tbl cols={[{label:"Collector",bold:true,render:r=>r.collectorName},{label:"Model",render:r=><Badge model={r.acquisitionModel||"O1"}/>},{label:"Email",render:r=>r.col?.email||"—"},{label:"Mobile",render:r=>r.col?.mobile||"—"},{label:"Artwork",key:"artworkTitle"},{label:"Strikes",render:r=><span style={{color:"#c45c4a",fontWeight:700}}>{r.strikes}</span>},{label:"Outstanding",right:true,render:r=>"R "+fmt((r.totalDue||0)-(r.totalPaid||0))},{label:"",render:r=>{const col=data.collectors.find(c=>c.id===r.collectorId);const tplKey=reportTab==="Chasing"?"individual_missed":reportTab==="In Dispute"?"individual_dispute":"individual_cancelled";const tpl=TEMPLATES[tplKey](r.collectorName,r.artworkTitle,(r.totalDue||0)-(r.totalPaid||0));return<Btn small ghost onClick={()=>openGmail([col?.email||""],tpl.subject,tpl.body)} style={{fontSize:10}}>{I.mail}</Btn>;}}]} data={reportData[reportTab]}/>}
       </div>}
     </Card>
 
     {/* Collector tabs */}
-    <div style={{display:"flex",gap:0,marginBottom:20,borderBottom:"1px solid rgba(182,139,46,0.1)",overflowX:"auto"}}>
-      <button onClick={()=>{setActiveTab("all");setPg(0);}} style={{padding:"12px 20px",border:"none",borderBottom:activeTab==="all"?"2px solid #b68b2e":"2px solid transparent",background:"transparent",color:activeTab==="all"?"#b68b2e":"#8a8477",fontSize:12,fontWeight:activeTab==="all"?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif",whiteSpace:"nowrap"}}>
-        All <span style={{marginLeft:6,fontSize:10,background:"rgba(182,139,46,0.1)",color:"#b68b2e",padding:"2px 7px",borderRadius:10}}>{allSchedules.length}</span>
+    <div style={{display:"flex",gap:0,marginBottom:20,borderBottom:"1px solid rgba(182,139,46,0.20)",overflowX:"auto"}}>
+      <button onClick={()=>{setActiveTab("all");setPg(0);}} style={{padding:"12px 20px",border:"none",borderBottom:activeTab==="all"?"2px solid #b68b2e":"2px solid transparent",background:"transparent",color:activeTab==="all"?"#b68b2e":"#6b635a",fontSize:12,fontWeight:activeTab==="all"?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif",whiteSpace:"nowrap"}}>
+        All <span style={{marginLeft:6,fontSize:10,background:"rgba(182,139,46,0.20)",color:"#b68b2e",padding:"2px 7px",borderRadius:10}}>{allSchedules.length}</span>
       </button>
-      {collectorsWithSchedules.map(c=>{const cScheds=allSchedules.filter(s=>s.collectorId===c.id);const alerts=cScheds.filter(s=>["Chasing","In Dispute","Cancelled"].includes(s.status)).length;const isActive=activeTab===c.id;return<button key={c.id} onClick={()=>{setActiveTab(c.id);setPg(0);}} style={{padding:"12px 20px",border:"none",borderBottom:isActive?"2px solid #b68b2e":"2px solid transparent",background:"transparent",color:isActive?"#b68b2e":"#8a8477",fontSize:12,fontWeight:isActive?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif",whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:6}}>{gn(c)}{alerts>0&&<span style={{fontSize:10,background:"rgba(196,92,74,0.15)",color:"#c45c4a",padding:"2px 7px",borderRadius:10,fontWeight:700}}>{alerts}</span>}</button>;})}
+      {collectorsWithSchedules.map(c=>{const cScheds=allSchedules.filter(s=>s.collectorId===c.id);const alerts=cScheds.filter(s=>["Chasing","In Dispute","Cancelled"].includes(s.status)).length;const isActive=activeTab===c.id;return<button key={c.id} onClick={()=>{setActiveTab(c.id);setPg(0);}} style={{padding:"12px 20px",border:"none",borderBottom:isActive?"2px solid #b68b2e":"2px solid transparent",background:"transparent",color:isActive?"#b68b2e":"#6b635a",fontSize:12,fontWeight:isActive?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif",whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:6}}>{gn(c)}{alerts>0&&<span style={{fontSize:10,background:"rgba(196,92,74,0.15)",color:"#c45c4a",padding:"2px 7px",borderRadius:10,fontWeight:700}}>{alerts}</span>}</button>;})}
     </div>
 
     <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
-      {statusBtnCfg.map(b=><button key={b.key} onClick={()=>{setStatusFilter(b.key);setPg(0);}} style={{padding:"7px 14px",borderRadius:8,border:`1px solid ${statusFilter===b.key?(b.color||"#b68b2e"):"rgba(182,139,46,0.15)"}`,background:statusFilter===b.key?"rgba(182,139,46,0.08)":"transparent",color:statusFilter===b.key?(b.color||"#b68b2e"):"#8a8477",fontSize:11,fontWeight:statusFilter===b.key?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{b.label}</button>)}
+      {statusBtnCfg.map(b=><button key={b.key} onClick={()=>{setStatusFilter(b.key);setPg(0);}} style={{padding:"7px 14px",borderRadius:8,border:`1px solid ${statusFilter===b.key?(b.color||"#b68b2e"):"rgba(182,139,46,0.30)"}`,background:statusFilter===b.key?"rgba(182,139,46,0.18)":"transparent",color:statusFilter===b.key?(b.color||"#b68b2e"):"#6b635a",fontSize:11,fontWeight:statusFilter===b.key?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{b.label}</button>)}
       <input placeholder="Search..." value={search} onChange={e=>{setSearch(e.target.value);setPg(0);}} style={{...is,maxWidth:260,marginLeft:"auto",padding:"8px 12px",fontSize:12}}/>
     </div>
 
@@ -1384,32 +1384,32 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
       const nextMonth=getNextUnpaid(sched);const nextDue=nextMonth?getNextDueDate(sched.startDate,nextMonth):null;
       const outstanding=(sched.totalDue||0)-(sched.totalPaid||0);
       const history=getHistory(sched.id);const isExpanded=expanded[sched.id];
-      const sc=schedC[sched.status]||{bg:"#1e1d1a",c:"#8a8477"};
+      const sc=schedC[sched.status]||{bg:"#e8e4dd",c:"#6b635a"};
       const art=data.artworks.find(a=>a.id===sched.artworkId);
       const missedSet=new Set(sched.missedMonths||[]);
       return<Card key={sched.id} style={{marginBottom:12,padding:0,overflow:"hidden"}}>
         <div style={{height:3,background:sc.c,opacity:0.6}}/>
         <div style={{padding:20}}>
           <div style={{display:"flex",gap:16,alignItems:"flex-start"}}>
-            <div style={{width:52,height:52,borderRadius:8,flexShrink:0,overflow:"hidden",background:"rgba(182,139,46,0.08)",display:"flex",alignItems:"center",justifyContent:"center"}}>{art?.imageUrl?<img src={art.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span style={{fontSize:18,color:"#5a564e"}}>◆</span>}</div>
+            <div style={{width:52,height:52,borderRadius:8,flexShrink:0,overflow:"hidden",background:"rgba(182,139,46,0.18)",display:"flex",alignItems:"center",justifyContent:"center"}}>{art?.imageUrl?<img src={art.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span style={{fontSize:18,color:"#8a8070"}}>◆</span>}</div>
             <div style={{flex:1,minWidth:0}}>
               <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginBottom:4}}>
-                {activeTab==="all"&&<span style={{fontSize:15,fontWeight:700,color:"#f5f0e8"}}>{sched.collectorName}</span>}
-                <span style={{fontSize:13,color:"#8a8477"}}>{sched.artworkTitle}</span>
+                {activeTab==="all"&&<span style={{fontSize:15,fontWeight:700,color:"#1a1714"}}>{sched.collectorName}</span>}
+                <span style={{fontSize:13,color:"#6b635a"}}>{sched.artworkTitle}</span>
                 <Badge model={sched.acquisitionModel||"O1"}/>
                 <Badge status={sched.status} sched/>
                 {sched.strikes>0&&<span style={{fontSize:11,color:"#c45c4a",fontWeight:700}}>⚠ {sched.strikes} strike{sched.strikes>1?"s":""}</span>}
               </div>
-              <div style={{display:"flex",gap:16,fontSize:12,color:"#8a8477",marginBottom:8,flexWrap:"wrap"}}>
-                <span>Month <strong style={{color:"#f5f0e8"}}>{sched.monthsPaid}</strong> of {sched.termMonths}</span>
+              <div style={{display:"flex",gap:16,fontSize:12,color:"#6b635a",marginBottom:8,flexWrap:"wrap"}}>
+                <span>Month <strong style={{color:"#1a1714"}}>{sched.monthsPaid}</strong> of {sched.termMonths}</span>
                 <span style={{color:"#b68b2e",fontWeight:600}}>R {fmt(sched.monthlyAmount)}/mo</span>
                 <span>VB {Math.round(m.vbPct*100)}% · Collector {Math.round(m.colPct*100)}%</span>
-                {nextDue&&<span>Next due: <strong style={{color:"#f5f0e8"}}>{nextDue}</strong></span>}
+                {nextDue&&<span>Next due: <strong style={{color:"#1a1714"}}>{nextDue}</strong></span>}
               </div>
               <div style={{display:"flex",gap:20,fontSize:12,marginBottom:8}}>
                 <span>Paid: <strong style={{color:"#4a9e6b"}}>R {fmt(sched.totalPaid||0)}</strong></span>
                 <span>Outstanding: <strong style={{color:"#b68b2e"}}>R {fmt(outstanding)}</strong></span>
-                <span>Total fee: <strong style={{color:"#f5f0e8"}}>R {fmt(sched.totalDue)}</strong></span>
+                <span>Total fee: <strong style={{color:"#1a1714"}}>R {fmt(sched.totalDue)}</strong></span>
               </div>
               <ProgressBar pct={pct} color={sc.c}/>
               {missedSet.size>0&&<div style={{marginTop:8,display:"flex",gap:6,flexWrap:"wrap"}}>{[...missedSet].map(m=><span key={m} style={{fontSize:10,background:"rgba(196,92,74,0.12)",color:"#c45c4a",padding:"3px 8px",borderRadius:5,fontWeight:600}}>Mo {m} missed</span>)}</div>}
@@ -1421,13 +1421,13 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
               </>}
               {["Chasing","In Dispute","Cancelled"].includes(sched.status)&&<Btn small ghost onClick={()=>setOverrideModal(sched)} style={{borderColor:"rgba(160,100,220,0.3)",color:"#a064dc"}}>Override</Btn>}
               <Btn small ghost onClick={()=>setGraceModal(sched)}>Grace</Btn>
-              <button onClick={()=>toggleExpand(sched.id)} style={{background:"none",border:"1px solid rgba(182,139,46,0.15)",borderRadius:6,color:"#8a8477",cursor:"pointer",padding:"6px 10px",display:"flex",alignItems:"center",gap:4,fontSize:11}}>
+              <button onClick={()=>toggleExpand(sched.id)} style={{background:"none",border:"1px solid rgba(182,139,46,0.30)",borderRadius:6,color:"#6b635a",cursor:"pointer",padding:"6px 10px",display:"flex",alignItems:"center",gap:4,fontSize:11}}>
                 <span style={{transform:isExpanded?"rotate(180deg)":"none",transition:"0.2s",display:"inline-flex"}}>{I.chevron}</span>{history.length} paid
               </button>
             </div>
           </div>
-          {isExpanded&&<div style={{marginTop:16,borderTop:"1px solid rgba(182,139,46,0.06)",paddingTop:16}}>
-            {history.length===0?<p style={{fontSize:13,color:"#5a564e"}}>No payments recorded yet.</p>:
+          {isExpanded&&<div style={{marginTop:16,borderTop:"1px solid rgba(182,139,46,0.14)",paddingTop:16}}>
+            {history.length===0?<p style={{fontSize:13,color:"#8a8070"}}>No payments recorded yet.</p>:
             <Tbl cols={[{label:"Month",render:r=>`Month ${r.monthNumber}`},{label:"Date",key:"date"},{label:"Method",key:"method"},{label:"Amount",right:true,gold:true,render:r=>"R "+fmt(r.amount)}]} data={history}/>}
             {sched.graceNote&&<p style={{fontSize:12,color:"#a064dc",marginTop:8}}>Grace: {sched.graceNote}</p>}
             {sched.overrideNote&&<p style={{fontSize:12,color:"#a064dc",marginTop:4}}>Override: {sched.overrideNote}</p>}
@@ -1436,24 +1436,24 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
       </Card>;
     })}
 
-    {activeTab==="all"&&totalPages>1&&<div style={{display:"flex",justifyContent:"center",gap:8,marginTop:20}}><Btn small ghost disabled={pg===0} onClick={()=>setPg(p=>p-1)}>← Prev</Btn><span style={{padding:"8px 16px",fontSize:13,color:"#8a8477"}}>Page {pg+1} of {totalPages}</span><Btn small ghost disabled={pg>=totalPages-1} onClick={()=>setPg(p=>p+1)}>Next →</Btn></div>}
+    {activeTab==="all"&&totalPages>1&&<div style={{display:"flex",justifyContent:"center",gap:8,marginTop:20}}><Btn small ghost disabled={pg===0} onClick={()=>setPg(p=>p-1)}>← Prev</Btn><span style={{padding:"8px 16px",fontSize:13,color:"#6b635a"}}>Page {pg+1} of {totalPages}</span><Btn small ghost disabled={pg>=totalPages-1} onClick={()=>setPg(p=>p+1)}>Next →</Btn></div>}
 
     {payModal&&<Modal title={`Record Payment — Month ${payModal.nextMonth}`} onClose={()=>setPayModal(null)}>
-      <Card style={{background:"#1e1d1a",marginBottom:16}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:13}}>
-        <span style={{color:"#8a8477"}}>Collector:</span><span style={{fontWeight:600}}>{payModal.sched.collectorName}</span>
-        <span style={{color:"#8a8477"}}>Artwork:</span><span>{payModal.sched.artworkTitle}</span>
-        <span style={{color:"#8a8477"}}>Model:</span><span><Badge model={payModal.sched.acquisitionModel||"O1"}/></span>
-        <span style={{color:"#8a8477"}}>Month:</span><span>{payModal.nextMonth} of {payModal.sched.termMonths}</span>
-        <span style={{color:"#8a8477"}}>Amount:</span><span style={{color:"#b68b2e",fontWeight:700,fontSize:16}}>R {fmt(payModal.sched.monthlyAmount)}</span>
+      <Card style={{background:"#e8e4dd",marginBottom:16}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:13}}>
+        <span style={{color:"#6b635a"}}>Collector:</span><span style={{fontWeight:600}}>{payModal.sched.collectorName}</span>
+        <span style={{color:"#6b635a"}}>Artwork:</span><span>{payModal.sched.artworkTitle}</span>
+        <span style={{color:"#6b635a"}}>Model:</span><span><Badge model={payModal.sched.acquisitionModel||"O1"}/></span>
+        <span style={{color:"#6b635a"}}>Month:</span><span>{payModal.nextMonth} of {payModal.sched.termMonths}</span>
+        <span style={{color:"#6b635a"}}>Amount:</span><span style={{color:"#b68b2e",fontWeight:700,fontSize:16}}>R {fmt(payModal.sched.monthlyAmount)}</span>
       </div></Card>
-      <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:10}}>Payment Method</div>
-      {payM.map(m=>{const bs={display:"block",width:"100%",padding:12,marginBottom:8,borderRadius:8,border:"1px solid rgba(182,139,46,0.15)",background:"#1e1d1a",color:"#e8e2d6",cursor:"pointer",fontSize:13,fontFamily:"DM Sans,sans-serif",textAlign:"left"};return<button key={m} onClick={()=>{actions.recordPayment(payModal.sched,payModal.nextMonth,m,payModal.sched.monthlyAmount);setPayModal(null);}} style={bs} onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(182,139,46,0.4)";e.currentTarget.style.background="#252320";}} onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(182,139,46,0.15)";e.currentTarget.style.background="#1e1d1a";}}>{m}</button>;})}
+      <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>Payment Method</div>
+      {payM.map(m=>{const bs={display:"block",width:"100%",padding:12,marginBottom:8,borderRadius:8,border:"1px solid rgba(182,139,46,0.30)",background:"#e8e4dd",color:"#2a2622",cursor:"pointer",fontSize:13,fontFamily:"DM Sans,sans-serif",textAlign:"left"};return<button key={m} onClick={()=>{actions.recordPayment(payModal.sched,payModal.nextMonth,m,payModal.sched.monthlyAmount);setPayModal(null);}} style={bs} onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(182,139,46,0.4)";e.currentTarget.style.background="#252320";}} onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(182,139,46,0.30)";e.currentTarget.style.background="#e8e4dd";}}>{m}</button>;})}
     </Modal>}
 
     {missModal&&<Modal title={`Mark Month ${missModal.nextMonth} as Missed`} onClose={()=>setMissModal(null)}>
       <div style={{padding:16,background:"rgba(196,92,74,0.08)",border:"1px solid rgba(196,92,74,0.2)",borderRadius:10,marginBottom:20}}>
-        <div style={{fontSize:13,color:"#e8e2d6",marginBottom:6}}><strong>{missModal.sched.collectorName}</strong> — {missModal.sched.artworkTitle}</div>
-        <div style={{fontSize:12,color:"#8a8477",marginTop:4}}>Strikes: {missModal.sched.strikes} → {Math.min((missModal.sched.strikes||0)+1,3)} · New status: <strong style={{color:"#c45c4a"}}>{(missModal.sched.strikes||0)+1===1?"Chasing":(missModal.sched.strikes||0)+1===2?"In Dispute":"Cancelled"}</strong></div>
+        <div style={{fontSize:13,color:"#2a2622",marginBottom:6}}><strong>{missModal.sched.collectorName}</strong> — {missModal.sched.artworkTitle}</div>
+        <div style={{fontSize:12,color:"#6b635a",marginTop:4}}>Strikes: {missModal.sched.strikes} → {Math.min((missModal.sched.strikes||0)+1,3)} · New status: <strong style={{color:"#c45c4a"}}>{(missModal.sched.strikes||0)+1===1?"Chasing":(missModal.sched.strikes||0)+1===2?"In Dispute":"Cancelled"}</strong></div>
       </div>
       <div style={{display:"flex",gap:10,justifyContent:"flex-end"}}><Btn ghost onClick={()=>setMissModal(null)}>Cancel</Btn><Btn danger onClick={()=>{actions.recordMissed(missModal.sched,missModal.nextMonth);setMissModal(null);}}>Confirm Miss Mo {missModal.nextMonth}</Btn></div>
     </Modal>}
@@ -1464,7 +1464,7 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
   </div>);
 }
 
-function OverrideModal({sched,onSave,onClose}){const [note,setNote]=useState("");return<Modal title="Override Status" onClose={onClose}><p style={{fontSize:13,color:"#8a8477",marginBottom:16}}>Resets to Active and clears all strikes.</p><Field label="Note"><textarea value={note} onChange={e=>setNote(e.target.value)} style={{...is,minHeight:80,resize:"vertical"}} placeholder="e.g. Collector settled balance on 2026-04-09"/></Field><div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:16}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>onSave(note)} disabled={!note}>Apply Override</Btn></div></Modal>;}
+function OverrideModal({sched,onSave,onClose}){const [note,setNote]=useState("");return<Modal title="Override Status" onClose={onClose}><p style={{fontSize:13,color:"#6b635a",marginBottom:16}}>Resets to Active and clears all strikes.</p><Field label="Note"><textarea value={note} onChange={e=>setNote(e.target.value)} style={{...is,minHeight:80,resize:"vertical"}} placeholder="e.g. Collector settled balance on 2026-04-09"/></Field><div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:16}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>onSave(note)} disabled={!note}>Apply Override</Btn></div></Modal>;}
 function GraceModal({sched,onSave,onClose}){const [graceDate,setGraceDate]=useState("");const [month,setMonth]=useState(sched.monthsPaid+1);const [note,setNote]=useState("");return<Modal title="Set Grace Exception" onClose={onClose}><Field label="Month Number"><input type="number" value={month} onChange={e=>setMonth(Number(e.target.value))} style={is} min={1} max={sched.termMonths}/></Field><Field label="Extended Grace Date"><input type="date" value={graceDate} onChange={e=>setGraceDate(e.target.value)} style={is}/></Field><Field label="Reason"><textarea value={note} onChange={e=>setNote(e.target.value)} style={{...is,minHeight:60,resize:"vertical"}}/></Field><div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:16}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>onSave(graceDate,month,note)} disabled={!graceDate||!note}>Set Exception</Btn></div></Modal>;}
 
 function EmailReviewModal({config,collectors,schedules,onClose}){
@@ -1481,15 +1481,15 @@ function EmailReviewModal({config,collectors,schedules,onClose}){
   return<Modal title="Review & Send Email" onClose={onClose} wide>
     <div style={{display:"grid",gridTemplateColumns:"280px 1fr",gap:20}}>
       <div>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}><div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e"}}>Recipients ({selected.length})</div><div style={{display:"flex",gap:8}}><button onClick={()=>setSelected(targets.map(t=>t.id))} style={{background:"none",border:"none",color:"#b68b2e",cursor:"pointer",fontSize:11}}>All</button><button onClick={()=>setSelected([])} style={{background:"none",border:"none",color:"#8a8477",cursor:"pointer",fontSize:11}}>None</button></div></div>
-        <div style={{maxHeight:300,overflowY:"auto",border:"1px solid rgba(182,139,46,0.1)",borderRadius:8}}>
-          {targets.length===0?<div style={{padding:16,fontSize:13,color:"#5a564e",textAlign:"center"}}>No collectors.</div>:
-          targets.map(t=><label key={t.id} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 12px",cursor:"pointer",borderBottom:"1px solid rgba(182,139,46,0.04)"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}><div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070"}}>Recipients ({selected.length})</div><div style={{display:"flex",gap:8}}><button onClick={()=>setSelected(targets.map(t=>t.id))} style={{background:"none",border:"none",color:"#b68b2e",cursor:"pointer",fontSize:11}}>All</button><button onClick={()=>setSelected([])} style={{background:"none",border:"none",color:"#6b635a",cursor:"pointer",fontSize:11}}>None</button></div></div>
+        <div style={{maxHeight:300,overflowY:"auto",border:"1px solid rgba(182,139,46,0.20)",borderRadius:8}}>
+          {targets.length===0?<div style={{padding:16,fontSize:13,color:"#8a8070",textAlign:"center"}}>No collectors.</div>:
+          targets.map(t=><label key={t.id} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 12px",cursor:"pointer",borderBottom:"1px solid rgba(182,139,46,0.10)"}}>
             <input type="checkbox" checked={selected.includes(t.id)} onChange={()=>toggle(t.id)} style={{accentColor:"#b68b2e",marginTop:2,flexShrink:0}}/>
-            <div style={{minWidth:0}}><div style={{fontSize:13,fontWeight:600,color:"#f5f0e8"}}>{t.name}</div><div style={{fontSize:11,color:"#5a564e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.email}</div></div>
+            <div style={{minWidth:0}}><div style={{fontSize:13,fontWeight:600,color:"#1a1714"}}>{t.name}</div><div style={{fontSize:11,color:"#8a8070",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.email}</div></div>
           </label>)}
         </div>
-        <div style={{fontSize:11,color:"#5a564e",marginTop:8}}>All BCC'd — nobody sees each other's address.</div>
+        <div style={{fontSize:11,color:"#8a8070",marginTop:8}}>All BCC'd — nobody sees each other's address.</div>
       </div>
       <div>
         <Field label="Template"><select value={templateKey} onChange={e=>setTemplateKey(e.target.value)} style={ss}><option value="upcoming">Upcoming Reminder</option><option value="missed">Missed Payment</option><option value="dispute">Dispute Escalation</option><option value="cancelled">Cancellation Notice</option></select></Field>
@@ -1497,7 +1497,7 @@ function EmailReviewModal({config,collectors,schedules,onClose}){
         <Field label="Message"><textarea value={body} onChange={e=>setBody(e.target.value)} style={{...is,minHeight:160,resize:"vertical"}}/></Field>
       </div>
     </div>
-    <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:16,borderTop:"1px solid rgba(182,139,46,0.08)",paddingTop:16}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold disabled={selected.length===0||!subject} onClick={send}>{I.mail} Open Gmail ({selected.length})</Btn></div>
+    <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:16,borderTop:"1px solid rgba(182,139,46,0.18)",paddingTop:16}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold disabled={selected.length===0||!subject} onClick={send}>{I.mail} Open Gmail ({selected.length})</Btn></div>
   </Modal>;
 }
 
@@ -1526,13 +1526,13 @@ function SalesPage({data,actions}){
         {label:"Artwork",key:"artworkTitle",bold:true},
         {label:"Model",render:r=><Badge model={r.acquisitionModel||"O1"}/>},
         {label:"Collector",key:"collectorName"},
-        {label:"Buyer",render:r=>r.buyerName?<span style={{color:"#b68b2e"}}>{r.buyerName}</span>:<span style={{color:"#5a564e"}}>—</span>},
+        {label:"Buyer",render:r=>r.buyerName?<span style={{color:"#b68b2e"}}>{r.buyerName}</span>:<span style={{color:"#8a8070"}}>—</span>},
         {label:"Sale Price",right:true,render:r=>"R "+fmt(r.salePrice)},
         {label:"Collector Net",right:true,render:r=><span style={{color:"#4a9e6b",fontWeight:600}}>R {fmt(r.colNet||r.collectorShare||0)}</span>},
         {label:"VB Total",right:true,gold:true,render:r=>"R "+fmt(r.vbTotal||r.vbShare||0)},
         {label:"",render:r=><div style={{display:"flex",gap:6}}>
           <button onClick={e=>{e.stopPropagation();setSettlementModal(r);}} style={{background:"none",border:"none",color:"#b68b2e",cursor:"pointer",fontSize:11,textDecoration:"underline"}}>Sheet</button>
-          <button onClick={e=>{e.stopPropagation();handleDelete(r.id);}} style={{background:"none",border:"none",color:"#5a564e",cursor:"pointer"}}>{I.del}</button>
+          <button onClick={e=>{e.stopPropagation();handleDelete(r.id);}} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer"}}>{I.del}</button>
         </div>},
       ]} data={[...data.sales].reverse()}/>}
     </Card>
@@ -1561,54 +1561,54 @@ function SettlementModal({sale,data,onClose}){
   return<Modal title="Deal Settlement Sheet" onClose={onClose} wide>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:20}}>
       <div>
-        <div style={{fontSize:12,color:"#8a8477",marginBottom:4}}>Artwork</div>
-        <div style={{fontSize:15,fontWeight:600,color:"#f5f0e8"}}>{sale.artworkTitle}</div>
-        <div style={{fontSize:12,color:"#8a8477",marginTop:8}}>Collector: {sale.collectorName||"—"}</div>
-        <div style={{fontSize:12,color:"#8a8477"}}>Buyer: {sale.buyerName||"—"}</div>
-        <div style={{display:"flex",gap:8,marginTop:8,alignItems:"center"}}><Badge model={acqModel}/><span style={{fontSize:12,color:"#8a8477"}}>{monthsPaid} months paid before sale</span></div>
+        <div style={{fontSize:12,color:"#6b635a",marginBottom:4}}>Artwork</div>
+        <div style={{fontSize:15,fontWeight:600,color:"#1a1714"}}>{sale.artworkTitle}</div>
+        <div style={{fontSize:12,color:"#6b635a",marginTop:8}}>Collector: {sale.collectorName||"—"}</div>
+        <div style={{fontSize:12,color:"#6b635a"}}>Buyer: {sale.buyerName||"—"}</div>
+        <div style={{display:"flex",gap:8,marginTop:8,alignItems:"center"}}><Badge model={acqModel}/><span style={{fontSize:12,color:"#6b635a"}}>{monthsPaid} months paid before sale</span></div>
       </div>
       <div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:13}}>
-          <span style={{color:"#8a8477"}}>Artwork value:</span><span style={{textAlign:"right"}}>R {fmt(artworkValue)}</span>
-          <span style={{color:"#8a8477"}}>Sale price:</span><span style={{textAlign:"right",fontWeight:600}}>R {fmt(sale.salePrice)}</span>
-          {deal.surplus>0&&<><span style={{color:"#8a8477"}}>Surplus:</span><span style={{textAlign:"right",color:"#b68b2e"}}>R {fmt(deal.surplus)}</span></>}
+          <span style={{color:"#6b635a"}}>Artwork value:</span><span style={{textAlign:"right"}}>R {fmt(artworkValue)}</span>
+          <span style={{color:"#6b635a"}}>Sale price:</span><span style={{textAlign:"right",fontWeight:600}}>R {fmt(sale.salePrice)}</span>
+          {deal.surplus>0&&<><span style={{color:"#6b635a"}}>Surplus:</span><span style={{textAlign:"right",color:"#b68b2e"}}>R {fmt(deal.surplus)}</span></>}
         </div>
       </div>
     </div>
 
     {/* Settlement */}
-    <Card style={{background:"#1e1d1a",marginBottom:16}}>
+    <Card style={{background:"#e8e4dd",marginBottom:16}}>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,fontSize:14}}>
-        <span style={{color:"#8a8477"}}>VB fee ({Math.round(MODELS[acqModel].vbPct*100)}%):</span><span style={{textAlign:"right",color:"#b68b2e"}}>R {fmt(deal.vbFee)}</span>
-        <span style={{color:"#8a8477"}}>Already collected:</span><span style={{textAlign:"right"}}>R {fmt(deal.totalCollected)}</span>
-        <span style={{color:"#8a8477"}}>VB balance at sale:</span><span style={{textAlign:"right",color:"#c45c4a"}}>R {fmt(deal.vbBalance)}</span>
-        <div style={{gridColumn:"1/-1",height:1,background:"rgba(182,139,46,0.1)",margin:"4px 0"}}/>
+        <span style={{color:"#6b635a"}}>VB fee ({Math.round(MODELS[acqModel].vbPct*100)}%):</span><span style={{textAlign:"right",color:"#b68b2e"}}>R {fmt(deal.vbFee)}</span>
+        <span style={{color:"#6b635a"}}>Already collected:</span><span style={{textAlign:"right"}}>R {fmt(deal.totalCollected)}</span>
+        <span style={{color:"#6b635a"}}>VB balance at sale:</span><span style={{textAlign:"right",color:"#c45c4a"}}>R {fmt(deal.vbBalance)}</span>
+        <div style={{gridColumn:"1/-1",height:1,background:"rgba(182,139,46,0.20)",margin:"4px 0"}}/>
         <span style={{color:"#4a9e6b",fontWeight:600}}>Collector {Math.round(MODELS[acqModel].colPct*100)}%:</span><span style={{textAlign:"right",color:"#4a9e6b"}}>R {fmt(deal.collectorAtSale+deal.surplusCol)}</span>
-        <span style={{color:"#8a8477"}}>Less VB balance:</span><span style={{textAlign:"right",color:"#c45c4a"}}>− R {fmt(deal.vbBalance)}</span>
-        {deal.introFee>0&&<><span style={{color:"#8a8477"}}>Less intro fee ({introPct}%):</span><span style={{textAlign:"right",color:"#c45c4a"}}>− R {fmt(deal.introFee)}</span></>}
+        <span style={{color:"#6b635a"}}>Less VB balance:</span><span style={{textAlign:"right",color:"#c45c4a"}}>− R {fmt(deal.vbBalance)}</span>
+        {deal.introFee>0&&<><span style={{color:"#6b635a"}}>Less intro fee ({introPct}%):</span><span style={{textAlign:"right",color:"#c45c4a"}}>− R {fmt(deal.introFee)}</span></>}
         <span style={{color:"#4a9e6b",fontWeight:700,fontSize:16}}>Collector receives:</span><span style={{textAlign:"right",color:"#4a9e6b",fontWeight:700,fontFamily:"Cormorant Garamond,serif",fontSize:22}}>R {fmt(deal.colNet)}</span>
-        <span style={{color:"#8a8477",fontSize:12}}>Collector profit:</span><span style={{textAlign:"right",fontSize:12,color:"#4a9e6b"}}>R {fmt(deal.colProfit)} ({Math.round(deal.colROI)}% ROI)</span>
+        <span style={{color:"#6b635a",fontSize:12}}>Collector profit:</span><span style={{textAlign:"right",fontSize:12,color:"#4a9e6b"}}>R {fmt(deal.colProfit)} ({Math.round(deal.colROI)}% ROI)</span>
       </div>
     </Card>
 
     {/* Backend split */}
     <div style={{marginBottom:16}}>
-      <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:10}}>Backend Split — VB's R {fmt(deal.vbTotal)}</div>
+      <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>Backend Split — VB's R {fmt(deal.vbTotal)}</div>
       {!splitOk&&<div style={{fontSize:11,color:"#c45c4a",marginBottom:8}}>⚠ Must total 100%</div>}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-        {[["Gallery",galleryPct,setGalleryPct],["Vollard Black",vbPct,setVbPct],["Artist",artistPct,setArtistPct]].map(([l,v,sv])=><div key={l} style={{background:"#1e1d1a",borderRadius:8,padding:12}}>
-          <div style={{fontSize:11,color:"#5a564e",marginBottom:6}}>{l}</div>
+        {[["Gallery",galleryPct,setGalleryPct],["Vollard Black",vbPct,setVbPct],["Artist",artistPct,setArtistPct]].map(([l,v,sv])=><div key={l} style={{background:"#e8e4dd",borderRadius:8,padding:12}}>
+          <div style={{fontSize:11,color:"#8a8070",marginBottom:6}}>{l}</div>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <input type="number" value={v} onChange={e=>sv(e.target.value)} style={{...is,width:60,padding:"6px 8px",fontSize:13}} min={0} max={100} placeholder="0"/>
-            <span style={{fontSize:12,color:"#5a564e"}}>%</span>
+            <span style={{fontSize:12,color:"#8a8070"}}>%</span>
             <span style={{fontSize:14,fontWeight:600,color:"#b68b2e",marginLeft:"auto"}}>R {fmt(deal.vbTotal*((parseFloat(v)||0)/100))}</span>
           </div>
         </div>)}
-        <div style={{background:"#1e1d1a",borderRadius:8,padding:12}}>
-          <div style={{fontSize:11,color:"#5a564e",marginBottom:6}}>Introducer Fee</div>
+        <div style={{background:"#e8e4dd",borderRadius:8,padding:12}}>
+          <div style={{fontSize:11,color:"#8a8070",marginBottom:6}}>Introducer Fee</div>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <input type="number" value={introPct} onChange={e=>setIntroPct(e.target.value)} style={{...is,width:60,padding:"6px 8px",fontSize:13}} min={0} max={50} placeholder="0"/>
-            <span style={{fontSize:12,color:"#5a564e"}}>%</span>
+            <span style={{fontSize:12,color:"#8a8070"}}>%</span>
             <span style={{fontSize:14,fontWeight:600,color:"#c45c4a",marginLeft:"auto"}}>R {fmt(deal.introFee)}</span>
           </div>
         </div>
@@ -1642,9 +1642,9 @@ function SaleMdl({data,sellable,onSale,onClose}){
     <Field label="Artwork"><select value={artId} onChange={e=>setArtId(e.target.value)} style={ss}><option value="">—</option>{sellable.map(a=>{const s=data.schedules.find(x=>x.artworkId===a.id);return<option key={a.id} value={a.id}>{a.title} — R {fmt(a.recommendedPrice)} {s?`(${MODELS[s.acquisitionModel||"O1"].label})`:""}</option>;})} </select></Field>
 
     {art&&<>
-      {sched&&<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16,padding:"10px 14px",background:"#1e1d1a",borderRadius:8}}>
+      {sched&&<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16,padding:"10px 14px",background:"#e8e4dd",borderRadius:8}}>
         <Badge model={acqModel}/>
-        <span style={{fontSize:13,color:"#8a8477"}}>{monthsPaid} months paid · R {fmt(sched.totalPaid||0)} collected</span>
+        <span style={{fontSize:13,color:"#6b635a"}}>{monthsPaid} months paid · R {fmt(sched.totalPaid||0)} collected</span>
         <span style={{fontSize:13,color:"#b68b2e",marginLeft:"auto"}}>VB balance: R {fmt(deal.vbBalance||0)}</span>
       </div>}
 
@@ -1652,32 +1652,32 @@ function SaleMdl({data,sellable,onSale,onClose}){
 
       {/* Buyer */}
       <div style={{marginBottom:16}}>
-        <label style={{display:"block",fontSize:10,fontWeight:500,letterSpacing:2,textTransform:"uppercase",color:"#8a8477",marginBottom:8}}>End Buyer</label>
+        <label style={{display:"block",fontSize:10,fontWeight:500,letterSpacing:2,textTransform:"uppercase",color:"#6b635a",marginBottom:8}}>End Buyer</label>
         <div style={{display:"flex",gap:8,marginBottom:10}}>
-          <button onClick={()=>setNewBuyer(false)} style={{flex:1,padding:10,borderRadius:8,border:!newBuyer?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:!newBuyer?"rgba(182,139,46,0.08)":"#1e1d1a",color:!newBuyer?"#b68b2e":"#8a8477",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>Existing Buyer</button>
-          <button onClick={()=>{setNewBuyer(true);setBuyerId("");}} style={{flex:1,padding:10,borderRadius:8,border:newBuyer?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:newBuyer?"rgba(182,139,46,0.08)":"#1e1d1a",color:newBuyer?"#b68b2e":"#8a8477",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>Register New</button>
+          <button onClick={()=>setNewBuyer(false)} style={{flex:1,padding:10,borderRadius:8,border:!newBuyer?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.30)",background:!newBuyer?"rgba(182,139,46,0.18)":"#e8e4dd",color:!newBuyer?"#b68b2e":"#6b635a",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>Existing Buyer</button>
+          <button onClick={()=>{setNewBuyer(true);setBuyerId("");}} style={{flex:1,padding:10,borderRadius:8,border:newBuyer?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.30)",background:newBuyer?"rgba(182,139,46,0.18)":"#e8e4dd",color:newBuyer?"#b68b2e":"#6b635a",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>Register New</button>
         </div>
         {!newBuyer&&<select value={buyerId} onChange={e=>setBuyerId(e.target.value)} style={ss}><option value="">— No buyer / select later</option>{data.buyers.map(b=><option key={b.id} value={b.id}>{buyerName(b)}{b.email?` · ${b.email}`:""}</option>)}</select>}
-        {newBuyer&&<div style={{background:"#1e1d1a",border:"1px solid rgba(182,139,46,0.1)",borderRadius:10,padding:14}}>
+        {newBuyer&&<div style={{background:"#e8e4dd",border:"1px solid rgba(182,139,46,0.20)",borderRadius:10,padding:14}}>
           <div style={{fontSize:11,color:"#b68b2e",marginBottom:10,letterSpacing:1}}>NEW BUYER</div>
-          <div style={{display:"flex",gap:8,marginBottom:10}}>{[["individual","Individual"],["company","Company"]].map(([id,l])=><button key={id} onClick={()=>setNb(p=>({...p,type:id}))} style={{flex:1,padding:8,borderRadius:8,border:nb.type===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:nb.type===id?"rgba(182,139,46,0.08)":"transparent",color:nb.type===id?"#b68b2e":"#8a8477",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{l}</button>)}</div>
+          <div style={{display:"flex",gap:8,marginBottom:10}}>{[["individual","Individual"],["company","Company"]].map(([id,l])=><button key={id} onClick={()=>setNb(p=>({...p,type:id}))} style={{flex:1,padding:8,borderRadius:8,border:nb.type===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.30)",background:nb.type===id?"rgba(182,139,46,0.18)":"transparent",color:nb.type===id?"#b68b2e":"#6b635a",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{l}</button>)}</div>
           {nb.type==="company"?<input value={nb.companyName} onChange={e=>setNb(p=>({...p,companyName:e.target.value}))} placeholder="Company Name" style={{...is,marginBottom:8}}/>:<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}><input value={nb.firstName} onChange={e=>setNb(p=>({...p,firstName:e.target.value}))} placeholder="First Name" style={is}/><input value={nb.lastName} onChange={e=>setNb(p=>({...p,lastName:e.target.value}))} placeholder="Last Name" style={is}/></div>}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}><input value={nb.email} onChange={e=>setNb(p=>({...p,email:e.target.value}))} placeholder="Email" style={is}/><input value={nb.mobile} onChange={e=>setNb(p=>({...p,mobile:e.target.value}))} placeholder="Mobile" style={is}/></div>
         </div>}
       </div>
 
       {/* Settlement preview */}
-      {artworkValue>0&&<Card style={{background:"#1e1d1a",marginTop:4}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,fontSize:14}}>
-        <span style={{color:"#8a8477"}}>Sale price:</span><span style={{fontWeight:600}}>R {fmt(sp)}</span>
-        <span style={{color:"#8a8477"}}>Collector:</span><span>{gn(col)}</span>
-        {resolvedBuyerName&&<><span style={{color:"#8a8477"}}>Buyer:</span><span style={{color:"#b68b2e"}}>{resolvedBuyerName}</span></>}
-        <div style={{gridColumn:"1/-1",height:1,background:"rgba(182,139,46,0.1)",margin:"4px 0"}}/>
+      {artworkValue>0&&<Card style={{background:"#e8e4dd",marginTop:4}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,fontSize:14}}>
+        <span style={{color:"#6b635a"}}>Sale price:</span><span style={{fontWeight:600}}>R {fmt(sp)}</span>
+        <span style={{color:"#6b635a"}}>Collector:</span><span>{gn(col)}</span>
+        {resolvedBuyerName&&<><span style={{color:"#6b635a"}}>Buyer:</span><span style={{color:"#b68b2e"}}>{resolvedBuyerName}</span></>}
+        <div style={{gridColumn:"1/-1",height:1,background:"rgba(182,139,46,0.20)",margin:"4px 0"}}/>
         <span style={{color:"#4a9e6b",fontWeight:600}}>Collector {Math.round(m.colPct*100)}%:</span><span style={{color:"#4a9e6b"}}>R {fmt(deal.collectorAtSale+(deal.surplusCol||0))}</span>
-        <span style={{color:"#8a8477"}}>Less VB balance:</span><span style={{color:"#c45c4a"}}>− R {fmt(deal.vbBalance||0)}</span>
+        <span style={{color:"#6b635a"}}>Less VB balance:</span><span style={{color:"#c45c4a"}}>− R {fmt(deal.vbBalance||0)}</span>
         <span style={{color:"#4a9e6b",fontWeight:700}}>Collector receives:</span><span style={{color:"#4a9e6b",fontWeight:700,fontFamily:"Cormorant Garamond,serif",fontSize:18}}>R {fmt(deal.colNet||0)}</span>
-        <div style={{gridColumn:"1/-1",height:1,background:"rgba(182,139,46,0.06)",margin:"4px 0"}}/>
+        <div style={{gridColumn:"1/-1",height:1,background:"rgba(182,139,46,0.14)",margin:"4px 0"}}/>
         <span style={{color:"#b68b2e",fontWeight:600}}>VB total income:</span><span style={{color:"#b68b2e",fontWeight:700,fontFamily:"Cormorant Garamond,serif",fontSize:18}}>R {fmt(deal.vbTotal||0)}</span>
-        <span style={{color:"#8a8477",fontSize:12}}>Collector profit:</span><span style={{fontSize:12,color:"#4a9e6b"}}>R {fmt(deal.colProfit||0)} · {Math.round(deal.colROI||0)}% ROI</span>
+        <span style={{color:"#6b635a",fontSize:12}}>Collector profit:</span><span style={{fontSize:12,color:"#4a9e6b"}}>R {fmt(deal.colProfit||0)} · {Math.round(deal.colROI||0)}% ROI</span>
       </div></Card>}
     </>}
 
@@ -1713,30 +1713,30 @@ function ReportsPage({data,actions}){
       <Stat label="Total Collected" value={"R "+fmt(data.reports.reduce((s,r)=>s+(r.totalCollected||0),0))} green/>
     </div>
     <div style={{display:"flex",gap:8,marginBottom:20,flexWrap:"wrap",alignItems:"center"}}>
-      {years.map(y=><button key={y} onClick={()=>setYearFilter(y)} style={{padding:"8px 18px",borderRadius:8,border:yearFilter===y?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.15)",background:yearFilter===y?"rgba(182,139,46,0.08)":"transparent",color:yearFilter===y?"#b68b2e":"#8a8477",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{y}</button>)}
+      {years.map(y=><button key={y} onClick={()=>setYearFilter(y)} style={{padding:"8px 18px",borderRadius:8,border:yearFilter===y?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.30)",background:yearFilter===y?"rgba(182,139,46,0.18)":"transparent",color:yearFilter===y?"#b68b2e":"#6b635a",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{y}</button>)}
       <Btn small gold onClick={()=>actions.generateReport(getCurrentMonth())} style={{marginLeft:"auto"}}>{I.report} Generate Now</Btn>
     </div>
     {filteredMonths.length===0?<Empty msg="No months available yet."/>:
     filteredMonths.map(ym=>{
       const report=getReport(ym);const isLocked=locked(ym);const {lock}=getReportWindow(ym);const isCurrent=ym===getCurrentMonth();
       return<Card key={ym} style={{marginBottom:12,padding:0,overflow:"hidden"}}>
-        <div style={{height:3,background:isLocked?"#648cc8":report?"#b68b2e":"rgba(182,139,46,0.2)"}}/>
+        <div style={{height:3,background:isLocked?"#648cc8":report?"#b68b2e":"rgba(182,139,46,0.50)"}}/>
         <div style={{padding:20}}>
           <div style={{display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
             <div style={{flex:1,minWidth:200}}>
               <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4,flexWrap:"wrap"}}>
-                <span style={{fontFamily:"Cormorant Garamond,serif",fontSize:20,fontWeight:400,color:"#f5f0e8"}}>{getMonthLabel(ym)}</span>
-                {isCurrent&&<span style={{fontSize:10,background:"rgba(182,139,46,0.15)",color:"#b68b2e",padding:"3px 8px",borderRadius:6,fontWeight:600}}>CURRENT</span>}
+                <span style={{fontFamily:"Cormorant Garamond,serif",fontSize:20,fontWeight:400,color:"#1a1714"}}>{getMonthLabel(ym)}</span>
+                {isCurrent&&<span style={{fontSize:10,background:"rgba(182,139,46,0.30)",color:"#b68b2e",padding:"3px 8px",borderRadius:6,fontWeight:600}}>CURRENT</span>}
                 {isLocked&&<span style={{fontSize:10,background:"rgba(100,140,200,0.15)",color:"#648cc8",padding:"3px 8px",borderRadius:6,fontWeight:600,display:"inline-flex",alignItems:"center",gap:4}}>{I.lock} LOCKED</span>}
               </div>
-              {isLocked?<div style={{fontSize:11,color:"#5a564e"}}>Permanently locked — final record</div>:<div style={{fontSize:11,color:"#5a564e"}}>Editable until {lock} · Generate anytime</div>}
+              {isLocked?<div style={{fontSize:11,color:"#8a8070"}}>Permanently locked — final record</div>:<div style={{fontSize:11,color:"#8a8070"}}>Editable until {lock} · Generate anytime</div>}
             </div>
             {report&&<div style={{display:"flex",gap:16,fontSize:12,flexWrap:"wrap"}}>
               <span>Collected: <strong style={{color:"#4a9e6b"}}>R {fmt(report.totalCollected)}</strong></span>
               <span>Active: <strong style={{color:"#4a9e6b"}}>{report.activeCount}</strong></span>
               {report.chasingCount>0&&<span>Chasing: <strong style={{color:"#e6be32"}}>{report.chasingCount}</strong></span>}
               {report.disputeCount>0&&<span>Dispute: <strong style={{color:"#dc7828"}}>{report.disputeCount}</strong></span>}
-              <span style={{fontSize:11,color:"#5a564e"}}>Generated: {report.generatedAt}</span>
+              <span style={{fontSize:11,color:"#8a8070"}}>Generated: {report.generatedAt}</span>
             </div>}
             <div style={{display:"flex",gap:8,flexShrink:0}}>
               {!isLocked&&<Btn small gold onClick={()=>actions.generateReport(ym)}>{report?"Regenerate":"Generate"}</Btn>}
@@ -1745,12 +1745,12 @@ function ReportsPage({data,actions}){
             </div>
           </div>
           {report&&<>
-            <button onClick={()=>setSelectedMonth(selectedMonth===ym?null:ym)} style={{background:"none",border:"none",color:"#5a564e",cursor:"pointer",fontSize:11,marginTop:10,display:"flex",alignItems:"center",gap:4}}>
+            <button onClick={()=>setSelectedMonth(selectedMonth===ym?null:ym)} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer",fontSize:11,marginTop:10,display:"flex",alignItems:"center",gap:4}}>
               <span style={{transform:selectedMonth===ym?"rotate(180deg)":"none",transition:"0.2s",display:"inline-flex"}}>{I.chevron}</span>
               {selectedMonth===ym?"Hide":"Show"} details
             </button>
-            {selectedMonth===ym&&<div style={{marginTop:10,borderTop:"1px solid rgba(182,139,46,0.06)",paddingTop:10}}>
-              {report.snapshot.payments&&report.snapshot.payments.length>0?<Tbl cols={[{label:"Collector",bold:true,render:r=>r.collectorName},{label:"Artwork",key:"artworkTitle"},{label:"Model",render:r=><Badge model={r.model||"O1"}/>},{label:"Month",render:r=>`Mo ${r.monthNumber}`},{label:"Method",key:"method"},{label:"Amount",right:true,gold:true,render:r=>"R "+fmt(r.amount)}]} data={report.snapshot.payments}/>:<p style={{fontSize:13,color:"#5a564e"}}>No payments this month.</p>}
+            {selectedMonth===ym&&<div style={{marginTop:10,borderTop:"1px solid rgba(182,139,46,0.14)",paddingTop:10}}>
+              {report.snapshot.payments&&report.snapshot.payments.length>0?<Tbl cols={[{label:"Collector",bold:true,render:r=>r.collectorName},{label:"Artwork",key:"artworkTitle"},{label:"Model",render:r=><Badge model={r.model||"O1"}/>},{label:"Month",render:r=>`Mo ${r.monthNumber}`},{label:"Method",key:"method"},{label:"Amount",right:true,gold:true,render:r=>"R "+fmt(r.amount)}]} data={report.snapshot.payments}/>:<p style={{fontSize:13,color:"#8a8070"}}>No payments this month.</p>}
             </div>}
           </>}
         </div>
@@ -1786,14 +1786,14 @@ function GalleryPage(){
   const ready=c>0&&p>0;
 
   const FI=({label,value,onChange,suffix,prefix})=><Field label={label}>
-    <div style={{display:"flex",alignItems:"center",background:"#1e1d1a",border:"1px solid rgba(182,139,46,0.12)",borderRadius:10,overflow:"hidden"}}>
-      {prefix&&<span style={{padding:"0 14px",fontSize:13,color:"#5a564e",borderRight:"1px solid rgba(182,139,46,0.08)",height:48,display:"flex",alignItems:"center",flexShrink:0}}>{prefix}</span>}
-      <input type="number" value={value} onChange={e=>onChange(e.target.value)} min={0} placeholder="0" style={{flex:1,padding:"0 16px",height:48,background:"transparent",border:"none",color:"#f5f0e8",fontFamily:"DM Sans,sans-serif",fontSize:16,fontWeight:500,outline:"none",textAlign:"right"}}/>
-      {suffix&&<span style={{padding:"0 14px",fontSize:13,color:"#5a564e",borderLeft:"1px solid rgba(182,139,46,0.08)",height:48,display:"flex",alignItems:"center",flexShrink:0,whiteSpace:"nowrap"}}>{suffix}</span>}
+    <div style={{display:"flex",alignItems:"center",background:"#e8e4dd",border:"1px solid rgba(182,139,46,0.25)",borderRadius:10,overflow:"hidden"}}>
+      {prefix&&<span style={{padding:"0 14px",fontSize:13,color:"#8a8070",borderRight:"1px solid rgba(182,139,46,0.18)",height:48,display:"flex",alignItems:"center",flexShrink:0}}>{prefix}</span>}
+      <input type="number" value={value} onChange={e=>onChange(e.target.value)} min={0} placeholder="0" style={{flex:1,padding:"0 16px",height:48,background:"transparent",border:"none",color:"#1a1714",fontFamily:"DM Sans,sans-serif",fontSize:16,fontWeight:500,outline:"none",textAlign:"right"}}/>
+      {suffix&&<span style={{padding:"0 14px",fontSize:13,color:"#8a8070",borderLeft:"1px solid rgba(182,139,46,0.18)",height:48,display:"flex",alignItems:"center",flexShrink:0,whiteSpace:"nowrap"}}>{suffix}</span>}
     </div>
   </Field>;
 
-  const Row=({label,val,green})=><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 0",borderBottom:"1px solid rgba(182,139,46,0.05)"}}><span style={{fontSize:13,color:"#5a564e"}}>{label}</span><span style={{fontSize:13,fontWeight:500,color:green?"#4a9e6b":"#b68b2e"}}>{val}</span></div>;
+  const Row=({label,val,green})=><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 0",borderBottom:"1px solid rgba(182,139,46,0.12)"}}><span style={{fontSize:13,color:"#8a8070"}}>{label}</span><span style={{fontSize:13,fontWeight:500,color:green?"#4a9e6b":"#b68b2e"}}>{val}</span></div>;
 
   return(<div>
     <PT title="Gallery Break-Even" sub="How many artworks under management cover your monthly costs"/>
@@ -1801,9 +1801,9 @@ function GalleryPage(){
 
       <Card>
         {/* Option selector */}
-        <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:10}}>Acquisition Option</div>
+        <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>Acquisition Option</div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:20}}>
-          {["O1","O2","O3"].map(k=>{const mod=MODELS[k];const on=option===k;return<button key={k} onClick={()=>setOption(k)} style={{padding:10,borderRadius:8,border:on?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.12)",background:on?"rgba(182,139,46,0.08)":"#1e1d1a",color:on?"#b68b2e":"#8a8477",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"center",fontSize:11,fontWeight:on?600:400}}>
+          {["O1","O2","O3"].map(k=>{const mod=MODELS[k];const on=option===k;return<button key={k} onClick={()=>setOption(k)} style={{padding:10,borderRadius:8,border:on?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.25)",background:on?"rgba(182,139,46,0.18)":"#e8e4dd",color:on?"#b68b2e":"#6b635a",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"center",fontSize:11,fontWeight:on?600:400}}>
             <div style={{fontWeight:600,marginBottom:2}}>{mod.label.split("·")[0].trim()}</div>
             <div style={{fontSize:10,opacity:0.7}}>{Math.round(mod.vbPct*100)}/{Math.round(mod.colPct*100)} · {mod.term}mo</div>
           </button>;})}
@@ -1815,7 +1815,7 @@ function GalleryPage(){
         <FI label="Expected Sales per Month" value={sales} onChange={setSales} suffix="sales / mo"/>
 
         {ready&&<>
-          <div style={{height:1,background:"rgba(182,139,46,0.1)",margin:"20px 0"}}/>
+          <div style={{height:1,background:"rgba(182,139,46,0.20)",margin:"20px 0"}}/>
           <Row label={`VB fee (${Math.round(m.vbPct*100)}% of artwork)`} val={"R "+fmt(vbFee)}/>
           <Row label="Gallery earns per artwork /mo" val={"R "+fmt(moPerArt)}/>
           <Row label="Gallery earns per sale" val={"R "+fmt(saleIncome)}/>
@@ -1824,40 +1824,40 @@ function GalleryPage(){
       </Card>
 
       <div>
-        {!ready?<Card style={{padding:48,textAlign:"center"}}><div style={{fontSize:36,color:"#5a564e",marginBottom:12}}>◆</div><p style={{color:"#5a564e",fontSize:14}}>Enter your monthly costs and artwork price.</p></Card>:
+        {!ready?<Card style={{padding:48,textAlign:"center"}}><div style={{fontSize:36,color:"#8a8070",marginBottom:12}}>◆</div><p style={{color:"#8a8070",fontSize:14}}>Enter your monthly costs and artwork price.</p></Card>:
         <>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:16}}>
-            <Card style={{textAlign:"center",padding:28,border:"1px solid rgba(182,139,46,0.08)"}}>
-              <div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:14}}>Without sales</div>
-              <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:64,fontWeight:300,lineHeight:1,color:"#f5f0e8"}}>{neededNoSales||"—"}</div>
-              <div style={{fontSize:11,color:"#5a564e",marginTop:10,letterSpacing:1}}>artworks needed</div>
+            <Card style={{textAlign:"center",padding:28,border:"1px solid rgba(182,139,46,0.18)"}}>
+              <div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:14}}>Without sales</div>
+              <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:64,fontWeight:300,lineHeight:1,color:"#1a1714"}}>{neededNoSales||"—"}</div>
+              <div style={{fontSize:11,color:"#8a8070",marginTop:10,letterSpacing:1}}>artworks needed</div>
             </Card>
-            <Card style={{textAlign:"center",padding:28,border:"1px solid rgba(182,139,46,0.35)",position:"relative",overflow:"hidden"}}>
+            <Card style={{textAlign:"center",padding:28,border:"1px solid rgba(182,139,46,0.50)",position:"relative",overflow:"hidden"}}>
               <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:"linear-gradient(90deg,transparent,#b68b2e,transparent)"}}/>
               <div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#b68b2e",marginBottom:14}}>With {s||0} sale{s!==1?"s":""}/mo</div>
               <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:64,fontWeight:300,lineHeight:1,color:"#4a9e6b"}}>{neededWithSales||"—"}</div>
-              <div style={{fontSize:11,color:"#5a564e",marginTop:10,letterSpacing:1}}>artworks needed</div>
+              <div style={{fontSize:11,color:"#8a8070",marginTop:10,letterSpacing:1}}>artworks needed</div>
             </Card>
           </div>
-          <Card style={{textAlign:"center",padding:18,marginBottom:14,border:diff>0?"1px solid rgba(74,158,107,0.2)":"1px solid rgba(182,139,46,0.1)",background:diff>0?"rgba(74,158,107,0.04)":"rgba(182,139,46,0.02)"}}>
+          <Card style={{textAlign:"center",padding:18,marginBottom:14,border:diff>0?"1px solid rgba(74,158,107,0.2)":"1px solid rgba(182,139,46,0.20)",background:diff>0?"rgba(74,158,107,0.04)":"rgba(182,139,46,0.02)"}}>
             <div style={{fontSize:14,fontWeight:500,color:diff>0?"#4a9e6b":"#b68b2e"}}>
               {diff>0?`${s} sale${s!==1?"s":""}/mo saves you ${diff} artwork${diff!==1?"s":""} under management`:`${neededNoSales} collectors × R ${fmt(moPerArt)}/mo = R ${fmt(moPerArt*neededNoSales)}/mo`}
             </div>
           </Card>
           <Card>
-            <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#5a564e",marginBottom:14}}>What This Looks Like</div>
+            <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:14}}>What This Looks Like</div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
               {[
                 {label:"Monthly income at break-even",val:"R "+fmt(moPerArt*neededNoSales),color:"#4a9e6b"},
                 {label:"Monthly costs",val:"R "+fmt(c),color:"#c45c4a"},
                 {label:`Total VB fee per artwork (${Math.round(m.vbPct*100)}%)`,val:"R "+fmt(vbFee),color:"#b68b2e"},
                 {label:`Gallery earns per artwork (${m.term}mo)`,val:"R "+fmt(vbFee*gp),color:"#b68b2e"},
-              ].map((x,i)=><div key={i} style={{background:"#1e1d1a",borderRadius:8,padding:14}}>
-                <div style={{fontSize:10,color:"#5a564e",letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>{x.label}</div>
+              ].map((x,i)=><div key={i} style={{background:"#e8e4dd",borderRadius:8,padding:14}}>
+                <div style={{fontSize:10,color:"#8a8070",letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>{x.label}</div>
                 <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:22,fontWeight:400,color:x.color}}>{x.val}</div>
               </div>)}
             </div>
-            <div style={{fontSize:11,color:"#3a3832",marginTop:14,textAlign:"center",letterSpacing:1}}>
+            <div style={{fontSize:11,color:"#a09890",marginTop:14,textAlign:"center",letterSpacing:1}}>
               {m.label} · VB fee {Math.round(m.vbPct*100)}% · {m.term} month term · Gallery income = monthly payments × gallery %
             </div>
           </Card>
