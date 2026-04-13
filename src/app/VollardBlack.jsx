@@ -1067,7 +1067,7 @@ function BuyersPage({data,actions}){
           {label:"",render:r=><div style={{display:"flex",gap:6}}><button onClick={e=>{e.stopPropagation();setModal(r);}} style={{background:"none",border:"none",color:"#6b635a",cursor:"pointer"}}>{I.edit}</button><button onClick={e=>{e.stopPropagation();if(confirm("Delete buyer?"))actions.deleteBuyer(r.id);}} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer"}}>{I.del}</button></div>},
         ]} data={f}/>}
       </Card>
-      {selected&&<BuyerProfile buyer={selected} purchases={getPurchases(selected.id)} artworks={data.artworks} license holders={data.collectors} onClose={()=>setSelected(null)} onEdit={()=>setModal(selected)}/>}
+      {selected&&<BuyerProfile buyer={selected} purchases={getPurchases(selected.id)} artworks={data.artworks} collectors={data.collectors} onClose={()=>setSelected(null)} onEdit={()=>setModal(selected)}/>}
     </div>
     {modal&&<BuyerModal buyer={modal==="add"?blank:modal} onSave={(b)=>{actions.saveBuyer(b);setModal(null);if(selected?.id===b.id)setSelected(b);}} onClose={()=>setModal(null)}/>}
   </div>);
@@ -2014,7 +2014,7 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
       <button onClick={()=>{setActiveTab("all");setPg(0);}} style={{padding:"12px 20px",border:"none",borderBottom:activeTab==="all"?"2px solid #b68b2e":"2px solid transparent",background:"transparent",color:activeTab==="all"?"#b68b2e":"#6b635a",fontSize:12,fontWeight:activeTab==="all"?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif",whiteSpace:"nowrap"}}>
         All <span style={{marginLeft:6,fontSize:10,background:"rgba(182,139,46,0.20)",color:"#b68b2e",padding:"2px 7px",borderRadius:10}}>{allSchedules.length}</span>
       </button>
-      {license holdersWithSchedules.map(c=>{const cScheds=allSchedules.filter(s=>s.collectorId===c.id);const alerts=cScheds.filter(s=>["Chasing","In Dispute","Cancelled"].includes(s.status)).length;const isActive=activeTab===c.id;return<button key={c.id} onClick={()=>{setActiveTab(c.id);setPg(0);}} style={{padding:"12px 20px",border:"none",borderBottom:isActive?"2px solid #b68b2e":"2px solid transparent",background:"transparent",color:isActive?"#b68b2e":"#6b635a",fontSize:12,fontWeight:isActive?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif",whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:6}}>{gn(c)}{alerts>0&&<span style={{fontSize:10,background:"rgba(196,92,74,0.15)",color:"#c45c4a",padding:"2px 7px",borderRadius:10,fontWeight:700}}>{alerts}</span>}</button>;})}
+      {licenseHoldersWithSchedules.map(c=>{const cScheds=allSchedules.filter(s=>s.collectorId===c.id);const alerts=cScheds.filter(s=>["Chasing","In Dispute","Cancelled"].includes(s.status)).length;const isActive=activeTab===c.id;return<button key={c.id} onClick={()=>{setActiveTab(c.id);setPg(0);}} style={{padding:"12px 20px",border:"none",borderBottom:isActive?"2px solid #b68b2e":"2px solid transparent",background:"transparent",color:isActive?"#b68b2e":"#6b635a",fontSize:12,fontWeight:isActive?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif",whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:6}}>{gn(c)}{alerts>0&&<span style={{fontSize:10,background:"rgba(196,92,74,0.15)",color:"#c45c4a",padding:"2px 7px",borderRadius:10,fontWeight:700}}>{alerts}</span>}</button>;})}
     </div>
 
     <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
@@ -2105,7 +2105,7 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
 
     {overrideModal&&<OverrideModal sched={overrideModal} onSave={(note)=>{actions.overrideSchedule(overrideModal.id,note);setOverrideModal(null);}} onClose={()=>setOverrideModal(null)}/>}
     {graceModal&&<GraceModal sched={graceModal} onSave={(date,month,note)=>{actions.setGraceException(graceModal.id,date,month,note);setGraceModal(null);}} onClose={()=>setGraceModal(null)}/>}
-    {emailModal&&<EmailReviewModal config={emailModal} license holders={data.collectors} schedules={data.schedules} onClose={()=>setEmailModal(null)}/>}
+    {emailModal&&<EmailReviewModal config={emailModal} collectors={data.collectors} schedules={data.schedules} onClose={()=>setEmailModal(null)}/>}
   </div>);
 }
 
