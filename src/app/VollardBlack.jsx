@@ -56,12 +56,12 @@ const calcDeal = (artworkValue, salePrice, model, monthsPaid, galleryPct, vbBack
   const surplusCol = surplus * 0.50;
   const surplusVB = surplus * 0.50;
 
-  // DLAH receives sale proceeds minus VB balance, plus surplus bonus
+  // Display License Agreement Holder receives sale proceeds minus VB balance, plus surplus bonus
   const colBeforeIntro = collectorAtSale;
   const introFee = colBeforeIntro * ((introFeePct || 0) / 100);
   const colNet = colBeforeIntro - introFee;
 
-  // DLAH profit = received at sale minus what they paid in monthly
+  // Display License Agreement Holder profit = received at sale minus what they paid in monthly
   const colProfit = colNet - totalCollected;
   const colROI = totalCollected > 0 ? (colProfit / totalCollected) * 100 : 0;
 
@@ -215,7 +215,7 @@ const generateSettlementPDF=(sale,artworkValue,monthsPaid,acquisitionModel,galle
 <div class="artwork-strip">
   <div>
     <div class="artwork-title">${sale.artworkTitle}<span class="badge">${m.label}</span></div>
-    <div class="people">DLAH: <strong>${sale.collectorName||"—"}</strong>&nbsp;&nbsp;·&nbsp;&nbsp;Buyer: <strong>${sale.buyerName||"—"}</strong></div>
+    <div class="people">Display License Agreement Holder: <strong>${sale.collectorName||"—"}</strong>&nbsp;&nbsp;·&nbsp;&nbsp;Buyer: <strong>${sale.buyerName||"—"}</strong></div>
   </div>
   <div style="text-align:right;">
     <div style="font-size:11px;color:#999;text-transform:uppercase;letter-spacing:1px;">Sale Price</div>
@@ -256,12 +256,12 @@ const generateSettlementPDF=(sale,artworkValue,monthsPaid,acquisitionModel,galle
       ${deal.surplusCol>0?`<tr><td class="lbl">Plus surplus bonus</td><td class="green">+ R ${fmt(deal.surplusCol)}</td></tr>`:""}
       ${deal.vbBalance>0?`<tr><td class="lbl">Less VB balance</td><td class="red">− R ${fmt(deal.vbBalance)}</td></tr>`:""}
       ${deal.introFee>0?`<tr><td class="lbl">Less introducer fee</td><td class="red">− R ${fmt(deal.introFee)}</td></tr>`:""}
-      <tr class="total-row"><td><strong>DLAH receives</strong></td><td class="green"><div class="big-num">R ${fmt(deal.colNet)}</div></td></tr>
+      <tr class="total-row"><td><strong>Display License Agreement Holder receives</strong></td><td class="green"><div class="big-num">R ${fmt(deal.colNet)}</div></td></tr>
     </table>
     <table style="margin-top:12px;">
       <tr><td class="lbl">Total paid in by collector</td><td>R ${fmt(deal.totalCollected)}</td></tr>
-      <tr><td class="lbl">DLAH profit</td><td class="${deal.colProfit>=0?"green":"red"}">R ${fmt(deal.colProfit)}</td></tr>
-      <tr><td class="lbl">DLAH ROI</td><td class="${deal.colROI>=0?"green":"red"}">${Math.round(deal.colROI)}%</td></tr>
+      <tr><td class="lbl">Display License Agreement Holder profit</td><td class="${deal.colProfit>=0?"green":"red"}">R ${fmt(deal.colProfit)}</td></tr>
+      <tr><td class="lbl">Display License Agreement Holder ROI</td><td class="${deal.colROI>=0?"green":"red"}">${Math.round(deal.colROI)}%</td></tr>
     </table>
   </div>
   <div class="section">
@@ -543,7 +543,7 @@ export default function App(){
     {id:"dashboard",label:"Dashboard",icon:I.dash},
     {id:"catalogue",label:"Art Catalogue",icon:I.art},
     {id:"artists",label:"Artists",icon:I.star},
-    {id:"collectors",label:"DLAHs",icon:I.ppl},
+    {id:"collectors",label:"License Holders",icon:I.ppl},
     {id:"buyers",label:"Buyers",icon:I.buyer},
     {id:"calculator",label:"Calculator",icon:I.calc},
     {id:"gallery",label:"Gallery",icon:I.gallery},
@@ -643,7 +643,7 @@ function Dashboard({data,navTo,chasing,inDispute,cancelled}){
     </div>
     <div style={{display:"flex",gap:10,marginTop:24,flexWrap:"wrap"}}>
       <Btn gold onClick={()=>navTo("catalogue")}>{I.plus} Add Artwork</Btn>
-      <Btn ghost onClick={()=>navTo("collectors")}>{I.plus} Add DLAH</Btn>
+      <Btn ghost onClick={()=>navTo("collectors")}>{I.plus} Add Display License Agreement Holder</Btn>
       <Btn ghost onClick={()=>navTo("buyers")}>{I.plus} Add Buyer</Btn>
       <Btn ghost onClick={()=>navTo("reports")}>{I.report} Reports</Btn>
     </div>
@@ -913,7 +913,7 @@ function CollectorsPage({data,up,actions}){
   const handleLink=async(cId,artId,model,depositType,depositPct)=>{await actions.linkArtwork(cId,artId,model,depositType,depositPct);setLink(null);};
   const handleUnlink=(schedId)=>{if(confirm("Cancel this schedule?"))actions.unlinkArtwork(schedId);};
   return(<div>
-    <PT title="DLAHs" sub={`${data.collectors.length} registered DLAHs`} action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Add DLAH</Btn>}/>
+    <PT title="Display License Agreement Holders" sub={`${data.collectors.length} registered Display License Agreement Holders`} action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Add Display License Agreement Holder</Btn>}/>
     <Card><div style={{marginBottom:16}}><input placeholder="Search..." value={search} onChange={e=>setSearch(e.target.value)} style={{...is,maxWidth:360}}/></div>
       {f.length===0?<Empty msg="No collectors yet." action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Add</Btn>}/>:
       <Tbl cols={[
@@ -931,7 +931,7 @@ function ColMdl({col,onSave,onClose}){
   const [f,sF]=useState({...col,city:col.city||"",country:col.country||"South Africa",notes:col.notes||""});
   const s=(k,v)=>sF(p=>({...p,[k]:v}));
   const isNew=!col.id;
-  return(<Modal title={isNew?"Add DLAH":"Edit DLAH"} onClose={onClose} wide>
+  return(<Modal title={isNew?"Add Display License Agreement Holder":"Edit Display License Agreement Holder"} onClose={onClose} wide>
     <Field label="Type">
       <div style={{display:"flex",gap:8}}>
         {[["individual","Individual"],["company","Company"]].map(([id,l])=><button key={id} onClick={()=>s("type",id)} style={{flex:1,padding:10,borderRadius:8,border:f.type===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.30)",background:f.type===id?"rgba(182,139,46,0.18)":"#e8e4dd",color:f.type===id?"#b68b2e":"#6b635a",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{l}</button>)}
@@ -1023,9 +1023,9 @@ function LinkMdl({col,arts,onLink,onClose,gn}){
         {depositType==="toward"&&<><span style={{color:"#6b635a"}}>Remaining fee after deposit:</span><span style={{textAlign:"right"}}>R {fmt(remainingFee)}</span></>}
         <div style={{gridColumn:"1/-1",height:1,background:"rgba(182,139,46,0.20)",margin:"4px 0"}}/>
         <span style={{color:"#b68b2e",fontWeight:600}}>License fee:</span><span style={{textAlign:"right",fontWeight:600,color:"#b68b2e"}}>R {fmt(monthly)}/mo × {m.term}</span>
-        <span style={{color:"#6b635a"}}>Total paid by DLAH:</span><span style={{textAlign:"right"}}>R {fmt(totalDue)}</span>
-        <span style={{color:"#4a9e6b",fontWeight:600}}>DLAH receives ({Math.round(m.colPct*100)}%):</span><span style={{textAlign:"right",color:"#4a9e6b"}}>R {fmt(art.recommendedPrice*m.colPct)}</span>
-        <span style={{color:"#4a9e6b",fontWeight:600}}>DLAH profit:</span><span style={{textAlign:"right",color:"#4a9e6b",fontWeight:600}}>R {fmt(colProfit)}</span>
+        <span style={{color:"#6b635a"}}>Total paid by Display License Agreement Holder:</span><span style={{textAlign:"right"}}>R {fmt(totalDue)}</span>
+        <span style={{color:"#4a9e6b",fontWeight:600}}>Display License Agreement Holder receives ({Math.round(m.colPct*100)}%):</span><span style={{textAlign:"right",color:"#4a9e6b"}}>R {fmt(art.recommendedPrice*m.colPct)}</span>
+        <span style={{color:"#4a9e6b",fontWeight:600}}>Display License Agreement Holder profit:</span><span style={{textAlign:"right",color:"#4a9e6b",fontWeight:600}}>R {fmt(colProfit)}</span>
         <span style={{color:"#6b635a"}}>If unsold after {m.term} months:</span><span style={{textAlign:"right",fontSize:11}}>Collector takes artwork</span>
       </div>
     </Card>}
@@ -1092,7 +1092,7 @@ function BuyerProfile({buyer,purchases,artworks,collectors,onClose,onEdit}){
           {art?.imageUrl&&<div style={{width:40,height:40,borderRadius:6,overflow:"hidden",flexShrink:0}}><img src={art.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div>}
           <div style={{flex:1}}>
             <div style={{fontSize:13,fontWeight:600,color:"#1a1714"}}>{sale.artworkTitle}</div>
-            <div style={{fontSize:11,color:"#8a8070",marginTop:2}}>{sale.date} · DLAH: {colName}</div>
+            <div style={{fontSize:11,color:"#8a8070",marginTop:2}}>{sale.date} · Display License Agreement Holder: {colName}</div>
             <div style={{display:"flex",gap:12,marginTop:4,fontSize:12}}>
               <span style={{color:"#b68b2e",fontWeight:600}}>R {fmt(sale.salePrice)}</span>
               <Badge model={sale.acquisitionModel||"O1"}/>
@@ -1210,7 +1210,7 @@ function CalcPage({data={},actions={}}){
       </select>
       {selectedSched&&<div style={{marginTop:12,padding:"12px 14px",background:"#e8e4dd",borderRadius:8,fontSize:13}}>
         <div style={{display:"flex",gap:16,flexWrap:"wrap"}}>
-          <span style={{color:"#8a8070"}}>DLAH: <strong style={{color:"#1a1714"}}>{selectedSched.collectorName}</strong></span>
+          <span style={{color:"#8a8070"}}>Display License Agreement Holder: <strong style={{color:"#1a1714"}}>{selectedSched.collectorName}</strong></span>
           <span style={{color:"#8a8070"}}>Artwork: <strong style={{color:"#1a1714"}}>{selectedSched.artworkTitle}</strong></span>
           <span style={{color:"#8a8070"}}>Paid: <strong style={{color:"#b68b2e"}}>{selectedSched.monthsPaid} of {selectedSched.termMonths} months</strong></span>
           <span style={{color:"#8a8070"}}>Status: <Badge status={selectedSched.status} sched/></span>
@@ -1363,7 +1363,7 @@ function CalcPage({data={},actions={}}){
               {deal.introFee>0&&<SRow label="Introducer fee deducted" val={`− R ${fmt(deal.introFee)}`} color="#c45c4a"/>}
               {aboveValue&&<SRow label="Surplus above value (50% to each)" val={`R ${fmt(deal.surplus)}`} color="#4a9e6b"/>}
               <div style={{height:1,background:"rgba(182,139,46,0.30)",margin:"10px 0"}}/>
-              <SRow label="DLAH receives" val={`R ${fmt(deal.colNet)}`} color="#4a9e6b" bold/>
+              <SRow label="Display License Agreement Holder receives" val={`R ${fmt(deal.colNet)}`} color="#4a9e6b" bold/>
               <SRow label="Gallery keeps from sale" val={`R ${fmt(deal.vbAtSale)}`} color="#b68b2e" bold/>
             </div>
 
@@ -1371,7 +1371,7 @@ function CalcPage({data={},actions={}}){
               <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>Final tally</div>
               <SRow label="Gallery total income (monthly + sale)" val={`R ${fmt(deal.vbTotal)}`} color="#b68b2e" bold/>
               <SRow label="Collector net gain" val={`R ${fmt(deal.colProfit)}`} color="#4a9e6b" bold/>
-              <SRow label="DLAH ROI" val={`${Math.round(deal.colROI)}%`} color="#b68b2e"/>
+              <SRow label="Display License Agreement Holder ROI" val={`${Math.round(deal.colROI)}%`} color="#b68b2e"/>
             </div>
           </Card>
 
@@ -1442,7 +1442,7 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
   const buildEmailTargets=(status)=>{const scheds=allSchedules.filter(s=>s.status===status);const by={};scheds.forEach(s=>{const col=data.collectors.find(c=>c.id===s.collectorId);if(!by[s.collectorId])by[s.collectorId]={id:s.collectorId,name:s.collectorName,email:col?.email||"",schedules:[]};by[s.collectorId].schedules.push(s);});return Object.values(by);};
 
   return(<div>
-    <PT title="License Invoicing" sub={`${allSchedules.length} license agreements · ${data.collectors.length} DLAHs`}/>
+    <PT title="License Invoicing" sub={`${allSchedules.length} license agreements · ${data.collectors.length} Display License Agreement Holders`}/>
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:14,marginBottom:24}}>
       <Stat label="Active" value={active} green/><Stat label="Chasing" value={chasing} orange/><Stat label="In Dispute" value={dispute} orange/><Stat label="Cancelled" value={cancelledCount} red/><Stat label="Collected" value={"R "+fmt(totalCollected)} gold/>
     </div>
@@ -1544,7 +1544,7 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
 
     {payModal&&<Modal title={`Record Payment — Month ${payModal.nextMonth}`} onClose={()=>setPayModal(null)}>
       <Card style={{background:"#e8e4dd",marginBottom:16}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:13}}>
-        <span style={{color:"#6b635a"}}>DLAH:</span><span style={{fontWeight:600}}>{payModal.sched.collectorName}</span>
+        <span style={{color:"#6b635a"}}>Display License Agreement Holder:</span><span style={{fontWeight:600}}>{payModal.sched.collectorName}</span>
         <span style={{color:"#6b635a"}}>Artwork:</span><span>{payModal.sched.artworkTitle}</span>
         <span style={{color:"#6b635a"}}>Model:</span><span><Badge model={payModal.sched.acquisitionModel||"O1"}/></span>
         <span style={{color:"#6b635a"}}>Month:</span><span>{payModal.nextMonth} of {payModal.sched.termMonths}</span>
@@ -1667,7 +1667,7 @@ function SettlementModal({sale,data,onClose}){
       <div>
         <div style={{fontSize:12,color:"#6b635a",marginBottom:4}}>Artwork</div>
         <div style={{fontSize:15,fontWeight:600,color:"#1a1714"}}>{sale.artworkTitle}</div>
-        <div style={{fontSize:12,color:"#6b635a",marginTop:8}}>DLAH: {sale.collectorName||"—"}</div>
+        <div style={{fontSize:12,color:"#6b635a",marginTop:8}}>Display License Agreement Holder: {sale.collectorName||"—"}</div>
         <div style={{fontSize:12,color:"#6b635a"}}>Buyer: {sale.buyerName||"—"}</div>
         <div style={{display:"flex",gap:8,marginTop:8,alignItems:"center"}}><Badge model={acqModel}/><span style={{fontSize:12,color:"#6b635a"}}>{monthsPaid} months paid before sale</span></div>
       </div>
@@ -1690,8 +1690,8 @@ function SettlementModal({sale,data,onClose}){
         <span style={{color:"#4a9e6b",fontWeight:600}}>Collector {Math.round(MODELS[acqModel].colPct*100)}%:</span><span style={{textAlign:"right",color:"#4a9e6b"}}>R {fmt(deal.collectorAtSale+deal.surplusCol)}</span>
         <span style={{color:"#6b635a"}}>Less VB balance:</span><span style={{textAlign:"right",color:"#c45c4a"}}>− R {fmt(deal.vbBalance)}</span>
         {deal.introFee>0&&<><span style={{color:"#6b635a"}}>Less intro fee ({introPct}%):</span><span style={{textAlign:"right",color:"#c45c4a"}}>− R {fmt(deal.introFee)}</span></>}
-        <span style={{color:"#4a9e6b",fontWeight:700,fontSize:16}}>DLAH receives:</span><span style={{textAlign:"right",color:"#4a9e6b",fontWeight:700,fontFamily:"Cormorant Garamond,serif",fontSize:22}}>R {fmt(deal.colNet)}</span>
-        <span style={{color:"#6b635a",fontSize:12}}>DLAH profit:</span><span style={{textAlign:"right",fontSize:12,color:"#4a9e6b"}}>R {fmt(deal.colProfit)} ({Math.round(deal.colROI)}% ROI)</span>
+        <span style={{color:"#4a9e6b",fontWeight:700,fontSize:16}}>Display License Agreement Holder receives:</span><span style={{textAlign:"right",color:"#4a9e6b",fontWeight:700,fontFamily:"Cormorant Garamond,serif",fontSize:22}}>R {fmt(deal.colNet)}</span>
+        <span style={{color:"#6b635a",fontSize:12}}>Display License Agreement Holder profit:</span><span style={{textAlign:"right",fontSize:12,color:"#4a9e6b"}}>R {fmt(deal.colProfit)} ({Math.round(deal.colROI)}% ROI)</span>
       </div>
     </Card>
 
@@ -1773,15 +1773,15 @@ function SaleMdl({data,sellable,onSale,onClose}){
       {/* Settlement preview */}
       {artworkValue>0&&<Card style={{background:"#e8e4dd",marginTop:4}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,fontSize:14}}>
         <span style={{color:"#6b635a"}}>Sale price:</span><span style={{fontWeight:600}}>R {fmt(sp)}</span>
-        <span style={{color:"#6b635a"}}>DLAH:</span><span>{gn(col)}</span>
+        <span style={{color:"#6b635a"}}>Display License Agreement Holder:</span><span>{gn(col)}</span>
         {resolvedBuyerName&&<><span style={{color:"#6b635a"}}>Buyer:</span><span style={{color:"#b68b2e"}}>{resolvedBuyerName}</span></>}
         <div style={{gridColumn:"1/-1",height:1,background:"rgba(182,139,46,0.20)",margin:"4px 0"}}/>
         <span style={{color:"#4a9e6b",fontWeight:600}}>Collector {Math.round(m.colPct*100)}%:</span><span style={{color:"#4a9e6b"}}>R {fmt(deal.collectorAtSale+(deal.surplusCol||0))}</span>
         <span style={{color:"#6b635a"}}>Less VB balance:</span><span style={{color:"#c45c4a"}}>− R {fmt(deal.vbBalance||0)}</span>
-        <span style={{color:"#4a9e6b",fontWeight:700}}>DLAH receives:</span><span style={{color:"#4a9e6b",fontWeight:700,fontFamily:"Cormorant Garamond,serif",fontSize:18}}>R {fmt(deal.colNet||0)}</span>
+        <span style={{color:"#4a9e6b",fontWeight:700}}>Display License Agreement Holder receives:</span><span style={{color:"#4a9e6b",fontWeight:700,fontFamily:"Cormorant Garamond,serif",fontSize:18}}>R {fmt(deal.colNet||0)}</span>
         <div style={{gridColumn:"1/-1",height:1,background:"rgba(182,139,46,0.14)",margin:"4px 0"}}/>
         <span style={{color:"#b68b2e",fontWeight:600}}>Gallery total income:</span><span style={{color:"#b68b2e",fontWeight:700,fontFamily:"Cormorant Garamond,serif",fontSize:18}}>R {fmt(deal.vbTotal||0)}</span>
-        <span style={{color:"#6b635a",fontSize:12}}>DLAH profit:</span><span style={{fontSize:12,color:"#4a9e6b"}}>R {fmt(deal.colProfit||0)} · {Math.round(deal.colROI||0)}% ROI</span>
+        <span style={{color:"#6b635a",fontSize:12}}>Display License Agreement Holder profit:</span><span style={{fontSize:12,color:"#4a9e6b"}}>R {fmt(deal.colProfit||0)} · {Math.round(deal.colROI||0)}% ROI</span>
       </div></Card>}
     </>}
 
