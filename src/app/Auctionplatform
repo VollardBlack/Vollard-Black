@@ -1,0 +1,1013 @@
+// ═══════════════════════════════════════════════════════════════════
+// VOLLARD BLACK — AUCTION PLATFORM MODULE
+// ═══════════════════════════════════════════════════════════════════
+//
+// INTEGRATION INSTRUCTIONS:
+//
+// 1. Add "auctions" to your TABLES array:
+//    const TABLES = [...existing..., "auctions", "bids", "auctionRegistrations"];
+//
+// 2. Add to your fresh() function:
+//    auctions:[], bids:[], auctionRegistrations:[]
+//
+// 3. Add to your nav array (after "sales"):
+//    {id:"auction", label:"Auction Platform", icon:I.gavel}
+//
+// 4. Add the gavel icon to your I={} icons object:
+//    gavel:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2L2 14"/><path d="M5 11l6 6"/><path d="M16 8l4 4"/><path d="M14 14l4 4"/><rect x="2" y="18" width="4" height="4" rx="1"/></svg>,
+//
+// 5. Add to your pg={} pages object:
+//    auction:<AuctionPage data={d} actions={actions} />,
+//
+// 6. Add auctionActions to your actions={} object — see AUCTION ACTIONS section below
+//
+// ═══════════════════════════════════════════════════════════════════
+
+// ─── AUCTION ACTIONS (add these into your existing actions={} object) ───
+/*
+  createAuction:(auctionData)=>{
+    const auction={...auctionData,id:uid(),createdAt:td(),status:"Draft",currentBid:0,leadBidderId:null,leadBidderName:null,bidsCount:0};
+    up("auctions",p=>[...p,auction]);
+  },
+  updateAuction:(id,fields)=>{
+    up("auctions",p=>p.map(a=>a.id===id?{...a,...fields}:a));
+    dbUp("auctions",id,fields);
+  },
+  launchAuction:(id)=>{
+    const now=new Date().toISOString();
+    up("auctions",p=>p.map(a=>a.id===id?{...a,status:"Live",startedAt:now}:a));
+    dbUp("auctions",id,{status:"Live",startedAt:now});
+  },
+  freezeAuction:(id)=>{
+    up("auctions",p=>p.map(a=>a.id===id?{...a,status:"Frozen"}:a));
+    dbUp("auctions",id,{status:"Frozen"});
+  },
+  resumeAuction:(id)=>{
+    up("auctions",p=>p.map(a=>a.id===id?{...a,status:"Live"}:a));
+    dbUp("auctions",id,{status:"Live"});
+  },
+  closeAuction:(id)=>{
+    const auction=data.auctions.find(a=>a.id===id);
+    if(!auction)return;
+    const reserveMet=auction.currentBid>=(auction.reservePrice||0);
+    const newStatus=reserveMet?"Sold":"No Sale";
+    up("auctions",p=>p.map(a=>a.id===id?{...a,status:newStatus,closedAt:td()}:a));
+    dbUp("auctions",id,{status:newStatus,closedAt:td()});
+    if(reserveMet&&auction.artworkId){
+      up("artworks",p=>p.map(a=>a.id===auction.artworkId?{...a,status:"Sold"}:a));
+    }
+  },
+  placeBid:(auctionId,buyerId,buyerName,amount)=>{
+    const bid={id:uid(),auctionId,buyerId,buyerName,amount,timestamp:new Date().toISOString()};
+    up("bids",p=>[...p,bid]);
+    up("auctions",p=>p.map(a=>a.id===auctionId?{...a,currentBid:amount,leadBidderId:buyerId,leadBidderName:buyerName,bidsCount:(a.bidsCount||0)+1}:a));
+    dbUp("auctions",auctionId,{currentBid:amount,leadBidderId:buyerId,leadBidderName:buyerName,bidsCount:(data.auctions.find(a=>a.id===auctionId)?.bidsCount||0)+1});
+  },
+  approveForAuction:(buyerId)=>{
+    up("buyers",p=>p.map(b=>b.id===buyerId?{...b,auctionApproved:true,auctionApprovedAt:td()}:b));
+    dbUp("buyers",buyerId,{auctionApproved:true,auctionApprovedAt:td()});
+  },
+  revokeAuctionApproval:(buyerId)=>{
+    up("buyers",p=>p.map(b=>b.id===buyerId?{...b,auctionApproved:false}:b));
+    dbUp("buyers",buyerId,{auctionApproved:false});
+  },
+*/
+
+// ─── BID INCREMENT OPTIONS ───
+const BID_INCREMENTS = [
+  { label: "2.5%", type: "pct", value: 0.025 },
+  { label: "5%",   type: "pct", value: 0.05  },
+  { label: "R250", type: "flat", value: 250   },
+  { label: "R500", type: "flat", value: 500   },
+  { label: "R1,000", type: "flat", value: 1000 },
+];
+
+const calcMinBid = (currentBid, increment) => {
+  if (!increment) return currentBid;
+  const base = currentBid || 0;
+  if (increment.type === "pct") return Math.ceil(base + base * increment.value);
+  return base + increment.value;
+};
+
+const auctionStatusColor = {
+  Draft:   { bg: "rgba(182,139,46,0.15)",  c: "#b68b2e"  },
+  Live:    { bg: "rgba(74,158,107,0.15)",   c: "#4a9e6b"  },
+  Frozen:  { bg: "rgba(100,140,200,0.15)",  c: "#648cc8"  },
+  Sold:    { bg: "rgba(74,158,107,0.15)",   c: "#4a9e6b"  },
+  "No Sale":{ bg:"rgba(196,92,74,0.15)",    c: "#c45c4a"  },
+  Closed:  { bg: "rgba(130,120,110,0.15)", c: "#8a8070"  },
+};
+
+// ─── COUNTDOWN HOOK ───
+function useCountdown(endTime, status) {
+  const [remaining, setRemaining] = React.useState(null);
+  React.useEffect(() => {
+    if (status !== "Live" || !endTime) { setRemaining(null); return; }
+    const tick = () => {
+      const diff = new Date(endTime) - new Date();
+      setRemaining(diff > 0 ? diff : 0);
+    };
+    tick();
+    const t = setInterval(tick, 1000);
+    return () => clearInterval(t);
+  }, [endTime, status]);
+  return remaining;
+}
+
+function formatCountdown(ms) {
+  if (ms === null) return null;
+  if (ms <= 0) return "ENDED";
+  const s = Math.floor(ms / 1000);
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  if (d > 0) return `${d}d ${h}h ${m}m`;
+  if (h > 0) return `${h}h ${m}m ${sec}s`;
+  return `${m}m ${sec}s`;
+}
+
+// ─── PUSH NOTIFICATION HELPER ───
+function sendPushNotification(title, body) {
+  if (!("Notification" in window)) return;
+  if (Notification.permission === "granted") {
+    new Notification(title, { body, icon: "/favicon.ico" });
+  } else if (Notification.permission !== "denied") {
+    Notification.requestPermission().then(p => {
+      if (p === "granted") new Notification(title, { body });
+    });
+  }
+}
+
+// ─── AUCTION REPORT GENERATOR ───
+function generateAuctionReport(auction, winnerBuyer, renter, allBids) {
+  const bids = allBids.filter(b => b.auctionId === auction.id).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+  const reserveMet = auction.currentBid >= (auction.reservePrice || 0);
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+<title>VB Auction Report — ${auction.title}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;color:#1a1714;background:#fff;max-width:800px;margin:0 auto;padding:48px 40px;font-size:13px;line-height:1.7}
+  .brand{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;letter-spacing:6px;color:#1a1714}
+  .brand em{color:#b68b2e;font-style:normal}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #b68b2e;padding-bottom:20px;margin-bottom:32px}
+  .section-title{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:#b68b2e;font-weight:600;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f0e8d0}
+  .section{margin-bottom:28px}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{background:#f5f0e8;padding:8px 10px;text-align:left;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#666;border-bottom:1px solid #ddd}
+  td{padding:8px 10px;border-bottom:1px solid #f0ece4}
+  .gold{color:#b68b2e;font-weight:600}
+  .green{color:#2d7a4a;font-weight:600}
+  .red{color:#c45c4a;font-weight:600}
+  .big{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:400}
+  .result-box{background:${reserveMet?"#f0faf4":"#fdf0ee"};border:1px solid ${reserveMet?"#4a9e6b":"#c45c4a"};border-radius:8px;padding:20px;margin-bottom:28px;text-align:center}
+  .sig-line{border-bottom:1px solid #333;margin-top:40px;padding-bottom:4px}
+  .sig-label{font-size:11px;color:#888;margin-top:4px}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .info-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f5f0e8;font-size:13px}
+  .footer{margin-top:40px;padding-top:14px;border-top:1px solid #ddd;font-size:11px;color:#aaa;display:flex;justify-content:space-between}
+</style></head><body>
+<div class="header">
+  <div><div class="brand">VOLLARD <em>BLACK</em></div><div style="font-size:11px;color:#999;letter-spacing:2px;margin-top:4px">FINE ART AUCTIONS</div></div>
+  <div style="text-align:right"><div style="font-size:14px;letter-spacing:2px;text-transform:uppercase;color:#666">Auction Settlement Report</div><div style="font-size:12px;color:#999;margin-top:4px">${auction.closedAt || new Date().toISOString().slice(0,10)}</div></div>
+</div>
+
+<div class="result-box">
+  <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${reserveMet?"#4a9e6b":"#c45c4a"};margin-bottom:8px">${reserveMet?"SOLD — RESERVE MET":"NO SALE — RESERVE NOT MET"}</div>
+  <div class="big ${reserveMet?"green":"red"}">${reserveMet?`R ${auction.currentBid?.toLocaleString("en-ZA",{minimumFractionDigits:2})}`:auction.currentBid>0?`Highest Bid: R ${auction.currentBid?.toLocaleString("en-ZA",{minimumFractionDigits:2})}`:"No Bids Received"}</div>
+  <div style="font-size:12px;color:#666;margin-top:6px">${auction.title}</div>
+</div>
+
+<div class="two-col" style="margin-bottom:28px">
+  <div class="section">
+    <div class="section-title">Artwork Details</div>
+    <div class="info-row"><span style="color:#666">Title</span><span>${auction.title}</span></div>
+    <div class="info-row"><span style="color:#666">Artist</span><span>${auction.artist||"—"}</span></div>
+    <div class="info-row"><span style="color:#666">Declared Value</span><span>R ${(auction.artworkValue||0).toLocaleString("en-ZA",{minimumFractionDigits:2})}</span></div>
+    <div class="info-row"><span style="color:#666">Reserve Price</span><span>R ${(auction.reservePrice||0).toLocaleString("en-ZA",{minimumFractionDigits:2})}</span></div>
+    <div class="info-row"><span style="color:#666">Gallery / Location</span><span>${auction.galleryName||"—"}</span></div>
+  </div>
+  <div class="section">
+    <div class="section-title">Auction Details</div>
+    <div class="info-row"><span style="color:#666">Auction ID</span><span>${auction.id}</span></div>
+    <div class="info-row"><span style="color:#666">Started</span><span>${auction.startedAt?.slice(0,16).replace("T"," ")||"—"}</span></div>
+    <div class="info-row"><span style="color:#666">Closed</span><span>${auction.closedAt||"—"}</span></div>
+    <div class="info-row"><span style="color:#666">Total Bids</span><span>${bids.length}</span></div>
+    <div class="info-row"><span style="color:#666">Bid Increment</span><span>${auction.incrementLabel||"—"}</span></div>
+  </div>
+</div>
+
+${reserveMet && winnerBuyer ? `
+<div class="section">
+  <div class="section-title">Winning Buyer — KYC Verified</div>
+  <div class="two-col">
+    <div>
+      <div class="info-row"><span style="color:#666">Full Name</span><span>${winnerBuyer.type==="company"?winnerBuyer.companyName:`${winnerBuyer.firstName} ${winnerBuyer.lastName}`}</span></div>
+      <div class="info-row"><span style="color:#666">ID / Reg No</span><span>${winnerBuyer.idNumber||"—"}</span></div>
+      <div class="info-row"><span style="color:#666">Email</span><span>${winnerBuyer.email||"—"}</span></div>
+      <div class="info-row"><span style="color:#666">Mobile</span><span>${winnerBuyer.mobile||"—"}</span></div>
+    </div>
+    <div>
+      <div class="info-row"><span style="color:#666">Nationality</span><span>${winnerBuyer.nationality||"—"}</span></div>
+      <div class="info-row"><span style="color:#666">Auction Approved</span><span class="green">✓ Verified</span></div>
+      <div class="info-row"><span style="color:#666">Winning Bid</span><span class="gold">R ${(auction.currentBid||0).toLocaleString("en-ZA",{minimumFractionDigits:2})}</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Payment Instructions — Renter Bank Details</div>
+  <div style="background:#f9f7f3;border:1px solid #e8e0d0;border-radius:8px;padding:16px;margin-bottom:8px">
+    <p style="font-size:13px;color:#1a1714;margin-bottom:12px">The winning buyer must pay the following account directly. Vollard Black does not process or receive sale proceeds.</p>
+    ${renter ? `
+    <div class="info-row"><span style="color:#666">Account Holder</span><span>${renter.firstName||""} ${renter.lastName||renter.companyName||""}</span></div>
+    <div class="info-row"><span style="color:#666">Bank</span><span>${renter.bankName||"To be provided by Renter"}</span></div>
+    <div class="info-row"><span style="color:#666">Account Number</span><span>${renter.accountNumber||"To be provided by Renter"}</span></div>
+    <div class="info-row"><span style="color:#666">Branch Code</span><span>${renter.branchCode||"To be provided by Renter"}</span></div>
+    <div class="info-row"><span style="color:#666">Reference</span><span>${auction.id}</span></div>
+    ` : '<p style="color:#c45c4a">Renter bank details not on file — VB to obtain and forward to buyer separately.</p>'}
+  </div>
+  <p style="font-size:11px;color:#999;margin-top:8px">⚠ The Artwork will not be released until: (1) full payment is confirmed by the Renter, and (2) all outstanding Wall Space rental fees are settled with Vollard Black.</p>
+</div>` : ""}
+
+${renter ? `
+<div class="section">
+  <div class="section-title">Renter Details</div>
+  <div class="info-row"><span style="color:#666">Name</span><span>${renter.firstName||""} ${renter.lastName||renter.companyName||""}</span></div>
+  <div class="info-row"><span style="color:#666">Email</span><span>${renter.email||"—"}</span></div>
+  <div class="info-row"><span style="color:#666">Mobile</span><span>${renter.mobile||"—"}</span></div>
+  ${reserveMet?`<div class="info-row"><span style="color:#b68b2e;font-weight:600">Rental Balance Due</span><span class="gold">Full outstanding balance immediately due — see Wall Space Display Agreement Clause 6</span></div>`:""}
+</div>` : ""}
+
+<div class="section">
+  <div class="section-title">Bid History (${bids.length} bids)</div>
+  ${bids.length > 0 ? `<table><thead><tr><th>#</th><th>Bidder</th><th>Amount</th><th>Time</th><th>Status</th></tr></thead><tbody>
+  ${bids.map((b,i)=>`<tr><td>${bids.length-i}</td><td>${b.buyerName}</td><td class="${i===0?"gold":""}" style="font-weight:${i===0?600:400}">R ${b.amount.toLocaleString("en-ZA",{minimumFractionDigits:2})}</td><td>${b.timestamp.slice(0,16).replace("T"," ")}</td><td>${i===0?'<span style="color:#4a9e6b;font-weight:600">WINNER</span>':'Outbid'}</td></tr>`).join("")}
+  </tbody></table>` : '<p style="color:#999">No bids recorded.</p>'}
+</div>
+
+<div style="margin-top:40px">
+  <div class="section-title">Signatures</div>
+  <div class="two-col" style="margin-top:16px">
+    <div><div class="sig-line"></div><div class="sig-label">Vollard Black (Pty) Ltd  ·  Thomas Marriott  ·  Director</div><div class="sig-label" style="margin-top:8px">Date: _______________</div></div>
+    <div><div class="sig-line"></div><div class="sig-label">Renter Signature  ·  _______________</div><div class="sig-label" style="margin-top:8px">Date: _______________</div></div>
+  </div>
+</div>
+
+<div class="footer"><span>VOLLARD BLACK — Fine Art Auctions</span><span>concierge@vollardblack.com</span><span>© ${new Date().getFullYear()}</span></div>
+</body></html>`;
+  const w = window.open("","_blank");
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 800);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// AUCTION PAGE — MAIN COMPONENT
+// ═══════════════════════════════════════════════════════════════════
+
+export function AuctionPage({ data, actions }) {
+  const [view, setView] = React.useState("dashboard"); // dashboard | create | manage | buyers | live
+  const [selectedAuction, setSelectedAuction] = React.useState(null);
+  const [createModal, setCreateModal] = React.useState(false);
+  const [bidModal, setBidModal] = React.useState(null);
+  const [notifModal, setNotifModal] = React.useState(null);
+  const [buyerApprovalModal, setBuyerApprovalModal] = React.useState(false);
+
+  const auctions = data.auctions || [];
+  const bids = data.bids || [];
+  const buyers = data.buyers || [];
+  const artworks = data.artworks || [];
+  const collectors = data.collectors || [];
+
+  const liveAuctions = auctions.filter(a => a.status === "Live");
+  const draftAuctions = auctions.filter(a => a.status === "Draft");
+  const closedAuctions = auctions.filter(a => ["Sold","No Sale","Closed"].includes(a.status));
+  const approvedBuyers = buyers.filter(b => b.auctionApproved);
+  const pendingApproval = buyers.filter(b => b.auctionRequested && !b.auctionApproved);
+
+  const fmt = (n) => Number(n||0).toLocaleString("en-ZA",{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  // Request notification permission on mount
+  React.useEffect(() => {
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  const tabs = [
+    { id: "dashboard", label: "Dashboard" },
+    { id: "manage",    label: `Active Auctions ${liveAuctions.length > 0 ? `(${liveAuctions.length})` : ""}` },
+    { id: "history",   label: "History" },
+    { id: "buyers",    label: `Buyer Approvals ${pendingApproval.length > 0 ? `(${pendingApproval.length})` : ""}` },
+  ];
+
+  return (
+    <div>
+      {/* PAGE HEADER */}
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:28, flexWrap:"wrap", gap:12 }}>
+        <div>
+          <div style={{ fontSize:10, letterSpacing:4, textTransform:"uppercase", color:"#b68b2e", marginBottom:6 }}>Vollard Black</div>
+          <h1 style={{ fontFamily:"Cormorant Garamond,serif", fontSize:32, fontWeight:300, color:"#1a1714", margin:0, letterSpacing:1 }}>Auction Platform</h1>
+          <p style={{ fontSize:12, color:"#8a8070", marginTop:4, letterSpacing:1 }}>Live timed auctions · KYC verified buyers · Reserve price protection</p>
+        </div>
+        <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+          {pendingApproval.length > 0 && (
+            <div style={{ padding:"8px 14px", background:"rgba(220,120,40,0.1)", border:"1px solid rgba(220,120,40,0.3)", borderRadius:8, fontSize:12, color:"#dc7828", fontWeight:600, cursor:"pointer" }} onClick={() => setView("buyers")}>
+              {pendingApproval.length} approval{pendingApproval.length > 1 ? "s" : ""} pending
+            </div>
+          )}
+          <button onClick={() => setNotifModal(true)} style={{ padding:"10px 16px", background:"transparent", border:"1px solid rgba(182,139,46,0.4)", borderRadius:8, color:"#b68b2e", fontSize:11, fontWeight:600, letterSpacing:1, textTransform:"uppercase", cursor:"pointer", fontFamily:"DM Sans,sans-serif" }}>
+            🔔 Push Notification
+          </button>
+          <button onClick={() => setCreateModal(true)} style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"12px 22px", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, letterSpacing:1, textTransform:"uppercase", fontFamily:"DM Sans,sans-serif", background:"linear-gradient(135deg,#b68b2e,#8a6a1e)", color:"#f5f3ef" }}>
+            + Create Auction
+          </button>
+        </div>
+      </div>
+
+      {/* LIVE BANNERS */}
+      {liveAuctions.map(a => (
+        <LiveAuctionBanner key={a.id} auction={a} bids={bids} fmt={fmt} onManage={() => { setSelectedAuction(a); setView("manage"); }} />
+      ))}
+
+      {/* STATS */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))", gap:14, marginBottom:28 }}>
+        <AuctionStat label="Total Auctions" value={auctions.length} />
+        <AuctionStat label="Live Now" value={liveAuctions.length} green />
+        <AuctionStat label="Draft" value={draftAuctions.length} gold />
+        <AuctionStat label="Total Bids" value={bids.length} />
+        <AuctionStat label="Sold" value={auctions.filter(a=>a.status==="Sold").length} green />
+        <AuctionStat label="Approved Buyers" value={approvedBuyers.length} gold />
+      </div>
+
+      {/* TABS */}
+      <div style={{ display:"flex", gap:0, marginBottom:24, borderBottom:"1px solid rgba(182,139,46,0.20)", overflowX:"auto" }}>
+        {tabs.map(t => (
+          <button key={t.id} onClick={() => setView(t.id)} style={{ padding:"12px 20px", border:"none", borderBottom:view===t.id?"2px solid #b68b2e":"2px solid transparent", background:"transparent", color:view===t.id?"#b68b2e":"#6b635a", fontSize:12, fontWeight:view===t.id?600:400, cursor:"pointer", fontFamily:"DM Sans,sans-serif", whiteSpace:"nowrap" }}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* DASHBOARD */}
+      {view === "dashboard" && (
+        <div>
+          {draftAuctions.length === 0 && liveAuctions.length === 0 ? (
+            <div style={{ textAlign:"center", padding:"80px 20px" }}>
+              <div style={{ fontFamily:"Cormorant Garamond,serif", fontSize:64, color:"rgba(182,139,46,0.15)", marginBottom:16 }}>⚖</div>
+              <p style={{ color:"#8a8070", fontSize:15, marginBottom:20 }}>No auctions yet. Create your first auction to get started.</p>
+              <button onClick={() => setCreateModal(true)} style={{ padding:"12px 28px", background:"linear-gradient(135deg,#b68b2e,#8a6a1e)", border:"none", borderRadius:8, color:"#f5f3ef", fontSize:12, fontWeight:600, letterSpacing:1, textTransform:"uppercase", cursor:"pointer", fontFamily:"DM Sans,sans-serif" }}>
+                + Create First Auction
+              </button>
+            </div>
+          ) : (
+            <div>
+              {draftAuctions.length > 0 && (
+                <div style={{ marginBottom:24 }}>
+                  <div style={{ fontSize:11, letterSpacing:2, textTransform:"uppercase", color:"#8a8070", marginBottom:14 }}>Draft Auctions — Ready to Launch</div>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(340px,1fr))", gap:14 }}>
+                    {draftAuctions.map(a => <AuctionCard key={a.id} auction={a} bids={bids} fmt={fmt} actions={actions} onSelect={() => { setSelectedAuction(a); setView("manage"); }} onBid={() => setBidModal(a)} />)}
+                  </div>
+                </div>
+              )}
+              {liveAuctions.length > 0 && (
+                <div>
+                  <div style={{ fontSize:11, letterSpacing:2, textTransform:"uppercase", color:"#4a9e6b", marginBottom:14 }}>● Live Now</div>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(340px,1fr))", gap:14 }}>
+                    {liveAuctions.map(a => <AuctionCard key={a.id} auction={a} bids={bids} fmt={fmt} actions={actions} onSelect={() => { setSelectedAuction(a); setView("manage"); }} onBid={() => setBidModal(a)} />)}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* MANAGE / LIVE VIEW */}
+      {view === "manage" && (
+        <div>
+          {liveAuctions.length === 0 && draftAuctions.length === 0 ? (
+            <div style={{ textAlign:"center", padding:"48px 20px", color:"#8a8070" }}>No active auctions.</div>
+          ) : (
+            <div style={{ display:"grid", gap:16 }}>
+              {[...liveAuctions, ...draftAuctions].map(a => (
+                <AuctionManageRow key={a.id} auction={a} bids={bids} buyers={buyers} collectors={collectors} fmt={fmt} actions={actions} onBid={() => setBidModal(a)} onReport={() => {
+                  const winner = buyers.find(b => b.id === a.leadBidderId);
+                  const sched = (data.schedules||[]).find(s => s.artworkId === a.artworkId);
+                  const renter = sched ? collectors.find(c => c.id === sched.collectorId) : null;
+                  generateAuctionReport(a, winner, renter, bids);
+                }} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* HISTORY */}
+      {view === "history" && (
+        <div>
+          {closedAuctions.length === 0 ? (
+            <div style={{ textAlign:"center", padding:"48px 20px", color:"#8a8070" }}>No completed auctions yet.</div>
+          ) : (
+            <div style={{ overflowX:"auto" }}>
+              <table style={{ width:"100%", borderCollapse:"collapse" }}>
+                <thead>
+                  <tr>
+                    {["Date","Artwork","Artist","Gallery","Reserve","Final Bid","Bids","Result",""].map((h,i) => (
+                      <th key={i} style={{ fontSize:10, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", color:"#8a8070", padding:"10px 12px", textAlign:i>4?"right":"left", borderBottom:"1px solid rgba(182,139,46,0.18)", whiteSpace:"nowrap" }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...closedAuctions].reverse().map(a => {
+                    const sc = auctionStatusColor[a.status] || auctionStatusColor.Closed;
+                    const winner = buyers.find(b => b.id === a.leadBidderId);
+                    const sched = (data.schedules||[]).find(s => s.artworkId === a.artworkId);
+                    const renter = sched ? collectors.find(c => c.id === sched.collectorId) : null;
+                    return (
+                      <tr key={a.id} onMouseEnter={e=>e.currentTarget.style.background="rgba(182,139,46,0.03)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                        <td style={{ padding:"12px", borderBottom:"1px solid rgba(182,139,46,0.10)", fontSize:12, color:"#6b635a" }}>{a.closedAt||"—"}</td>
+                        <td style={{ padding:"12px", borderBottom:"1px solid rgba(182,139,46,0.10)", fontSize:13, fontWeight:600, color:"#1a1714" }}>{a.title}</td>
+                        <td style={{ padding:"12px", borderBottom:"1px solid rgba(182,139,46,0.10)", fontSize:12, color:"#6b635a" }}>{a.artist||"—"}</td>
+                        <td style={{ padding:"12px", borderBottom:"1px solid rgba(182,139,46,0.10)", fontSize:12, color:"#6b635a" }}>{a.galleryName||"—"}</td>
+                        <td style={{ padding:"12px", borderBottom:"1px solid rgba(182,139,46,0.10)", fontSize:12, textAlign:"right" }}>R {fmt(a.reservePrice)}</td>
+                        <td style={{ padding:"12px", borderBottom:"1px solid rgba(182,139,46,0.10)", fontSize:13, fontWeight:600, color:"#b68b2e", textAlign:"right" }}>R {fmt(a.currentBid)}</td>
+                        <td style={{ padding:"12px", borderBottom:"1px solid rgba(182,139,46,0.10)", textAlign:"right" }}>{bids.filter(b=>b.auctionId===a.id).length}</td>
+                        <td style={{ padding:"12px", borderBottom:"1px solid rgba(182,139,46,0.10)", textAlign:"right" }}>
+                          <span style={{ padding:"3px 10px", borderRadius:6, fontSize:11, fontWeight:600, background:sc.bg, color:sc.c }}>{a.status}</span>
+                        </td>
+                        <td style={{ padding:"12px", borderBottom:"1px solid rgba(182,139,46,0.10)", textAlign:"right" }}>
+                          <button onClick={() => generateAuctionReport(a, winner, renter, bids)} style={{ background:"none", border:"1px solid rgba(182,139,46,0.3)", borderRadius:6, color:"#b68b2e", cursor:"pointer", padding:"4px 10px", fontSize:11, fontFamily:"DM Sans,sans-serif" }}>Report</button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* BUYER APPROVALS */}
+      {view === "buyers" && (
+        <BuyerApprovalView buyers={buyers} actions={actions} fmt={fmt} />
+      )}
+
+      {/* MODALS */}
+      {createModal && (
+        <CreateAuctionModal
+          artworks={artworks}
+          collectors={collectors}
+          schedules={data.schedules||[]}
+          onSave={(auctionData) => { actions.createAuction(auctionData); setCreateModal(false); }}
+          onClose={() => setCreateModal(false)}
+          fmt={fmt}
+        />
+      )}
+
+      {bidModal && (
+        <PlaceBidModal
+          auction={bidModal}
+          buyers={approvedBuyers}
+          bids={bids.filter(b => b.auctionId === bidModal.id)}
+          onBid={(buyerId, buyerName, amount) => {
+            actions.placeBid(bidModal.id, buyerId, buyerName, amount);
+            sendPushNotification("New Bid — Vollard Black", `${buyerName} bid R ${amount.toLocaleString("en-ZA")} on ${bidModal.title}`);
+            setBidModal(null);
+          }}
+          onClose={() => setBidModal(null)}
+          fmt={fmt}
+        />
+      )}
+
+      {notifModal && (
+        <PushNotificationModal
+          auctions={auctions}
+          buyers={approvedBuyers}
+          onSend={(title, body) => { sendPushNotification(title, body); setNotifModal(false); }}
+          onClose={() => setNotifModal(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── LIVE AUCTION BANNER ───
+function LiveAuctionBanner({ auction, bids, fmt, onManage }) {
+  const remaining = useCountdown(auction.endTime, auction.status);
+  const auctionBids = bids.filter(b => b.auctionId === auction.id);
+  const urgent = remaining !== null && remaining < 300000; // < 5 mins
+
+  return (
+    <div onClick={onManage} style={{ display:"flex", alignItems:"center", gap:16, padding:"14px 20px", background:urgent?"rgba(196,92,74,0.08)":"rgba(74,158,107,0.08)", border:`1px solid ${urgent?"rgba(196,92,74,0.3)":"rgba(74,158,107,0.25)"}`, borderRadius:10, cursor:"pointer", marginBottom:12, flexWrap:"wrap" }}>
+      <div style={{ width:8, height:8, borderRadius:"50%", background:urgent?"#c45c4a":"#4a9e6b", boxShadow:`0 0 0 3px ${urgent?"rgba(196,92,74,0.2)":"rgba(74,158,107,0.2)"}`, animation:"pulse 1.5s infinite", flexShrink:0 }} />
+      <div style={{ flex:1, minWidth:200 }}>
+        <div style={{ fontSize:13, fontWeight:600, color:"#1a1714" }}>🔴 LIVE: {auction.title}</div>
+        <div style={{ fontSize:11, color:"#6b635a", marginTop:2 }}>{auction.galleryName} · {auctionBids.length} bid{auctionBids.length!==1?"s":""}</div>
+      </div>
+      <div style={{ textAlign:"center" }}>
+        <div style={{ fontSize:10, letterSpacing:2, textTransform:"uppercase", color:"#8a8070" }}>Current Bid</div>
+        <div style={{ fontFamily:"Cormorant Garamond,serif", fontSize:22, fontWeight:600, color:"#b68b2e" }}>R {fmt(auction.currentBid||0)}</div>
+      </div>
+      <div style={{ textAlign:"center" }}>
+        <div style={{ fontSize:10, letterSpacing:2, textTransform:"uppercase", color:"#8a8070" }}>Time Left</div>
+        <div style={{ fontFamily:"Cormorant Garamond,serif", fontSize:22, fontWeight:600, color:urgent?"#c45c4a":"#4a9e6b" }}>{formatCountdown(remaining)||"—"}</div>
+      </div>
+      <div style={{ fontSize:11, color:"#8a8070", marginLeft:"auto" }}>Manage →</div>
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
+    </div>
+  );
+}
+
+// ─── AUCTION STAT ───
+function AuctionStat({ label, value, gold, green }) {
+  return (
+    <div style={{ background:"#f7f5f1", border:"1px solid rgba(182,139,46,0.20)", borderRadius:14, padding:18, textAlign:"center" }}>
+      <div style={{ fontSize:10, letterSpacing:2, textTransform:"uppercase", color:"#8a8070", marginBottom:6 }}>{label}</div>
+      <div style={{ fontFamily:"Cormorant Garamond,serif", fontSize:26, fontWeight:600, color:gold?"#b68b2e":green?"#4a9e6b":"#1a1714" }}>{value}</div>
+    </div>
+  );
+}
+
+// ─── AUCTION CARD ───
+function AuctionCard({ auction, bids, fmt, actions, onSelect, onBid }) {
+  const remaining = useCountdown(auction.endTime, auction.status);
+  const auctionBids = bids.filter(b => b.auctionId === auction.id);
+  const sc = auctionStatusColor[auction.status] || auctionStatusColor.Draft;
+  const reserveMet = (auction.currentBid || 0) >= (auction.reservePrice || 0);
+
+  return (
+    <div style={{ background:"#f7f5f1", border:"1px solid rgba(182,139,46,0.20)", borderRadius:14, overflow:"hidden" }}>
+      <div style={{ height:3, background:sc.c }} />
+      <div style={{ padding:20 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
+          <div>
+            <div style={{ fontFamily:"Cormorant Garamond,serif", fontSize:18, fontWeight:400, color:"#1a1714" }}>{auction.title}</div>
+            <div style={{ fontSize:11, color:"#8a8070", marginTop:2 }}>{auction.artist} · {auction.galleryName}</div>
+          </div>
+          <span style={{ padding:"4px 10px", borderRadius:6, fontSize:11, fontWeight:600, background:sc.bg, color:sc.c, flexShrink:0 }}>{auction.status}</span>
+        </div>
+
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:14 }}>
+          <div style={{ background:"#e8e4dd", borderRadius:8, padding:"10px 12px" }}>
+            <div style={{ fontSize:9, letterSpacing:2, textTransform:"uppercase", color:"#8a8070", marginBottom:4 }}>Current Bid</div>
+            <div style={{ fontFamily:"Cormorant Garamond,serif", fontSize:20, fontWeight:600, color:"#b68b2e" }}>R {fmt(auction.currentBid||0)}</div>
+          </div>
+          <div style={{ background:"#e8e4dd", borderRadius:8, padding:"10px 12px" }}>
+            <div style={{ fontSize:9, letterSpacing:2, textTransform:"uppercase", color:"#8a8070", marginBottom:4 }}>Reserve</div>
+            <div style={{ fontFamily:"Cormorant Garamond,serif", fontSize:20, fontWeight:600, color:reserveMet?"#4a9e6b":"#c45c4a" }}>R {fmt(auction.reservePrice||0)}</div>
+          </div>
+        </div>
+
+        {auction.status === "Live" && remaining !== null && (
+          <div style={{ textAlign:"center", padding:"8px", background:"rgba(182,139,46,0.08)", borderRadius:8, marginBottom:12 }}>
+            <div style={{ fontSize:9, letterSpacing:2, textTransform:"uppercase", color:"#8a8070" }}>Time Remaining</div>
+            <div style={{ fontFamily:"Cormorant Garamond,serif", fontSize:24, fontWeight:400, color:remaining<300000?"#c45c4a":"#1a1714" }}>{formatCountdown(remaining)}</div>
+          </div>
+        )}
+
+        <div style={{ fontSize:11, color:"#6b635a", marginBottom:14 }}>{auctionBids.length} bid{auctionBids.length!==1?"s":""} · Increment: {auction.incrementLabel}</div>
+
+        <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+          {auction.status === "Draft" && (
+            <button onClick={() => actions.launchAuction(auction.id)} style={{ flex:1, padding:"10px", background:"linear-gradient(135deg,#4a9e6b,#2d7a4a)", border:"none", borderRadius:8, color:"#fff", fontSize:11, fontWeight:600, letterSpacing:1, textTransform:"uppercase", cursor:"pointer", fontFamily:"DM Sans,sans-serif" }}>
+              🚀 Launch
+            </button>
+          )}
+          {auction.status === "Live" && (
+            <>
+              <button onClick={onBid} style={{ flex:1, padding:"10px", background:"linear-gradient(135deg,#b68b2e,#8a6a1e)", border:"none", borderRadius:8, color:"#f5f3ef", fontSize:11, fontWeight:600, letterSpacing:1, textTransform:"uppercase", cursor:"pointer", fontFamily:"DM Sans,sans-serif" }}>
+                Place Bid
+              </button>
+              <button onClick={() => actions.freezeAuction(auction.id)} style={{ padding:"10px 14px", background:"rgba(100,140,200,0.12)", border:"1px solid rgba(100,140,200,0.3)", borderRadius:8, color:"#648cc8", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"DM Sans,sans-serif" }}>
+                ⏸ Freeze
+              </button>
+              <button onClick={() => { if(confirm("Close auction?")) actions.closeAuction(auction.id); }} style={{ padding:"10px 14px", background:"rgba(196,92,74,0.12)", border:"1px solid rgba(196,92,74,0.3)", borderRadius:8, color:"#c45c4a", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"DM Sans,sans-serif" }}>
+                Close
+              </button>
+            </>
+          )}
+          {auction.status === "Frozen" && (
+            <>
+              <button onClick={() => actions.resumeAuction(auction.id)} style={{ flex:1, padding:"10px", background:"linear-gradient(135deg,#4a9e6b,#2d7a4a)", border:"none", borderRadius:8, color:"#fff", fontSize:11, fontWeight:600, letterSpacing:1, textTransform:"uppercase", cursor:"pointer", fontFamily:"DM Sans,sans-serif" }}>
+                ▶ Resume
+              </button>
+              <button onClick={() => { if(confirm("Close auction?")) actions.closeAuction(auction.id); }} style={{ padding:"10px 14px", background:"rgba(196,92,74,0.12)", border:"1px solid rgba(196,92,74,0.3)", borderRadius:8, color:"#c45c4a", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"DM Sans,sans-serif" }}>
+                Close
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── AUCTION MANAGE ROW (detailed) ───
+function AuctionManageRow({ auction, bids, buyers, collectors, fmt, actions, onBid, onReport }) {
+  const [expanded, setExpanded] = React.useState(true);
+  const remaining = useCountdown(auction.endTime, auction.status);
+  const auctionBids = bids.filter(b => b.auctionId === auction.id).sort((a,b) => new Date(b.timestamp)-new Date(a.timestamp));
+  const sc = auctionStatusColor[auction.status] || auctionStatusColor.Draft;
+  const reserveMet = (auction.currentBid||0) >= (auction.reservePrice||0);
+  const winner = buyers.find(b => b.id === auction.leadBidderId);
+
+  return (
+    <div style={{ background:"#f7f5f1", border:"1px solid rgba(182,139,46,0.20)", borderRadius:14, overflow:"hidden" }}>
+      <div style={{ height:4, background:sc.c }} />
+      <div style={{ padding:20 }}>
+        <div style={{ display:"flex", gap:16, alignItems:"flex-start", flexWrap:"wrap" }}>
+          <div style={{ flex:1, minWidth:200 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
+              <span style={{ fontFamily:"Cormorant Garamond,serif", fontSize:20, fontWeight:400, color:"#1a1714" }}>{auction.title}</span>
+              <span style={{ padding:"3px 10px", borderRadius:6, fontSize:11, fontWeight:600, background:sc.bg, color:sc.c }}>{auction.status}</span>
+              {auction.status==="Live" && <span style={{ fontSize:10, color:"#4a9e6b", fontWeight:600 }}>● LIVE</span>}
+            </div>
+            <div style={{ fontSize:12, color:"#6b635a" }}>{auction.artist} · {auction.galleryName}</div>
+            <div style={{ display:"flex", gap:16, fontSize:12, marginTop:8, flexWrap:"wrap" }}>
+              <span>Reserve: <strong style={{ color:reserveMet?"#4a9e6b":"#c45c4a" }}>R {fmt(auction.reservePrice||0)}</strong></span>
+              <span>Current: <strong style={{ color:"#b68b2e" }}>R {fmt(auction.currentBid||0)}</strong></span>
+              <span>{auctionBids.length} bid{auctionBids.length!==1?"s":""}</span>
+              <span>Increment: {auction.incrementLabel}</span>
+              {remaining!==null && <span style={{ color:remaining<300000?"#c45c4a":"#4a9e6b", fontWeight:600 }}>⏱ {formatCountdown(remaining)}</span>}
+            </div>
+            {winner && (
+              <div style={{ marginTop:8, fontSize:12, color:"#4a9e6b" }}>
+                🏆 Lead bidder: <strong>{winner.type==="company"?winner.companyName:`${winner.firstName} ${winner.lastName}`}</strong>
+              </div>
+            )}
+          </div>
+
+          <div style={{ display:"flex", gap:8, flexWrap:"wrap", alignItems:"center" }}>
+            {auction.status==="Draft" && <button onClick={()=>actions.launchAuction(auction.id)} style={{ padding:"10px 18px", background:"linear-gradient(135deg,#4a9e6b,#2d7a4a)", border:"none", borderRadius:8, color:"#fff", fontSize:11, fontWeight:600, letterSpacing:1, textTransform:"uppercase", cursor:"pointer", fontFamily:"DM Sans,sans-serif" }}>🚀 Launch</button>}
+            {auction.status==="Live" && <>
+              <button onClick={onBid} style={{ padding:"10px 18px", background:"linear-gradient(135deg,#b68b2e,#8a6a1e)", border:"none", borderRadius:8, color:"#f5f3ef", fontSize:11, fontWeight:600, letterSpacing:1, textTransform:"uppercase", cursor:"pointer", fontFamily:"DM Sans,sans-serif" }}>Place Bid</button>
+              <button onClick={()=>actions.freezeAuction(auction.id)} style={{ padding:"10px 14px", background:"rgba(100,140,200,0.12)", border:"1px solid rgba(100,140,200,0.3)", borderRadius:8, color:"#648cc8", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"DM Sans,sans-serif" }}>⏸ Freeze</button>
+              <button onClick={()=>{if(confirm("Close this auction now?"))actions.closeAuction(auction.id);}} style={{ padding:"10px 14px", background:"rgba(196,92,74,0.12)", border:"1px solid rgba(196,92,74,0.3)", borderRadius:8, color:"#c45c4a", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"DM Sans,sans-serif" }}>Close</button>
+            </>}
+            {auction.status==="Frozen" && <>
+              <button onClick={()=>actions.resumeAuction(auction.id)} style={{ padding:"10px 18px", background:"linear-gradient(135deg,#4a9e6b,#2d7a4a)", border:"none", borderRadius:8, color:"#fff", fontSize:11, fontWeight:600, letterSpacing:1, textTransform:"uppercase", cursor:"pointer", fontFamily:"DM Sans,sans-serif" }}>▶ Resume</button>
+              <button onClick={()=>{if(confirm("Close this auction now?"))actions.closeAuction(auction.id);}} style={{ padding:"10px 14px", background:"rgba(196,92,74,0.12)", border:"1px solid rgba(196,92,74,0.3)", borderRadius:8, color:"#c45c4a", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"DM Sans,sans-serif" }}>Close</button>
+            </>}
+            <button onClick={onReport} style={{ padding:"10px 14px", background:"transparent", border:"1px solid rgba(182,139,46,0.3)", borderRadius:8, color:"#b68b2e", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"DM Sans,sans-serif" }}>📄 Report</button>
+            <button onClick={()=>setExpanded(p=>!p)} style={{ background:"none", border:"1px solid rgba(182,139,46,0.3)", borderRadius:6, color:"#6b635a", cursor:"pointer", padding:"8px 12px", fontSize:11 }}>
+              {expanded?"▲":"▼"} Bids
+            </button>
+          </div>
+        </div>
+
+        {expanded && (
+          <div style={{ marginTop:16, borderTop:"1px solid rgba(182,139,46,0.12)", paddingTop:16 }}>
+            {auctionBids.length === 0 ? (
+              <p style={{ fontSize:13, color:"#8a8070" }}>No bids yet.</p>
+            ) : (
+              <div style={{ overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse" }}>
+                  <thead>
+                    <tr>
+                      {["#","Bidder","Amount","Time","Status"].map((h,i) => (
+                        <th key={i} style={{ fontSize:10, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", color:"#8a8070", padding:"8px 10px", textAlign:i>1?"right":"left", borderBottom:"1px solid rgba(182,139,46,0.18)" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {auctionBids.map((b,i) => (
+                      <tr key={b.id} style={{ background:i===0?"rgba(182,139,46,0.05)":"transparent" }}>
+                        <td style={{ padding:"8px 10px", borderBottom:"1px solid rgba(182,139,46,0.08)", fontSize:12, color:"#8a8070" }}>{auctionBids.length-i}</td>
+                        <td style={{ padding:"8px 10px", borderBottom:"1px solid rgba(182,139,46,0.08)", fontSize:13, fontWeight:i===0?600:400, color:"#1a1714" }}>{b.buyerName}</td>
+                        <td style={{ padding:"8px 10px", borderBottom:"1px solid rgba(182,139,46,0.08)", textAlign:"right", fontSize:13, fontWeight:600, color:"#b68b2e" }}>R {fmt(b.amount)}</td>
+                        <td style={{ padding:"8px 10px", borderBottom:"1px solid rgba(182,139,46,0.08)", textAlign:"right", fontSize:11, color:"#8a8070" }}>{b.timestamp.slice(0,16).replace("T"," ")}</td>
+                        <td style={{ padding:"8px 10px", borderBottom:"1px solid rgba(182,139,46,0.08)", textAlign:"right" }}>
+                          {i===0 ? <span style={{ fontSize:11, fontWeight:600, color:"#4a9e6b" }}>LEAD</span> : <span style={{ fontSize:11, color:"#8a8070" }}>Outbid</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── BUYER APPROVAL VIEW ───
+function BuyerApprovalView({ buyers, actions, fmt }) {
+  const pending = buyers.filter(b => b.auctionRequested && !b.auctionApproved);
+  const approved = buyers.filter(b => b.auctionApproved);
+  const bn = b => b.type==="company" ? b.companyName : `${b.firstName} ${b.lastName}`;
+
+  return (
+    <div>
+      <div style={{ marginBottom:16, padding:"12px 16px", background:"rgba(182,139,46,0.08)", border:"1px solid rgba(182,139,46,0.2)", borderRadius:10, fontSize:13, color:"#6b635a" }}>
+        Buyers must register their interest to participate in auctions. Once you verify their KYC details are complete, approve them here. Only approved buyers can place bids.
+      </div>
+
+      {pending.length > 0 && (
+        <div style={{ marginBottom:28 }}>
+          <div style={{ fontSize:11, letterSpacing:2, textTransform:"uppercase", color:"#dc7828", marginBottom:14 }}>Pending Approval ({pending.length})</div>
+          <div style={{ display:"grid", gap:10 }}>
+            {pending.map(b => (
+              <div key={b.id} style={{ display:"flex", alignItems:"center", gap:16, padding:"14px 18px", background:"rgba(220,120,40,0.06)", border:"1px solid rgba(220,120,40,0.2)", borderRadius:10, flexWrap:"wrap" }}>
+                <div style={{ flex:1, minWidth:200 }}>
+                  <div style={{ fontSize:14, fontWeight:600, color:"#1a1714" }}>{bn(b)}</div>
+                  <div style={{ fontSize:12, color:"#6b635a", marginTop:2 }}>{b.email} · ID: {b.idNumber||"—"} · {b.nationality||"—"}</div>
+                  <div style={{ fontSize:11, color:"#dc7828", marginTop:4 }}>KYC: {b.idNumber?"✓ ID on file":"⚠ No ID"} · {b.email?"✓ Email":"⚠ No email"} · Requested: {b.auctionRequestedAt||"—"}</div>
+                </div>
+                <div style={{ display:"flex", gap:8 }}>
+                  <button onClick={() => actions.approveForAuction(b.id)} style={{ padding:"8px 16px", background:"linear-gradient(135deg,#4a9e6b,#2d7a4a)", border:"none", borderRadius:8, color:"#fff", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"DM Sans,sans-serif" }}>✓ Approve</button>
+                  <button onClick={() => actions.revokeAuctionApproval(b.id)} style={{ padding:"8px 14px", background:"rgba(196,92,74,0.12)", border:"1px solid rgba(196,92,74,0.3)", borderRadius:8, color:"#c45c4a", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"DM Sans,sans-serif" }}>Decline</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div>
+        <div style={{ fontSize:11, letterSpacing:2, textTransform:"uppercase", color:"#4a9e6b", marginBottom:14 }}>Approved Buyers ({approved.length})</div>
+        {approved.length === 0 ? (
+          <p style={{ fontSize:13, color:"#8a8070" }}>No approved buyers yet.</p>
+        ) : (
+          <div style={{ overflowX:"auto" }}>
+            <table style={{ width:"100%", borderCollapse:"collapse" }}>
+              <thead>
+                <tr>
+                  {["Name","Email","ID / Reg","Nationality","Approved",""].map((h,i) => (
+                    <th key={i} style={{ fontSize:10, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", color:"#8a8070", padding:"10px 12px", textAlign:"left", borderBottom:"1px solid rgba(182,139,46,0.18)" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {approved.map(b => (
+                  <tr key={b.id}>
+                    <td style={{ padding:"10px 12px", borderBottom:"1px solid rgba(182,139,46,0.10)", fontSize:13, fontWeight:600, color:"#1a1714" }}>{bn(b)}</td>
+                    <td style={{ padding:"10px 12px", borderBottom:"1px solid rgba(182,139,46,0.10)", fontSize:12, color:"#6b635a" }}>{b.email||"—"}</td>
+                    <td style={{ padding:"10px 12px", borderBottom:"1px solid rgba(182,139,46,0.10)", fontSize:12, color:"#6b635a" }}>{b.idNumber||"—"}</td>
+                    <td style={{ padding:"10px 12px", borderBottom:"1px solid rgba(182,139,46,0.10)", fontSize:12, color:"#6b635a" }}>{b.nationality||"—"}</td>
+                    <td style={{ padding:"10px 12px", borderBottom:"1px solid rgba(182,139,46,0.10)" }}><span style={{ fontSize:11, fontWeight:600, color:"#4a9e6b" }}>✓ Approved {b.auctionApprovedAt||""}</span></td>
+                    <td style={{ padding:"10px 12px", borderBottom:"1px solid rgba(182,139,46,0.10)" }}>
+                      <button onClick={() => actions.revokeAuctionApproval(b.id)} style={{ background:"none", border:"1px solid rgba(196,92,74,0.3)", borderRadius:6, color:"#c45c4a", cursor:"pointer", padding:"4px 10px", fontSize:11, fontFamily:"DM Sans,sans-serif" }}>Revoke</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Manually mark a buyer as requesting approval */}
+      <div style={{ marginTop:28 }}>
+        <div style={{ fontSize:11, letterSpacing:2, textTransform:"uppercase", color:"#8a8070", marginBottom:14 }}>Mark Buyer as Requesting Auction Access</div>
+        <RequestAuctionAccess buyers={buyers.filter(b=>!b.auctionApproved&&!b.auctionRequested)} actions={actions} />
+      </div>
+    </div>
+  );
+}
+
+function RequestAuctionAccess({ buyers, actions }) {
+  const [selected, setSelected] = React.useState("");
+  const bn = b => b.type==="company" ? b.companyName : `${b.firstName} ${b.lastName}`;
+  return (
+    <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+      <select value={selected} onChange={e=>setSelected(e.target.value)} style={{ flex:1, padding:"10px 14px", background:"#e8e4dd", border:"1px solid rgba(182,139,46,0.20)", borderRadius:8, color:"#1a1714", fontFamily:"DM Sans,sans-serif", fontSize:13, outline:"none" }}>
+        <option value="">— Select buyer to mark as requesting access</option>
+        {buyers.map(b => <option key={b.id} value={b.id}>{bn(b)}</option>)}
+      </select>
+      <button disabled={!selected} onClick={() => {
+        if (!selected) return;
+        actions.updateBuyerAuctionRequest && actions.updateBuyerAuctionRequest(selected);
+        setSelected("");
+      }} style={{ padding:"10px 18px", background:"rgba(182,139,46,0.15)", border:"1px solid rgba(182,139,46,0.3)", borderRadius:8, color:"#b68b2e", fontSize:11, fontWeight:600, cursor:selected?"pointer":"not-allowed", opacity:selected?1:0.4, fontFamily:"DM Sans,sans-serif" }}>
+        Mark as Requesting
+      </button>
+    </div>
+  );
+}
+
+// ─── CREATE AUCTION MODAL ───
+function CreateAuctionModal({ artworks, collectors, schedules, onSave, onClose, fmt }) {
+  const [f, setF] = React.useState({
+    title:"", artist:"", artworkId:"", artworkValue:0, reservePrice:0,
+    galleryName:"", incrementType:"pct", incrementValue:0.025, incrementLabel:"2.5%",
+    endTime:"", startNote:"",
+  });
+  const s = (k,v) => setF(p => ({...p,[k]:v}));
+
+  const availableArtworks = artworks.filter(a => ["Available","Reserved","In Gallery"].includes(a.status));
+
+  const handleArtworkSelect = (id) => {
+    const art = artworks.find(a => a.id===id);
+    if (!art) { s("artworkId",""); return; }
+    s("artworkId", id);
+    s("title", art.title);
+    s("artist", art.artist||"");
+    s("artworkValue", art.recommendedPrice||0);
+    s("reservePrice", art.recommendedPrice||0);
+    s("galleryName", art.galleryName||"");
+  };
+
+  const endTimeMin = () => {
+    const d = new Date();
+    d.setMinutes(d.getMinutes()+30);
+    return d.toISOString().slice(0,16);
+  };
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.75)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
+      <div style={{ background:"#f7f5f1", border:"1px solid rgba(182,139,46,0.30)", borderRadius:16, width:"100%", maxWidth:600, maxHeight:"90vh", overflow:"auto", padding:28 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
+          <h2 style={{ fontFamily:"Cormorant Garamond,serif", fontSize:22, fontWeight:400, color:"#1a1714", margin:0 }}>Create Auction</h2>
+          <button onClick={onClose} style={{ background:"none", border:"none", color:"#6b635a", cursor:"pointer", fontSize:20 }}>×</button>
+        </div>
+
+        <div style={{ marginBottom:14 }}>
+          <label style={{ display:"block", fontSize:10, fontWeight:500, letterSpacing:2, textTransform:"uppercase", color:"#6b635a", marginBottom:6 }}>Select Artwork</label>
+          <select value={f.artworkId} onChange={e=>handleArtworkSelect(e.target.value)} style={{ width:"100%", padding:"12px 14px", background:"#e8e4dd", border:"1px solid rgba(182,139,46,0.20)", borderRadius:8, color:"#1a1714", fontFamily:"DM Sans,sans-serif", fontSize:14, outline:"none" }}>
+            <option value="">— Select artwork</option>
+            {availableArtworks.map(a => <option key={a.id} value={a.id}>{a.title} — R {fmt(a.recommendedPrice)} ({a.status})</option>)}
+          </select>
+        </div>
+
+        {f.artworkId && (
+          <div style={{ padding:"12px 14px", background:"rgba(182,139,46,0.08)", border:"1px solid rgba(182,139,46,0.2)", borderRadius:8, marginBottom:14, fontSize:12, color:"#6b635a" }}>
+            <strong>{f.title}</strong> by {f.artist} · Declared value: R {fmt(f.artworkValue)} · Gallery: {f.galleryName||"—"}
+          </div>
+        )}
+
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
+          <div style={{ marginBottom:0 }}>
+            <label style={{ display:"block", fontSize:10, fontWeight:500, letterSpacing:2, textTransform:"uppercase", color:"#6b635a", marginBottom:6 }}>Reserve Price (R)</label>
+            <input type="number" value={f.reservePrice} onChange={e=>s("reservePrice",Number(e.target.value))} style={{ width:"100%", padding:"12px 14px", background:"#e8e4dd", border:"1px solid rgba(182,139,46,0.20)", borderRadius:8, color:"#1a1714", fontFamily:"DM Sans,sans-serif", fontSize:14, outline:"none" }}/>
+            <div style={{ fontSize:10, color:"#8a8070", marginTop:4 }}>Auto-set to 100% declared value. Renter may adjust per agreement.</div>
+          </div>
+          <div style={{ marginBottom:0 }}>
+            <label style={{ display:"block", fontSize:10, fontWeight:500, letterSpacing:2, textTransform:"uppercase", color:"#6b635a", marginBottom:6 }}>Auction End Date & Time</label>
+            <input type="datetime-local" value={f.endTime} min={endTimeMin()} onChange={e=>s("endTime",e.target.value)} style={{ width:"100%", padding:"12px 14px", background:"#e8e4dd", border:"1px solid rgba(182,139,46,0.20)", borderRadius:8, color:"#1a1714", fontFamily:"DM Sans,sans-serif", fontSize:13, outline:"none" }}/>
+          </div>
+        </div>
+
+        <div style={{ marginTop:14, marginBottom:14 }}>
+          <label style={{ display:"block", fontSize:10, fontWeight:500, letterSpacing:2, textTransform:"uppercase", color:"#6b635a", marginBottom:10 }}>Bid Increment</label>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:8 }}>
+            {BID_INCREMENTS.map(inc => (
+              <button key={inc.label} onClick={() => { s("incrementType",inc.type); s("incrementValue",inc.value); s("incrementLabel",inc.label); }} style={{ padding:"10px 6px", borderRadius:8, border:f.incrementLabel===inc.label?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.25)", background:f.incrementLabel===inc.label?"rgba(182,139,46,0.18)":"#e8e4dd", color:f.incrementLabel===inc.label?"#b68b2e":"#6b635a", cursor:"pointer", fontFamily:"DM Sans,sans-serif", fontSize:12, fontWeight:f.incrementLabel===inc.label?600:400 }}>
+                {inc.label}
+              </button>
+            ))}
+          </div>
+          {f.artworkValue > 0 && f.incrementValue > 0 && (
+            <div style={{ fontSize:11, color:"#8a8070", marginTop:8 }}>
+              Min next bid from R {fmt(f.artworkValue)}: R {fmt(calcMinBid(f.artworkValue, { type:f.incrementType, value:f.incrementValue }))}
+            </div>
+          )}
+        </div>
+
+        <div style={{ marginBottom:14 }}>
+          <label style={{ display:"block", fontSize:10, fontWeight:500, letterSpacing:2, textTransform:"uppercase", color:"#6b635a", marginBottom:6 }}>Notes (internal)</label>
+          <textarea value={f.startNote} onChange={e=>s("startNote",e.target.value)} style={{ width:"100%", padding:"12px 14px", background:"#e8e4dd", border:"1px solid rgba(182,139,46,0.20)", borderRadius:8, color:"#1a1714", fontFamily:"DM Sans,sans-serif", fontSize:14, outline:"none", minHeight:60, resize:"vertical" }} placeholder="Internal notes for this auction..."/>
+        </div>
+
+        <div style={{ display:"flex", gap:10, justifyContent:"flex-end", marginTop:8 }}>
+          <button onClick={onClose} style={{ padding:"12px 22px", borderRadius:8, border:"1px solid rgba(182,139,46,0.50)", cursor:"pointer", fontSize:12, fontWeight:600, letterSpacing:1, textTransform:"uppercase", fontFamily:"DM Sans,sans-serif", background:"transparent", color:"#b68b2e" }}>Cancel</button>
+          <button onClick={() => {
+            if (!f.artworkId) return alert("Select an artwork");
+            if (!f.endTime) return alert("Set an end date and time");
+            if (!f.incrementLabel) return alert("Select a bid increment");
+            onSave(f);
+          }} style={{ padding:"12px 22px", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, letterSpacing:1, textTransform:"uppercase", fontFamily:"DM Sans,sans-serif", background:"linear-gradient(135deg,#b68b2e,#8a6a1e)", color:"#f5f3ef" }}>
+            Create Auction
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── PLACE BID MODAL ───
+function PlaceBidModal({ auction, buyers, bids, onBid, onClose, fmt }) {
+  const [buyerId, setBuyerId] = React.useState("");
+  const [customAmount, setCustomAmount] = React.useState("");
+  const bn = b => b.type==="company" ? b.companyName : `${b.firstName} ${b.lastName}`;
+
+  const minBid = calcMinBid(auction.currentBid||auction.reservePrice||0, { type:auction.incrementType, value:auction.incrementValue });
+  const amount = Number(customAmount) || minBid;
+  const buyer = buyers.find(b => b.id === buyerId);
+  const reserveMet = amount >= (auction.reservePrice||0);
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.75)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
+      <div style={{ background:"#f7f5f1", border:"1px solid rgba(182,139,46,0.30)", borderRadius:16, width:"100%", maxWidth:480, padding:28 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+          <h2 style={{ fontFamily:"Cormorant Garamond,serif", fontSize:22, fontWeight:400, color:"#1a1714", margin:0 }}>Place Bid</h2>
+          <button onClick={onClose} style={{ background:"none", border:"none", color:"#6b635a", cursor:"pointer", fontSize:20 }}>×</button>
+        </div>
+
+        <div style={{ background:"#e8e4dd", borderRadius:10, padding:"14px 16px", marginBottom:18 }}>
+          <div style={{ fontFamily:"Cormorant Garamond,serif", fontSize:18, color:"#1a1714", marginBottom:4 }}>{auction.title}</div>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, fontSize:13 }}>
+            <span style={{ color:"#6b635a" }}>Current bid:</span><span style={{ fontWeight:600, color:"#b68b2e" }}>R {fmt(auction.currentBid||0)}</span>
+            <span style={{ color:"#6b635a" }}>Reserve:</span><span style={{ color:"#c45c4a" }}>R {fmt(auction.reservePrice||0)}</span>
+            <span style={{ color:"#6b635a" }}>Min next bid:</span><span style={{ fontWeight:600, color:"#1a1714" }}>R {fmt(minBid)}</span>
+            <span style={{ color:"#6b635a" }}>Increment:</span><span>{auction.incrementLabel}</span>
+          </div>
+        </div>
+
+        <div style={{ marginBottom:14 }}>
+          <label style={{ display:"block", fontSize:10, fontWeight:500, letterSpacing:2, textTransform:"uppercase", color:"#6b635a", marginBottom:6 }}>Bidder (KYC Approved)</label>
+          <select value={buyerId} onChange={e=>setBuyerId(e.target.value)} style={{ width:"100%", padding:"12px 14px", background:"#e8e4dd", border:"1px solid rgba(182,139,46,0.20)", borderRadius:8, color:"#1a1714", fontFamily:"DM Sans,sans-serif", fontSize:14, outline:"none" }}>
+            <option value="">— Select approved buyer</option>
+            {buyers.map(b => <option key={b.id} value={b.id}>{bn(b)} · {b.email||""}</option>)}
+          </select>
+          {buyers.length === 0 && <div style={{ fontSize:11, color:"#c45c4a", marginTop:6 }}>⚠ No approved buyers. Approve buyers in the Buyer Approvals tab first.</div>}
+        </div>
+
+        <div style={{ marginBottom:18 }}>
+          <label style={{ display:"block", fontSize:10, fontWeight:500, letterSpacing:2, textTransform:"uppercase", color:"#6b635a", marginBottom:6 }}>Bid Amount (R)</label>
+          <input type="number" value={customAmount} onChange={e=>setCustomAmount(e.target.value)} placeholder={`Min R ${fmt(minBid)}`} style={{ width:"100%", padding:"12px 14px", background:"#e8e4dd", border:`1px solid ${amount>=minBid?"rgba(182,139,46,0.20)":"rgba(196,92,74,0.40)"}`, borderRadius:8, color:"#1a1714", fontFamily:"DM Sans,sans-serif", fontSize:14, outline:"none" }}/>
+          {customAmount && amount < minBid && <div style={{ fontSize:11, color:"#c45c4a", marginTop:6 }}>⚠ Bid must be at least R {fmt(minBid)}</div>}
+          {customAmount && amount >= minBid && (
+            <div style={{ fontSize:11, marginTop:6, color:reserveMet?"#4a9e6b":"#c45c4a" }}>
+              {reserveMet ? "✓ Reserve price met — this bid qualifies for sale" : `⚠ Below reserve (R ${fmt(auction.reservePrice)}) — bid will be recorded but artwork won't sell at this price`}
+            </div>
+          )}
+        </div>
+
+        <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
+          <button onClick={onClose} style={{ padding:"12px 22px", borderRadius:8, border:"1px solid rgba(182,139,46,0.50)", cursor:"pointer", fontSize:12, fontWeight:600, letterSpacing:1, textTransform:"uppercase", fontFamily:"DM Sans,sans-serif", background:"transparent", color:"#b68b2e" }}>Cancel</button>
+          <button disabled={!buyerId||amount<minBid} onClick={() => {
+            if (!buyerId || amount < minBid) return;
+            onBid(buyerId, bn(buyer), amount);
+          }} style={{ padding:"12px 22px", borderRadius:8, border:"none", cursor:(!buyerId||amount<minBid)?"not-allowed":"pointer", fontSize:12, fontWeight:600, letterSpacing:1, textTransform:"uppercase", fontFamily:"DM Sans,sans-serif", background:"linear-gradient(135deg,#b68b2e,#8a6a1e)", color:"#f5f3ef", opacity:(!buyerId||amount<minBid)?0.4:1 }}>
+            Confirm Bid — R {fmt(amount)}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── PUSH NOTIFICATION MODAL ───
+function PushNotificationModal({ auctions, buyers, onSend, onClose }) {
+  const [title, setTitle] = React.useState("Vollard Black Auction");
+  const [body, setBody] = React.useState("");
+  const [template, setTemplate] = React.useState("");
+
+  const templates = [
+    { label:"Auction Going Live", title:"🔴 Auction Now Live — Vollard Black", body:"A new auction is now live. Log in to place your bid before time runs out." },
+    { label:"Ending Soon", title:"⏱ Auction Ending Soon — Vollard Black", body:"This auction closes in under 30 minutes. Place your bid now." },
+    { label:"Reserve Met", title:"✓ Reserve Price Met — Vollard Black", body:"The reserve price has been met. Current leading bid qualifies for purchase." },
+    { label:"New Artwork Listed", title:"◆ New Artwork — Vollard Black Auction", body:"A new artwork has been listed for auction. Register your interest to participate." },
+    { label:"Auction Result", title:"Auction Closed — Vollard Black", body:"The auction has closed. Settlement report is being prepared." },
+  ];
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.75)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
+      <div style={{ background:"#f7f5f1", border:"1px solid rgba(182,139,46,0.30)", borderRadius:16, width:"100%", maxWidth:500, padding:28 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+          <h2 style={{ fontFamily:"Cormorant Garamond,serif", fontSize:22, fontWeight:400, color:"#1a1714", margin:0 }}>🔔 Push Notification</h2>
+          <button onClick={onClose} style={{ background:"none", border:"none", color:"#6b635a", cursor:"pointer", fontSize:20 }}>×</button>
+        </div>
+
+        <div style={{ fontSize:12, color:"#6b635a", marginBottom:16, padding:"10px 14px", background:"rgba(182,139,46,0.06)", borderRadius:8, border:"1px solid rgba(182,139,46,0.15)" }}>
+          Sends a browser push notification to anyone currently using the platform. For email notifications to gallery and buyers, use the Email Actions in Invoicing.
+        </div>
+
+        <div style={{ marginBottom:14 }}>
+          <label style={{ display:"block", fontSize:10, fontWeight:500, letterSpacing:2, textTransform:"uppercase", color:"#6b635a", marginBottom:8 }}>Quick Templates</label>
+          <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+            {templates.map(t => (
+              <button key={t.label} onClick={() => { setTitle(t.title); setBody(t.body); setTemplate(t.label); }} style={{ padding:"6px 12px", borderRadius:6, border:`1px solid ${template===t.label?"#b68b2e":"rgba(182,139,46,0.25)"}`, background:template===t.label?"rgba(182,139,46,0.18)":"transparent", color:template===t.label?"#b68b2e":"#6b635a", fontSize:11, cursor:"pointer", fontFamily:"DM Sans,sans-serif" }}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginBottom:14 }}>
+          <label style={{ display:"block", fontSize:10, fontWeight:500, letterSpacing:2, textTransform:"uppercase", color:"#6b635a", marginBottom:6 }}>Title</label>
+          <input value={title} onChange={e=>setTitle(e.target.value)} style={{ width:"100%", padding:"12px 14px", background:"#e8e4dd", border:"1px solid rgba(182,139,46,0.20)", borderRadius:8, color:"#1a1714", fontFamily:"DM Sans,sans-serif", fontSize:14, outline:"none" }}/>
+        </div>
+
+        <div style={{ marginBottom:20 }}>
+          <label style={{ display:"block", fontSize:10, fontWeight:500, letterSpacing:2, textTransform:"uppercase", color:"#6b635a", marginBottom:6 }}>Message</label>
+          <textarea value={body} onChange={e=>setBody(e.target.value)} style={{ width:"100%", padding:"12px 14px", background:"#e8e4dd", border:"1px solid rgba(182,139,46,0.20)", borderRadius:8, color:"#1a1714", fontFamily:"DM Sans,sans-serif", fontSize:14, outline:"none", minHeight:80, resize:"vertical" }} placeholder="Notification message..."/>
+        </div>
+
+        <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
+          <button onClick={onClose} style={{ padding:"12px 22px", borderRadius:8, border:"1px solid rgba(182,139,46,0.50)", cursor:"pointer", fontSize:12, fontWeight:600, letterSpacing:1, textTransform:"uppercase", fontFamily:"DM Sans,sans-serif", background:"transparent", color:"#b68b2e" }}>Cancel</button>
+          <button disabled={!title||!body} onClick={() => onSend(title, body)} style={{ padding:"12px 22px", borderRadius:8, border:"none", cursor:(!title||!body)?"not-allowed":"pointer", fontSize:12, fontWeight:600, letterSpacing:1, textTransform:"uppercase", fontFamily:"DM Sans,sans-serif", background:"linear-gradient(135deg,#b68b2e,#8a6a1e)", color:"#f5f3ef", opacity:(!title||!body)?0.4:1 }}>
+            🔔 Send Notification
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
