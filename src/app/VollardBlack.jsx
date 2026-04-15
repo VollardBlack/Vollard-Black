@@ -278,8 +278,8 @@ const Badge=({status,sched,model})=>{const cfg=model?modelC:sched?schedC:stC;con
 const Field=({label,children,style:s})=><div style={{marginBottom:16,...s}}><label style={{display:"block",fontSize:10,fontWeight:500,letterSpacing:2,textTransform:"uppercase",color:"#6b635a",marginBottom:6}}>{label}</label>{children}</div>;
 const Stat=({label,value,gold,green,red,orange})=><Card style={{padding:18,textAlign:"center"}}><div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:6}}>{label}</div><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:26,fontWeight:600,color:gold?"#b68b2e":green?"#4a9e6b":red?"#c45c4a":orange?"#dc7828":"#1a1714"}}>{value}</div></Card>;
 const Empty=({msg,action})=><div style={{textAlign:"center",padding:"48px 20px",color:"#8a8070"}}><div style={{fontSize:42,marginBottom:12,opacity:0.3}}>◆</div><p style={{fontSize:14,marginBottom:16}}>{msg}</p>{action}</div>;
-const Modal=({title,onClose,children,wide})=><div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}><div style={{background:"#f7f5f1",border:"1px solid rgba(182,139,46,0.30)",borderRadius:16,width:"100%",maxWidth:wide?780:520,maxHeight:"90vh",overflow:"auto",padding:28}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}><h2 style={{fontFamily:"Cormorant Garamond,serif",fontSize:22,fontWeight:400,color:"#1a1714",margin:0}}>{title}</h2><button onClick={onClose} style={{background:"none",border:"none",color:"#6b635a",cursor:"pointer"}}>{I.x}</button></div>{children}</div></div>;
-const PT=({title,sub,action})=><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:28,flexWrap:"wrap",gap:12}}><div><h1 style={{fontFamily:"Cormorant Garamond,serif",fontSize:28,fontWeight:400,color:"#1a1714",letterSpacing:1,margin:0}}>{title}</h1>{sub&&<p style={{fontSize:12,color:"#8a8070",marginTop:4,letterSpacing:1}}>{sub}</p>}</div>{action}</div>;
+const Modal=({title,onClose,children,wide})=><div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:"12px 8px"}}><div style={{background:"#f7f5f1",border:"1px solid rgba(182,139,46,0.30)",borderRadius:16,width:"100%",maxWidth:wide?780:520,maxHeight:"94vh",overflow:"auto",padding:"20px 16px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}><h2 style={{fontFamily:"Cormorant Garamond,serif",fontSize:22,fontWeight:400,color:"#1a1714",margin:0}}>{title}</h2><button onClick={onClose} style={{background:"none",border:"none",color:"#6b635a",cursor:"pointer"}}>{I.x}</button></div>{children}</div></div>;
+const PT=({title,sub,action})=><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20,flexWrap:"wrap",gap:10}}><div><h1 style={{fontFamily:"Cormorant Garamond,serif",fontSize:28,fontWeight:400,color:"#1a1714",letterSpacing:1,margin:0}}>{title}</h1>{sub&&<p style={{fontSize:12,color:"#8a8070",marginTop:4,letterSpacing:1}}>{sub}</p>}</div>{action}</div>;
 const Tbl=({cols,data:rows})=><div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse"}}><thead><tr>{cols.map((c,i)=><th key={i} style={{fontSize:10,fontWeight:600,letterSpacing:1.5,textTransform:"uppercase",color:"#8a8070",padding:"10px 12px",textAlign:c.right?"right":"left",borderBottom:"1px solid rgba(182,139,46,0.18)",whiteSpace:"nowrap"}}>{c.label}</th>)}</tr></thead><tbody>{rows.map((row,ri)=><tr key={ri} onMouseEnter={e=>e.currentTarget.style.background="rgba(182,139,46,0.03)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>{cols.map((c,ci)=><td key={ci} style={{fontSize:13,color:c.gold?"#b68b2e":c.green?"#4a9e6b":"#2a2622",fontWeight:c.bold?600:400,padding:"12px",textAlign:c.right?"right":"left",borderBottom:"1px solid rgba(182,139,46,0.10)",whiteSpace:"nowrap"}}>{c.render?c.render(row):row[c.key]}</td>)}</tr>)}</tbody></table></div>;
 const ProgressBar=({pct,color})=><div style={{height:4,background:"rgba(182,139,46,0.20)",borderRadius:2,overflow:"hidden",marginTop:6}}><div style={{height:"100%",width:`${Math.min(pct,100)}%`,background:color||"linear-gradient(90deg,#b68b2e,#8a6a1e)",borderRadius:2,transition:"width 0.4s"}}/></div>;
 const Banner=({type,count,label,onClick})=>{const cfg={yellow:{bg:"rgba(230,190,50,0.1)",border:"rgba(230,190,50,0.3)",c:"#e6be32"},orange:{bg:"rgba(220,120,40,0.1)",border:"rgba(220,120,40,0.3)",c:"#dc7828"},red:{bg:"rgba(196,92,74,0.1)",border:"rgba(196,92,74,0.3)",c:"#c45c4a"}};const s=cfg[type];return<div onClick={onClick} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 18px",background:s.bg,border:`1px solid ${s.border}`,borderRadius:10,cursor:"pointer",marginBottom:10}}><span style={{color:s.c}}>{I.warn}</span><span style={{fontSize:13,color:s.c,fontWeight:600}}>{count} {label}</span><span style={{fontSize:11,color:s.c,marginLeft:"auto",opacity:0.7}}>Click to view →</span></div>;};
@@ -394,15 +394,24 @@ function LoginScreen({onLogin}){
 // MAIN APP
 // ═══════════════════════════════════════════
 export default function App(){
-  const [session,setSession]=useState(undefined); // undefined = checking, null = not logged in
+  const [session,setSession]=useState(undefined);
   const [data,setData]=useState(fresh);
   const [page,setPage]=useState("dashboard");
   const [sb,setSb]=useState(false);
   const [loading,setLoading]=useState(true);
   const [dbMode,setDbMode]=useState(false);
+  const [isMobile,setIsMobile]=useState(false);
   const dbModeRef=useRef(false);
   const dataRef=useRef(fresh());
   const [invoiceFilter,setInvoiceFilter]=useState(null);
+
+  // ── Mobile detection ──
+  useEffect(()=>{
+    const check=()=>setIsMobile(window.innerWidth<900);
+    check();
+    window.addEventListener('resize',check);
+    return()=>window.removeEventListener('resize',check);
+  },[]);
 
   // ── Auth: check session on mount, listen for changes ──
   useEffect(()=>{
@@ -637,6 +646,27 @@ export default function App(){
 
   return(
     <div style={{display:"flex",minHeight:"100vh",background:"#f5f3ef",fontFamily:"DM Sans,sans-serif",color:"#2a2622"}}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap');
+        *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+        input,select,textarea,button{font-family:'DM Sans',sans-serif;}
+        @media(max-width:900px){
+          table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+          .vb-grid-2{grid-template-columns:1fr!important;}
+          .vb-grid-3{grid-template-columns:1fr 1fr!important;}
+          .vb-grid-4{grid-template-columns:1fr 1fr!important;}
+          .vb-grid-5{grid-template-columns:1fr 1fr!important;}
+          .vb-hide-mobile{display:none!important;}
+          .vb-full-mobile{width:100%!important;max-width:100%!important;}
+        }
+        @media(max-width:480px){
+          .vb-grid-2,.vb-grid-3,.vb-grid-4,.vb-grid-5{grid-template-columns:1fr!important;}
+        }
+        input[type="datetime-local"]{font-size:14px;}
+        ::-webkit-scrollbar{width:4px;height:4px;}
+        ::-webkit-scrollbar-track{background:transparent;}
+        ::-webkit-scrollbar-thumb{background:rgba(182,139,46,0.3);border-radius:2px;}
+      `}</style>
       {sb&&<div onClick={()=>setSb(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",zIndex:98}}/>}
       <aside style={{width:240,minHeight:"100vh",background:"#ffffff",borderRight:"1px solid rgba(182,139,46,0.20)",display:"flex",flexDirection:"column",position:"fixed",left:sb?0:"-240px",top:0,bottom:0,zIndex:99,transition:"left 0.3s",...(typeof window!=="undefined"&&window.innerWidth>900?{position:"relative",left:0}:{})}}>
         <div style={{padding:"28px 24px 20px",borderBottom:"1px solid rgba(182,139,46,0.18)"}}>
@@ -658,12 +688,33 @@ export default function App(){
         </div>
       </aside>
       <main style={{flex:1,minWidth:0}}>
-        <div style={{display:typeof window!=="undefined"&&window.innerWidth>900?"none":"flex",alignItems:"center",padding:"16px 20px",borderBottom:"1px solid rgba(182,139,46,0.18)",background:"#ffffff"}}>
+        <div style={{display:isMobile?"flex":"none",alignItems:"center",padding:"16px 20px",borderBottom:"1px solid rgba(182,139,46,0.18)",background:"#ffffff"}}>
           <button onClick={()=>setSb(true)} style={{background:"none",border:"none",color:"#b68b2e",cursor:"pointer",padding:4}}>{I.menu}</button>
           <span style={{fontFamily:"Cormorant Garamond,serif",fontSize:16,letterSpacing:4,marginLeft:12,color:"#1a1714"}}>VOLLARD <span style={{color:"#b68b2e"}}>BLACK</span></span>
         </div>
-        <div style={{padding:"32px 28px",maxWidth:1200,margin:"0 auto"}}>{pg[page]}</div>
+        <div style={{padding:isMobile?"16px 14px":"32px 28px",maxWidth:1200,margin:"0 auto",paddingBottom:isMobile?"80px":"32px"}}>{pg[page]}</div>
       </main>
+      {isMobile&&<nav style={{position:"fixed",bottom:0,left:0,right:0,background:"#ffffff",borderTop:"1px solid rgba(182,139,46,0.20)",display:"flex",zIndex:97,paddingBottom:"env(safe-area-inset-bottom,0px)"}}>
+        {[
+          {id:"dashboard",icon:I.dash,label:"Home"},
+          {id:"catalogue",icon:I.art,label:"Art"},
+          {id:"invoices",icon:I.bill,label:"Invoicing"},
+          {id:"auction",icon:I.gavel,label:"Auction"},
+          {id:"reports",icon:I.report,label:"Reports"},
+        ].map(n=>{
+          const active=page===n.id;
+          const alertCount=n.id==="invoices"?chasing.length+inDispute.length+cancelled.length:n.id==="auction"?(liveAuctionCount>0?liveAuctionCount:0)+(pendingApprovalCount>0?pendingApprovalCount:0):0;
+          return<button key={n.id} onClick={()=>navTo(n.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"8px 0",background:"transparent",border:"none",color:active?"#b68b2e":"#8a8070",cursor:"pointer",position:"relative",gap:3}}>
+            <div style={{color:active?"#b68b2e":"#8a8070"}}>{n.icon}</div>
+            <span style={{fontSize:9,letterSpacing:0.5,fontWeight:active?600:400}}>{n.label}</span>
+            {alertCount>0&&<div style={{position:"absolute",top:4,right:"50%",transform:"translateX(12px)",width:8,height:8,borderRadius:"50%",background:"#c45c4a"}}/>}
+          </button>;
+        })}
+        <button onClick={()=>setSb(true)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"8px 0",background:"transparent",border:"none",color:"#8a8070",cursor:"pointer",gap:3}}>
+          {I.menu}
+          <span style={{fontSize:9,letterSpacing:0.5}}>More</span>
+        </button>
+      </nav>}
     </div>
   );
 }
