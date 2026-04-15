@@ -745,7 +745,7 @@ function AucCard({auction,bids,fmt,actions,onBid,artworks}){
     <div style={{height:3,background:sc.c}}/>
     <div style={{padding:18}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
-        <div><div style={{display:"flex",gap:10,alignItems:"flex-start"}}>{artImg&&<div style={{width:48,height:48,borderRadius:6,overflow:"hidden",flexShrink:0,border:"1px solid rgba(182,139,46,0.20)"}}><img src={artImg} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div>}<div style={{flex:1}}><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:17,color:"#1a1714"}}>{auction.title}</div><div style={{fontSize:11,color:"#8a8070",marginTop:2}}>{auction.artist} · {auction.galleryName}</div></div></div>
+        <div style={{flex:1,minWidth:0}}><div style={{display:"flex",gap:10,alignItems:"flex-start"}}>{artImg&&<div style={{width:48,height:48,borderRadius:6,overflow:"hidden",flexShrink:0,border:"1px solid rgba(182,139,46,0.20)"}}><img src={artImg} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div>}<div style={{flex:1}}><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:17,color:"#1a1714"}}>{auction.title}</div><div style={{fontSize:11,color:"#8a8070",marginTop:2}}>{auction.artist} · {auction.galleryName}</div></div></div></div>
         <span style={{padding:"3px 10px",borderRadius:6,fontSize:11,fontWeight:600,background:sc.bg,color:sc.c,flexShrink:0}}>{auction.status}</span>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
