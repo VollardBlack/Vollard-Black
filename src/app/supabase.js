@@ -106,7 +106,12 @@ export const db = {
   async insert(table, record) {
     if (!supabase) return null;
     const snake = toSnake(record);
-    // Keep VB-prefixed IDs for text-ID tables (auctions, bids, etc.)
+    // Remove auto-generated UUID fields for UUID-primary-key tables
+    // Keep IDs for text-primary-key tables (auctions, bids, reports, schedules, payments, sales)
+    const textIdTables = ['auctions','bids','reports','schedules','payments','sales','buyers','collectors','artists','artworks'];
+    if (!textIdTables.includes(table) && snake.id && typeof snake.id === 'string' && snake.id.startsWith('VB')) {
+      delete snake.id;
+    }
     const { data, error } = await supabase
       .from(table).insert(snake).select().single();
     if (error) { console.error(`insert ${table}:`, error.message); return null; }
