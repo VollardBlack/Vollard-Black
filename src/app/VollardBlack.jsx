@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { db, storage } from "./supabase";
+import { db, storage, auth } from "./supabase";
 
 // ─── Constants ───
 const MODELS = {
@@ -284,10 +284,117 @@ const Tbl=({cols,data:rows})=><div style={{overflowX:"auto"}}><table style={{wid
 const ProgressBar=({pct,color})=><div style={{height:4,background:"rgba(182,139,46,0.20)",borderRadius:2,overflow:"hidden",marginTop:6}}><div style={{height:"100%",width:`${Math.min(pct,100)}%`,background:color||"linear-gradient(90deg,#b68b2e,#8a6a1e)",borderRadius:2,transition:"width 0.4s"}}/></div>;
 const Banner=({type,count,label,onClick})=>{const cfg={yellow:{bg:"rgba(230,190,50,0.1)",border:"rgba(230,190,50,0.3)",c:"#e6be32"},orange:{bg:"rgba(220,120,40,0.1)",border:"rgba(220,120,40,0.3)",c:"#dc7828"},red:{bg:"rgba(196,92,74,0.1)",border:"rgba(196,92,74,0.3)",c:"#c45c4a"}};const s=cfg[type];return<div onClick={onClick} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 18px",background:s.bg,border:`1px solid ${s.border}`,borderRadius:10,cursor:"pointer",marginBottom:10}}><span style={{color:s.c}}>{I.warn}</span><span style={{fontSize:13,color:s.c,fontWeight:600}}>{count} {label}</span><span style={{fontSize:11,color:s.c,marginLeft:"auto",opacity:0.7}}>Click to view →</span></div>;};
 
+
+// ═══════════════════════════════════════════
+// LOGIN SCREEN
+// ═══════════════════════════════════════════
+function LoginScreen({onLogin}){
+  const [email,setEmail]=useState("");
+  const [password,setPassword]=useState("");
+  const [loading,setLoading]=useState(false);
+  const [error,setError]=useState("");
+  const [showPw,setShowPw]=useState(false);
+
+  const handleLogin=async(e)=>{
+    e.preventDefault();
+    if(!email||!password)return setError("Enter your email and password.");
+    setLoading(true);setError("");
+    const {data,error:err}=await auth.signIn(email,password);
+    setLoading(false);
+    if(err)return setError("Incorrect email or password. Please try again.");
+    if(data?.session)onLogin(data.session);
+  };
+
+  return(
+    <div style={{minHeight:"100vh",background:"#f5f3ef",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+      <div style={{width:"100%",maxWidth:420}}>
+        {/* Logo */}
+        <div style={{textAlign:"center",marginBottom:48}}>
+          <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:38,fontWeight:300,letterSpacing:10,color:"#1a1714"}}>
+            VOLLARD <span style={{color:"#b68b2e"}}>BLACK</span>
+          </div>
+          <div style={{fontSize:10,letterSpacing:4,textTransform:"uppercase",color:"#8a8070",marginTop:6}}>
+            Fine Art Acquisitions · Admin
+          </div>
+          <div style={{width:40,height:1,background:"rgba(182,139,46,0.4)",margin:"20px auto 0"}}/>
+        </div>
+
+        {/* Card */}
+        <div style={{background:"#ffffff",border:"1px solid rgba(182,139,46,0.20)",borderRadius:16,padding:36,boxShadow:"0 8px 32px rgba(0,0,0,0.06)"}}>
+          <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:22,fontWeight:400,color:"#1a1714",marginBottom:6}}>
+            Sign in
+          </div>
+          <div style={{fontSize:12,color:"#8a8070",marginBottom:28}}>
+            Admin access only
+          </div>
+
+          <form onSubmit={handleLogin}>
+            <div style={{marginBottom:16}}>
+              <label style={{display:"block",fontSize:10,fontWeight:500,letterSpacing:2,textTransform:"uppercase",color:"#6b635a",marginBottom:6}}>
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={e=>{setEmail(e.target.value);setError("");}}
+                placeholder="concierge@vollardblack.com"
+                autoComplete="email"
+                style={{width:"100%",padding:"12px 14px",background:"#f5f3ef",border:"1px solid rgba(182,139,46,0.25)",borderRadius:8,color:"#1a1714",fontFamily:"DM Sans,sans-serif",fontSize:14,outline:"none",boxSizing:"border-box"}}
+              />
+            </div>
+
+            <div style={{marginBottom:24}}>
+              <label style={{display:"block",fontSize:10,fontWeight:500,letterSpacing:2,textTransform:"uppercase",color:"#6b635a",marginBottom:6}}>
+                Password
+              </label>
+              <div style={{position:"relative"}}>
+                <input
+                  type={showPw?"text":"password"}
+                  value={password}
+                  onChange={e=>{setPassword(e.target.value);setError("");}}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  style={{width:"100%",padding:"12px 44px 12px 14px",background:"#f5f3ef",border:"1px solid rgba(182,139,46,0.25)",borderRadius:8,color:"#1a1714",fontFamily:"DM Sans,sans-serif",fontSize:14,outline:"none",boxSizing:"border-box"}}
+                />
+                <button
+                  type="button"
+                  onClick={()=>setShowPw(p=>!p)}
+                  style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",color:"#8a8070",cursor:"pointer",fontSize:12,fontFamily:"DM Sans,sans-serif"}}
+                >
+                  {showPw?"Hide":"Show"}
+                </button>
+              </div>
+            </div>
+
+            {error&&(
+              <div style={{padding:"10px 14px",background:"rgba(196,92,74,0.08)",border:"1px solid rgba(196,92,74,0.2)",borderRadius:8,fontSize:13,color:"#c45c4a",marginBottom:16}}>
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              style={{width:"100%",padding:"14px",background:loading?"rgba(182,139,46,0.5)":"linear-gradient(135deg,#b68b2e,#8a6a1e)",border:"none",borderRadius:8,color:"#f5f3ef",fontSize:13,fontWeight:600,letterSpacing:1,textTransform:"uppercase",fontFamily:"DM Sans,sans-serif",cursor:loading?"not-allowed":"pointer",transition:"opacity 0.2s"}}
+            >
+              {loading?"Signing in…":"Sign In"}
+            </button>
+          </form>
+        </div>
+
+        <div style={{textAlign:"center",marginTop:24,fontSize:11,color:"#a09890"}}>
+          Vollard Black (Pty) Ltd · Hermanus, South Africa
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════
 // MAIN APP
 // ═══════════════════════════════════════════
 export default function App(){
+  const [session,setSession]=useState(undefined); // undefined = checking, null = not logged in
   const [data,setData]=useState(fresh);
   const [page,setPage]=useState("dashboard");
   const [sb,setSb]=useState(false);
@@ -296,6 +403,18 @@ export default function App(){
   const dbModeRef=useRef(false);
   const dataRef=useRef(fresh());
   const [invoiceFilter,setInvoiceFilter]=useState(null);
+
+  // ── Auth: check session on mount, listen for changes ──
+  useEffect(()=>{
+    if(!db.isConnected()){
+      // No Supabase — run in local mode without login
+      setSession(null);
+      return;
+    }
+    auth.getSession().then(s=>setSession(s));
+    const {data:{subscription}}=auth.onAuthStateChange((_event,s)=>setSession(s));
+    return()=>subscription.unsubscribe();
+  },[]);
 
   useEffect(()=>{
     if("Notification"in window&&Notification.permission==="default")Notification.requestPermission();
@@ -508,6 +627,10 @@ export default function App(){
     reports:<ReportsPage data={d} actions={actions}/>,
   };
 
+  // ── Session gate ──
+  if(session===undefined)return<div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",background:"#f5f3ef"}}><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:24,fontWeight:300,letterSpacing:8,color:"#b68b2e",opacity:0.5}}>VOLLARD BLACK</div></div>;
+  if(session===null&&db.isConnected())return<LoginScreen onLogin={s=>setSession(s)}/>;
+
   if(loading)return<div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",background:"#f5f3ef"}}><div style={{textAlign:"center"}}><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:36,fontWeight:300,letterSpacing:10,color:"#1a1714",marginBottom:10}}>VOLLARD <span style={{color:"#b68b2e"}}>BLACK</span></div><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:14,fontWeight:300,letterSpacing:4,color:"#b68b2e",marginBottom:20,fontStyle:"italic"}}>Licensed Display Position Platform</div><div style={{width:32,height:1,background:"rgba(182,139,46,0.3)",margin:"0 auto 20px"}}/><div style={{fontSize:11,color:"#a09890",letterSpacing:3,textTransform:"uppercase"}}>Loading platform...</div></div></div>;
 
   return(
@@ -529,6 +652,7 @@ export default function App(){
           <div style={{marginTop:4}}>EXTENDED: 50/50 · 12 MO</div>
           <div style={{marginTop:4}}>PREMIUM: 50/50 · 24 MO</div>
           <div style={{marginTop:8,display:"flex",alignItems:"center",gap:6}}><div style={{width:6,height:6,borderRadius:"50%",background:dbMode?"#4a9e6b":"#b68b2e"}}/><span style={{fontSize:9}}>{dbMode?"Supabase Connected":"Local Storage"}</span></div>
+          {session&&<button onClick={()=>auth.signOut()} style={{marginTop:10,width:"100%",padding:"7px 0",background:"transparent",border:"1px solid rgba(182,139,46,0.25)",borderRadius:6,color:"#8a8070",fontSize:10,letterSpacing:1,textTransform:"uppercase",cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>Sign Out</button>}
         </div>
       </aside>
       <main style={{flex:1,minWidth:0}}>
