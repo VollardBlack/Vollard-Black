@@ -11,6 +11,8 @@ export const supabase = supabaseUrl && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
+const BUCKET = 'artwork-images';
+
 const toSnake = (obj) => {
   if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return obj;
   const out = {};
@@ -31,21 +33,75 @@ const toCamel = (obj) => {
   return out;
 };
 
+// ─── Storage helpers ───────────────────────────────────────────────────────
+export const storage = {
+  /**
+   * Upload a File or Blob to the artwork-images bucket.
+   * Returns the public URL string, or null on failure.
+   */
+  async uploadArtworkImage(file, artworkId) {
+    if (!supabase) return null;
+    const ext = file.name ? file.name.split('.').pop().toLowerCase() : 'jpg';
+    const path = `artworks/${artworkId}.${ext}`;
+    // upsert: true replaces an existing file with the same path
+    const { error } = await supabase.storage
+      .from(BUCKET)
+      .upload(path, file, { upsert: true, contentType: file.type });
+    if (error) {
+      console.error('Image upload failed:', error.message);
+      return null;
+    }
+    return storage.getPublicUrl(path);
+  },
+
+  /**
+   * Get the permanent public URL for a stored path.
+   */
+  getPublicUrl(path) {
+    if (!supabase) return null;
+    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+    return data?.publicUrl || null;
+  },
+
+  /**
+   * Delete an image by its full public URL or storage path.
+   */
+  async deleteArtworkImage(artworkId) {
+    if (!supabase) return;
+    // Try both common extensions
+    for (const ext of ['jpg', 'jpeg', 'png', 'webp', 'gif']) {
+      await supabase.storage
+        .from(BUCKET)
+        .remove([`artworks/${artworkId}.${ext}`]);
+    }
+  },
+};
+
+// ─── Database helpers ───────────────────────────────────────────────────────
 export const db = {
   async getAll(table) {
     if (!supabase) return null;
-    const { data, error } = await supabase.from(table).select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabase
+      .from(table)
+      .select('*')
+      .order('created_at', { ascending: false });
     if (error) { console.error(`Error fetching ${table}:`, error); return null; }
     return data.map(toCamel);
   },
+
   async insert(table, record) {
     if (!supabase) return null;
     const snake = toSnake(record);
     if (snake.id && typeof snake.id === 'string' && snake.id.startsWith('VB')) delete snake.id;
-    const { data, error } = await supabase.from(table).insert(snake).select().single();
+    const { data, error } = await supabase
+      .from(table)
+      .insert(snake)
+      .select()
+      .single();
     if (error) { console.error(`Error inserting into ${table}:`, error); return null; }
     return toCamel(data);
   },
+
   async insertMany(table, records) {
     if (!supabase) return null;
     const snakes = records.map(r => {
@@ -57,20 +113,28 @@ export const db = {
     if (error) { console.error(`Error bulk inserting into ${table}:`, error); return null; }
     return data.map(toCamel);
   },
+
   async update(table, id, changes) {
     if (!supabase) return null;
     const snake = toSnake(changes);
     delete snake.id;
-    const { data, error } = await supabase.from(table).update(snake).eq('id', id).select().single();
+    const { data, error } = await supabase
+      .from(table)
+      .update(snake)
+      .eq('id', id)
+      .select()
+      .single();
     if (error) { console.error(`Error updating ${table}:`, error); return null; }
     return toCamel(data);
   },
+
   async remove(table, id) {
     if (!supabase) return null;
     const { error } = await supabase.from(table).delete().eq('id', id);
     if (error) { console.error(`Error deleting from ${table}:`, error); return null; }
     return true;
   },
+
   isConnected() {
     return !!supabase;
   },
