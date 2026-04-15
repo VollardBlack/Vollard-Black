@@ -842,7 +842,7 @@ function AuctionPage({data,actions}){
     {view==="buyers"&&<AucBuyerApproval buyers={buyers} actions={actions} fmt={fmt}/>}
 
     {/* Modals */}
-    {createModal&&<AucCreateModal artworks={artworks} onSave={(d)=>{actions.createAuction(d);setCreateModal(false);}} onClose={()=>setCreateModal(false)} fmt={fmt}/>}
+    {createModal&&<AucCreateModal artworks={artworks} onSave={(d)=>{actions.createAuction(d);}} onClose={()=>setCreateModal(false)} fmt={fmt}/>}
     {bidModal&&<AucBidModal auction={bidModal} buyers={approvedBuyers} bids={bids.filter(b=>b.auctionId===bidModal.id)} onBid={(buyerId,buyerName,amount)=>{actions.placeBid(bidModal.id,buyerId,buyerName,amount);setBidModal(null);}} onClose={()=>setBidModal(null)} fmt={fmt}/>}
     {notifModal&&<AucNotifModal onSend={(t,b)=>{sendPushNotification(t,b);setNotifModal(false);}} onClose={()=>setNotifModal(false)}/>}
   </div>);
@@ -970,27 +970,153 @@ function AucBuyerApproval({buyers,actions,fmt}){
 }
 
 function AucCreateModal({artworks,onSave,onClose,fmt}){
-  const [f,setF]=useState({title:"",artist:"",artworkId:"",artworkValue:0,reservePrice:0,galleryName:"",incrementType:"pct",incrementValue:0.025,incrementLabel:"2.5%",startTime:"",endTime:"",startNote:""});
-  const s=(k,v)=>setF(p=>({...p,[k]:v}));
+  // Shared settings
+  const [startTime,setStartTime]=useState("");
+  const [endTime,setEndTime]=useState("");
+  const [incType,setIncType]=useState("pct");
+  const [incValue,setIncValue]=useState(0.025);
+  const [incLabel,setIncLabel]=useState("2.5%");
+  const [note,setNote]=useState("");
+  const [reserveMode,setReserveMode]=useState("auto"); // auto = 100% of value, custom = per lot
+  const [search,setSearch]=useState("");
+  // Selected lots: {artworkId, overrideReserve}
+  const [lots,setLots]=useState([]);
+
   const available=artworks.filter(a=>["Available","Reserved","In Gallery"].includes(a.status));
-  const handleArt=(id)=>{const art=artworks.find(a=>a.id===id);if(!art){s("artworkId","");return;}s("artworkId",id);s("title",art.title);s("artist",art.artist||"");s("artworkValue",art.recommendedPrice||0);s("reservePrice",art.recommendedPrice||0);s("galleryName",art.galleryName||"");};
+  const filtered=available.filter(a=>(a.title+a.artist+a.galleryName).toLowerCase().includes(search.toLowerCase()));
+  const selectedIds=new Set(lots.map(l=>l.artworkId));
+
+  const toggleArt=(art)=>{
+    if(selectedIds.has(art.id)){
+      setLots(p=>p.filter(l=>l.artworkId!==art.id));
+    } else {
+      if(lots.length>=100)return alert("Maximum 100 artworks per auction.");
+      setLots(p=>[...p,{artworkId:art.id,overrideReserve:null}]);
+    }
+  };
+  const selectAll=()=>{
+    const toAdd=filtered.filter(a=>!selectedIds.has(a.id)).slice(0,100-lots.length);
+    setLots(p=>[...p,...toAdd.map(a=>({artworkId:a.id,overrideReserve:null}))]);
+  };
+  const clearAll=()=>setLots([]);
+  const setOverride=(artworkId,val)=>setLots(p=>p.map(l=>l.artworkId===artworkId?{...l,overrideReserve:val====""?null:Number(val)}:l));
   const endMin=()=>{const d=new Date();d.setMinutes(d.getMinutes()+30);return d.toISOString().slice(0,16);};
-  return<Modal title="Create Auction" onClose={onClose} wide>
-    <Field label="Select Artwork"><select value={f.artworkId} onChange={e=>handleArt(e.target.value)} style={ss}><option value="">— Select artwork</option>{available.map(a=><option key={a.id} value={a.id}>{a.title} — R {fmt(a.recommendedPrice)} ({a.status})</option>)}</select></Field>
-    {f.artworkId&&<div style={{padding:"10px 14px",background:"rgba(182,139,46,0.08)",border:"1px solid rgba(182,139,46,0.2)",borderRadius:8,marginBottom:14,fontSize:12,color:"#6b635a"}}><strong>{f.title}</strong> by {f.artist} · Value: R {fmt(f.artworkValue)} · Gallery: {f.galleryName||"—"}</div>}
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-      <Field label="Auction Start Date & Time"><input type="datetime-local" value={f.startTime} min={endMin()} onChange={e=>s("startTime",e.target.value)} style={is}/><div style={{fontSize:10,color:"#8a8070",marginTop:4}}>Leave blank to start immediately on launch</div></Field>
-      <Field label="Auction End Date & Time"><input type="datetime-local" value={f.endTime} min={endMin()} onChange={e=>s("endTime",e.target.value)} style={is}/></Field>
+
+  const handleCreate=()=>{
+    if(lots.length===0)return alert("Select at least one artwork.");
+    if(!endTime)return alert("Set an auction end date and time.");
+    if(!incLabel)return alert("Select a bid increment.");
+    // Create one auction record per lot
+    lots.forEach(lot=>{
+      const art=artworks.find(a=>a.id===lot.artworkId);
+      if(!art)return;
+      const reserve=lot.overrideReserve!==null?lot.overrideReserve:art.recommendedPrice||0;
+      onSave({
+        title:art.title,
+        artist:art.artist||"",
+        artworkId:art.id,
+        artworkValue:art.recommendedPrice||0,
+        reservePrice:reserve,
+        galleryName:art.galleryName||"",
+        incrementType:incType,
+        incrementValue:incValue,
+        incrementLabel:incLabel,
+        startTime:startTime||null,
+        endTime,
+        startNote:note,
+      });
+    });
+    onClose();
+  };
+
+  return<Modal title={"Create Auction — "+lots.length+" lot"+(lots.length!==1?"s":"")} onClose={onClose} wide>
+    {/* Shared settings row */}
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:16}}>
+      <Field label="Start Date & Time (optional)">
+        <input type="datetime-local" value={startTime} min={endMin()} onChange={e=>setStartTime(e.target.value)} style={is}/>
+        <div style={{fontSize:10,color:"#8a8070",marginTop:4}}>Leave blank to launch manually</div>
+      </Field>
+      <Field label="End Date & Time">
+        <input type="datetime-local" value={endTime} min={endMin()} onChange={e=>setEndTime(e.target.value)} style={is}/>
+      </Field>
     </div>
-    <Field label="Reserve Price (R)" style={{marginTop:0}}><input type="number" value={f.reservePrice} onChange={e=>s("reservePrice",Number(e.target.value))} style={is}/><div style={{fontSize:10,color:"#8a8070",marginTop:4}}>Auto-set to 100% declared value · Bidding opens at this amount</div></Field>
-    <Field label="Bid Increment">
-      <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:8}}>
-        {BID_INCREMENTS.map(inc=><button key={inc.label} onClick={()=>{s("incrementType",inc.type);s("incrementValue",inc.value);s("incrementLabel",inc.label);}} style={{padding:"10px 6px",borderRadius:8,border:f.incrementLabel===inc.label?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.25)",background:f.incrementLabel===inc.label?"rgba(182,139,46,0.18)":"#e8e4dd",color:f.incrementLabel===inc.label?"#b68b2e":"#6b635a",cursor:"pointer",fontFamily:"DM Sans,sans-serif",fontSize:12,fontWeight:f.incrementLabel===inc.label?600:400}}>{inc.label}</button>)}
+    <Field label="Bid Increment (applies to all lots)">
+      <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:8,marginBottom:8}}>
+        {BID_INCREMENTS.map(inc=><button key={inc.label} onClick={()=>{setIncType(inc.type);setIncValue(inc.value);setIncLabel(inc.label);}} style={{padding:"10px 6px",borderRadius:8,border:incLabel===inc.label?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.25)",background:incLabel===inc.label?"rgba(182,139,46,0.18)":"#e8e4dd",color:incLabel===inc.label?"#b68b2e":"#6b635a",cursor:"pointer",fontFamily:"DM Sans,sans-serif",fontSize:12,fontWeight:incLabel===inc.label?600:400}}>{inc.label}</button>)}
       </div>
-      {f.artworkValue>0&&<div style={{fontSize:10,color:"#8a8070",marginTop:6}}>Opening bid = Reserve price (R {fmt(f.reservePrice)}). Subsequent bids increase by {f.incrementLabel}.</div>}
     </Field>
-    <Field label="Notes"><textarea value={f.startNote} onChange={e=>s("startNote",e.target.value)} style={{...is,minHeight:60,resize:"vertical"}} placeholder="Internal notes..."/></Field>
-    <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:8}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>{if(!f.artworkId)return alert("Select an artwork");if(!f.endTime)return alert("Set an end date and time");if(!f.incrementLabel)return alert("Select a bid increment");onSave({...f,startTime:f.startTime||null});}}>Create Auction</Btn></div>
+    <div style={{display:"flex",gap:8,marginBottom:12}}>
+      {[["auto","Reserve = 100% of value"],["custom","Set reserve per lot"]].map(([id,lbl])=>(
+        <button key={id} onClick={()=>setReserveMode(id)} style={{flex:1,padding:"9px 12px",borderRadius:8,border:reserveMode===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.25)",background:reserveMode===id?"rgba(182,139,46,0.18)":"#e8e4dd",color:reserveMode===id?"#b68b2e":"#6b635a",cursor:"pointer",fontFamily:"DM Sans,sans-serif",fontSize:12,fontWeight:reserveMode===id?600:400,textAlign:"left"}}>{lbl}</button>
+      ))}
+    </div>
+
+    {/* Artwork selector */}
+    <div style={{borderTop:"1px solid rgba(182,139,46,0.15)",paddingTop:14,marginBottom:8}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+        <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070"}}>
+          Select Artworks — {lots.length} selected (max 100)
+        </div>
+        <div style={{display:"flex",gap:8}}>
+          <button onClick={selectAll} style={{background:"none",border:"none",color:"#b68b2e",cursor:"pointer",fontSize:12,fontFamily:"DM Sans,sans-serif",textDecoration:"underline"}}>Select all visible</button>
+          <button onClick={clearAll} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer",fontSize:12,fontFamily:"DM Sans,sans-serif",textDecoration:"underline"}}>Clear all</button>
+        </div>
+      </div>
+      <input placeholder="Search artworks..." value={search} onChange={e=>setSearch(e.target.value)} style={{...is,marginBottom:10}}/>
+      <div style={{maxHeight:320,overflowY:"auto",border:"1px solid rgba(182,139,46,0.15)",borderRadius:10}}>
+        {filtered.length===0?<div style={{padding:20,textAlign:"center",color:"#8a8070",fontSize:13}}>No artworks available</div>:
+        filtered.map((art,i)=>{
+          const selected=selectedIds.has(art.id);
+          const lot=lots.find(l=>l.artworkId===art.id);
+          return(
+            <div key={art.id} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",background:selected?"rgba(182,139,46,0.06)":"transparent",borderBottom:i<filtered.length-1?"1px solid rgba(182,139,46,0.08)":"none",cursor:"pointer"}} onClick={()=>toggleArt(art)}>
+              {/* Checkbox */}
+              <div style={{width:18,height:18,borderRadius:4,border:selected?"2px solid #b68b2e":"2px solid rgba(182,139,46,0.30)",background:selected?"#b68b2e":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                {selected&&<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+              </div>
+              {/* Thumbnail */}
+              {art.imageUrl&&<div style={{width:36,height:36,borderRadius:6,overflow:"hidden",flexShrink:0}}><img src={art.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div>}
+              {/* Info */}
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,fontWeight:500,color:"#1a1714",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{art.title}</div>
+                <div style={{fontSize:11,color:"#8a8070"}}>{art.artist||"—"} · R {fmt(art.recommendedPrice)} · {art.galleryName||"No gallery"}</div>
+              </div>
+              {/* Reserve override if custom mode */}
+              {selected&&reserveMode==="custom"&&(
+                <div onClick={e=>e.stopPropagation()} style={{flexShrink:0}}>
+                  <input
+                    type="number"
+                    value={lot.overrideReserve===null?"":lot.overrideReserve}
+                    onChange={e=>setOverride(art.id,e.target.value)}
+                    placeholder={"R "+fmt(art.recommendedPrice)}
+                    style={{...is,width:120,padding:"6px 10px",fontSize:12}}
+                  />
+                </div>
+              )}
+              {/* Auto reserve display */}
+              {selected&&reserveMode==="auto"&&(
+                <div style={{flexShrink:0,fontSize:12,color:"#b68b2e",fontWeight:600}}>Reserve: R {fmt(art.recommendedPrice)}</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+
+    {/* Selected lots summary */}
+    {lots.length>0&&(
+      <div style={{padding:"10px 14px",background:"rgba(74,158,107,0.06)",border:"1px solid rgba(74,158,107,0.2)",borderRadius:8,marginBottom:12,fontSize:12,color:"#4a9e6b"}}>
+        ✓ {lots.length} lot{lots.length!==1?"s":""} will be created as separate auction listings, all with the same end time and bid increment.
+      </div>
+    )}
+
+    <Field label="Notes (optional)">
+      <textarea value={note} onChange={e=>setNote(e.target.value)} style={{...is,minHeight:50,resize:"vertical"}} placeholder="Internal notes for this auction session..."/>
+    </Field>
+    <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:8}}>
+      <Btn ghost onClick={onClose}>Cancel</Btn>
+      <Btn gold onClick={handleCreate}>Create {lots.length>0?lots.length+" Lot"+(lots.length!==1?"s":""):"Auction"}</Btn>
+    </div>
   </Modal>;
 }
 
