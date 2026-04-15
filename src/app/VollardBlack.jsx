@@ -4,10 +4,11 @@ import { db } from "./supabase";
 
 // ─── Constants ───
 const MODELS = {
-  O1: { vbPct: 0.30, colPct: 0.70, term: 12, label: "Signature · 12mo", short: "T1" },
-  O2: { vbPct: 0.40, colPct: 0.60, term: 18, label: "Premier · 18mo", short: "T2" },
-  O3: { vbPct: 0.50, colPct: 0.50, term: 24, label: "Select · 24mo", short: "T3" },
+  O1: { vbPct: 0.50, colPct: 0.50, term: 6,  label: "Standard · 6mo",  short: "6M" },
+  O2: { vbPct: 0.50, colPct: 0.50, term: 12, label: "Extended · 12mo", short: "12M" },
+  O3: { vbPct: 0.50, colPct: 0.50, term: 24, label: "Premium · 24mo",  short: "24M" },
 };
+const DEFAULT_MODEL = "O3"; // 50/50 across all — only the rental term differs
 const ADMIN_EMAIL = "concierge@vollardblack.com";
 const PAGE_SIZE = 50;
 
@@ -261,7 +262,7 @@ const I={
 
 const stC={Available:{bg:"rgba(74,158,107,0.12)",c:"#4a9e6b"},Reserved:{bg:"rgba(182,139,46,0.25)",c:"#b68b2e"},"In Gallery":{bg:"rgba(100,140,200,0.12)",c:"#648cc8"},Sold:{bg:"rgba(196,92,74,0.12)",c:"#c45c4a"},"In Dispute":{bg:"rgba(196,92,74,0.12)",c:"#c45c4a"}};
 const schedC={Active:{bg:"rgba(74,158,107,0.12)",c:"#4a9e6b"},Chasing:{bg:"rgba(230,190,50,0.15)",c:"#e6be32"},"In Dispute":{bg:"rgba(220,120,40,0.15)",c:"#dc7828"},Cancelled:{bg:"rgba(196,92,74,0.15)",c:"#c45c4a"},Complete:{bg:"rgba(100,140,200,0.12)",c:"#648cc8"},Override:{bg:"rgba(160,100,220,0.12)",c:"#a064dc"}};
-const modelC={O1:{bg:"rgba(182,139,46,0.25)",c:"#b68b2e",label:"Signature"},O2:{bg:"rgba(74,158,107,0.12)",c:"#4a9e6b",label:"Premier"},O3:{bg:"rgba(100,140,200,0.12)",c:"#648cc8",label:"Select"}};
+const modelC={O1:{bg:"rgba(182,139,46,0.25)",c:"#b68b2e",label:"Standard"},O2:{bg:"rgba(74,158,107,0.12)",c:"#4a9e6b",label:"Extended"},O3:{bg:"rgba(100,140,200,0.12)",c:"#648cc8",label:"Premium"}};
 const payM=["EFT / Bank Transfer","PayFast","Crypto (USDT)","Cash","Other"];
 
 const is={width:"100%",padding:"12px 14px",background:"#e8e4dd",border:"1px solid rgba(182,139,46,0.20)",borderRadius:8,color:"#1a1714",fontFamily:"DM Sans,sans-serif",fontSize:14,outline:"none"};
@@ -478,7 +479,7 @@ export default function App(){
     {id:"artists",label:"Artists",icon:I.star},
     {id:"collectors",label:"License Holders",icon:I.ppl},
     {id:"buyers",label:"Buyers",icon:I.buyer},
-    {id:"calculator",label:"Profit Sharing",icon:I.calc},
+    {id:"renters",label:"Renters Fee",icon:I.calc},
     {id:"gallery",label:"Gallery",icon:I.gallery},
     {id:"invoices",label:"Invoicing",icon:I.bill},
     {id:"sales",label:"Sales",icon:I.sale},
@@ -498,7 +499,7 @@ export default function App(){
     artists:<ArtistsPage data={d} up={up}/>,
     collectors:<CollectorsPage data={d} up={up} actions={actions}/>,
     buyers:<BuyersPage data={d} actions={actions}/>,
-    calculator:<CalcPage data={d} actions={actions}/>,
+    renters:<CalcPage data={d} actions={actions}/>,
     gallery:<GalleryPage data={d} actions={actions}/>,
     invoices:<InvoicePage data={d} actions={actions} initialFilter={invoiceFilter} clearFilter={()=>setInvoiceFilter(null)}/>,
     sales:<SalesPage data={d} actions={actions}/>,
@@ -523,9 +524,9 @@ export default function App(){
           })}
         </nav>
         <div style={{padding:"16px 24px",borderTop:"1px solid rgba(182,139,46,0.18)",fontSize:10,color:"#8a8070",letterSpacing:2}}>
-          <div>SIGNATURE: 30/70 · 12 MO</div>
-          <div style={{marginTop:4}}>PREMIER: 40/60 · 18 MO</div>
-          <div style={{marginTop:4}}>SELECT: 50/50 · 24 MO</div>
+          <div>STANDARD: 50/50 · 6 MO</div>
+          <div style={{marginTop:4}}>EXTENDED: 50/50 · 12 MO</div>
+          <div style={{marginTop:4}}>PREMIUM: 50/50 · 24 MO</div>
           <div style={{marginTop:8,display:"flex",alignItems:"center",gap:6}}><div style={{width:6,height:6,borderRadius:"50%",background:dbMode?"#4a9e6b":"#b68b2e"}}/><span style={{fontSize:9}}>{dbMode?"Supabase Connected":"Local Storage"}</span></div>
         </div>
       </aside>
@@ -844,7 +845,7 @@ function AucBuyerApproval({buyers,actions,fmt}){
 }
 
 function AucCreateModal({artworks,onSave,onClose,fmt}){
-  const [f,setF]=useState({title:"",artist:"",artworkId:"",artworkValue:0,reservePrice:0,galleryName:"",incrementType:"pct",incrementValue:0.025,incrementLabel:"2.5%",endTime:"",startNote:""});
+  const [f,setF]=useState({title:"",artist:"",artworkId:"",artworkValue:0,reservePrice:0,galleryName:"",incrementType:"pct",incrementValue:0.025,incrementLabel:"2.5%",startTime:"",endTime:"",startNote:""});
   const s=(k,v)=>setF(p=>({...p,[k]:v}));
   const available=artworks.filter(a=>["Available","Reserved","In Gallery"].includes(a.status));
   const handleArt=(id)=>{const art=artworks.find(a=>a.id===id);if(!art){s("artworkId","");return;}s("artworkId",id);s("title",art.title);s("artist",art.artist||"");s("artworkValue",art.recommendedPrice||0);s("reservePrice",art.recommendedPrice||0);s("galleryName",art.galleryName||"");};
@@ -853,26 +854,27 @@ function AucCreateModal({artworks,onSave,onClose,fmt}){
     <Field label="Select Artwork"><select value={f.artworkId} onChange={e=>handleArt(e.target.value)} style={ss}><option value="">— Select artwork</option>{available.map(a=><option key={a.id} value={a.id}>{a.title} — R {fmt(a.recommendedPrice)} ({a.status})</option>)}</select></Field>
     {f.artworkId&&<div style={{padding:"10px 14px",background:"rgba(182,139,46,0.08)",border:"1px solid rgba(182,139,46,0.2)",borderRadius:8,marginBottom:14,fontSize:12,color:"#6b635a"}}><strong>{f.title}</strong> by {f.artist} · Value: R {fmt(f.artworkValue)} · Gallery: {f.galleryName||"—"}</div>}
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-      <Field label="Reserve Price (R)"><input type="number" value={f.reservePrice} onChange={e=>s("reservePrice",Number(e.target.value))} style={is}/><div style={{fontSize:10,color:"#8a8070",marginTop:4}}>Auto-set to 100% declared value</div></Field>
+      <Field label="Auction Start Date & Time"><input type="datetime-local" value={f.startTime} min={endMin()} onChange={e=>s("startTime",e.target.value)} style={is}/><div style={{fontSize:10,color:"#8a8070",marginTop:4}}>Leave blank to start immediately on launch</div></Field>
       <Field label="Auction End Date & Time"><input type="datetime-local" value={f.endTime} min={endMin()} onChange={e=>s("endTime",e.target.value)} style={is}/></Field>
     </div>
+    <Field label="Reserve Price (R)" style={{marginTop:0}}><input type="number" value={f.reservePrice} onChange={e=>s("reservePrice",Number(e.target.value))} style={is}/><div style={{fontSize:10,color:"#8a8070",marginTop:4}}>Auto-set to 100% declared value · Bidding opens at this amount</div></Field>
     <Field label="Bid Increment">
       <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:8}}>
         {BID_INCREMENTS.map(inc=><button key={inc.label} onClick={()=>{s("incrementType",inc.type);s("incrementValue",inc.value);s("incrementLabel",inc.label);}} style={{padding:"10px 6px",borderRadius:8,border:f.incrementLabel===inc.label?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.25)",background:f.incrementLabel===inc.label?"rgba(182,139,46,0.18)":"#e8e4dd",color:f.incrementLabel===inc.label?"#b68b2e":"#6b635a",cursor:"pointer",fontFamily:"DM Sans,sans-serif",fontSize:12,fontWeight:f.incrementLabel===inc.label?600:400}}>{inc.label}</button>)}
       </div>
-      {f.artworkValue>0&&f.incrementValue>0&&<div style={{fontSize:10,color:"#8a8070",marginTop:6}}>Min first bid from R {fmt(f.artworkValue)}: R {fmt(calcMinBid(f.artworkValue,{type:f.incrementType,value:f.incrementValue}))}</div>}
+      {f.artworkValue>0&&<div style={{fontSize:10,color:"#8a8070",marginTop:6}}>Opening bid = Reserve price (R {fmt(f.reservePrice)}). Subsequent bids increase by {f.incrementLabel}.</div>}
     </Field>
     <Field label="Notes"><textarea value={f.startNote} onChange={e=>s("startNote",e.target.value)} style={{...is,minHeight:60,resize:"vertical"}} placeholder="Internal notes..."/></Field>
-    <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:8}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>{if(!f.artworkId)return alert("Select an artwork");if(!f.endTime)return alert("Set an end date and time");if(!f.incrementLabel)return alert("Select a bid increment");onSave(f);}}>Create Auction</Btn></div>
+    <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:8}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>{if(!f.artworkId)return alert("Select an artwork");if(!f.endTime)return alert("Set an end date and time");if(!f.incrementLabel)return alert("Select a bid increment");onSave({...f,startTime:f.startTime||null});}}>Create Auction</Btn></div>
   </Modal>;
 }
 
 function AucBidModal({auction,buyers,bids,onBid,onClose,fmt}){
   const [buyerId,setBuyerId]=useState("");
-  const initBid=String(auction.currentBid>0?calcMinBid(auction.currentBid,BID_INCREMENTS.find(b=>b.label===auction.incrementLabel)||BID_INCREMENTS[2]):(auction.reservePrice||0));
+  const initBid=String(auction.currentBid>0?calcMinBid(auction.currentBid,BID_INCREMENTS.find(b=>b.label===auction.incrementLabel)||BID_INCREMENTS[2]):(auction.reservePrice||0));  // First bid = reserve price
   const [customAmount,setCustomAmount]=useState(initBid);
   const bn=b=>b.type==="company"?b.companyName:`${b.firstName} ${b.lastName}`;
-  const minBid=calcMinBid(auction.currentBid||auction.reservePrice||0,{type:auction.incrementType,value:auction.incrementValue});
+  const minBid=auction.currentBid>0?calcMinBid(auction.currentBid,{type:auction.incrementType,value:auction.incrementValue}):(auction.reservePrice||0);
   const amount=Number(customAmount)||minBid;
   const buyer=buyers.find(b=>b.id===buyerId);
   const reserveMet=amount>=(auction.reservePrice||0);
@@ -1188,7 +1190,7 @@ function CalcPage({data={},actions={}}){
   const scenarioMonths=Array.from({length:m.term},(_,i)=>i+1);const aboveValue=av>0&&sp>0&&sp>av;
   const SRow=({label,val,color,bold,sub})=><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:"1px solid rgba(182,139,46,0.12)"}}><span style={{fontSize:13,color:"#6b635a"}}>{label}{sub&&<span style={{fontSize:11,color:"#8a8070",marginLeft:6}}>{sub}</span>}</span><span style={{fontSize:bold?18:13,fontWeight:bold?600:500,color:color||"#2a2622",fontFamily:bold?"Cormorant Garamond,serif":"DM Sans,sans-serif"}}>{val}</span></div>;
   return(<div>
-    <PT title="Profit Sharing Agreement" sub="Signature · Premier · Select · Deal Scenarios"/>
+    <PT title="Renters Fee Agreement" sub="Standard · Extended · Premium · 50/50 across all tiers"/>
     <div style={{display:"flex",gap:8,marginBottom:20,borderBottom:"1px solid rgba(182,139,46,0.18)",paddingBottom:16}}>{[["manual","Manual Entry"],["lookup","Load License Holder Deal"],["new","Build & Link"]].map(([id,lbl])=><button key={id} onClick={()=>{setMode(id);setLinkSaved(false);}} style={{padding:"9px 18px",borderRadius:8,border:mode===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.30)",background:mode===id?"rgba(182,139,46,0.18)":"transparent",color:mode===id?"#b68b2e":"#6b635a",fontSize:12,fontWeight:mode===id?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{lbl}</button>)}</div>
     {mode==="lookup"&&<Card style={{marginBottom:20}}><div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:12}}>Select Collector & Artwork</div><select value={selectedScheduleId} onChange={e=>{const s=schedules.find(x=>x.id===e.target.value);setSelectedScheduleId(e.target.value);if(s){const art=artworks.find(a=>a.id===s.artworkId);if(art)setArtVal(String(art.recommendedPrice));setAcqModel(s.acquisitionModel||"O1");setMonthsSold(String(s.monthsPaid));setDepositType(s.depositType||"none");setDepositPct(String(s.depositPct||10));setSaleVal("");}}} style={ss}><option value="">— Select a collector schedule</option>{schedules.filter(s=>s.status!=="Complete"&&s.status!=="Cancelled").map(s=><option key={s.id} value={s.id}>{s.collectorName} · {s.artworkTitle} · Mo {s.monthsPaid}</option>)}</select>{selectedSched&&<div style={{marginTop:12,padding:"12px 14px",background:"#e8e4dd",borderRadius:8,fontSize:13}}><span style={{color:"#4a9e6b"}}>Deal loaded ↓ Enter a sale price to see settlement.</span></div>}</Card>}
     {mode==="new"&&<Card style={{marginBottom:20}}><div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:12}}>Build & Link</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}><Field label="Collector"><select value={newCollectorId} onChange={e=>setNewCollectorId(e.target.value)} style={ss}><option value="">— Select</option>{collectors.map(c=><option key={c.id} value={c.id}>{gn(c)}</option>)}</select></Field><Field label="Artwork"><select value={newArtworkId} onChange={e=>{setNewArtworkId(e.target.value);const art=artworks.find(a=>a.id===e.target.value);if(art)setArtVal(String(art.recommendedPrice));}} style={ss}><option value="">— Select</option>{artworks.filter(a=>a.status==="Available").map(a=><option key={a.id} value={a.id}>{a.title} — R {fmt(a.recommendedPrice)}</option>)}</select></Field></div>
@@ -1208,15 +1210,15 @@ function CalcPage({data={},actions={}}){
       <div>
         {!av?<Card style={{padding:48,textAlign:"center"}}><div style={{fontSize:36,color:"#8a8070",marginBottom:12}}>◆</div><p style={{color:"#8a8070"}}>Enter artwork value to begin.</p></Card>:<>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:16}}>
-            <Card style={{padding:16,textAlign:"center",border:"1px solid rgba(74,158,107,0.2)"}}><div style={{fontSize:9,letterSpacing:2,color:"#8a8070",marginBottom:8}}>COLLECTOR RECEIVES</div><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:28,fontWeight:400,color:"#4a9e6b"}}>R {fmt(deal.colNet||0)}</div><div style={{fontSize:10,color:"#4a9e6b",marginTop:6}}>Profit R {fmt(deal.colProfit||0)} · {Math.round(deal.colROI||0)}% ROI</div></Card>
+            <Card style={{padding:16,textAlign:"center",border:"1px solid rgba(74,158,107,0.2)"}}><div style={{fontSize:9,letterSpacing:2,color:"#8a8070",marginBottom:8}}>COLLECTOR RECEIVES</div><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:28,fontWeight:400,color:"#4a9e6b"}}>R {fmt(deal.colNet||0)}</div><div style={{fontSize:10,color:"#4a9e6b",marginTop:6}}>Renter profit: R {fmt(deal.colProfit||0)} · {Math.round(deal.colROI||0)}% ROI</div></Card>
             <Card style={{padding:16,textAlign:"center",border:"1px solid rgba(182,139,46,0.50)"}}><div style={{fontSize:9,letterSpacing:2,color:"#8a8070",marginBottom:8}}>VB TOTAL</div><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:28,fontWeight:400,color:"#b68b2e"}}>R {fmt(deal.vbTotal||0)}</div><div style={{fontSize:10,color:"#6b635a",marginTop:6}}>Always R {fmt(deal.vbFee||0)}</div></Card>
             <Card style={{padding:16,textAlign:"center"}}><div style={{fontSize:9,letterSpacing:2,color:"#8a8070",marginBottom:8}}>SALE PRICE</div><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:28,fontWeight:400,color:"#1a1714"}}>R {fmt(sp)}</div>{aboveValue&&<div style={{fontSize:10,color:"#4a9e6b",marginTop:6}}>+R {fmt(deal.surplus||0)} above value</div>}</Card>
           </div>
           <Card style={{marginBottom:14}}>
             <div style={{fontSize:13,fontWeight:600,color:"#1a1714",marginBottom:14}}>What happens at sale — Month {mo} · {m.label}</div>
             <div style={{background:"#f0ede8",borderRadius:10,padding:"14px 16px",marginBottom:14}}><div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>What you already have</div>{depositType!=="none"&&<SRow label={`Deposit (${dN}%)`} val={`R ${fmt(deal.depositAmt)}`} color="#b68b2e"/>}<SRow label={`${mo} license fee${mo>1?"s":""}`} val={`R ${fmt(deal.monthly*mo)}`} color="#b68b2e"/><SRow label="Total in your bank" val={`R ${fmt(deal.totalCollected)}`} color="#b68b2e" bold/></div>
-            <div style={{background:"#f0ede8",borderRadius:10,padding:"14px 16px",marginBottom:14}}><div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>From the sale</div><SRow label="Gallery commission collected" val={`− R ${fmt(deal.vbBalance)}`} color="#c45c4a" sub={`(R${fmt(deal.vbFee)} fee − R${fmt(deal.totalCollected)} collected)`}/>{deal.introFee>0&&<SRow label="Introducer fee" val={`− R ${fmt(deal.introFee)}`} color="#c45c4a"/>}{aboveValue&&<SRow label="Surplus (50/50)" val={`R ${fmt(deal.surplus)}`} color="#4a9e6b"/>}<div style={{height:1,background:"rgba(182,139,46,0.30)",margin:"10px 0"}}/><SRow label="Collector receives" val={`R ${fmt(deal.colNet)}`} color="#4a9e6b" bold/><SRow label="Gallery keeps" val={`R ${fmt(deal.vbAtSale)}`} color="#b68b2e" bold/></div>
-            <div style={{background:"rgba(182,139,46,0.12)",border:"1px solid rgba(182,139,46,0.25)",borderRadius:10,padding:"14px 16px"}}><div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>Final tally</div><SRow label="Gallery total income" val={`R ${fmt(deal.vbTotal)}`} color="#b68b2e" bold/><SRow label="Collector net gain" val={`R ${fmt(deal.colProfit)}`} color="#4a9e6b" bold/><SRow label="ROI" val={`${Math.round(deal.colROI)}%`} color="#b68b2e"/></div>
+            <div style={{background:"#f0ede8",borderRadius:10,padding:"14px 16px",marginBottom:14}}><div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>From the sale</div><SRow label="Gallery commission collected" val={`− R ${fmt(deal.vbBalance)}`} color="#c45c4a" sub={`(R${fmt(deal.vbFee)} fee − R${fmt(deal.totalCollected)} collected)`}/>{deal.introFee>0&&<SRow label="Introducer fee" val={`− R ${fmt(deal.introFee)}`} color="#c45c4a"/>}{aboveValue&&<SRow label="Surplus (50/50)" val={`R ${fmt(deal.surplus)}`} color="#4a9e6b"/>}<div style={{height:1,background:"rgba(182,139,46,0.30)",margin:"10px 0"}}/><SRow label="Renter receives" val={`R ${fmt(deal.colNet)}`} color="#4a9e6b" bold/><SRow label="VB keeps" val={`R ${fmt(deal.vbAtSale)}`} color="#b68b2e" bold/></div>
+            <div style={{background:"rgba(182,139,46,0.12)",border:"1px solid rgba(182,139,46,0.25)",borderRadius:10,padding:"14px 16px"}}><div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>Final tally</div><SRow label="Gallery total income" val={`R ${fmt(deal.vbTotal)}`} color="#b68b2e" bold/><SRow label="Renter net income" val={`R ${fmt(deal.colProfit)}`} color="#4a9e6b" bold/><SRow label="ROI" val={`${Math.round(deal.colROI)}%`} color="#b68b2e"/></div>
           </Card>
           <Card><div style={{fontSize:13,fontWeight:600,color:"#1a1714",marginBottom:14}}>All Scenarios — {m.label}</div><div style={{overflowX:"auto",maxHeight:360,overflowY:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}><thead style={{position:"sticky",top:0,background:"#f7f5f1"}}><tr>{[["Month","left"],["Monthly Paid","right"],["VB Balance","right"],["Collector Gets","right"],["Profit","right"],["ROI","right"]].map(([h,a])=><th key={h} style={{fontSize:10,fontWeight:600,letterSpacing:1,textTransform:"uppercase",color:"#8a8070",padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.25)",whiteSpace:"nowrap",textAlign:a}}>{h}</th>)}</tr></thead><tbody>{scenarioMonths.map(mo2=>{const d=calcDeal(av,sp,acqModel,mo2,gN,vN,aN,iN,depositType,dN);const on=mo2===mo;return<tr key={mo2} style={{background:on?"rgba(182,139,46,0.14)":"transparent"}}><td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.10)",fontWeight:on?600:400,color:on?"#b68b2e":"#2a2622"}}>Mo {mo2}{on?<span style={{fontSize:9,marginLeft:4}}>◆</span>:""}</td><td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.10)",textAlign:"right",color:"#6b635a"}}>R {fmt(d.totalCollected)}</td><td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.10)",textAlign:"right",color:d.vbBalance>0?"#c45c4a":"#4a9e6b"}}>R {fmt(d.vbBalance)}</td><td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.10)",textAlign:"right",color:"#4a9e6b",fontWeight:600}}>R {fmt(d.colNet)}</td><td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.10)",textAlign:"right",color:d.colProfit>=0?"#4a9e6b":"#c45c4a"}}>R {fmt(d.colProfit)}</td><td style={{padding:"8px 10px",borderBottom:"1px solid rgba(182,139,46,0.10)",textAlign:"right",color:"#b68b2e",fontWeight:600}}>{Math.round(d.colROI)}%</td></tr>;})}
           </tbody></table></div></Card>
@@ -1227,300 +1229,3 @@ function CalcPage({data={},actions={}}){
 
 // ═══════════════════════════════════════════
 // INVOICING
-// ═══════════════════════════════════════════
-function InvoicePage({data,actions,initialFilter,clearFilter}){
-  const [activeTab,setActiveTab]=useState("all");const [statusFilter,setStatusFilter]=useState(initialFilter||"all");const [payModal,setPayModal]=useState(null);const [missModal,setMissModal]=useState(null);const [overrideModal,setOverrideModal]=useState(null);const [graceModal,setGraceModal]=useState(null);const [emailModal,setEmailModal]=useState(null);const [reportTab,setReportTab]=useState(null);const [expanded,setExpanded]=useState({});const [search,setSearch]=useState("");const [pg,setPg]=useState(0);
-  useEffect(()=>{if(initialFilter){setStatusFilter(initialFilter);clearFilter();}},[initialFilter]);
-  const gn=c=>c?c.type==="company"?c.companyName:`${c.firstName} ${c.lastName}`:"";
-  const collectorsWithSchedules=data.collectors.filter(c=>data.schedules.some(s=>s.collectorId===c.id));
-  const allSchedules=data.schedules;const tabSchedules=activeTab==="all"?allSchedules:allSchedules.filter(s=>s.collectorId===activeTab);
-  const filteredSchedules=tabSchedules.filter(s=>{const matchStatus=statusFilter==="all"||s.status===statusFilter;const matchSearch=!search||(s.collectorName+s.artworkTitle).toLowerCase().includes(search.toLowerCase());return matchStatus&&matchSearch;});
-  const pagedSchedules=activeTab==="all"?filteredSchedules.slice(pg*PAGE_SIZE,(pg+1)*PAGE_SIZE):filteredSchedules;
-  const totalPages=Math.ceil(filteredSchedules.length/PAGE_SIZE);
-  const active=allSchedules.filter(s=>s.status==="Active").length;const chasing=allSchedules.filter(s=>s.status==="Chasing").length;const dispute=allSchedules.filter(s=>s.status==="In Dispute").length;const cancelledCount=allSchedules.filter(s=>s.status==="Cancelled").length;
-  const totalCollected=data.payments.reduce((s,p)=>s+(p.amount||0),0);
-  const toggleExpand=(id)=>setExpanded(p=>({...p,[id]:!p[id]}));
-  const getNextUnpaid=(sched)=>{const paidMonths=new Set(data.payments.filter(p=>p.scheduleId===sched.id).map(p=>p.monthNumber));const missedMonths=new Set(sched.missedMonths||[]);for(let m=1;m<=sched.termMonths;m++){if(!paidMonths.has(m)&&!missedMonths.has(m))return m;}return null;};
-  const getHistory=(schedId)=>data.payments.filter(p=>p.scheduleId===schedId).sort((a,b)=>a.monthNumber-b.monthNumber);
-  const reportData={Chasing:allSchedules.filter(s=>s.status==="Chasing").map(s=>({...s,col:data.collectors.find(c=>c.id===s.collectorId)})),"In Dispute":allSchedules.filter(s=>s.status==="In Dispute").map(s=>({...s,col:data.collectors.find(c=>c.id===s.collectorId)})),Cancelled:allSchedules.filter(s=>s.status==="Cancelled").map(s=>({...s,col:data.collectors.find(c=>c.id===s.collectorId)}))};
-  const statusBtnCfg=[{key:"all",label:"All"},{key:"Active",label:"Active",color:"#4a9e6b"},{key:"Chasing",label:"Chasing",color:"#e6be32"},{key:"In Dispute",label:"In Dispute",color:"#dc7828"},{key:"Cancelled",label:"Cancelled",color:"#c45c4a"},{key:"Complete",label:"Complete",color:"#648cc8"}];
-  const buildEmailTargets=(status)=>{const scheds=allSchedules.filter(s=>s.status===status);const by={};scheds.forEach(s=>{const col=data.collectors.find(c=>c.id===s.collectorId);if(!by[s.collectorId])by[s.collectorId]={id:s.collectorId,name:s.collectorName,email:col?.email||"",schedules:[]};by[s.collectorId].schedules.push(s);});return Object.values(by);};
-  const TEMPLATES_LOCAL={upcoming:(n,a,amt,due)=>({subject:`Vollard Black — Payment Reminder`,body:`Dear ${n},\n\nYour license fee of R ${fmt(amt)} for "${a}" is due on ${due}.\n\nVollard Black\nconcierge@vollardblack.com`}),missed:(n,a,amt)=>({subject:`Vollard Black — Missed Payment`,body:`Dear ${n},\n\nYour license fee of R ${fmt(amt)} for "${a}" has not been received.\n\nVollard Black\nconcierge@vollardblack.com`}),dispute:(n,a,amt)=>({subject:`Vollard Black — In Dispute`,body:`Dear ${n},\n\nYour account for "${a}" is In Dispute.\n\nVollard Black\nconcierge@vollardblack.com`}),cancelled:(n,a)=>({subject:`Vollard Black — Cancelled`,body:`Dear ${n},\n\nYour agreement for "${a}" has been cancelled.\n\nVollard Black\nconcierge@vollardblack.com`}),individual_missed:(n,a,amt)=>({subject:`Missed Payment — ${a}`,body:`Dear ${n},\n\nYour fee of R ${fmt(amt)} for "${a}" is outstanding.\n\nVollard Black`}),individual_dispute:(n,a,amt)=>({subject:`In Dispute — ${a}`,body:`Dear ${n},\n\nYour account for "${a}" is In Dispute.\n\nVollard Black`}),individual_cancelled:(n,a)=>({subject:`Cancelled — ${a}`,body:`Dear ${n},\n\nYour agreement for "${a}" has been cancelled.\n\nVollard Black`})};
-  return(<div>
-    <PT title="License Invoicing" sub={`${allSchedules.length} agreements · ${data.collectors.length} License Holders`}/>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:14,marginBottom:24}}><Stat label="Active" value={active} green/><Stat label="Chasing" value={chasing} orange/><Stat label="In Dispute" value={dispute} orange/><Stat label="Cancelled" value={cancelledCount} red/><Stat label="Collected" value={"R "+fmt(totalCollected)} gold/></div>
-    <Card style={{marginBottom:20,padding:16}}><div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:12}}>Mass Email Actions</div><div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-      <Btn small ghost onClick={()=>setEmailModal({status:"Active",templateKey:"upcoming",targets:buildEmailTargets("Active")})} style={{borderColor:"rgba(74,158,107,0.3)",color:"#4a9e6b"}}>{I.mail} Remind Active</Btn>
-      <Btn small ghost onClick={()=>setEmailModal({status:"Chasing",templateKey:"missed",targets:buildEmailTargets("Chasing")})} style={{borderColor:"rgba(230,190,50,0.3)",color:"#e6be32"}}>{I.mail} Chase All</Btn>
-      <Btn small ghost onClick={()=>setEmailModal({status:"In Dispute",templateKey:"dispute",targets:buildEmailTargets("In Dispute")})} style={{borderColor:"rgba(220,120,40,0.3)",color:"#dc7828"}}>{I.mail} Dispute All</Btn>
-      <Btn small ghost onClick={()=>setEmailModal({status:"Cancelled",templateKey:"cancelled",targets:buildEmailTargets("Cancelled")})} style={{borderColor:"rgba(196,92,74,0.3)",color:"#c45c4a"}}>{I.mail} Cancellation All</Btn>
-    </div></Card>
-    <Card style={{marginBottom:20,padding:16}}><div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:12}}>Monthly Report</div><div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{["Chasing","In Dispute","Cancelled"].map(k=><Btn key={k} small ghost onClick={()=>setReportTab(reportTab===k?null:k)} style={{borderColor:k==="Chasing"?"rgba(230,190,50,0.3)":k==="In Dispute"?"rgba(220,120,40,0.3)":"rgba(196,92,74,0.3)",color:k==="Chasing"?"#e6be32":k==="In Dispute"?"#dc7828":"#c45c4a"}}>{I.report} {k} ({reportData[k].length})</Btn>)}</div>
-    {reportTab&&<div style={{marginTop:16,borderTop:"1px solid rgba(182,139,46,0.18)",paddingTop:16}}><div style={{fontSize:13,fontWeight:600,color:"#1a1714",marginBottom:12}}>{reportTab} — {reportData[reportTab].length}</div>{reportData[reportTab].length===0?<p style={{fontSize:13,color:"#8a8070"}}>None.</p>:<Tbl cols={[{label:"Collector",bold:true,render:r=>r.collectorName},{label:"Model",render:r=><Badge model={r.acquisitionModel||"O1"}/>},{label:"Email",render:r=>r.col?.email||"—"},{label:"Mobile",render:r=>r.col?.mobile||"—"},{label:"Artwork",key:"artworkTitle"},{label:"Strikes",render:r=><span style={{color:"#c45c4a",fontWeight:700}}>{r.strikes}</span>},{label:"Outstanding",right:true,render:r=>"R "+fmt((r.totalDue||0)-(r.totalPaid||0))},{label:"",render:r=>{const col=data.collectors.find(c=>c.id===r.collectorId);const tplKey=reportTab==="Chasing"?"individual_missed":reportTab==="In Dispute"?"individual_dispute":"individual_cancelled";const tpl=TEMPLATES_LOCAL[tplKey](r.collectorName,r.artworkTitle,(r.totalDue||0)-(r.totalPaid||0));return<Btn small ghost onClick={()=>openGmail([col?.email||""],tpl.subject,tpl.body)} style={{fontSize:10}}>{I.mail}</Btn>;}}]} data={reportData[reportTab]}/>}</div>}
-    </Card>
-    <div style={{display:"flex",gap:0,marginBottom:20,borderBottom:"1px solid rgba(182,139,46,0.20)",overflowX:"auto"}}>
-      <button onClick={()=>{setActiveTab("all");setPg(0);}} style={{padding:"12px 20px",border:"none",borderBottom:activeTab==="all"?"2px solid #b68b2e":"2px solid transparent",background:"transparent",color:activeTab==="all"?"#b68b2e":"#6b635a",fontSize:12,fontWeight:activeTab==="all"?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif",whiteSpace:"nowrap"}}>All <span style={{marginLeft:6,fontSize:10,background:"rgba(182,139,46,0.20)",color:"#b68b2e",padding:"2px 7px",borderRadius:10}}>{allSchedules.length}</span></button>
-      {collectorsWithSchedules.map(c=>{const cScheds=allSchedules.filter(s=>s.collectorId===c.id);const alerts=cScheds.filter(s=>["Chasing","In Dispute","Cancelled"].includes(s.status)).length;const isActive=activeTab===c.id;return<button key={c.id} onClick={()=>{setActiveTab(c.id);setPg(0);}} style={{padding:"12px 20px",border:"none",borderBottom:isActive?"2px solid #b68b2e":"2px solid transparent",background:"transparent",color:isActive?"#b68b2e":"#6b635a",fontSize:12,fontWeight:isActive?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif",whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:6}}>{gn(c)}{alerts>0&&<span style={{fontSize:10,background:"rgba(196,92,74,0.15)",color:"#c45c4a",padding:"2px 7px",borderRadius:10,fontWeight:700}}>{alerts}</span>}</button>;})}
-    </div>
-    <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>{statusBtnCfg.map(b=><button key={b.key} onClick={()=>{setStatusFilter(b.key);setPg(0);}} style={{padding:"7px 14px",borderRadius:8,border:`1px solid ${statusFilter===b.key?(b.color||"#b68b2e"):"rgba(182,139,46,0.30)"}`,background:statusFilter===b.key?"rgba(182,139,46,0.18)":"transparent",color:statusFilter===b.key?(b.color||"#b68b2e"):"#6b635a",fontSize:11,fontWeight:statusFilter===b.key?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{b.label}</button>)}<input placeholder="Search..." value={search} onChange={e=>{setSearch(e.target.value);setPg(0);}} style={{...is,maxWidth:260,marginLeft:"auto",padding:"8px 12px",fontSize:12}}/></div>
-    {pagedSchedules.length===0?<Empty msg="No schedules match this filter."/>:pagedSchedules.map(sched=>{
-      const m=MODELS[sched.acquisitionModel||"O1"];const pct=sched.termMonths>0?(sched.monthsPaid/sched.termMonths)*100:100;const nextMonth=getNextUnpaid(sched);const nextDue=nextMonth?getNextDueDate(sched.startDate,nextMonth):null;const outstanding=(sched.totalDue||0)-(sched.totalPaid||0);const history=getHistory(sched.id);const isExpanded=expanded[sched.id];const sc=schedC[sched.status]||{bg:"#e8e4dd",c:"#6b635a"};const art=data.artworks.find(a=>a.id===sched.artworkId);const missedSet=new Set(sched.missedMonths||[]);
-      return<Card key={sched.id} style={{marginBottom:12,padding:0,overflow:"hidden"}}>
-        <div style={{height:3,background:sc.c,opacity:0.6}}/>
-        <div style={{padding:20}}>
-          <div style={{display:"flex",gap:16,alignItems:"flex-start"}}>
-            <div style={{width:52,height:52,borderRadius:8,flexShrink:0,overflow:"hidden",background:"rgba(182,139,46,0.18)",display:"flex",alignItems:"center",justifyContent:"center"}}>{art?.imageUrl?<img src={art.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span style={{fontSize:18,color:"#8a8070"}}>◆</span>}</div>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginBottom:4}}>{activeTab==="all"&&<span style={{fontSize:15,fontWeight:700,color:"#1a1714"}}>{sched.collectorName}</span>}<span style={{fontSize:13,color:"#6b635a"}}>{sched.artworkTitle}</span><Badge model={sched.acquisitionModel||"O1"}/><Badge status={sched.status} sched/>{sched.strikes>0&&<span style={{fontSize:11,color:"#c45c4a",fontWeight:700}}>⚠ {sched.strikes} strike{sched.strikes>1?"s":""}</span>}</div>
-              <div style={{display:"flex",gap:16,fontSize:12,color:"#6b635a",marginBottom:8,flexWrap:"wrap"}}><span>Month <strong style={{color:"#1a1714"}}>{sched.monthsPaid}</strong> of {sched.termMonths}</span><span style={{color:"#b68b2e",fontWeight:600}}>R {fmt(sched.monthlyAmount)} per month</span>{nextDue&&<span>Next due: <strong style={{color:"#1a1714"}}>{nextDue}</strong></span>}</div>
-              <div style={{display:"flex",gap:20,fontSize:12,marginBottom:8}}><span>Paid: <strong style={{color:"#4a9e6b"}}>R {fmt(sched.totalPaid||0)}</strong></span><span>Outstanding: <strong style={{color:"#b68b2e"}}>R {fmt(outstanding)}</strong></span><span>Total: <strong style={{color:"#1a1714"}}>R {fmt(sched.totalDue)}</strong></span></div>
-              <ProgressBar pct={pct} color={sc.c}/>
-              {missedSet.size>0&&<div style={{marginTop:8,display:"flex",gap:6,flexWrap:"wrap"}}>{[...missedSet].map(m=><span key={m} style={{fontSize:10,background:"rgba(196,92,74,0.12)",color:"#c45c4a",padding:"3px 8px",borderRadius:5,fontWeight:600}}>Mo {m} missed</span>)}</div>}
-            </div>
-            <div style={{display:"flex",gap:6,flexShrink:0,flexWrap:"wrap",justifyContent:"flex-end",maxWidth:300}}>
-              {nextMonth&&sched.status!=="Cancelled"&&sched.status!=="Complete"&&<><Btn small gold onClick={()=>setPayModal({sched,nextMonth,nextDue})}>{I.ok} Pay Mo {nextMonth}</Btn><Btn small danger onClick={()=>setMissModal({sched,nextMonth})}>Miss Mo {nextMonth}</Btn></>}
-              {["Chasing","In Dispute","Cancelled"].includes(sched.status)&&<Btn small ghost onClick={()=>setOverrideModal(sched)} style={{borderColor:"rgba(160,100,220,0.3)",color:"#a064dc"}}>Override</Btn>}
-              <Btn small ghost onClick={()=>setGraceModal(sched)}>Grace</Btn>
-              <button onClick={()=>toggleExpand(sched.id)} style={{background:"none",border:"1px solid rgba(182,139,46,0.30)",borderRadius:6,color:"#6b635a",cursor:"pointer",padding:"6px 10px",display:"flex",alignItems:"center",gap:4,fontSize:11}}><span style={{transform:isExpanded?"rotate(180deg)":"none",transition:"0.2s",display:"inline-flex"}}>{I.chevron}</span>{history.length} paid</button>
-            </div>
-          </div>
-          {isExpanded&&<div style={{marginTop:16,borderTop:"1px solid rgba(182,139,46,0.14)",paddingTop:16}}>{history.length===0?<p style={{fontSize:13,color:"#8a8070"}}>No payments recorded yet.</p>:<Tbl cols={[{label:"Month",render:r=>`Month ${r.monthNumber}`},{label:"Date",key:"date"},{label:"Method",key:"method"},{label:"Amount",right:true,gold:true,render:r=>"R "+fmt(r.amount)}]} data={history}/>}{sched.graceNote&&<p style={{fontSize:12,color:"#a064dc",marginTop:8}}>Grace: {sched.graceNote}</p>}{sched.overrideNote&&<p style={{fontSize:12,color:"#a064dc",marginTop:4}}>Override: {sched.overrideNote}</p>}</div>}
-        </div>
-      </Card>;})}
-    {activeTab==="all"&&totalPages>1&&<div style={{display:"flex",justifyContent:"center",gap:8,marginTop:20}}><Btn small ghost disabled={pg===0} onClick={()=>setPg(p=>p-1)}>← Prev</Btn><span style={{padding:"8px 16px",fontSize:13,color:"#6b635a"}}>Page {pg+1} of {totalPages}</span><Btn small ghost disabled={pg>=totalPages-1} onClick={()=>setPg(p=>p+1)}>Next →</Btn></div>}
-    {payModal&&<Modal title={`Record Payment — Month ${payModal.nextMonth}`} onClose={()=>setPayModal(null)}><Card style={{background:"#e8e4dd",marginBottom:16}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:13}}><span style={{color:"#6b635a"}}>License Holder:</span><span style={{fontWeight:600}}>{payModal.sched.collectorName}</span><span style={{color:"#6b635a"}}>Artwork:</span><span>{payModal.sched.artworkTitle}</span><span style={{color:"#6b635a"}}>Month:</span><span>{payModal.nextMonth} of {payModal.sched.termMonths}</span><span style={{color:"#6b635a"}}>Amount:</span><span style={{color:"#b68b2e",fontWeight:700,fontSize:16}}>R {fmt(payModal.sched.monthlyAmount)}</span></div></Card><div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>Payment Method</div>{["EFT / Bank Transfer","PayFast","Crypto (USDT)","Cash","Other"].map(m=><button key={m} onClick={()=>{actions.recordPayment(payModal.sched,payModal.nextMonth,m,payModal.sched.monthlyAmount);setPayModal(null);}} style={{display:"block",width:"100%",padding:12,marginBottom:8,borderRadius:8,border:"1px solid rgba(182,139,46,0.30)",background:"#e8e4dd",color:"#2a2622",cursor:"pointer",fontSize:13,fontFamily:"DM Sans,sans-serif",textAlign:"left"}} onMouseEnter={e=>{e.currentTarget.style.background="#252320";}} onMouseLeave={e=>{e.currentTarget.style.background="#e8e4dd";}}>{m}</button>)}</Modal>}
-    {missModal&&<Modal title={`Mark Month ${missModal.nextMonth} as Missed`} onClose={()=>setMissModal(null)}><div style={{padding:16,background:"rgba(196,92,74,0.08)",border:"1px solid rgba(196,92,74,0.2)",borderRadius:10,marginBottom:20}}><div style={{fontSize:13,color:"#2a2622",marginBottom:6}}><strong>{missModal.sched.collectorName}</strong> — {missModal.sched.artworkTitle}</div><div style={{fontSize:12,color:"#6b635a",marginTop:4}}>Strikes: {missModal.sched.strikes} → {Math.min((missModal.sched.strikes||0)+1,3)} · New status: <strong style={{color:"#c45c4a"}}>{(missModal.sched.strikes||0)+1===1?"Chasing":(missModal.sched.strikes||0)+1===2?"In Dispute":"Cancelled"}</strong></div></div><div style={{display:"flex",gap:10,justifyContent:"flex-end"}}><Btn ghost onClick={()=>setMissModal(null)}>Cancel</Btn><Btn danger onClick={()=>{actions.recordMissed(missModal.sched,missModal.nextMonth);setMissModal(null);}}>Confirm Miss Mo {missModal.nextMonth}</Btn></div></Modal>}
-    {overrideModal&&<OverrideModal sched={overrideModal} onSave={(note)=>{actions.overrideSchedule(overrideModal.id,note);setOverrideModal(null);}} onClose={()=>setOverrideModal(null)}/>}
-    {graceModal&&<GraceModal sched={graceModal} onSave={(date,month,note)=>{actions.setGraceException(graceModal.id,date,month,note);setGraceModal(null);}} onClose={()=>setGraceModal(null)}/>}
-    {emailModal&&<EmailReviewModal config={emailModal} collectors={data.collectors} schedules={data.schedules} onClose={()=>setEmailModal(null)} TEMPLATES_LOCAL={TEMPLATES_LOCAL}/>}
-  </div>);}
-
-function OverrideModal({sched,onSave,onClose}){const [note,setNote]=useState("");return<Modal title="Override Status" onClose={onClose}><p style={{fontSize:13,color:"#6b635a",marginBottom:16}}>Resets to Active and clears all strikes.</p><Field label="Note"><textarea value={note} onChange={e=>setNote(e.target.value)} style={{...is,minHeight:80,resize:"vertical"}} placeholder="e.g. Collector settled balance"/></Field><div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:16}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>onSave(note)} disabled={!note}>Apply Override</Btn></div></Modal>;}
-function GraceModal({sched,onSave,onClose}){const [graceDate,setGraceDate]=useState("");const [month,setMonth]=useState(sched.monthsPaid+1);const [note,setNote]=useState("");return<Modal title="Set Grace Exception" onClose={onClose}><Field label="Month Number"><input type="text" inputMode="decimal" value={month} onChange={e=>setMonth(Number(e.target.value))} style={is}/></Field><Field label="Extended Grace Date"><input type="date" value={graceDate} onChange={e=>setGraceDate(e.target.value)} style={is}/></Field><Field label="Reason"><textarea value={note} onChange={e=>setNote(e.target.value)} style={{...is,minHeight:60,resize:"vertical"}}/></Field><div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:16}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>onSave(graceDate,month,note)} disabled={!graceDate||!note}>Set Exception</Btn></div></Modal>;}
-
-function EmailReviewModal({config,collectors,schedules,onClose,TEMPLATES_LOCAL}){
-  const isCustom=config.status==="custom";const [selected,setSelected]=useState(isCustom?[]:config.targets.map(t=>t.id));const [templateKey,setTemplateKey]=useState(config.templateKey||"upcoming");const [subject,setSubject]=useState("");const [body,setBody]=useState("");
-  const gn=c=>c.type==="company"?c.companyName:`${c.firstName} ${c.lastName}`;
-  const targets=isCustom?collectors.filter(c=>c.email).map(c=>{const s=schedules.find(x=>x.collectorId===c.id);return{id:c.id,name:gn(c),email:c.email,schedules:s?[s]:[]};})  :config.targets;
-  const toggle=(id)=>setSelected(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
-  const firstSelected=targets.find(t=>selected.includes(t.id));
-  useEffect(()=>{if(!firstSelected)return;const s=firstSelected.schedules[0];const tpl=s?TEMPLATES_LOCAL[templateKey]?.(firstSelected.name,s.artworkTitle,s.monthlyAmount,getNextDueDate(s.startDate,s.monthsPaid+1)):TEMPLATES_LOCAL[templateKey]?.(firstSelected.name,"",0,"");if(tpl){setSubject(tpl.subject||"");setBody(tpl.body||"");}},[templateKey,firstSelected?.id]);
-  const send=()=>{const emails=selected.map(id=>targets.find(t=>t.id===id)?.email).filter(Boolean);if(emails.length===0)return alert("No recipients.");openGmail(emails,subject,body);onClose();};
-  return<Modal title="Review & Send Email" onClose={onClose} wide><div style={{display:"grid",gridTemplateColumns:"280px 1fr",gap:20}}><div><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}><div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070"}}>Recipients ({selected.length})</div><div style={{display:"flex",gap:8}}><button onClick={()=>setSelected(targets.map(t=>t.id))} style={{background:"none",border:"none",color:"#b68b2e",cursor:"pointer",fontSize:11}}>All</button><button onClick={()=>setSelected([])} style={{background:"none",border:"none",color:"#6b635a",cursor:"pointer",fontSize:11}}>None</button></div></div><div style={{maxHeight:300,overflowY:"auto",border:"1px solid rgba(182,139,46,0.20)",borderRadius:8}}>{targets.length===0?<div style={{padding:16,fontSize:13,color:"#8a8070",textAlign:"center"}}>No collectors.</div>:targets.map(t=><label key={t.id} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 12px",cursor:"pointer",borderBottom:"1px solid rgba(182,139,46,0.10)"}}><input type="checkbox" checked={selected.includes(t.id)} onChange={()=>toggle(t.id)} style={{accentColor:"#b68b2e",marginTop:2,flexShrink:0}}/><div style={{minWidth:0}}><div style={{fontSize:13,fontWeight:600,color:"#1a1714"}}>{t.name}</div><div style={{fontSize:11,color:"#8a8070",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.email}</div></div></label>)}</div><div style={{fontSize:11,color:"#8a8070",marginTop:8}}>All BCC'd.</div></div><div><Field label="Template"><select value={templateKey} onChange={e=>setTemplateKey(e.target.value)} style={ss}><option value="upcoming">Upcoming Reminder</option><option value="missed">Missed Payment</option><option value="dispute">Dispute Escalation</option><option value="cancelled">Cancellation Notice</option></select></Field><Field label="Subject"><input value={subject} onChange={e=>setSubject(e.target.value)} style={is}/></Field><Field label="Message"><textarea value={body} onChange={e=>setBody(e.target.value)} style={{...is,minHeight:160,resize:"vertical"}}/></Field></div></div><div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:16,borderTop:"1px solid rgba(182,139,46,0.18)",paddingTop:16}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold disabled={selected.length===0||!subject} onClick={send}>{I.mail} Open Gmail ({selected.length})</Btn></div></Modal>;}
-
-// ═══════════════════════════════════════════
-// SALES
-// ═══════════════════════════════════════════
-function SalesPage({data,actions}){
-  const [modal,setModal]=useState(false);const [settlementModal,setSettlementModal]=useState(null);
-  const sellable=data.artworks.filter(a=>["Reserved","In Gallery","Available"].includes(a.status));
-  return(<div>
-    <PT title="Sales" sub={`${data.sales.length} completed`} action={<Btn gold onClick={()=>setModal(true)}>{I.plus} Record Sale</Btn>}/>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:14,marginBottom:24}}><Stat label="Sales" value={data.sales.length}/><Stat label="Total Value" value={"R "+fmt(data.sales.reduce((s,x)=>s+(x.salePrice||0),0))}/><Stat label="Signature" value={data.sales.filter(s=>s.acquisitionModel==="O1").length} gold/><Stat label="Premier" value={data.sales.filter(s=>s.acquisitionModel==="O2").length} green/><Stat label="Select" value={data.sales.filter(s=>s.acquisitionModel==="O3").length}/><Stat label="Collector Payouts" value={"R "+fmt(data.sales.reduce((s,x)=>s+(x.colNet||x.collectorShare||0),0))} green/></div>
-    <Card>{data.sales.length===0?<Empty msg="No sales yet." action={<Btn gold onClick={()=>setModal(true)}>{I.plus} Record Sale</Btn>}/>:<Tbl cols={[{label:"Date",key:"date"},{label:"Artwork",key:"artworkTitle",bold:true},{label:"Model",render:r=><Badge model={r.acquisitionModel||"O1"}/>},{label:"Collector",key:"collectorName"},{label:"Buyer",render:r=>r.buyerName?<span style={{color:"#b68b2e"}}>{r.buyerName}</span>:<span style={{color:"#8a8070"}}>—</span>},{label:"Sale Price",right:true,render:r=>"R "+fmt(r.salePrice)},{label:"Collector Net",right:true,render:r=><span style={{color:"#4a9e6b",fontWeight:600}}>R {fmt(r.colNet||r.collectorShare||0)}</span>},{label:"VB Total",right:true,gold:true,render:r=>"R "+fmt(r.vbTotal||r.vbShare||0)},{label:"",render:r=><div style={{display:"flex",gap:6}}><button onClick={e=>{e.stopPropagation();setSettlementModal(r);}} style={{background:"none",border:"none",color:"#b68b2e",cursor:"pointer",fontSize:11,textDecoration:"underline"}}>Sheet</button><button onClick={e=>{e.stopPropagation();if(confirm("Delete sale?"))actions.deleteSale(r.id);}} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer"}}>{I.del}</button></div>}]} data={[...data.sales].reverse()}/>}</Card>
-    {modal&&<SaleMdl data={data} sellable={sellable} onSale={(sd)=>{actions.recordSale(sd);setModal(false);}} onClose={()=>setModal(false)}/>}
-    {settlementModal&&<SettlementModal sale={settlementModal} data={data} onClose={()=>setSettlementModal(null)}/>}
-  </div>);}
-
-function SettlementModal({sale,data,onClose}){
-  const [galleryPct,setGalleryPct]=useState("40");const [vbPct,setVbPct]=useState("30");const [artistPct,setArtistPct]=useState("30");const [introPct,setIntroPct]=useState("0");
-  const sched=data.schedules.find(s=>s.artworkId===sale.artworkId);const art=data.artworks.find(a=>a.id===sale.artworkId);
-  const acqModel=sched?.acquisitionModel||sale.acquisitionModel||"O1";const artworkValue=art?.recommendedPrice||sale.salePrice;const monthsPaid=sched?.monthsPaid||0;
-  const gN=parseFloat(galleryPct)||0;const vN=parseFloat(vbPct)||0;const aN=parseFloat(artistPct)||0;const iN=parseFloat(introPct)||0;
-  const splitOk=Math.round(gN+vN+aN)===100;const deal=calcDeal(artworkValue,sale.salePrice,acqModel,monthsPaid,gN,vN,aN,iN);
-  return<Modal title="Deal Settlement Sheet" onClose={onClose} wide>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:20}}>
-      <div><div style={{fontSize:15,fontWeight:600,color:"#1a1714"}}>{sale.artworkTitle}</div><div style={{fontSize:12,color:"#6b635a",marginTop:8}}>License Holder: {sale.collectorName||"—"}</div><div style={{fontSize:12,color:"#6b635a"}}>Buyer: {sale.buyerName||"—"}</div><div style={{display:"flex",gap:8,marginTop:8,alignItems:"center"}}><Badge model={acqModel}/><span style={{fontSize:12,color:"#6b635a"}}>{monthsPaid} months paid</span></div></div>
-      <div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:13}}><span style={{color:"#6b635a"}}>Artwork value:</span><span style={{textAlign:"right"}}>R {fmt(artworkValue)}</span><span style={{color:"#6b635a"}}>Sale price:</span><span style={{textAlign:"right",fontWeight:600}}>R {fmt(sale.salePrice)}</span>{deal.surplus>0&&<><span style={{color:"#6b635a"}}>Surplus:</span><span style={{textAlign:"right",color:"#b68b2e"}}>R {fmt(deal.surplus)}</span></>}</div></div>
-    </div>
-    <Card style={{background:"#e8e4dd",marginBottom:16}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,fontSize:14}}><span style={{color:"#6b635a"}}>Gallery commission ({Math.round(MODELS[acqModel].vbPct*100)}%):</span><span style={{textAlign:"right",color:"#b68b2e"}}>R {fmt(deal.vbFee)}</span><span style={{color:"#6b635a"}}>Already collected:</span><span style={{textAlign:"right"}}>R {fmt(deal.totalCollected)}</span><span style={{color:"#6b635a"}}>Balance at sale:</span><span style={{textAlign:"right",color:"#c45c4a"}}>R {fmt(deal.vbBalance)}</span><div style={{gridColumn:"1/-1",height:1,background:"rgba(182,139,46,0.20)",margin:"4px 0"}}/><span style={{color:"#4a9e6b",fontWeight:700,fontSize:16}}>License Holder receives:</span><span style={{textAlign:"right",color:"#4a9e6b",fontWeight:700,fontFamily:"Cormorant Garamond,serif",fontSize:22}}>R {fmt(deal.colNet)}</span><span style={{color:"#6b635a",fontSize:12}}>Profit:</span><span style={{textAlign:"right",fontSize:12,color:"#4a9e6b"}}>R {fmt(deal.colProfit)} ({Math.round(deal.colROI)}% ROI)</span></div></Card>
-    <div style={{marginBottom:16}}><div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>Internal Split — VB's R {fmt(deal.vbTotal)}</div>{!splitOk&&<div style={{fontSize:11,color:"#c45c4a",marginBottom:8}}>⚠ Must total 100%</div>}<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>{[["Gallery",galleryPct,setGalleryPct],["Vollard Black",vbPct,setVbPct],["Artist",artistPct,setArtistPct]].map(([l,v,sv])=><div key={l} style={{background:"#e8e4dd",borderRadius:8,padding:12}}><div style={{fontSize:11,color:"#8a8070",marginBottom:6}}>{l}</div><div style={{display:"flex",alignItems:"center",gap:8}}><input type="text" inputMode="decimal" value={v} onChange={e=>sv(e.target.value)} style={{...is,width:60,padding:"6px 8px",fontSize:13}} placeholder="0"/><span style={{fontSize:12,color:"#8a8070"}}>%</span><span style={{fontSize:14,fontWeight:600,color:"#b68b2e",marginLeft:"auto"}}>R {fmt(deal.vbTotal*((parseFloat(v)||0)/100))}</span></div></div>)}<div style={{background:"#e8e4dd",borderRadius:8,padding:12}}><div style={{fontSize:11,color:"#8a8070",marginBottom:6}}>Introducer Fee</div><div style={{display:"flex",alignItems:"center",gap:8}}><input type="text" inputMode="decimal" value={introPct} onChange={e=>setIntroPct(e.target.value)} style={{...is,width:60,padding:"6px 8px",fontSize:13}} placeholder="0"/><span style={{fontSize:12,color:"#8a8070"}}>%</span><span style={{fontSize:14,fontWeight:600,color:"#c45c4a",marginLeft:"auto"}}>R {fmt(deal.introFee)}</span></div></div></div></div>
-    <div style={{display:"flex",gap:10,justifyContent:"flex-end"}}><Btn ghost onClick={onClose}>Close</Btn><Btn gold onClick={()=>generateSettlementPDF(sale,artworkValue,monthsPaid,acqModel,gN,vN,aN,iN)}>{I.pdf} Download PDF</Btn></div>
-  </Modal>;}
-
-function SaleMdl({data,sellable,onSale,onClose}){
-  const [artId,setArtId]=useState("");const [salePrice,setSalePrice]=useState("");const [buyerId,setBuyerId]=useState("");const [newBuyer,setNewBuyer]=useState(false);const [nb,setNb]=useState({type:"individual",firstName:"",lastName:"",companyName:"",email:"",mobile:"",nationality:"",idNumber:""});
-  const art=data.artworks.find(a=>a.id===artId);const sched=art?data.schedules.find(s=>s.artworkId===artId&&s.status!=="Cancelled"):null;const col=sched?data.collectors.find(c=>c.id===sched.collectorId):null;
-  const gn=c=>c?(c.type==="company"?c.companyName:`${c.firstName} ${c.lastName}`):"—";const acqModel=sched?.acquisitionModel||"O1";const m=MODELS[acqModel];const artworkValue=art?.recommendedPrice||0;const sp=Number(salePrice)||artworkValue;const monthsPaid=sched?.monthsPaid||0;
-  const deal=artworkValue>0?calcDeal(artworkValue,sp,acqModel,monthsPaid,40,30,30,0):{};
-  const resolvedBuyerName=newBuyer?(nb.type==="company"?nb.companyName:`${nb.firstName} ${nb.lastName}`):data.buyers.find(b=>b.id===buyerId)?buyerName(data.buyers.find(b=>b.id===buyerId)):"";
-  return(<Modal title="Record Sale" onClose={onClose} wide>
-    <Field label="Artwork"><select value={artId} onChange={e=>setArtId(e.target.value)} style={ss}><option value="">—</option>{sellable.map(a=>{const s=data.schedules.find(x=>x.artworkId===a.id);return<option key={a.id} value={a.id}>{a.title} — R {fmt(a.recommendedPrice)} {s?`(${MODELS[s.acquisitionModel||"O1"].label})`:""}</option>;})}</select></Field>
-    {art&&<>{sched&&<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16,padding:"10px 14px",background:"#e8e4dd",borderRadius:8}}><Badge model={acqModel}/><span style={{fontSize:13,color:"#6b635a"}}>{monthsPaid} months paid · R {fmt(sched.totalPaid||0)} collected</span><span style={{fontSize:13,color:"#b68b2e",marginLeft:"auto"}}>VB balance: R {fmt(deal.vbBalance||0)}</span></div>}
-    <Field label="Sale Price (R)"><input type="text" inputMode="decimal" value={salePrice} onChange={e=>setSalePrice(e.target.value)} style={is} placeholder={fmt(artworkValue)}/></Field>
-    <div style={{marginBottom:16}}><label style={{display:"block",fontSize:10,fontWeight:500,letterSpacing:2,textTransform:"uppercase",color:"#6b635a",marginBottom:8}}>End Buyer</label><div style={{display:"flex",gap:8,marginBottom:10}}><button onClick={()=>setNewBuyer(false)} style={{flex:1,padding:10,borderRadius:8,border:!newBuyer?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.30)",background:!newBuyer?"rgba(182,139,46,0.18)":"#e8e4dd",color:!newBuyer?"#b68b2e":"#6b635a",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>Existing Buyer</button><button onClick={()=>{setNewBuyer(true);setBuyerId("");}} style={{flex:1,padding:10,borderRadius:8,border:newBuyer?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.30)",background:newBuyer?"rgba(182,139,46,0.18)":"#e8e4dd",color:newBuyer?"#b68b2e":"#6b635a",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>Register New</button></div>
-    {!newBuyer&&<select value={buyerId} onChange={e=>setBuyerId(e.target.value)} style={ss}><option value="">— No buyer / select later</option>{data.buyers.map(b=><option key={b.id} value={b.id}>{buyerName(b)}{b.email?` · ${b.email}`:""}</option>)}</select>}
-    {newBuyer&&<div style={{background:"#e8e4dd",border:"1px solid rgba(182,139,46,0.20)",borderRadius:10,padding:14}}><div style={{fontSize:11,color:"#b68b2e",marginBottom:10,letterSpacing:1}}>NEW BUYER</div><div style={{display:"flex",gap:8,marginBottom:10}}>{[["individual","Individual"],["company","Company"]].map(([id,l])=><button key={id} onClick={()=>setNb(p=>({...p,type:id}))} style={{flex:1,padding:8,borderRadius:8,border:nb.type===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.30)",background:nb.type===id?"rgba(182,139,46,0.18)":"transparent",color:nb.type===id?"#b68b2e":"#6b635a",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{l}</button>)}</div>{nb.type==="company"?<input value={nb.companyName} onChange={e=>setNb(p=>({...p,companyName:e.target.value}))} placeholder="Company Name" style={{...is,marginBottom:8}}/>:<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}><input value={nb.firstName} onChange={e=>setNb(p=>({...p,firstName:e.target.value}))} placeholder="First Name" style={is}/><input value={nb.lastName} onChange={e=>setNb(p=>({...p,lastName:e.target.value}))} placeholder="Last Name" style={is}/></div>}<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}><input value={nb.email} onChange={e=>setNb(p=>({...p,email:e.target.value}))} placeholder="Email" style={is}/><input value={nb.mobile} onChange={e=>setNb(p=>({...p,mobile:e.target.value}))} placeholder="Mobile" style={is}/></div></div>}
-    </div>
-    {artworkValue>0&&<Card style={{background:"#e8e4dd",marginTop:4}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,fontSize:14}}><span style={{color:"#6b635a"}}>Sale price:</span><span style={{fontWeight:600}}>R {fmt(sp)}</span><span style={{color:"#6b635a"}}>License Holder:</span><span>{gn(col)}</span><div style={{gridColumn:"1/-1",height:1,background:"rgba(182,139,46,0.20)",margin:"4px 0"}}/><span style={{color:"#4a9e6b",fontWeight:700}}>LH receives:</span><span style={{color:"#4a9e6b",fontWeight:700,fontFamily:"Cormorant Garamond,serif",fontSize:18}}>R {fmt(deal.colNet||0)}</span><span style={{color:"#b68b2e",fontWeight:600}}>Gallery total:</span><span style={{color:"#b68b2e",fontWeight:700,fontFamily:"Cormorant Garamond,serif",fontSize:18}}>R {fmt(deal.vbTotal||0)}</span></div></Card>}
-    </>}
-    <div style={{display:"flex",gap:10,marginTop:20,justifyContent:"flex-end"}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold disabled={!artId} onClick={()=>{let finalBuyerId=buyerId;let finalBuyerName=resolvedBuyerName;let newBuyerData=null;if(newBuyer&&resolvedBuyerName.trim()){finalBuyerId=uid();finalBuyerName=resolvedBuyerName;newBuyerData={...nb,id:finalBuyerId};}onSale({artworkId:artId,artworkTitle:art.title,acquisitionModel:acqModel,collectorId:col?.id,collectorName:gn(col),buyerId:finalBuyerId||null,buyerName:finalBuyerName||null,newBuyerData,salePrice:sp,artworkValue,monthsPaid,colNet:deal.colNet||0,colProfit:deal.colProfit||0,colROI:deal.colROI||0,vbTotal:deal.vbTotal||0,vbBalance:deal.vbBalance||0,collectorShare:deal.colNet||0,vbShare:deal.vbFee||0,galleryShare:deal.galleryAmt||0,vbNet:deal.vbAmt||0,artistShare:deal.artistAmt||0});}}>Confirm Sale</Btn></div>
-  </Modal>);}
-
-// ═══════════════════════════════════════════
-// REPORTS
-// ═══════════════════════════════════════════
-function ReportsPage({data,actions}){
-  const [selectedMonth,setSelectedMonth]=useState(null);const [yearFilter,setYearFilter]=useState(new Date().getFullYear().toString());
-  const generateMonthList=()=>{const months=[];const now=new Date();let start=new Date(now.getFullYear()-1,0,1);const earliest=(data.schedules||[]).reduce((min,s)=>(!min||s.startDate<min)?s.startDate:min,null);if(earliest)start=new Date(earliest.slice(0,7)+"-01");const cur=new Date(start);while(cur<=now){months.push(cur.toISOString().slice(0,7));cur.setMonth(cur.getMonth()+1);}return months.reverse();};
-  const monthList=generateMonthList();const years=[...new Set(monthList.map(m=>m.slice(0,4)))];const filteredMonths=monthList.filter(m=>m.startsWith(yearFilter));const getReport=(ym)=>data.reports.find(r=>r.month===ym);const locked=(ym)=>isReportLocked(ym);
-  return(<div>
-    <PT title="Reports" sub="Monthly snapshots — permanent record"/>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:14,marginBottom:28}}><Stat label="Generated" value={data.reports.length} gold/><Stat label="Locked" value={data.reports.filter(r=>r.locked).length}/><Stat label="Total Collected" value={"R "+fmt(data.reports.reduce((s,r)=>s+(r.totalCollected||0),0))} green/></div>
-    <div style={{display:"flex",gap:8,marginBottom:20,flexWrap:"wrap",alignItems:"center"}}>{years.map(y=><button key={y} onClick={()=>setYearFilter(y)} style={{padding:"8px 18px",borderRadius:8,border:yearFilter===y?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.30)",background:yearFilter===y?"rgba(182,139,46,0.18)":"transparent",color:yearFilter===y?"#b68b2e":"#6b635a",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{y}</button>)}<Btn small gold onClick={()=>actions.generateReport(getCurrentMonth())} style={{marginLeft:"auto"}}>{I.report} Generate Now</Btn></div>
-    {filteredMonths.length===0?<Empty msg="No months available yet."/>:filteredMonths.map(ym=>{
-      const report=getReport(ym);const isLocked=locked(ym);const {lock}=getReportWindow(ym);const isCurrent=ym===getCurrentMonth();
-      return<Card key={ym} style={{marginBottom:12,padding:0,overflow:"hidden"}}>
-        <div style={{height:3,background:isLocked?"#648cc8":report?"#b68b2e":"rgba(182,139,46,0.50)"}}/>
-        <div style={{padding:20}}>
-          <div style={{display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
-            <div style={{flex:1,minWidth:200}}><div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4,flexWrap:"wrap"}}><span style={{fontFamily:"Cormorant Garamond,serif",fontSize:20,fontWeight:400,color:"#1a1714"}}>{getMonthLabel(ym)}</span>{isCurrent&&<span style={{fontSize:10,background:"rgba(182,139,46,0.30)",color:"#b68b2e",padding:"3px 8px",borderRadius:6,fontWeight:600}}>CURRENT</span>}{isLocked&&<span style={{fontSize:10,background:"rgba(100,140,200,0.15)",color:"#648cc8",padding:"3px 8px",borderRadius:6,fontWeight:600,display:"inline-flex",alignItems:"center",gap:4}}>{I.lock} LOCKED</span>}</div>{isLocked?<div style={{fontSize:11,color:"#8a8070"}}>Permanently locked</div>:<div style={{fontSize:11,color:"#8a8070"}}>Editable until {lock}</div>}</div>
-            {report&&<div style={{display:"flex",gap:16,fontSize:12,flexWrap:"wrap"}}><span>Collected: <strong style={{color:"#4a9e6b"}}>R {fmt(report.totalCollected)}</strong></span><span>Active: <strong style={{color:"#4a9e6b"}}>{report.activeCount}</strong></span>{report.chasingCount>0&&<span>Chasing: <strong style={{color:"#e6be32"}}>{report.chasingCount}</strong></span>}<span style={{fontSize:11,color:"#8a8070"}}>Generated: {report.generatedAt}</span></div>}
-            <div style={{display:"flex",gap:8,flexShrink:0}}>{!isLocked&&<Btn small gold onClick={()=>actions.generateReport(ym)}>{report?"Regenerate":"Generate"}</Btn>}{isLocked&&<Btn small warn onClick={()=>actions.generateReport(ym)}>{I.warn} Override</Btn>}{report&&<Btn small ghost onClick={()=>generatePDF(report)}>{I.dl} PDF</Btn>}</div>
-          </div>
-          {report&&<><button onClick={()=>setSelectedMonth(selectedMonth===ym?null:ym)} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer",fontSize:11,marginTop:10,display:"flex",alignItems:"center",gap:4}}><span style={{transform:selectedMonth===ym?"rotate(180deg)":"none",transition:"0.2s",display:"inline-flex"}}>{I.chevron}</span>{selectedMonth===ym?"Hide":"Show"} details</button>{selectedMonth===ym&&<div style={{marginTop:10,borderTop:"1px solid rgba(182,139,46,0.14)",paddingTop:10}}>{report.snapshot.payments&&report.snapshot.payments.length>0?<Tbl cols={[{label:"Collector",bold:true,render:r=>r.collectorName},{label:"Artwork",key:"artworkTitle"},{label:"Model",render:r=><Badge model={r.model||"O1"}/>},{label:"Month",render:r=>"Mo "+r.monthNumber},{label:"Method",key:"method"},{label:"Amount",right:true,gold:true,render:r=>"R "+fmt(r.amount)}]} data={report.snapshot.payments}/>:<p style={{fontSize:13,color:"#8a8070"}}>No payments this month.</p>}
-{report.snapshot.auctionResults&&report.snapshot.auctionResults.length>0&&(<div style={{marginTop:16}}><div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#b68b2e",marginBottom:8,fontWeight:600}}>Auction Results ({report.snapshot.auctionResults.length})</div><Tbl cols={[{label:"Artwork",bold:true,key:"title"},{label:"Artist",key:"artist"},{label:"Gallery",key:"galleryName"},{label:"Reserve",right:true,render:r=>"R "+fmt(r.reservePrice)},{label:"Final Bid",right:true,gold:true,render:r=>"R "+fmt(r.currentBid||0)},{label:"Bids",render:r=>r.bidsCount||0},{label:"Result",render:r=>{const met=(r.currentBid||0)>=(r.reservePrice||0);return<span style={{color:met?"#4a9e6b":"#c45c4a",fontWeight:600}}>{r.status}</span>;}}]} data={report.snapshot.auctionResults}/></div>)}</div>}</>}
-        </div>
-      </Card>;})}
-  </div>);}
-
-// ═══════════════════════════════════════════
-// GALLERY BREAK-EVEN
-// ═══════════════════════════════════════════
-function GalleryPage(){
-  const [costs,setCosts]=useState("");
-  const [price,setPrice]=useState("");
-  const [galPct,setGalPct]=useState("");
-  const [sales,setSales]=useState("");
-  const [option,setOption]=useState("O1");
-  const c=parseFloat(costs)||0;
-  const p=parseFloat(price)||0;
-  const gp=(parseFloat(galPct)||40)/100;
-  const s=parseFloat(sales)||0;
-  const m=MODELS[option];
-  const vbFee=p*m.vbPct;
-  const moPerArt=vbFee/m.term*gp;
-  const saleIncome=vbFee*gp;
-  const totalSalesIncome=saleIncome*s;
-  const costsAfterSales=Math.max(0,c-totalSalesIncome);
-  const neededNoSales=moPerArt>0?Math.ceil(c/moPerArt):0;
-  const neededWithSales=moPerArt>0?Math.ceil(costsAfterSales/moPerArt):0;
-  const diff=neededNoSales-neededWithSales;
-  const ready=c>0&&p>0;
-  const salePlural=s!==1?"s":"";
-  const diffPlural=diff!==1?"s":"";
-  const summaryText=diff>0
-    ?(s+" sale"+salePlural+" per month saves you "+diff+" artwork"+diffPlural)
-    :(neededNoSales+" collectors at R "+fmt(moPerArt)+" per month = R "+fmt(moPerArt*neededNoSales));
-  const summaryColor=diff>0?"#4a9e6b":"#b68b2e";
-  const tileData=[
-    {label:"Monthly income at break-even",val:"R "+fmt(moPerArt*neededNoSales),color:"#4a9e6b"},
-    {label:"Monthly costs",val:"R "+fmt(c),color:"#c45c4a"},
-    {label:"Commission per artwork ("+Math.round(m.vbPct*100)+"%)",val:"R "+fmt(vbFee),color:"#b68b2e"},
-    {label:"Gallery earns ("+m.term+" months)",val:"R "+fmt(vbFee*gp),color:"#b68b2e"},
-  ];
-  const numFilter=v=>v.replace(/[^0-9.]/g,"");
-  return(
-    <div>
-      <PT title="Gallery Break-Even" sub="How many artworks cover your monthly costs"/>
-      <div style={{display:"grid",gridTemplateColumns:"minmax(0,420px) minmax(0,1fr)",gap:24,alignItems:"start"}}>
-        <Card>
-          <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>Display License Tier</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:20}}>
-            {["O1","O2","O3"].map(k=>{
-              const mod=MODELS[k];const on=option===k;
-              const ratio=Math.round(mod.vbPct*100)+"|"+Math.round(mod.colPct*100);
-              return(
-                <button key={k} onClick={()=>setOption(k)} style={{padding:10,borderRadius:8,border:on?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.25)",background:on?"rgba(182,139,46,0.18)":"#e8e4dd",color:on?"#b68b2e":"#6b635a",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"center",fontSize:11,fontWeight:on?600:400}}>
-                  <div style={{fontWeight:600,marginBottom:2}}>{mod.label.split("·")[0].trim()}</div>
-                  <div style={{fontSize:10,opacity:0.7}}>{ratio} · {mod.term}mo</div>
-                </button>
-              );
-            })}
-          </div>
-          <div style={{marginBottom:16}}>
-            <Field label="Monthly Costs (R)">
-              <div style={{display:"flex",alignItems:"center",background:"#e8e4dd",border:"1px solid rgba(182,139,46,0.25)",borderRadius:10,overflow:"hidden"}}>
-                <span style={{padding:"0 14px",fontSize:13,color:"#8a8070",borderRight:"1px solid rgba(182,139,46,0.18)",height:48,display:"flex",alignItems:"center"}}>R</span>
-                <input type="text" inputMode="decimal" value={costs} onChange={e=>setCosts(numFilter(e.target.value))} placeholder="0" style={{flex:1,padding:"0 16px",height:48,background:"transparent",border:"none",color:"#1a1714",fontFamily:"DM Sans,sans-serif",fontSize:16,fontWeight:500,outline:"none",textAlign:"right"}}/>
-              </div>
-            </Field>
-            <Field label="Artwork Price (R)">
-              <div style={{display:"flex",alignItems:"center",background:"#e8e4dd",border:"1px solid rgba(182,139,46,0.25)",borderRadius:10,overflow:"hidden"}}>
-                <span style={{padding:"0 14px",fontSize:13,color:"#8a8070",borderRight:"1px solid rgba(182,139,46,0.18)",height:48,display:"flex",alignItems:"center"}}>R</span>
-                <input type="text" inputMode="decimal" value={price} onChange={e=>setPrice(numFilter(e.target.value))} placeholder="0" style={{flex:1,padding:"0 16px",height:48,background:"transparent",border:"none",color:"#1a1714",fontFamily:"DM Sans,sans-serif",fontSize:16,fontWeight:500,outline:"none",textAlign:"right"}}/>
-              </div>
-            </Field>
-            <Field label="Gallery Fee">
-              <div style={{display:"flex",alignItems:"center",background:"#e8e4dd",border:"1px solid rgba(182,139,46,0.25)",borderRadius:10,overflow:"hidden"}}>
-                <input type="text" inputMode="decimal" value={galPct} onChange={e=>setGalPct(numFilter(e.target.value))} placeholder="0" style={{flex:1,padding:"0 16px",height:48,background:"transparent",border:"none",color:"#1a1714",fontFamily:"DM Sans,sans-serif",fontSize:16,fontWeight:500,outline:"none",textAlign:"right"}}/>
-                <span style={{padding:"0 14px",fontSize:13,color:"#8a8070",borderLeft:"1px solid rgba(182,139,46,0.18)",height:48,display:"flex",alignItems:"center",whiteSpace:"nowrap"}}>% of commission</span>
-              </div>
-            </Field>
-            <Field label="Expected Sales per Month">
-              <div style={{display:"flex",alignItems:"center",background:"#e8e4dd",border:"1px solid rgba(182,139,46,0.25)",borderRadius:10,overflow:"hidden"}}>
-                <input type="text" inputMode="decimal" value={sales} onChange={e=>setSales(numFilter(e.target.value))} placeholder="0" style={{flex:1,padding:"0 16px",height:48,background:"transparent",border:"none",color:"#1a1714",fontFamily:"DM Sans,sans-serif",fontSize:16,fontWeight:500,outline:"none",textAlign:"right"}}/>
-                <span style={{padding:"0 14px",fontSize:13,color:"#8a8070",borderLeft:"1px solid rgba(182,139,46,0.18)",height:48,display:"flex",alignItems:"center",whiteSpace:"nowrap"}}>sales</span>
-              </div>
-            </Field>
-          </div>
-          {ready&&(
-            <div>
-              <div style={{height:1,background:"rgba(182,139,46,0.20)",margin:"20px 0"}}/>
-              {[
-                {label:"Commission ("+Math.round(m.vbPct*100)+"%)",val:"R "+fmt(vbFee)},
-                {label:"Gallery earns per artwork per month",val:"R "+fmt(moPerArt)},
-                {label:"Gallery earns per sale",val:"R "+fmt(saleIncome)},
-                {label:(s||0)+" sale"+salePlural+" per month income",val:"R "+fmt(totalSalesIncome),green:true},
-              ].map((row,ri)=>(
-                <div key={ri} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 0",borderBottom:"1px solid rgba(182,139,46,0.12)"}}>
-                  <span style={{fontSize:13,color:"#8a8070"}}>{row.label}</span>
-                  <span style={{fontSize:13,fontWeight:500,color:row.green?"#4a9e6b":"#b68b2e"}}>{row.val}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-        <div>
-          {!ready&&(
-            <Card style={{padding:48,textAlign:"center"}}>
-              <div style={{fontSize:36,color:"#8a8070",marginBottom:12}}>◆</div>
-              <p style={{color:"#8a8070",fontSize:14}}>Enter your monthly costs and artwork price.</p>
-            </Card>
-          )}
-          {ready&&(
-            <div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:16}}>
-                <Card style={{textAlign:"center",padding:28}}>
-                  <div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:14}}>Without sales</div>
-                  <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:64,fontWeight:300,lineHeight:1,color:"#1a1714"}}>{neededNoSales||"—"}</div>
-                  <div style={{fontSize:11,color:"#8a8070",marginTop:10}}>artworks needed</div>
-                </Card>
-                <Card style={{textAlign:"center",padding:28,border:"1px solid rgba(182,139,46,0.50)",position:"relative",overflow:"hidden"}}>
-                  <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:"linear-gradient(90deg,transparent,#b68b2e,transparent)"}}/>
-                  <div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#b68b2e",marginBottom:14}}>With {s||0} sale{salePlural} per month</div>
-                  <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:64,fontWeight:300,lineHeight:1,color:"#4a9e6b"}}>{neededWithSales||"—"}</div>
-                  <div style={{fontSize:11,color:"#8a8070",marginTop:10}}>artworks needed</div>
-                </Card>
-              </div>
-              <Card style={{textAlign:"center",padding:18,marginBottom:14}}>
-                <div style={{fontSize:14,fontWeight:500,color:summaryColor}}>{summaryText}</div>
-              </Card>
-              <Card>
-                <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:14}}>What This Looks Like</div>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-                  {tileData.map((x,i)=>(
-                    <div key={i} style={{background:"#e8e4dd",borderRadius:8,padding:14}}>
-                      <div style={{fontSize:10,color:"#8a8070",letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>{x.label}</div>
-                      <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:22,fontWeight:400,color:x.color}}>{x.val}</div>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
