@@ -1377,27 +1377,139 @@ function ReportsPage({data,actions}){
 // GALLERY BREAK-EVEN
 // ═══════════════════════════════════════════
 function GalleryPage(){
-  const [costs,setCosts]=useState("");const [price,setPrice]=useState("");const [galPct,setGalPct]=useState("");const [sales,setSales]=useState("");const [option,setOption]=useState("O1");
-  const c=parseFloat(costs)||0;const p=parseFloat(price)||0;const gp=(parseFloat(galPct)||40)/100;const s=parseFloat(sales)||0;const m=MODELS[option];
-  const vbFee=p*m.vbPct;const moPerArt=vbFee/m.term*gp;const saleIncome=vbFee*gp;const totalSalesIncome=saleIncome*s;const costsAfterSales=Math.max(0,c-totalSalesIncome);const neededNoSales=moPerArt>0?Math.ceil(c/moPerArt):0;const neededWithSales=moPerArt>0?Math.ceil(costsAfterSales/moPerArt):0;const diff=neededNoSales-neededWithSales;const ready=c>0&&p>0;
-  const FI=({label,value,onChange,suffix,prefix})=><Field label={label}><div style={{display:"flex",alignItems:"center",background:"#e8e4dd",border:"1px solid rgba(182,139,46,0.25)",borderRadius:10,overflow:"hidden"}}>{prefix&&<span style={{padding:"0 14px",fontSize:13,color:"#8a8070",borderRight:"1px solid rgba(182,139,46,0.18)",height:48,display:"flex",alignItems:"center",flexShrink:0}}>{prefix}</span>}<input type="text" inputMode="decimal" value={value} onChange={e=>onChange(e.target.value.replace(/[^0-9.]/g,""))} placeholder="0" style={{flex:1,padding:"0 16px",height:48,background:"transparent",border:"none",color:"#1a1714",fontFamily:"DM Sans,sans-serif",fontSize:16,fontWeight:500,outline:"none",textAlign:"right"}}/>{suffix&&<span style={{padding:"0 14px",fontSize:13,color:"#8a8070",borderLeft:"1px solid rgba(182,139,46,0.18)",height:48,display:"flex",alignItems:"center",flexShrink:0,whiteSpace:"nowrap"}}>{suffix}</span>}</div></Field>;
-  const Row=({label,val,green})=><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 0",borderBottom:"1px solid rgba(182,139,46,0.12)"}}><span style={{fontSize:13,color:"#8a8070"}}>{label}</span><span style={{fontSize:13,fontWeight:500,color:green?"#4a9e6b":"#b68b2e"}}>{val}</span></div>;
-  return(<div>
-    <PT title="Gallery Break-Even" sub="How many artworks cover your monthly costs"/>
-    <div style={{display:"grid",gridTemplateColumns:"minmax(0,420px) minmax(0,1fr)",gap:24,alignItems:"start"}}>
-      <Card>
-        <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>Display License Tier</div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:20}}>{["O1","O2","O3"].map(k=>{const mod=MODELS[k];const on=option===k;return<button key={k} onClick={()=>setOption(k)} style={{padding:10,borderRadius:8,border:on?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.25)",background:on?"rgba(182,139,46,0.18)":"#e8e4dd",color:on?"#b68b2e":"#6b635a",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"center",fontSize:11,fontWeight:on?600:400}}><div style={{fontWeight:600,marginBottom:2}}>{mod.label.split("·")[0].trim()}</div><div style={{fontSize:10,opacity:0.7}}>{Math.round(mod.vbPct*100)+"|"+ Math.round(mod.colPct*100)} · {mod.term}mo</div></button>;})}
+  const [costs,setCosts]=useState("");
+  const [price,setPrice]=useState("");
+  const [galPct,setGalPct]=useState("");
+  const [sales,setSales]=useState("");
+  const [option,setOption]=useState("O1");
+  const c=parseFloat(costs)||0;
+  const p=parseFloat(price)||0;
+  const gp=(parseFloat(galPct)||40)/100;
+  const s=parseFloat(sales)||0;
+  const m=MODELS[option];
+  const vbFee=p*m.vbPct;
+  const moPerArt=vbFee/m.term*gp;
+  const saleIncome=vbFee*gp;
+  const totalSalesIncome=saleIncome*s;
+  const costsAfterSales=Math.max(0,c-totalSalesIncome);
+  const neededNoSales=moPerArt>0?Math.ceil(c/moPerArt):0;
+  const neededWithSales=moPerArt>0?Math.ceil(costsAfterSales/moPerArt):0;
+  const diff=neededNoSales-neededWithSales;
+  const ready=c>0&&p>0;
+  const salePlural=s!==1?"s":"";
+  const diffPlural=diff!==1?"s":"";
+  const summaryText=diff>0
+    ?(s+" sale"+salePlural+" per month saves you "+diff+" artwork"+diffPlural)
+    :(neededNoSales+" collectors at R "+fmt(moPerArt)+" per month = R "+fmt(moPerArt*neededNoSales));
+  const summaryColor=diff>0?"#4a9e6b":"#b68b2e";
+  const tileData=[
+    {label:"Monthly income at break-even",val:"R "+fmt(moPerArt*neededNoSales),color:"#4a9e6b"},
+    {label:"Monthly costs",val:"R "+fmt(c),color:"#c45c4a"},
+    {label:"Commission per artwork ("+Math.round(m.vbPct*100)+"%)",val:"R "+fmt(vbFee),color:"#b68b2e"},
+    {label:"Gallery earns ("+m.term+" months)",val:"R "+fmt(vbFee*gp),color:"#b68b2e"},
+  ];
+  const numFilter=v=>v.replace(/[^0-9.]/g,"");
+  return(
+    <div>
+      <PT title="Gallery Break-Even" sub="How many artworks cover your monthly costs"/>
+      <div style={{display:"grid",gridTemplateColumns:"minmax(0,420px) minmax(0,1fr)",gap:24,alignItems:"start"}}>
+        <Card>
+          <div style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>Display License Tier</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:20}}>
+            {["O1","O2","O3"].map(k=>{
+              const mod=MODELS[k];const on=option===k;
+              const ratio=Math.round(mod.vbPct*100)+"|"+Math.round(mod.colPct*100);
+              return(
+                <button key={k} onClick={()=>setOption(k)} style={{padding:10,borderRadius:8,border:on?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.25)",background:on?"rgba(182,139,46,0.18)":"#e8e4dd",color:on?"#b68b2e":"#6b635a",cursor:"pointer",fontFamily:"DM Sans,sans-serif",textAlign:"center",fontSize:11,fontWeight:on?600:400}}>
+                  <div style={{fontWeight:600,marginBottom:2}}>{mod.label.split("·")[0].trim()}</div>
+                  <div style={{fontSize:10,opacity:0.7}}>{ratio} · {mod.term}mo</div>
+                </button>
+              );
+            })}
+          </div>
+          <div style={{marginBottom:16}}>
+            <Field label="Monthly Costs (R)">
+              <div style={{display:"flex",alignItems:"center",background:"#e8e4dd",border:"1px solid rgba(182,139,46,0.25)",borderRadius:10,overflow:"hidden"}}>
+                <span style={{padding:"0 14px",fontSize:13,color:"#8a8070",borderRight:"1px solid rgba(182,139,46,0.18)",height:48,display:"flex",alignItems:"center"}}>R</span>
+                <input type="text" inputMode="decimal" value={costs} onChange={e=>setCosts(numFilter(e.target.value))} placeholder="0" style={{flex:1,padding:"0 16px",height:48,background:"transparent",border:"none",color:"#1a1714",fontFamily:"DM Sans,sans-serif",fontSize:16,fontWeight:500,outline:"none",textAlign:"right"}}/>
+              </div>
+            </Field>
+            <Field label="Artwork Price (R)">
+              <div style={{display:"flex",alignItems:"center",background:"#e8e4dd",border:"1px solid rgba(182,139,46,0.25)",borderRadius:10,overflow:"hidden"}}>
+                <span style={{padding:"0 14px",fontSize:13,color:"#8a8070",borderRight:"1px solid rgba(182,139,46,0.18)",height:48,display:"flex",alignItems:"center"}}>R</span>
+                <input type="text" inputMode="decimal" value={price} onChange={e=>setPrice(numFilter(e.target.value))} placeholder="0" style={{flex:1,padding:"0 16px",height:48,background:"transparent",border:"none",color:"#1a1714",fontFamily:"DM Sans,sans-serif",fontSize:16,fontWeight:500,outline:"none",textAlign:"right"}}/>
+              </div>
+            </Field>
+            <Field label="Gallery Fee">
+              <div style={{display:"flex",alignItems:"center",background:"#e8e4dd",border:"1px solid rgba(182,139,46,0.25)",borderRadius:10,overflow:"hidden"}}>
+                <input type="text" inputMode="decimal" value={galPct} onChange={e=>setGalPct(numFilter(e.target.value))} placeholder="0" style={{flex:1,padding:"0 16px",height:48,background:"transparent",border:"none",color:"#1a1714",fontFamily:"DM Sans,sans-serif",fontSize:16,fontWeight:500,outline:"none",textAlign:"right"}}/>
+                <span style={{padding:"0 14px",fontSize:13,color:"#8a8070",borderLeft:"1px solid rgba(182,139,46,0.18)",height:48,display:"flex",alignItems:"center",whiteSpace:"nowrap"}}>% of commission</span>
+              </div>
+            </Field>
+            <Field label="Expected Sales per Month">
+              <div style={{display:"flex",alignItems:"center",background:"#e8e4dd",border:"1px solid rgba(182,139,46,0.25)",borderRadius:10,overflow:"hidden"}}>
+                <input type="text" inputMode="decimal" value={sales} onChange={e=>setSales(numFilter(e.target.value))} placeholder="0" style={{flex:1,padding:"0 16px",height:48,background:"transparent",border:"none",color:"#1a1714",fontFamily:"DM Sans,sans-serif",fontSize:16,fontWeight:500,outline:"none",textAlign:"right"}}/>
+                <span style={{padding:"0 14px",fontSize:13,color:"#8a8070",borderLeft:"1px solid rgba(182,139,46,0.18)",height:48,display:"flex",alignItems:"center",whiteSpace:"nowrap"}}>sales</span>
+              </div>
+            </Field>
+          </div>
+          {ready&&(
+            <div>
+              <div style={{height:1,background:"rgba(182,139,46,0.20)",margin:"20px 0"}}/>
+              {[
+                {label:"Commission ("+Math.round(m.vbPct*100)+"%)",val:"R "+fmt(vbFee)},
+                {label:"Gallery earns per artwork per month",val:"R "+fmt(moPerArt)},
+                {label:"Gallery earns per sale",val:"R "+fmt(saleIncome)},
+                {label:(s||0)+" sale"+salePlural+" per month income",val:"R "+fmt(totalSalesIncome),green:true},
+              ].map((row,ri)=>(
+                <div key={ri} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 0",borderBottom:"1px solid rgba(182,139,46,0.12)"}}>
+                  <span style={{fontSize:13,color:"#8a8070"}}>{row.label}</span>
+                  <span style={{fontSize:13,fontWeight:500,color:row.green?"#4a9e6b":"#b68b2e"}}>{row.val}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+        <div>
+          {!ready&&(
+            <Card style={{padding:48,textAlign:"center"}}>
+              <div style={{fontSize:36,color:"#8a8070",marginBottom:12}}>◆</div>
+              <p style={{color:"#8a8070",fontSize:14}}>Enter your monthly costs and artwork price.</p>
+            </Card>
+          )}
+          {ready&&(
+            <div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:16}}>
+                <Card style={{textAlign:"center",padding:28}}>
+                  <div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:14}}>Without sales</div>
+                  <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:64,fontWeight:300,lineHeight:1,color:"#1a1714"}}>{neededNoSales||"—"}</div>
+                  <div style={{fontSize:11,color:"#8a8070",marginTop:10}}>artworks needed</div>
+                </Card>
+                <Card style={{textAlign:"center",padding:28,border:"1px solid rgba(182,139,46,0.50)",position:"relative",overflow:"hidden"}}>
+                  <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:"linear-gradient(90deg,transparent,#b68b2e,transparent)"}}/>
+                  <div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#b68b2e",marginBottom:14}}>With {s||0} sale{salePlural} per month</div>
+                  <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:64,fontWeight:300,lineHeight:1,color:"#4a9e6b"}}>{neededWithSales||"—"}</div>
+                  <div style={{fontSize:11,color:"#8a8070",marginTop:10}}>artworks needed</div>
+                </Card>
+              </div>
+              <Card style={{textAlign:"center",padding:18,marginBottom:14}}>
+                <div style={{fontSize:14,fontWeight:500,color:summaryColor}}>{summaryText}</div>
+              </Card>
+              <Card>
+                <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:14}}>What This Looks Like</div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                  {tileData.map((x,i)=>(
+                    <div key={i} style={{background:"#e8e4dd",borderRadius:8,padding:14}}>
+                      <div style={{fontSize:10,color:"#8a8070",letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>{x.label}</div>
+                      <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:22,fontWeight:400,color:x.color}}>{x.val}</div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+          )}
         </div>
-        <FI label="Monthly Costs (R)" value={costs} onChange={setCosts} prefix="R"/><FI label="Artwork Price (R)" value={price} onChange={setPrice} prefix="R"/><FI label="Gallery Fee" value={galPct} onChange={setGalPct} suffix="% of commission"/><FI label="Expected Sales/Month" value={sales} onChange={setSales} suffix="sales / mo"/>
-        {ready&&<><div style={{height:1,background:"rgba(182,139,46,0.20)",margin:"20px 0"}}/><Row label={`Commission (${Math.round(m.vbPct*100)}%)`} val={"R "+fmt(vbFee)}/><Row label="Gallery earns per artwork per month" val={"R "+fmt(moPerArt)}/><Row label="Gallery earns per sale" val={"R "+fmt(saleIncome)}/><Row label={""+( s||0)+" sale"+(s!==1?"s":"")+" per month"} val={"R "+fmt(totalSalesIncome)} green/></>}
-      </Card>
-      <div>{!ready?<Card style={{padding:48,textAlign:"center"}}><div style={{fontSize:36,color:"#8a8070",marginBottom:12}}>◆</div><p style={{color:"#8a8070",fontSize:14}}>Enter your monthly costs and artwork price.</p></Card>:<><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:16}}>
-        <Card style={{textAlign:"center",padding:28}}><div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:14}}>Without sales</div><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:64,fontWeight:300,lineHeight:1,color:"#1a1714"}}>{neededNoSales||"—"}</div><div style={{fontSize:11,color:"#8a8070",marginTop:10}}>artworks needed</div></Card>
-        <Card style={{textAlign:"center",padding:28,border:"1px solid rgba(182,139,46,0.50)",position:"relative",overflow:"hidden"}}><div style={{position:"absolute",top:0,left:0,right:0,height:2,background:"linear-gradient(90deg,transparent,#b68b2e,transparent)"}}/><div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#b68b2e",marginBottom:14}}>With {s||0} sale{s!==1?"s":""} per month</div><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:64,fontWeight:300,lineHeight:1,color:"#4a9e6b"}}>{neededWithSales||"—"}</div><div style={{fontSize:11,color:"#8a8070",marginTop:10}}>artworks needed</div></Card>
       </div>
-      <Card style={{textAlign:"center",padding:18,marginBottom:14}}><div style={{fontSize:14,fontWeight:500,color:diff>0?"#4a9e6b":"#b68b2e"}}>{diff>0?(s+" sale"+(s!==1?"s":"")+" per month saves you "+diff+" artwork"+(diff!==1?"s":"")):(neededNoSales+" collectors at R "+fmt(moPerArt)+" per month = R "+fmt(moPerArt*neededNoSales))}</div></Card>
-      <Card><div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:14}}>What This Looks Like</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>{[{label:"Monthly income at break-even",val:"R "+fmt(moPerArt*neededNoSales),color:"#4a9e6b"},{label:"Monthly costs",val:"R "+fmt(c),color:"#c45c4a"},{label:`Commission per artwork (${Math.round(m.vbPct*100)}%)`,val:"R "+fmt(vbFee),color:"#b68b2e"},{label:`Gallery earns (${m.term}mo)`,val:"R "+fmt(vbFee*gp),color:"#b68b2e"}].map((x,i)=><div key={i} style={{background:"#e8e4dd",borderRadius:8,padding:14}}><div style={{fontSize:10,color:"#8a8070",letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>{x.label}</div><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:22,fontWeight:400,color:x.color}}>{x.val}</div></div>)}</div></Card>
-      </></div>
     </div>
-  </div>);}
+  );
+}
