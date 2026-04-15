@@ -1001,7 +1001,7 @@ function AucCreateModal({artworks,onSave,onClose,fmt}){
     setLots(p=>[...p,...toAdd.map(a=>({artworkId:a.id,overrideReserve:null}))]);
   };
   const clearAll=()=>setLots([]);
-  const setOverride=(artworkId,val)=>setLots(p=>p.map(l=>l.artworkId===artworkId?{...l,overrideReserve:val====""?null:Number(val)}:l));
+  const setOverride=(artworkId,val)=>{const rv=val===""?null:Number(val);setLots(p=>p.map(l=>l.artworkId===artworkId?{...l,overrideReserve:rv}:l));};
   const endMin=()=>{const d=new Date();d.setMinutes(d.getMinutes()+30);return d.toISOString().slice(0,16);};
 
   const handleCreate=()=>{
