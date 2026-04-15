@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { db } from "./supabase";
 
 // ─── Constants ───
@@ -288,6 +288,8 @@ export default function App(){
   const [sb,setSb]=useState(false);
   const [loading,setLoading]=useState(true);
   const [dbMode,setDbMode]=useState(false);
+  const dbModeRef=useRef(false);
+  const dataRef=useRef(fresh());
   const [invoiceFilter,setInvoiceFilter]=useState(null);
 
   useEffect(()=>{
@@ -303,7 +305,7 @@ export default function App(){
           const safe={...fresh()};
           for(const t of TABLES){safe[t]=Array.isArray(results[t])?results[t]:[];}
           safe.collectors=safe.collectors.map(c=>({...c,linkedArtworks:c.linkedArtworks||[]}));
-          setData(safe);setDbMode(true);
+          console.log("Supabase connected, loaded tables:",Object.keys(results).map(t=>t+":"+results[t].length));setData(safe);setDbMode(true);dbModeRef.current=true;
         }catch(e){console.error(e);setData(loadLocal());}
       } else setData(loadLocal());
       setLoading(false);
@@ -313,6 +315,7 @@ export default function App(){
 
   useEffect(()=>{
     if(!loading){
+      dataRef.current=data;
       try{
         const slim={...data,artworks:data.artworks.map(a=>({...a,imageUrl:a.imageUrl?.startsWith("data:")?null:a.imageUrl}))};
         localStorage.setItem(SK,JSON.stringify(slim));
@@ -324,21 +327,21 @@ export default function App(){
     setData(prev=>{
       const oldArr=prev[table]||[];
       const newArr=typeof valOrFn==="function"?valOrFn(oldArr):valOrFn;
-      if(dbMode&&Array.isArray(oldArr)&&Array.isArray(newArr)){
+      if(dbModeRef.current&&Array.isArray(oldArr)&&Array.isArray(newArr)){
         const added=newArr.filter(n=>!oldArr.find(o=>o.id===n.id));
         const removed=oldArr.filter(o=>!newArr.find(n=>n.id===o.id));
         const updated=newArr.filter(n=>{const o=oldArr.find(x=>x.id===n.id);return o&&JSON.stringify(o)!==JSON.stringify(n);});
-        added.forEach(item=>db.insert(table,item));
-        removed.forEach(item=>db.remove(table,item.id));
-        updated.forEach(item=>db.update(table,item.id,item));
+        added.forEach(item=>db.insert(table,item).catch(e=>console.error('DB insert failed:',table,e)));
+        removed.forEach(item=>db.remove(table,item.id).catch(e=>console.error('DB remove failed:',table,e)));
+        updated.forEach(item=>db.update(table,item.id,item).catch(e=>console.error('DB update failed:',table,e)));
       }
       return{...prev,[table]:newArr};
     });
-  },[dbMode]);
+  },[]);
 
-  const dbUp=useCallback((table,id,fields)=>{if(dbMode&&id)db.update(table,id,fields);},[dbMode]);
+  const dbUp=useCallback((table,id,fields)=>{if(dbModeRef.current&&id)db.update(table,id,fields);},[]);
   const bulkDelete=useCallback(async(table,ids)=>{
-    if(dbMode){for(const id of ids)await db.remove(table,id);}
+    if(dbModeRef.current){for(const id of ids)await db.remove(table,id);}
     setData(prev=>({...prev,[table]:(prev[table]||[]).filter(x=>!ids.includes(x.id))}));
   },[dbMode]);
 
@@ -349,8 +352,8 @@ export default function App(){
 
   const actions={
     linkArtwork:async(collectorId,artworkId,acquisitionModel,depositType,depositPct)=>{
-      const art=data.artworks.find(a=>a.id===artworkId);
-      const col=data.collectors.find(c=>c.id===collectorId);
+      const art=dataRef.current.artworks.find(a=>a.id===artworkId);
+      const col=dataRef.current.collectors.find(c=>c.id===collectorId);
       if(!art||!col)return;
       const m=MODELS[acquisitionModel];
       const gn=col.type==="company"?col.companyName:`${col.firstName} ${col.lastName}`;
@@ -384,15 +387,15 @@ export default function App(){
     overrideSchedule:(scheduleId,note)=>{up("schedules",p=>p.map(s=>s.id===scheduleId?{...s,status:"Active",strikes:0,missedMonths:[],overrideNote:note}:s));dbUp("schedules",scheduleId,{status:"Active",strikes:0,missedMonths:[],overrideNote:note});},
     setGraceException:(scheduleId,graceDate,month,note)=>{up("schedules",p=>p.map(s=>s.id===scheduleId?{...s,graceOverride:graceDate,graceMonth:month,graceNote:note}:s));dbUp("schedules",scheduleId,{graceOverride:graceDate,graceMonth:month,graceNote:note});},
     unlinkArtwork:async(scheduleId)=>{
-      const sched=data.schedules.find(s=>s.id===scheduleId);if(!sched)return;
+      const sched=dataRef.current.schedules.find(s=>s.id===scheduleId);if(!sched)return;
       up("schedules",p=>p.filter(s=>s.id!==scheduleId));
       up("collectors",p=>p.map(c=>{if(c.id!==sched.collectorId)return c;return{...c,linkedArtworks:(c.linkedArtworks||[]).filter(l=>l.artworkId!==sched.artworkId)};}));
-      const hasSale=(data.sales||[]).some(s=>s.artworkId===sched.artworkId);
+      const hasSale=(dataRef.current.sales||[]).some(s=>s.artworkId===sched.artworkId);
       if(!hasSale){up("artworks",p=>p.map(a=>a.id===sched.artworkId?{...a,status:"Available"}:a));dbUp("artworks",sched.artworkId,{status:"Available"});}
     },
     forceDeleteArtwork:async(artworkId)=>{
-      const schedIds=(data.schedules||[]).filter(s=>s.artworkId===artworkId).map(s=>s.id);
-      const payIds=(data.payments||[]).filter(p=>p.artworkId===artworkId).map(p=>p.id);
+      const schedIds=(dataRef.current.schedules||[]).filter(s=>s.artworkId===artworkId).map(s=>s.id);
+      const payIds=(dataRef.current.payments||[]).filter(p=>p.artworkId===artworkId).map(p=>p.id);
       if(schedIds.length>0)await bulkDelete("schedules",schedIds);
       if(payIds.length>0)await bulkDelete("payments",payIds);
       up("collectors",p=>p.map(c=>({...c,linkedArtworks:(c.linkedArtworks||[]).filter(l=>l.artworkId!==artworkId)})));
@@ -407,9 +410,9 @@ export default function App(){
       up("schedules",p=>p.map(s=>{if(s.artworkId===saleData.artworkId&&s.status!=="Complete"){dbUp("schedules",s.id,{status:"Complete"});return{...s,status:"Complete"};}return s;}));
     },
     deleteSale:(saleId)=>{
-      const sale=(data.sales||[]).find(s=>s.id===saleId);if(!sale)return;
+      const sale=(dataRef.current.sales||[]).find(s=>s.id===saleId);if(!sale)return;
       up("sales",p=>p.filter(s=>s.id!==saleId));
-      const hasCollector=(data.collectors||[]).some(c=>(c.linkedArtworks||[]).some(l=>l.artworkId===sale.artworkId));
+      const hasCollector=(dataRef.current.collectors||[]).some(c=>(c.linkedArtworks||[]).some(l=>l.artworkId===sale.artworkId));
       up("artworks",p=>p.map(a=>a.id===sale.artworkId?{...a,status:hasCollector?"Reserved":"Available"}:a));
       dbUp("artworks",sale.artworkId,{status:hasCollector?"Reserved":"Available"});
     },
@@ -433,7 +436,7 @@ export default function App(){
     freezeAuction:(id)=>{up("auctions",p=>p.map(a=>a.id===id?{...a,status:"Frozen"}:a));dbUp("auctions",id,{status:"Frozen"});sendPushNotification("⏸ Auction Paused","The auction has been temporarily paused.");},
     resumeAuction:(id)=>{up("auctions",p=>p.map(a=>a.id===id?{...a,status:"Live"}:a));dbUp("auctions",id,{status:"Live"});sendPushNotification("▶ Auction Resumed","Bidding has resumed.");},
     closeAuction:(id)=>{
-      const auction=(data.auctions||[]).find(a=>a.id===id);if(!auction)return;
+      const auction=(dataRef.current.auctions||[]).find(a=>a.id===id);if(!auction)return;
       const reserveMet=(auction.currentBid||0)>=(auction.reservePrice||0);
       const newStatus=reserveMet?"Sold":"No Sale";
       up("auctions",p=>p.map(a=>a.id===id?{...a,status:newStatus,closedAt:td()}:a));
@@ -444,7 +447,7 @@ export default function App(){
     placeBid:(auctionId,buyerId,buyerName,amount)=>{
       const bid={id:uid(),auctionId,buyerId,buyerName,amount,timestamp:new Date().toISOString()};
       up("bids",p=>[...p,bid]);
-      const auction=(data.auctions||[]).find(a=>a.id===auctionId);
+      const auction=(dataRef.current.auctions||[]).find(a=>a.id===auctionId);
       up("auctions",p=>p.map(a=>a.id===auctionId?{...a,currentBid:amount,leadBidderId:buyerId,leadBidderName:buyerName,bidsCount:(a.bidsCount||0)+1}:a));
       dbUp("auctions",auctionId,{currentBid:amount,leadBidderId:buyerId,leadBidderName:buyerName});
       sendPushNotification("New Bid — Vollard Black",`${buyerName} bid R ${amount.toLocaleString("en-ZA")} on ${auction?.title||"artwork"}`);
@@ -454,11 +457,11 @@ export default function App(){
     updateBuyerAuctionRequest:(buyerId)=>{up("buyers",p=>p.map(b=>b.id===buyerId?{...b,auctionRequested:true,auctionRequestedAt:td()}:b));dbUp("buyers",buyerId,{auctionRequested:true,auctionRequestedAt:td()});},
     generateReport:(yearMonth)=>{
       const locked=isReportLocked(yearMonth);
-      const existing=(data.reports||[]).find(r=>r.month===yearMonth);
+      const existing=(dataRef.current.reports||[]).find(r=>r.month===yearMonth);
       if(existing&&locked){if(!confirm(`${getMonthLabel(yearMonth)} is locked.\n\nOverride?`))return;}
-      const monthPayments=(data.payments||[]).filter(p=>(p.date||"").startsWith(yearMonth));
-      const monthSales=(data.sales||[]).filter(s=>(s.date||"").startsWith(yearMonth));
-      const snap={activeCount:liveSchedules.filter(s=>s.status==="Active").length,chasingCount:liveSchedules.filter(s=>s.status==="Chasing").length,disputeCount:liveSchedules.filter(s=>s.status==="In Dispute").length,cancelledCount:liveSchedules.filter(s=>s.status==="Cancelled").length,totalCollected:monthPayments.reduce((s,p)=>s+(p.amount||0),0),payments:monthPayments,chasing:liveSchedules.filter(s=>s.status==="Chasing").map(s=>{const col=data.collectors.find(c=>c.id===s.collectorId);return{...s,mobile:col?.mobile||""};}),dispute:liveSchedules.filter(s=>s.status==="In Dispute").map(s=>{const col=data.collectors.find(c=>c.id===s.collectorId);return{...s,mobile:col?.mobile||""};}),cancelled:liveSchedules.filter(s=>s.status==="Cancelled").map(s=>{const col=data.collectors.find(c=>c.id===s.collectorId);return{...s,mobile:col?.mobile||""};}),salesPayout:monthSales};
+      const monthPayments=(dataRef.current.payments||[]).filter(p=>(p.date||"").startsWith(yearMonth));
+      const monthSales=(dataRef.current.sales||[]).filter(s=>(s.date||"").startsWith(yearMonth));
+      const snap={activeCount:liveSchedules.filter(s=>s.status==="Active").length,chasingCount:liveSchedules.filter(s=>s.status==="Chasing").length,disputeCount:liveSchedules.filter(s=>s.status==="In Dispute").length,cancelledCount:liveSchedules.filter(s=>s.status==="Cancelled").length,totalCollected:monthPayments.reduce((s,p)=>s+(p.amount||0),0),payments:monthPayments,chasing:liveSchedules.filter(s=>s.status==="Chasing").map(s=>{const col=dataRef.current.collectors.find(c=>c.id===s.collectorId);return{...s,mobile:col?.mobile||""};}),dispute:liveSchedules.filter(s=>s.status==="In Dispute").map(s=>{const col=dataRef.current.collectors.find(c=>c.id===s.collectorId);return{...s,mobile:col?.mobile||""};}),cancelled:liveSchedules.filter(s=>s.status==="Cancelled").map(s=>{const col=dataRef.current.collectors.find(c=>c.id===s.collectorId);return{...s,mobile:col?.mobile||""};}),salesPayout:monthSales};
       const report={id:existing?.id||uid(),month:yearMonth,generatedAt:td(),locked,snapshot:snap,totalCollected:snap.totalCollected,activeCount:snap.activeCount,chasingCount:snap.chasingCount,disputeCount:snap.disputeCount,cancelledCount:snap.cancelledCount};
       if(existing)up("reports",p=>p.map(r=>r.month===yearMonth?report:r));
       else up("reports",p=>[...p,report]);
