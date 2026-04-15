@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { db } from "./supabase";
+import { db, storage } from "./supabase";
 
 // ─── Constants ───
 const MODELS = {
@@ -322,7 +322,7 @@ export default function App(){
     if(!loading){
       dataRef.current=data;
       try{
-        const slim={...data,artworks:data.artworks.map(a=>({...a,imageUrl:a.imageUrl?.startsWith("data:")?null:a.imageUrl}))};
+        const slim={...data,artworks:data.artworks.map(a=>({...a,imageUrl:a.imageUrl?.startsWith("data:")?null:a.imageUrl||null}))};
         localStorage.setItem(SK,JSON.stringify(slim));
       }catch(e){console.warn("localStorage save skipped:",e.message);}
     }
@@ -405,6 +405,7 @@ export default function App(){
       if(payIds.length>0)await bulkDelete("payments",payIds);
       up("collectors",p=>p.map(c=>({...c,linkedArtworks:(c.linkedArtworks||[]).filter(l=>l.artworkId!==artworkId)})));
       up("artworks",p=>p.filter(a=>a.id!==artworkId));
+      if(storage)storage.deleteArtworkImage(artworkId).catch(()=>{});
     },
     recordSale:(saleData)=>{
       if(saleData.newBuyerData){up("buyers",p=>[...p,{...saleData.newBuyerData,createdAt:td()}]);}
@@ -995,7 +996,21 @@ function Catalogue({data,up,actions}){
 
 function ArtModal({art,artists,onSave,onClose}){
   const [f,sF]=useState({...art});const s=(k,v)=>sF(p=>({...p,[k]:v}));
-  const hFile=(file)=>{if(!file?.type.startsWith("image/"))return;if(file.size>5242880)return alert("Max 5MB");const r=new FileReader();r.onload=e=>s("imageUrl",e.target.result);r.readAsDataURL(file);};
+  const [uploading,setUploading]=useState(false);
+  const hFile=async(file)=>{
+    if(!file?.type.startsWith("image/"))return;
+    if(file.size>10485760)return alert("Max 10MB");
+    // If we have an artworkId already (editing), upload immediately
+    const artId=art.id||("VB"+Date.now().toString(36));
+    if(db.isConnected()&&storage){
+      setUploading(true);
+      const url=await storage.uploadArtworkImage(file,artId);
+      setUploading(false);
+      if(url){s("imageUrl",url);if(!art.id)s("_pendingId",artId);return;}
+    }
+    // Fallback: base64 for local mode
+    const r=new FileReader();r.onload=e=>s("imageUrl",e.target.result);r.readAsDataURL(file);
+  };
   return(<Modal title={art.id?"Edit Artwork":"Add Artwork"} onClose={onClose} wide>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
       <Field label="Title" style={{gridColumn:"1/-1"}}><input value={f.title} onChange={e=>s("title",e.target.value)} style={is}/></Field>
@@ -1008,10 +1023,10 @@ function ArtModal({art,artists,onSave,onClose}){
       <Field label="Insurance/mo (R)"><input type="text" inputMode="decimal" value={f.insuranceMonthly} onChange={e=>s("insuranceMonthly",Number(e.target.value))} style={is}/></Field>
       <Field label="Gallery"><input value={f.galleryName} onChange={e=>s("galleryName",e.target.value)} style={is}/></Field>
       <Field label="Status"><select value={f.status} onChange={e=>s("status",e.target.value)} style={ss}><option>Available</option><option>Reserved</option><option>In Gallery</option><option>Sold</option></select></Field>
-      <Field label="Image" style={{gridColumn:"1/-1"}}><div style={{display:"flex",gap:14,alignItems:"flex-start"}}><div style={{flex:1,display:"flex",flexDirection:"column",gap:8}}><Btn ghost onClick={()=>document.getElementById("imgUp").click()} style={{justifyContent:"center",width:"100%",padding:"14px"}}>{I.up} {f.imageUrl?"Change":"Upload"}</Btn><input id="imgUp" type="file" accept="image/*" onChange={e=>hFile(e.target.files[0])} style={{display:"none"}}/><div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:9,color:"#8a8070",letterSpacing:1,textTransform:"uppercase",whiteSpace:"nowrap"}}>URL:</span><input value={f.imageUrl?.startsWith("data:")?"":f.imageUrl||""} onChange={e=>s("imageUrl",e.target.value)} style={{...is,marginBottom:0,fontSize:12}} placeholder="https://..."/></div></div>{f.imageUrl&&<div style={{position:"relative",flexShrink:0}}><div style={{width:130,height:130,borderRadius:10,overflow:"hidden",border:"1px solid rgba(182,139,46,0.30)"}}><img src={f.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div><button onClick={()=>s("imageUrl","")} style={{position:"absolute",top:4,right:4,width:22,height:22,borderRadius:6,background:"rgba(0,0,0,0.7)",border:"none",color:"#c45c4a",cursor:"pointer",fontSize:14}}>×</button></div>}</div></Field>
+      <Field label="Image" style={{gridColumn:"1/-1"}}><div style={{display:"flex",gap:14,alignItems:"flex-start"}}><div style={{flex:1,display:"flex",flexDirection:"column",gap:8}}><Btn ghost onClick={()=>document.getElementById("imgUp").click()} style={{justifyContent:"center",width:"100%",padding:"14px"}} disabled={uploading}>{uploading?"Uploading...":f.imageUrl?I.up+" Change":I.up+" Upload"}</Btn><input id="imgUp" type="file" accept="image/*" onChange={e=>hFile(e.target.files[0])} style={{display:"none"}}/><div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:9,color:"#8a8070",letterSpacing:1,textTransform:"uppercase",whiteSpace:"nowrap"}}>URL:</span><input value={f.imageUrl?.startsWith("data:")?"":f.imageUrl||""} onChange={e=>s("imageUrl",e.target.value)} style={{...is,marginBottom:0,fontSize:12}} placeholder="https://..."/></div></div>{f.imageUrl&&<div style={{position:"relative",flexShrink:0}}><div style={{width:130,height:130,borderRadius:10,overflow:"hidden",border:"1px solid rgba(182,139,46,0.30)"}}><img src={f.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div><button onClick={()=>s("imageUrl","")} style={{position:"absolute",top:4,right:4,width:22,height:22,borderRadius:6,background:"rgba(0,0,0,0.7)",border:"none",color:"#c45c4a",cursor:"pointer",fontSize:14}}>×</button></div>}</div></Field>
       <Field label="Description" style={{gridColumn:"1/-1"}}><textarea value={f.description} onChange={e=>s("description",e.target.value)} style={{...is,minHeight:80,resize:"vertical"}} placeholder="Describe the artwork..."/></Field>
     </div>
-    <div style={{display:"flex",gap:10,marginTop:20,justifyContent:"flex-end"}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>{if(!f.title||!f.recommendedPrice)return alert("Title & price required");onSave(f);}}>{art.id?"Save":"Add"}</Btn></div>
+    <div style={{display:"flex",gap:10,marginTop:20,justifyContent:"flex-end"}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>{if(!f.title||!f.recommendedPrice)return alert("Title & price required");const sv={...f};delete sv._pendingId;if(f._pendingId&&!art.id)sv.id=f._pendingId;onSave(sv);}}>{art.id?"Save":"Add"}</Btn></div>
   </Modal>);}
 
 // ═══════════════════════════════════════════
