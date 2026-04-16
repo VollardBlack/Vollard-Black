@@ -40,7 +40,7 @@ const Logo = ({sub}) => (
 
 // ── Registration ──────────────────────────────────────────
 function RegisterScreen({onRegistered}) {
-  const [form,setForm] = useState({fullName:'',email:'',mobile:'',medium:'',instagram:'',password:'',confirm:'',message:''});
+  const [form,setForm] = useState({fullName:'',email:'',mobile:'',idNumber:'',nationality:'',address:'',city:'',country:'South Africa',medium:'',instagram:'',password:'',confirm:'',message:''});
   const [loading,setLoading] = useState(false);
   const [error,setError] = useState('');
   const [showPw,setShowPw] = useState(false);
@@ -64,7 +64,16 @@ function RegisterScreen({onRegistered}) {
         full_name: form.fullName,
         mobile: form.mobile,
         role: 'artist',
-        message: [form.medium&&'Medium: '+form.medium, form.instagram&&'Instagram: '+form.instagram, form.message].filter(Boolean).join(' | '),
+        message: [
+          form.idNumber&&'ID: '+form.idNumber,
+          form.nationality&&'Nationality: '+form.nationality,
+          form.city&&'City: '+form.city,
+          form.country&&'Country: '+form.country,
+          form.address&&'Address: '+form.address,
+          form.medium&&'Medium: '+form.medium,
+          form.instagram&&'Instagram: '+form.instagram,
+          form.message
+        ].filter(Boolean).join(' | '),
         status: 'pending',
       });
       onRegistered(form.email);
@@ -93,6 +102,26 @@ function RegisterScreen({onRegistered}) {
             <div style={{marginBottom:14}}>
               <label style={S.label}>Mobile</label>
               <input value={form.mobile} onChange={e=>s('mobile',e.target.value)} style={S.input} placeholder="+27 82 000 0000"/>
+            </div>
+            <div style={{marginBottom:14}}>
+              <label style={S.label}>ID / Passport Number</label>
+              <input value={form.idNumber} onChange={e=>s('idNumber',e.target.value)} style={S.input} placeholder="ID or passport number"/>
+            </div>
+            <div style={{marginBottom:14}}>
+              <label style={S.label}>Nationality</label>
+              <input value={form.nationality} onChange={e=>s('nationality',e.target.value)} style={S.input} placeholder="e.g. South African"/>
+            </div>
+            <div style={{marginBottom:14}}>
+              <label style={S.label}>City</label>
+              <input value={form.city} onChange={e=>s('city',e.target.value)} style={S.input} placeholder="Your city"/>
+            </div>
+            <div style={{marginBottom:14}}>
+              <label style={S.label}>Country</label>
+              <input value={form.country} onChange={e=>s('country',e.target.value)} style={S.input} placeholder="South Africa"/>
+            </div>
+            <div style={{marginBottom:14}}>
+              <label style={S.label}>Address</label>
+              <textarea value={form.address} onChange={e=>s('address',e.target.value)} style={{...S.input,minHeight:60,resize:'vertical'}} placeholder="Your address"/>
             </div>
             <div style={{marginBottom:14}}>
               <label style={S.label}>Primary Medium</label>
