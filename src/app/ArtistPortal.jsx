@@ -2,11 +2,11 @@
 import { useState, useEffect } from "react";
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  { auth: { autoRefreshToken: true, persistSession: true } }
-);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabase = supabaseUrl && supabaseKey 
+  ? createClient(supabaseUrl, supabaseKey, { auth: { autoRefreshToken: true, persistSession: true } })
+  : null;
 
 const fmt = (n) => Number(n||0).toLocaleString('en-ZA',{minimumFractionDigits:2,maximumFractionDigits:2});
 const toSnake = (obj) => {
@@ -622,8 +622,8 @@ export default function ArtistPortal() {
   const [approved,setApproved] = useState(null);
 
   useEffect(()=>{
-    supabase.auth.getSession().then(({data})=>setSession(data?.session||null));
-    const {data:{subscription}} = supabase.auth.onAuthStateChange((_,s)=>setSession(s));
+    if(supabase)supabase.auth.getSession().then(({data})=>setSession(data?.session||null));else setSession(null);
+    const {data:{subscription}} = supabase?supabase.auth.onAuthStateChange((_,s)=>setSession(s)):{data:{subscription:{unsubscribe:()=>{}}}};
     return ()=>subscription.unsubscribe();
   },[]);
 
