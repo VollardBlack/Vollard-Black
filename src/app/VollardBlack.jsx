@@ -2001,9 +2001,18 @@ function PortalsPage({data,setPendingPortalCount}){
     await loadRequests();
   };
 
-  const renterUrl=typeof window!=="undefined"?window.location.origin+"/renter":"";
-  const artistUrl=typeof window!=="undefined"?window.location.origin+"/artist":"";
-  const buyerUrl=typeof window!=="undefined"?window.location.origin+"/buyer":"";
+  // Always use the stable production URL, not preview deployment URLs
+  const getBaseUrl=()=>{
+    if(typeof window==="undefined")return"";
+    const host=window.location.hostname;
+    // If on a Vercel preview URL, use the stable production URL
+    if(host.includes("-vollardblacks-projects.vercel.app")||host.includes("vollard-black-"))
+      return"https://vollard-black.vercel.app";
+    return window.location.origin;
+  };
+  const renterUrl=getBaseUrl()+"/renter";
+  const artistUrl=getBaseUrl()+"/artist";
+  const buyerUrl=getBaseUrl()+"/buyer";
   const pending=requests.filter(r=>r.status==="pending");
   const approved=requests.filter(r=>r.status==="approved");
   const rejected=requests.filter(r=>r.status==="rejected");
