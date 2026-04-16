@@ -817,7 +817,7 @@ function Dashboard({data,navTo,chasing,inDispute,cancelled,pendingPortalRequests
             <div style={{fontSize:11,color:"#6b635a",marginTop:2}}>{(data.enquiries||[]).filter(e=>!e.read).slice(0,2).map(e=>`"${e.artworkTitle}" — ${e.buyerName}`).join(" · ")}</div>
           </div>
         </div>
-        <div style={{display:"flex",gap:8"}}>
+        <div style={{display:"flex",gap:8}}>
           <button onClick={()=>navTo("enquiries")} style={{padding:"8px 16px",borderRadius:6,border:"1px solid rgba(100,140,200,0.30)",background:"transparent",color:"#648cc8",cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>View All</button>
           <button onClick={()=>{up("enquiries",p=>p.map(e=>({...e,read:true})));}} style={{padding:"8px 16px",borderRadius:6,border:"none",background:"rgba(100,140,200,0.15)",color:"#648cc8",cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>Mark Read</button>
         </div>
