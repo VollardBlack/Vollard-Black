@@ -1835,8 +1835,30 @@ function PortalsPage({data,setPendingPortalCount}){
           created_at: new Date().toISOString(),
         });
       }
+    } else if(req.role==="buyer"){
+      const {data:existingB}=await supabase.from("buyers").select("id").eq("email",req.email).single();
+      if(!existingB){
+        const msgFieldsB={};
+        (req.message||"").split(" | ").forEach(part=>{const [key,...val]=part.split(": ");if(key&&val.length)msgFieldsB[key.toLowerCase()]=val.join(": ");});
+        const namePartsB=(req.full_name||"").trim().split(" ");
+        await supabase.from("buyers").insert({
+          id: crypto.randomUUID(),
+          type: "individual",
+          first_name: namePartsB[0]||req.full_name,
+          last_name: namePartsB.slice(1).join(" ")||"",
+          email: req.email,
+          mobile: req.mobile||"",
+          id_number: msgFieldsB["id"]||"",
+          nationality: msgFieldsB["nationality"]||"",
+          city: msgFieldsB["city"]||"",
+          country: msgFieldsB["country"]||"South Africa",
+          address: msgFieldsB["address"]||"",
+          kyc_status: "pending",
+          auction_approved: false,
+          created_at: new Date().toISOString(),
+        });
+      }
     } else if(req.role==="artist"){
-      // Check if artist already exists with this email
       const {data:existing}=await supabase.from("artists").select("id").eq("email",req.email).single();
       if(!existing){
         // Parse extra fields from message
@@ -1869,7 +1891,7 @@ function PortalsPage({data,setPendingPortalCount}){
     setApproving(null);
     alert(req.role==="renter"
       ?"✓ Approved. "+req.full_name+" has been added to License Holders. Go there to link their artwork."
-      :"✓ Approved. "+req.full_name+" has been added to Artists.");
+      :req.role==="buyer"?"✓ Approved. "+req.full_name+" has been added to Buyers. Go there to complete KYC and grant auction access.":"✓ Approved. "+req.full_name+" has been added to Artists.");
   };
 
   const reject=async(req)=>{
@@ -1891,6 +1913,7 @@ function PortalsPage({data,setPendingPortalCount}){
 
   const renterUrl=typeof window!=="undefined"?window.location.origin+"/renter":"";
   const artistUrl=typeof window!=="undefined"?window.location.origin+"/artist":"";
+  const buyerUrl=typeof window!=="undefined"?window.location.origin+"/buyer":"";
   const pending=requests.filter(r=>r.status==="pending");
   const approved=requests.filter(r=>r.status==="approved");
   const rejected=requests.filter(r=>r.status==="rejected");
@@ -1902,7 +1925,7 @@ function PortalsPage({data,setPendingPortalCount}){
     <Card style={{marginBottom:20}}>
       <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:12}}>Share these links with your renters and artists</div>
       <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-        {[["Renter Portal",renterUrl],["Artist Portal",artistUrl]].map(([label,url])=>(
+        {[["Renter Portal",renterUrl],["Artist Portal",artistUrl],["Buyer Portal",buyerUrl]].map(([label,url])=>(
           <div key={label} style={{flex:1,minWidth:220,padding:"14px 16px",background:"#f5f3ef",border:"1px solid rgba(182,139,46,0.20)",borderRadius:10}}>
             <div style={{fontSize:11,color:"#8a8070",marginBottom:4,letterSpacing:1,textTransform:"uppercase"}}>{label}</div>
             <div style={{fontSize:13,color:"#b68b2e",fontWeight:600,marginBottom:10,wordBreak:"break-all"}}>{url}</div>
@@ -1969,6 +1992,23 @@ function PortalsPage({data,setPendingPortalCount}){
             <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#b68b2e",marginBottom:10,marginTop:4}}>Renters ({approved.filter(r=>r.role==="renter").length})</div>
             {approved.filter(r=>r.role==="renter").map(r=>(
               <Card key={r.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10,borderLeft:"3px solid rgba(182,139,46,0.40)"}}>
+                <div>
+                  <div style={{fontWeight:600,fontSize:14,color:"#1a1714"}}>{r.full_name}</div>
+                  <div style={{fontSize:12,color:"#8a8070"}}>{r.email}</div>
+                  <div style={{fontSize:11,color:"#4a9e6b",marginTop:2}}>✓ Approved {r.reviewed_at?.slice(0,10)||""}</div>
+                </div>
+                <div style={{display:"flex",gap:8}}>
+                  <button onClick={()=>deleteUser(r)} style={{padding:"8px 12px",borderRadius:6,border:"1px solid rgba(196,92,74,0.20)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>🗑 Delete</button>
+                  <button onClick={()=>reject(r)} style={{padding:"8px 14px",borderRadius:6,border:"1px solid rgba(196,92,74,0.25)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>Revoke</button>
+                </div>
+              </Card>
+            ))}
+          </div>}
+          {/* Buyers Section */}
+          {approved.filter(r=>r.role==="buyer").length>0&&<div style={{marginTop:16}}>
+            <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#4a9e6b",marginBottom:10}}>Buyers ({approved.filter(r=>r.role==="buyer").length})</div>
+            {approved.filter(r=>r.role==="buyer").map(r=>(
+              <Card key={r.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10,borderLeft:"3px solid rgba(74,158,107,0.40)"}}>
                 <div>
                   <div style={{fontWeight:600,fontSize:14,color:"#1a1714"}}>{r.full_name}</div>
                   <div style={{fontSize:12,color:"#8a8070"}}>{r.email}</div>
