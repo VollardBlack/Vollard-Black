@@ -1,7 +1,8 @@
 'use client';
+import dynamic from 'next/dynamic';
 
-import App from './VollardBlack';
+const RenterPortal = dynamic(() => import('../RenterPortal'), { ssr: false });
 
-export default function Home() {
-  return <App />;
+export default function RenterPage() {
+  return <RenterPortal />;
 }
