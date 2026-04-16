@@ -62,8 +62,8 @@ const UUID_TABLES = ['artworks','artists','collectors','buyers'];
 const newId = (table) => UUID_TABLES.includes(table) ? uuidv4() : uid();
 const td = () => new Date().toISOString().slice(0,10);
 const SK = "vollard_black_v16";
-const TABLES = ["artworks","artists","collectors","schedules","payments","sales","reports","buyers","auctions","bids"];
-const fresh = () => ({artworks:[],artists:[],collectors:[],schedules:[],payments:[],sales:[],reports:[],buyers:[],auctions:[],bids:[]});
+const TABLES = ["artworks","artists","collectors","schedules","payments","sales","reports","buyers","auctions","bids","enquiries"];
+const fresh = () => ({artworks:[],artists:[],collectors:[],schedules:[],payments:[],sales:[],reports:[],buyers:[],auctions:[],bids:[],enquiries:[]});
 const loadLocal = () => { try { const d=JSON.parse(localStorage.getItem(SK)); return d?.artworks?d:fresh(); } catch{return fresh();} };
 
 const getNextDueDate = (startDate, monthNumber) => {
@@ -620,9 +620,12 @@ export default function App(){
     },
     deleteBuyer:(id)=>{up("buyers",p=>p.filter(b=>b.id!==id));},
     // ─── AUCTION ACTIONS ───
-    createAuction:(auctionData)=>{
+    createAuction:async(auctionData)=>{
       const auction={...auctionData,id:uid(),createdAt:td(),status:"Draft",currentBid:0,leadBidderId:null,leadBidderName:null,bidsCount:0};
       up("auctions",p=>[...p,auction]);
+      // Save to Supabase immediately
+      const toSnake=(obj)=>{const out={};for(const[k,v]of Object.entries(obj))out[k.replace(/[A-Z]/g,m=>'_'+m.toLowerCase())]=v;return out;};
+      try{await db.insert("auctions",toSnake(auction));}catch(e){console.error("Auction save failed:",e);}
     },
     updateAuction:(id,fields)=>{up("auctions",p=>p.map(a=>a.id===id?{...a,...fields}:a));dbUp("auctions",id,fields);},
     launchAuction:(id)=>{
@@ -805,6 +808,21 @@ function Dashboard({data,navTo,chasing,inDispute,cancelled,pendingPortalRequests
     <PT title="Dashboard" sub="Vollard Black — Fine Art Acquisitions"/>
     {data.artworks.filter(a=>a.approvalStatus==="pending").length>0&&<div onClick={()=>navTo("catalogue")} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 18px",background:"rgba(182,139,46,0.08)",border:"1px solid rgba(182,139,46,0.25)",borderRadius:10,cursor:"pointer",marginBottom:10}}><span style={{color:"#b68b2e",fontSize:16}}>◆</span><span style={{fontSize:13,color:"#b68b2e",fontWeight:600}}>● {data.artworks.filter(a=>a.approvalStatus==="pending").length} artwork{data.artworks.filter(a=>a.approvalStatus==="pending").length>1?"s":""} submitted by artists awaiting approval</span><span style={{fontSize:11,color:"#b68b2e",marginLeft:"auto",opacity:0.7}}>Review now →</span></div>}
     {pendingPortalRequests>0&&<div onClick={()=>navTo("portals")} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 18px",background:"rgba(182,139,46,0.08)",border:"1px solid rgba(182,139,46,0.25)",borderRadius:10,cursor:"pointer",marginBottom:10}}><span style={{color:"#b68b2e",fontSize:16}}>◆</span><span style={{fontSize:13,color:"#b68b2e",fontWeight:600}}>● {pendingPortalRequests} portal access request{pendingPortalRequests>1?"s":""} awaiting approval</span><span style={{fontSize:11,color:"#b68b2e",marginLeft:"auto",opacity:0.7}}>Review now →</span></div>}
+    {(data.enquiries||[]).filter(e=>!e.read).length>0&&(
+      <div style={{padding:"12px 18px",background:"rgba(100,140,200,0.08)",border:"1px solid rgba(100,140,200,0.25)",borderRadius:10,marginBottom:10,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <span style={{fontSize:16}}>💬</span>
+          <div>
+            <div style={{fontSize:13,fontWeight:600,color:"#648cc8"}}>{(data.enquiries||[]).filter(e=>!e.read).length} new artwork enquir{(data.enquiries||[]).filter(e=>!e.read).length>1?"ies":"y"} from buyers</div>
+            <div style={{fontSize:11,color:"#6b635a",marginTop:2}}>{(data.enquiries||[]).filter(e=>!e.read).slice(0,2).map(e=>`"${e.artworkTitle}" — ${e.buyerName}`).join(" · ")}</div>
+          </div>
+        </div>
+        <div style={{display:"flex",gap:8"}}>
+          <button onClick={()=>navTo("enquiries")} style={{padding:"8px 16px",borderRadius:6,border:"1px solid rgba(100,140,200,0.30)",background:"transparent",color:"#648cc8",cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>View All</button>
+          <button onClick={()=>{up("enquiries",p=>p.map(e=>({...e,read:true})));}} style={{padding:"8px 16px",borderRadius:6,border:"none",background:"rgba(100,140,200,0.15)",color:"#648cc8",cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>Mark Read</button>
+        </div>
+      </div>
+    )}
     {cancelled.length>0&&<Banner type="red" count={cancelled.length} label="agreements cancelled" onClick={()=>navTo("invoices","Cancelled")}/>}
     {inDispute.length>0&&<Banner type="orange" count={inDispute.length} label="accounts in dispute" onClick={()=>navTo("invoices","In Dispute")}/>}
     {chasing.length>0&&<Banner type="yellow" count={chasing.length} label="license holders being chased" onClick={()=>navTo("invoices","Chasing")}/>}
