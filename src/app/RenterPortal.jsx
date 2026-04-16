@@ -9,6 +9,13 @@ const supabase = createClient(
 );
 
 const fmt = (n) => Number(n||0).toLocaleString('en-ZA',{minimumFractionDigits:2,maximumFractionDigits:2});
+const toSnake = (obj) => {
+  if (!obj || typeof obj !== 'object') return obj;
+  const out = {};
+  for (const [k, v] of Object.entries(obj))
+    out[k.replace(/[A-Z]/g, m => '_' + m.toLowerCase())] = v;
+  return out;
+};
 const toCamel = (obj) => {
   if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return obj;
   const out = {};
@@ -251,6 +258,9 @@ function RenterDashboard({session}) {
   const [artworks,setArtworks] = useState([]);
   const [sales,setSales] = useState([]);
   const [loading,setLoading] = useState(true);
+  const [profileForm,setProfileForm] = useState(null);
+  const [savingProfile,setSavingProfile] = useState(false);
+  const [profileSaved,setProfileSaved] = useState(false);
 
   useEffect(()=>{ loadData(); },[session]);
 
@@ -261,6 +271,8 @@ function RenterDashboard({session}) {
       if(!cols||cols.length===0){ setLoading(false); return; }
       const col = toCamel(cols[0]);
       setCollector(col);
+      setProfileForm(col);
+      setProfileForm({firstName:col.firstName||'',lastName:col.lastName||'',mobile:col.mobile||'',idNumber:col.idNumber||'',nationality:col.nationality||'',city:col.city||'',country:col.country||'South Africa',address:col.address||''});
       const {data:scheds} = await supabase.from('schedules').select('*').eq('collector_id', col.id);
       const s = (scheds||[]).map(toCamel);
       setSchedules(s);
@@ -278,6 +290,18 @@ function RenterDashboard({session}) {
   };
 
   const signOut = () => supabase.auth.signOut();
+  const saveProfile = async() => {
+    if(!collector) return;
+    setSaving(true);
+    const snake = toSnake(profileForm);
+    delete snake.id;
+    await supabase.from('collectors').update(snake).eq('id',collector.id);
+    setCollector({...collector,...profileForm});
+    setSaveMsg('Profile updated successfully.');
+    setTimeout(()=>setSaveMsg(''),3000);
+    setSaving(false);
+    setProfileEdit(false);
+  };
   const gn = (c) => c?(c.type==='company'?c.companyName:`${c.firstName||''} ${c.lastName||''}`.trim()):'';
   const totalPaid = payments.reduce((s,p)=>s+(p.amount||0),0);
   const totalOwed = schedules.reduce((s,sc)=>s+(sc.totalDue||0),0);
@@ -421,6 +445,45 @@ function RenterDashboard({session}) {
           </div>
         )}
 
+        {tab==='profile'&&(
+          <div>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20,flexWrap:'wrap',gap:10}}>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:'#1a1714'}}>My Profile</div>
+              {!profileEdit&&<button onClick={()=>setProfileEdit(true)} style={{padding:'10px 20px',borderRadius:8,border:'1px solid rgba(182,139,46,0.30)',background:'transparent',color:'#b68b2e',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Edit Profile</button>}
+            </div>
+            {saveMsg&&<div style={{padding:'10px 14px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:8,fontSize:13,color:'#4a9e6b',marginBottom:14}}>✓ {saveMsg}</div>}
+            {!profileEdit?(
+              <div style={S.card}>
+                {[['Name',collector?`${collector.firstName||''} ${collector.lastName||''}`.trim()||collector.companyName:'—'],['Email',collector?.email||'—'],['Mobile',collector?.mobile||'—'],['ID',collector?.idNumber||'—'],['Nationality',collector?.nationality||'—'],['City',collector?.city||'—'],['Country',collector?.country||'—']].map(([label,value])=>(
+                  <div key={label} style={{display:'flex',justifyContent:'space-between',padding:'10px 0',borderBottom:'1px solid rgba(182,139,46,0.08)',fontSize:13}}>
+                    <span style={{color:'#8a8070'}}>{label}</span>
+                    <span style={{fontWeight:500}}>{value}</span>
+                  </div>
+                ))}
+              </div>
+            ):(
+              <div style={S.card}>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+                  {[['firstName','First Name'],['lastName','Last Name'],['mobile','Mobile'],['idNumber','ID / Passport'],['nationality','Nationality'],['city','City'],['country','Country']].map(([key,label])=>(
+                    <div key={key}>
+                      <label style={{display:'block',fontSize:10,fontWeight:500,letterSpacing:2,textTransform:'uppercase',color:'#6b635a',marginBottom:6}}>{label}</label>
+                      <input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={S.input}/>
+                    </div>
+                  ))}
+                  <div style={{gridColumn:'1/-1'}}>
+                    <label style={{display:'block',fontSize:10,fontWeight:500,letterSpacing:2,textTransform:'uppercase',color:'#6b635a',marginBottom:6}}>Address</label>
+                    <textarea value={profileForm.address||''} onChange={e=>setProfileForm(p=>({...p,address:e.target.value}))} style={{...S.input,minHeight:70,resize:'vertical'}}/>
+                  </div>
+                </div>
+                <div style={{display:'flex',gap:10,marginTop:16,justifyContent:'flex-end'}}>
+                  <button onClick={()=>setProfileEdit(false)} style={{padding:'10px 20px',borderRadius:8,border:'1px solid rgba(182,139,46,0.30)',background:'transparent',color:'#b68b2e',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Cancel</button>
+                  <button onClick={saveProfile} disabled={saving} style={{padding:'10px 20px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",opacity:saving?0.6:1}}>{saving?'Saving…':'Save Profile'}</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {tab==='statements'&&(
           <div>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:'#1a1714',marginBottom:16}}>Statements</div>
@@ -462,6 +525,28 @@ function RenterDashboard({session}) {
               );
             })}
             {schedules.length===0&&<div style={{...S.card,textAlign:'center',padding:40}}><div style={{fontSize:14,color:'#8a8070'}}>No agreements found.</div></div>}
+          </div>
+        )}
+        {tab==='profile'&&profileForm&&(
+          <div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:'#1a1714',marginBottom:16}}>My Profile</div>
+            {profileSaved&&<div style={{padding:'10px 14px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:8,fontSize:13,color:'#4a9e6b',marginBottom:14}}>✓ Profile updated</div>}
+            <div style={S.card}>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+                <div><label style={S.label}>First Name</label><input value={profileForm.firstName||''} onChange={e=>setProfileForm(p=>({...p,firstName:e.target.value}))} style={S.input}/></div>
+                <div><label style={S.label}>Last Name</label><input value={profileForm.lastName||''} onChange={e=>setProfileForm(p=>({...p,lastName:e.target.value}))} style={S.input}/></div>
+                <div><label style={S.label}>Mobile</label><input value={profileForm.mobile||''} onChange={e=>setProfileForm(p=>({...p,mobile:e.target.value}))} style={S.input}/></div>
+                <div><label style={S.label}>ID / Passport</label><input value={profileForm.idNumber||''} onChange={e=>setProfileForm(p=>({...p,idNumber:e.target.value}))} style={S.input}/></div>
+                <div><label style={S.label}>Nationality</label><input value={profileForm.nationality||''} onChange={e=>setProfileForm(p=>({...p,nationality:e.target.value}))} style={S.input}/></div>
+                <div><label style={S.label}>City</label><input value={profileForm.city||''} onChange={e=>setProfileForm(p=>({...p,city:e.target.value}))} style={S.input}/></div>
+                <div><label style={S.label}>Country</label><input value={profileForm.country||''} onChange={e=>setProfileForm(p=>({...p,country:e.target.value}))} style={S.input}/></div>
+                <div style={{gridColumn:'1/-1'}}><label style={S.label}>Address</label><textarea value={profileForm.address||''} onChange={e=>setProfileForm(p=>({...p,address:e.target.value}))} style={{...S.input,minHeight:60,resize:'vertical'}}/></div>
+                <div style={{gridColumn:'1/-1'}}><label style={S.label}>Email (cannot change)</label><input value={session.user.email} readOnly style={{...S.input,background:'#e8e4dd',color:'#8a8070'}}/></div>
+              </div>
+              <div style={{marginTop:16,display:'flex',justifyContent:'flex-end'}}>
+                <button onClick={async()=>{if(!collector)return;setSavingProfile(true);await supabase.from('collectors').update({first_name:profileForm.firstName,last_name:profileForm.lastName,mobile:profileForm.mobile,id_number:profileForm.idNumber,nationality:profileForm.nationality,city:profileForm.city,country:profileForm.country,address:profileForm.address}).eq('id',collector.id);setSavingProfile(false);setProfileSaved(true);setTimeout(()=>setProfileSaved(false),3000);}} disabled={savingProfile} style={{padding:'12px 28px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",opacity:savingProfile?0.6:1}}>{savingProfile?'Saving…':'Save Changes'}</button>
+              </div>
+            </div>
           </div>
         )}
       </div>
