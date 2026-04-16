@@ -616,6 +616,7 @@ export default function App(){
     {id:"sales",label:"Sales",icon:I.sale},
     {id:"auction",label:"Auction Platform",icon:I.gavel},
     {id:"reports",label:"Reports",icon:I.report},
+    {id:"portals",label:"Portal Users",icon:I.ppl},
   ];
 
   const d={artworks:Array.isArray(data.artworks)?data.artworks:[],artists:Array.isArray(data.artists)?data.artists:[],collectors:Array.isArray(data.collectors)?data.collectors:[],buyers:Array.isArray(data.buyers)?data.buyers:[],schedules:liveSchedules,payments:Array.isArray(data.payments)?data.payments:[],sales:Array.isArray(data.sales)?data.sales:[],reports:Array.isArray(data.reports)?data.reports:[],auctions:Array.isArray(data.auctions)?data.auctions:[],bids:Array.isArray(data.bids)?data.bids:[]};
@@ -636,6 +637,7 @@ export default function App(){
     sales:<SalesPage data={d} actions={actions}/>,
     auction:<AuctionPage data={d} actions={actions}/>,
     reports:<ReportsPage data={d} actions={actions}/>,
+    portals:<PortalsPage data={d}/>,
   };
 
   // ── Session gate ──
@@ -1702,6 +1704,91 @@ function ReportsPage({data,actions}){
           {report&&<><button onClick={()=>setSelectedMonth(selectedMonth===ym?null:ym)} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer",fontSize:11,marginTop:10,display:"flex",alignItems:"center",gap:4}}><span style={{transform:selectedMonth===ym?"rotate(180deg)":"none",transition:"0.2s",display:"inline-flex"}}>{I.chevron}</span>{selectedMonth===ym?"Hide":"Show"} details</button>{selectedMonth===ym&&<div style={{marginTop:10,borderTop:"1px solid rgba(182,139,46,0.14)",paddingTop:10}}>{report.snapshot.payments&&report.snapshot.payments.length>0?<Tbl cols={[{label:"Collector",bold:true,render:r=>r.collectorName},{label:"Artwork",key:"artworkTitle"},{label:"Model",render:r=><Badge model={r.model||"O1"}/>},{label:"Month",render:r=>`Mo ${r.monthNumber}`},{label:"Method",key:"method"},{label:"Amount",right:true,gold:true,render:r=>"R "+fmt(r.amount)}]} data={report.snapshot.payments}/>:<p style={{fontSize:13,color:"#8a8070"}}>No payments this month.</p>}</div>}</>}
         </div>
       </Card>;})}
+  </div>);}
+
+
+// ═══════════════════════════════════════════
+// PORTAL USERS MANAGEMENT
+// ═══════════════════════════════════════════
+function PortalsPage({data}){
+  const [tab,setTab]=useState("renters");
+  const collectors=data.collectors||[];
+  const artists=data.artists||[];
+  const gn=(c)=>c.type==="company"?c.companyName:`${c.firstName||""} ${c.lastName||""}`.trim();
+
+  const copySQL=(email,role)=>{
+    const sql=role==="renter"
+      ? `INSERT INTO portal_profiles (id, email, role, linked_id, linked_name)
+SELECT u.id, u.email, 'renter', c.id::text,
+COALESCE(c.company_name, c.first_name || ' ' || c.last_name)
+FROM auth.users u
+JOIN collectors c ON c.email = u.email
+WHERE u.email = '${email}'
+ON CONFLICT (id) DO NOTHING;`
+      : `INSERT INTO portal_profiles (id, email, role, linked_id, linked_name)
+SELECT u.id, u.email, 'artist', a.id::text, a.name
+FROM auth.users u
+JOIN artists a ON a.email = u.email
+WHERE u.email = '${email}'
+ON CONFLICT (id) DO NOTHING;`;
+    navigator.clipboard.writeText(sql).then(()=>alert("SQL copied! Paste into Supabase SQL Editor after creating the auth user."));
+  };
+
+  return(<div>
+    <PT title="Portal Users" sub="Manage renter and artist portal access"/>
+    <Card style={{marginBottom:20, background:"rgba(182,139,46,0.04)", border:"1px solid rgba(182,139,46,0.20)"}}>
+      <div style={{fontSize:13, color:"#6b635a", marginBottom:8, fontWeight:600}}>How to invite someone to their portal:</div>
+      <div style={{fontSize:12, color:"#8a8070", lineHeight:1.8}}>
+        1. Go to <strong>Supabase → Authentication → Users → Add user</strong><br/>
+        2. Enter their email and a temporary password → check <strong>Auto Confirm User</strong> → Create<br/>
+        3. Come back here and click <strong>Copy SQL</strong> next to their name → paste into Supabase SQL Editor → Run<br/>
+        4. Send them their portal URL and temporary password
+      </div>
+      <div style={{marginTop:12, display:"flex", gap:8, flexWrap:"wrap"}}>
+        <div style={{padding:"8px 14px", background:"rgba(182,139,46,0.10)", borderRadius:8, fontSize:12}}>
+          Renter portal: <strong>vollard-black.vercel.app/renter</strong>
+        </div>
+        <div style={{padding:"8px 14px", background:"rgba(182,139,46,0.10)", borderRadius:8, fontSize:12}}>
+          Artist portal: <strong>vollard-black.vercel.app/artist</strong>
+        </div>
+      </div>
+    </Card>
+
+    <div style={{display:"flex", borderBottom:"1px solid rgba(182,139,46,0.15)", marginBottom:20, gap:4}}>
+      {[["renters","Renters ("+collectors.length+")"],["artists","Artists ("+artists.length+")"]].map(([id,lbl])=>(
+        <button key={id} onClick={()=>setTab(id)} style={{padding:"10px 18px",border:"none",borderBottom:tab===id?"2px solid #b68b2e":"2px solid transparent",background:"transparent",color:tab===id?"#b68b2e":"#6b635a",fontSize:13,fontWeight:tab===id?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{lbl}</button>
+      ))}
+    </div>
+
+    {tab==="renters"&&(<div>
+      {collectors.length===0?<Empty msg="No renters yet."/>:collectors.map(c=>(
+        <Card key={c.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
+          <div>
+            <div style={{fontWeight:600, fontSize:14, color:"#1a1714"}}>{gn(c)}</div>
+            <div style={{fontSize:12, color:"#8a8070", marginTop:2}}>{c.email||"No email set"}</div>
+          </div>
+          <div style={{display:"flex", gap:8, alignItems:"center"}}>
+            {!c.email&&<span style={{fontSize:11, color:"#c45c4a"}}>⚠ No email — add one first</span>}
+            {c.email&&<Btn small gold onClick={()=>copySQL(c.email,"renter")}>Copy SQL</Btn>}
+          </div>
+        </Card>
+      ))}
+    </div>)}
+
+    {tab==="artists"&&(<div>
+      {artists.length===0?<Empty msg="No artists yet."/>:artists.map(a=>(
+        <Card key={a.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
+          <div>
+            <div style={{fontWeight:600, fontSize:14, color:"#1a1714"}}>{a.name}</div>
+            <div style={{fontSize:12, color:"#8a8070", marginTop:2}}>{a.email||"No email set"}</div>
+          </div>
+          <div style={{display:"flex", gap:8, alignItems:"center"}}>
+            {!a.email&&<span style={{fontSize:11, color:"#c45c4a"}}>⚠ No email — add one first</span>}
+            {a.email&&<Btn small gold onClick={()=>copySQL(a.email,"artist")}>Copy SQL</Btn>}
+          </div>
+        </Card>
+      ))}
+    </div>)}
   </div>);}
 
 
