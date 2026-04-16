@@ -9,6 +9,13 @@ const supabase = createClient(
 );
 
 const fmt = (n) => Number(n||0).toLocaleString('en-ZA',{minimumFractionDigits:2,maximumFractionDigits:2});
+const toSnake = (obj) => {
+  if (!obj || typeof obj !== 'object') return obj;
+  const out = {};
+  for (const [k, v] of Object.entries(obj))
+    out[k.replace(/[A-Z]/g, m => '_' + m.toLowerCase())] = v;
+  return out;
+};
 const toCamel = (obj) => {
   if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return obj;
   const out = {};
@@ -258,6 +265,12 @@ function ArtistDashboard({session}) {
   const [sales,setSales] = useState([]);
   const [auctions,setAuctions] = useState([]);
   const [loading,setLoading] = useState(true);
+  const [uploadForm,setUploadForm] = useState({title:'',medium:'',dimensions:'',year:'',description:'',price:'',imageUrl:''});
+  const [uploading,setUploading] = useState(false);
+  const [uploadDone,setUploadDone] = useState(false);
+  const [profileForm,setProfileForm] = useState(null);
+  const [savingProfile,setSavingProfile] = useState(false);
+  const [profileSaved,setProfileSaved] = useState(false);
 
   useEffect(()=>{ loadData(); },[session]);
 
@@ -268,6 +281,8 @@ function ArtistDashboard({session}) {
       if(!arts||arts.length===0){ setLoading(false); return; }
       const a = toCamel(arts[0]);
       setArtist(a);
+      setProfileForm(a);
+      setProfileForm({name:a.name||'',mobile:a.mobile||'',medium:a.medium||'',style:a.style||'',website:a.website||'',instagram:a.instagram||'',bio:a.bio||'',city:a.city||'',country:a.country||'South Africa'});
       const {data:works} = await supabase.from('artworks').select('*').eq('artist_id', a.id);
       const w = (works||[]).map(toCamel);
       setArtworks(w);
@@ -283,6 +298,45 @@ function ArtistDashboard({session}) {
   };
 
   const signOut = () => supabase.auth.signOut();
+
+  const saveProfile = async() => {
+    if(!artist) return;
+    setSaving(true);
+    const snake = toSnake(profileForm);
+    delete snake.id;
+    await supabase.from('artists').update(snake).eq('id',artist.id);
+    setArtist({...artist,...profileForm});
+    setSaveMsg('Profile updated.');
+    setTimeout(()=>setSaveMsg(''),3000);
+    setSaving(false);
+    setProfileEdit(false);
+  };
+
+  const submitArtwork = async() => {
+    if(!uploadForm.title||!uploadForm.price) return setUploadMsg('error:Title and price are required.');
+    setUploading(true);
+    try {
+      await supabase.from('artworks').insert({
+        id: crypto.randomUUID(),
+        title: uploadForm.title,
+        artist_name: artist.name,
+        artist_id: artist.id,
+        medium: uploadForm.medium,
+        dimensions: uploadForm.dimensions,
+        year: uploadForm.year,
+        recommended_price: parseFloat(uploadForm.price)||0,
+        description: uploadForm.description,
+        status: 'Pending Approval',
+        created_at: new Date().toISOString(),
+      });
+      setUploadMsg('success:Artwork submitted for admin approval. It will appear in the gallery once approved.');
+      setUploadForm({title:'',medium:'',dimensions:'',year:'',price:'',description:''});
+      await loadData();
+    } catch(e) {
+      setUploadMsg('error:'+e.message);
+    }
+    setUploading(false);
+  };
   const totalSalesValue = sales.reduce((s,x)=>s+(x.salePrice||0),0);
   const artistShare = sales.reduce((s,x)=>s+(x.artistShare||0),0);
 
@@ -314,7 +368,7 @@ function ArtistDashboard({session}) {
 
       <div style={{maxWidth:900,margin:'0 auto',padding:'20px 16px'}}>
         <div style={{display:'flex',borderBottom:'1px solid rgba(182,139,46,0.15)',marginBottom:20,gap:4,overflowX:'auto'}}>
-          {[['overview','Overview'],['works','My Works'],['sales','Sales'],['auctions','Auctions']].map(([id,lbl])=>(
+          {[['overview','Overview'],['works','My Works'],['upload','Upload Artwork'],['sales','Sales'],['auctions','Auctions'],['profile','My Profile']].map(([id,lbl])=>(
             <button key={id} onClick={()=>setTab(id)} style={S.tab(tab===id)}>{lbl}</button>
           ))}
         </div>
@@ -398,6 +452,141 @@ function ArtistDashboard({session}) {
           </div>
         )}
 
+        {tab==='upload'&&(
+          <div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:'#1a1714',marginBottom:4}}>Upload Artwork</div>
+            <div style={{fontSize:13,color:'#8a8070',marginBottom:16}}>Submit an artwork for listing. Vollard Black will review and approve it before it goes live.</div>
+            {uploadDone&&<div style={{padding:'10px 14px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:8,fontSize:13,color:'#4a9e6b',marginBottom:14}}>✓ Artwork submitted for approval. Vollard Black will review it shortly.</div>}
+            <div style={S.card}>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+                <div style={{gridColumn:'1/-1'}}><label style={S.label}>Title *</label><input value={uploadForm.title} onChange={e=>setUploadForm(p=>({...p,title:e.target.value}))} style={S.input} placeholder="Artwork title"/></div>
+                <div><label style={S.label}>Medium</label><input value={uploadForm.medium} onChange={e=>setUploadForm(p=>({...p,medium:e.target.value}))} style={S.input} placeholder="e.g. Oil on Canvas"/></div>
+                <div><label style={S.label}>Dimensions</label><input value={uploadForm.dimensions} onChange={e=>setUploadForm(p=>({...p,dimensions:e.target.value}))} style={S.input} placeholder="e.g. 600 x 800 mm"/></div>
+                <div><label style={S.label}>Year</label><input value={uploadForm.year} onChange={e=>setUploadForm(p=>({...p,year:e.target.value}))} style={S.input} placeholder="e.g. 2024"/></div>
+                <div><label style={S.label}>Suggested Price (R)</label><input type="number" value={uploadForm.price} onChange={e=>setUploadForm(p=>({...p,price:e.target.value}))} style={S.input} placeholder="0"/></div>
+                <div style={{gridColumn:'1/-1'}}><label style={S.label}>Image URL</label><input value={uploadForm.imageUrl} onChange={e=>setUploadForm(p=>({...p,imageUrl:e.target.value}))} style={S.input} placeholder="https://... (link to your image)"/></div>
+                <div style={{gridColumn:'1/-1'}}><label style={S.label}>Description</label><textarea value={uploadForm.description} onChange={e=>setUploadForm(p=>({...p,description:e.target.value}))} style={{...S.input,minHeight:80,resize:'vertical'}} placeholder="Describe your artwork..."/></div>
+              </div>
+              <div style={{marginTop:16,display:'flex',justifyContent:'flex-end'}}>
+                <button disabled={uploading||!uploadForm.title} onClick={async()=>{
+                  if(!artist||!uploadForm.title)return;
+                  setUploading(true);
+                  await supabase.from('artworks').insert({
+                    id: crypto.randomUUID(),
+                    title: uploadForm.title,
+                    artist_name: artist.name,
+                    artist_id: artist.id,
+                    medium: uploadForm.medium,
+                    dimensions: uploadForm.dimensions,
+                    year: uploadForm.year,
+                    recommended_price: parseFloat(uploadForm.price)||0,
+                    image_url: uploadForm.imageUrl,
+                    description: uploadForm.description,
+                    status: 'Available',
+                    approval_status: 'pending',
+                    submitted_by: session.user.email,
+                    submitted_at: new Date().toISOString(),
+                    created_at: new Date().toISOString(),
+                  });
+                  setUploadForm({title:'',medium:'',dimensions:'',year:'',description:'',price:'',imageUrl:''});
+                  setUploading(false);
+                  setUploadDone(true);
+                  setTimeout(()=>setUploadDone(false),5000);
+                  loadData();
+                }} style={{padding:'12px 28px',borderRadius:8,border:'none',background:uploading||!uploadForm.title?'rgba(182,139,46,0.4)':'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',cursor:uploading||!uploadForm.title?'not-allowed':'pointer',fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>
+                  {uploading?'Submitting…':'Submit for Approval'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab==='upload'&&(
+          <div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:'#1a1714',marginBottom:8}}>Upload Artwork</div>
+            <div style={{fontSize:13,color:'#8a8070',marginBottom:20}}>Submit artwork for admin review. Once approved it will be listed in the gallery.</div>
+            {uploadMsg&&(
+              <div style={{padding:'10px 14px',background:uploadMsg.startsWith('success:')?'rgba(74,158,107,0.08)':'rgba(196,92,74,0.08)',border:'1px solid '+(uploadMsg.startsWith('success:')?'rgba(74,158,107,0.2)':'rgba(196,92,74,0.2)'),borderRadius:8,fontSize:13,color:uploadMsg.startsWith('success:')?'#4a9e6b':'#c45c4a',marginBottom:14}}>
+                {uploadMsg.replace('success:','').replace('error:','')}
+              </div>
+            )}
+            <div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:12,padding:20}}>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+                {[['title','Title *','text'],['medium','Medium','text'],['dimensions','Dimensions','text'],['year','Year','text'],['price','Price (R) *','number']].map(([key,label,type])=>(
+                  <div key={key}>
+                    <label style={{display:'block',fontSize:10,fontWeight:500,letterSpacing:2,textTransform:'uppercase',color:'#6b635a',marginBottom:6}}>{label}</label>
+                    <input type={type} value={uploadForm[key]} onChange={e=>setUploadForm(p=>({...p,[key]:e.target.value}))} style={S.input}/>
+                  </div>
+                ))}
+                <div style={{gridColumn:'1/-1'}}>
+                  <label style={{display:'block',fontSize:10,fontWeight:500,letterSpacing:2,textTransform:'uppercase',color:'#6b635a',marginBottom:6}}>Description</label>
+                  <textarea value={uploadForm.description} onChange={e=>setUploadForm(p=>({...p,description:e.target.value}))} style={{...S.input,minHeight:80,resize:'vertical'}} placeholder="Describe the artwork..."/>
+                </div>
+              </div>
+              <div style={{marginTop:16,padding:'12px 14px',background:'rgba(182,139,46,0.06)',borderRadius:8,fontSize:12,color:'#6b635a'}}>
+                ℹ After submission, Vollard Black will review and approve your artwork before it appears in the gallery.
+              </div>
+              <div style={{display:'flex',justifyContent:'flex-end',marginTop:16}}>
+                <button onClick={submitArtwork} disabled={uploading} style={{padding:'12px 28px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",opacity:uploading?0.6:1}}>{uploading?'Submitting…':'Submit for Approval'}</button>
+              </div>
+            </div>
+            {/* Pending artworks */}
+            {artworks.filter(a=>a.status==='Pending Approval').length>0&&(
+              <div style={{marginTop:20}}>
+                <div style={{fontSize:11,letterSpacing:2,textTransform:'uppercase',color:'#e6be32',marginBottom:10}}>Pending Approval ({artworks.filter(a=>a.status==='Pending Approval').length})</div>
+                {artworks.filter(a=>a.status==='Pending Approval').map(art=>(
+                  <div key={art.id} style={{background:'#fff',border:'1px solid rgba(230,190,50,0.25)',borderRadius:10,padding:14,marginBottom:10,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                    <div>
+                      <div style={{fontWeight:600,fontSize:14}}>{art.title}</div>
+                      <div style={{fontSize:12,color:'#8a8070'}}>{art.medium||'—'} · R {fmt(art.recommendedPrice)}</div>
+                    </div>
+                    <span style={{fontSize:11,fontWeight:600,color:'#e6be32',padding:'3px 10px',background:'rgba(230,190,50,0.12)',borderRadius:6}}>⚠ Pending</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab==='profile'&&(
+          <div>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20,flexWrap:'wrap',gap:10}}>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:'#1a1714'}}>My Profile</div>
+              {!profileEdit&&<button onClick={()=>setProfileEdit(true)} style={{padding:'10px 20px',borderRadius:8,border:'1px solid rgba(182,139,46,0.30)',background:'transparent',color:'#b68b2e',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Edit Profile</button>}
+            </div>
+            {saveMsg&&<div style={{padding:'10px 14px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:8,fontSize:13,color:'#4a9e6b',marginBottom:14}}>✓ {saveMsg}</div>}
+            {!profileEdit?(
+              <div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:12,padding:20}}>
+                {[['Name',artist?.name||'—'],['Email',artist?.email||'—'],['Mobile',artist?.mobile||'—'],['Medium',artist?.medium||'—'],['Style',artist?.style||'—'],['Instagram',artist?.instagram?'@'+artist.instagram.replace('@',''):'—'],['Website',artist?.website||'—'],['City',artist?.city||'—'],['Country',artist?.country||'—']].map(([label,value])=>(
+                  <div key={label} style={{display:'flex',justifyContent:'space-between',padding:'10px 0',borderBottom:'1px solid rgba(182,139,46,0.08)',fontSize:13}}>
+                    <span style={{color:'#8a8070'}}>{label}</span>
+                    <span style={{fontWeight:500}}>{value}</span>
+                  </div>
+                ))}
+              </div>
+            ):(
+              <div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:12,padding:20}}>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+                  {[['name','Full Name'],['mobile','Mobile'],['medium','Primary Medium'],['style','Style'],['instagram','Instagram'],['website','Website'],['city','City'],['country','Country']].map(([key,label])=>(
+                    <div key={key}>
+                      <label style={{display:'block',fontSize:10,fontWeight:500,letterSpacing:2,textTransform:'uppercase',color:'#6b635a',marginBottom:6}}>{label}</label>
+                      <input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={S.input}/>
+                    </div>
+                  ))}
+                  <div style={{gridColumn:'1/-1'}}>
+                    <label style={{display:'block',fontSize:10,fontWeight:500,letterSpacing:2,textTransform:'uppercase',color:'#6b635a',marginBottom:6}}>Bio</label>
+                    <textarea value={profileForm.bio||''} onChange={e=>setProfileForm(p=>({...p,bio:e.target.value}))} style={{...S.input,minHeight:80,resize:'vertical'}}/>
+                  </div>
+                </div>
+                <div style={{display:'flex',gap:10,marginTop:16,justifyContent:'flex-end'}}>
+                  <button onClick={()=>setProfileEdit(false)} style={{padding:'10px 20px',borderRadius:8,border:'1px solid rgba(182,139,46,0.30)',background:'transparent',color:'#b68b2e',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Cancel</button>
+                  <button onClick={saveProfile} disabled={saving} style={{padding:'10px 20px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",opacity:saving?0.6:1}}>{saving?'Saving…':'Save Profile'}</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {tab==='auctions'&&(
           <div>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:'#1a1714',marginBottom:16}}>Auction History</div>
@@ -419,6 +608,29 @@ function ArtistDashboard({session}) {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+      </div>
+        {tab==='profile'&&profileForm&&(
+          <div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:'#1a1714',marginBottom:16}}>My Profile</div>
+            {profileSaved&&<div style={{padding:'10px 14px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:8,fontSize:13,color:'#4a9e6b',marginBottom:14}}>✓ Profile updated</div>}
+            <div style={S.card}>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+                <div style={{gridColumn:'1/-1'}}><label style={S.label}>Full Name</label><input value={profileForm.name||''} onChange={e=>setProfileForm(p=>({...p,name:e.target.value}))} style={S.input}/></div>
+                <div><label style={S.label}>Mobile</label><input value={profileForm.mobile||''} onChange={e=>setProfileForm(p=>({...p,mobile:e.target.value}))} style={S.input}/></div>
+                <div><label style={S.label}>City</label><input value={profileForm.city||''} onChange={e=>setProfileForm(p=>({...p,city:e.target.value}))} style={S.input}/></div>
+                <div><label style={S.label}>Primary Medium</label><input value={profileForm.medium||''} onChange={e=>setProfileForm(p=>({...p,medium:e.target.value}))} style={S.input}/></div>
+                <div><label style={S.label}>Style</label><input value={profileForm.style||''} onChange={e=>setProfileForm(p=>({...p,style:e.target.value}))} style={S.input}/></div>
+                <div><label style={S.label}>Website</label><input value={profileForm.website||''} onChange={e=>setProfileForm(p=>({...p,website:e.target.value}))} style={S.input}/></div>
+                <div><label style={S.label}>Instagram</label><input value={profileForm.instagram||''} onChange={e=>setProfileForm(p=>({...p,instagram:e.target.value}))} style={S.input} placeholder="@handle"/></div>
+                <div style={{gridColumn:'1/-1'}}><label style={S.label}>Bio</label><textarea value={profileForm.bio||''} onChange={e=>setProfileForm(p=>({...p,bio:e.target.value}))} style={{...S.input,minHeight:80,resize:'vertical'}}/></div>
+                <div style={{gridColumn:'1/-1'}}><label style={S.label}>Email (cannot change)</label><input value={session.user.email} readOnly style={{...S.input,background:'#e8e4dd',color:'#8a8070'}}/></div>
+              </div>
+              <div style={{marginTop:16,display:'flex',justifyContent:'flex-end'}}>
+                <button onClick={async()=>{if(!artist)return;setSavingProfile(true);await supabase.from('artists').update({name:profileForm.name,mobile:profileForm.mobile,medium:profileForm.medium,style:profileForm.style,website:profileForm.website,instagram:profileForm.instagram,bio:profileForm.bio,city:profileForm.city}).eq('id',artist.id);setSavingProfile(false);setProfileSaved(true);setTimeout(()=>setProfileSaved(false),3000);}} disabled={savingProfile} style={{padding:'12px 28px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",opacity:savingProfile?0.6:1}}>{savingProfile?'Saving…':'Save Changes'}</button>
+              </div>
+            </div>
           </div>
         )}
       </div>
