@@ -201,6 +201,7 @@ function BuyerDashboard({session}) {
   const [saving,setSaving] = useState(false);
   const [saveMsg,setSaveMsg] = useState('');
   const [enquiryMsg,setEnquiryMsg] = useState('');
+  const [zoomImg,setZoomImg] = useState(null);
   const [search,setSearch] = useState('');
 
   useEffect(()=>{ loadData(); },[session]);
@@ -225,9 +226,17 @@ function BuyerDashboard({session}) {
       const {data:arts} = await supabase.from('artworks').select('*').eq('status','Available').order('created_at',{ascending:false});
       setArtworks((arts||[]).map(toCamel));
 
-      // Auctions
+      // Auctions with artwork images
       const {data:aucs} = await supabase.from('auctions').select('*').in('status',['Live','Draft','Sold','No Sale']).order('created_at',{ascending:false});
-      setAuctions((aucs||[]).map(toCamel));
+      // Fetch artwork images for each auction
+      const aucsWithImages = await Promise.all((aucs||[]).map(async(auc)=>{
+        if(auc.artwork_id){
+          const {data:art} = await supabase.from('artworks').select('image_url').eq('id',auc.artwork_id).single();
+          return {...toCamel(auc), imageUrl: art?.image_url||null};
+        }
+        return toCamel(auc);
+      }));
+      setAuctions(aucsWithImages);
 
       if(buyers&&buyers.length>0){
         const {data:myBids} = await supabase.from('bids').select('*').eq('buyer_id',buyers[0].id).order('timestamp',{ascending:false});
@@ -371,41 +380,90 @@ function BuyerDashboard({session}) {
         {/* AUCTIONS TAB */}
         {tab==='auctions'&&(
           <div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,fontWeight:300,color:'#1a1714',marginBottom:20}}>Auctions</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,fontWeight:300,color:'#1a1714',marginBottom:8}}>Auctions</div>
+            <div style={{fontSize:13,color:'#8a8070',marginBottom:20}}>KYC verification required to bid. Contact Vollard Black to participate.</div>
+
+            {/* Auction access request */}
+            {buyer&&!buyer.auctionApproved&&(
+              <div style={{padding:'16px 18px',background:'rgba(182,139,46,0.06)',border:'1px solid rgba(182,139,46,0.25)',borderRadius:12,marginBottom:20}}>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:'#1a1714',marginBottom:6}}>Request Bidding Access</div>
+                <div style={{fontSize:13,color:'#6b635a',marginBottom:14,lineHeight:1.6}}>To place bids you need to be KYC verified. Click the button below — Vollard Black will be notified via WhatsApp and activate your access.</div>
+                <button onClick={async()=>{
+                  if(!buyer?.id)return;
+                  try{
+                    await supabase.from('buyers').update({auction_requested:true,auction_requested_at:new Date().toISOString()}).eq('id',buyer.id);
+                    const msg=encodeURIComponent('Hi Vollard Black,
+
+I would like to request auction bidding access.
+
+Name: '+displayName+'
+Email: '+session.user.email+'
+ID: '+(buyer.idNumber||'—')+'
+
+Please verify my account.
+
+Thank you.');
+                    window.open('https://wa.me/27826503393?text='+msg,'_blank');
+                    alert('Request sent! Vollard Black will review and activate your auction access.');
+                  }catch(e){console.error(e);}
+                }} style={{padding:'12px 28px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
+                  Request Auction Access via WhatsApp
+                </button>
+              </div>
+            )}
+            {buyer&&buyer.auctionApproved&&(
+              <div style={{padding:'10px 16px',background:'rgba(74,158,107,0.06)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:10,marginBottom:16,display:'flex',alignItems:'center',gap:8}}>
+                <span style={{color:'#4a9e6b'}}>✓</span>
+                <span style={{fontSize:13,fontWeight:600,color:'#4a9e6b'}}>Auction access approved — contact Vollard Black to place bids</span>
+              </div>
+            )}
+
             {auctions.length===0?(
-              <div style={{...S.card,textAlign:'center',padding:48}}><div style={{fontSize:32,marginBottom:12}}>◆</div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,color:'#1a1714',marginBottom:8}}>No Auctions</div><div style={{fontSize:13,color:'#8a8070'}}>No auctions at the moment. Check back soon.</div></div>
+              <div style={{...S.card,textAlign:'center',padding:48}}>
+                <div style={{fontSize:32,marginBottom:12}}>◆</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,color:'#1a1714',marginBottom:8}}>No Auctions</div>
+                <div style={{fontSize:13,color:'#8a8070'}}>No auctions at the moment. Check back soon.</div>
+              </div>
             ):auctions.map(auc=>{
               const myBid=bids.find(b=>b.auctionId===auc.id);
               const isLeading=auc.leadBidderId===buyer?.id;
               const isLive=auc.status==='Live';
               return(
-                <div key={auc.id} style={{...S.card,borderLeft:`3px solid ${isLeading?'#4a9e6b':isLive?'rgba(196,92,74,0.5)':'rgba(182,139,46,0.30)'}`}}>
-                  <div style={{display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:10,marginBottom:10}}>
-                    <div>
-                      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
-                        {isLive&&<span style={{fontSize:10,fontWeight:600,color:'#c45c4a',padding:'2px 8px',background:'rgba(196,92,74,0.12)',borderRadius:6}}>● LIVE</span>}
-                        <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:'#1a1714'}}>{auc.title}</span>
-                      </div>
-                      <div style={{fontSize:12,color:'#8a8070'}}>{auc.artist||'—'} · {auc.galleryName||'—'}</div>
-                      {isLeading&&<div style={{fontSize:11,fontWeight:600,color:'#4a9e6b',marginTop:4}}>● You are the leading bidder</div>}
-                      {myBid&&!isLeading&&isLive&&<div style={{fontSize:11,color:'#c45c4a',marginTop:4}}>⚠ You have been outbid</div>}
-                    </div>
-                    <div style={{textAlign:'right'}}>
-                      <div style={{fontSize:10,color:'#8a8070',letterSpacing:1,textTransform:'uppercase'}}>Current Bid</div>
-                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,...S.gold}}>R {fmt(auc.currentBid||0)}</div>
-                      <div style={{fontSize:11,color:'#8a8070'}}>Reserve: R {fmt(auc.reservePrice)}</div>
-                    </div>
-                  </div>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,fontSize:12,marginBottom:10}}>
-                    <div><span style={{color:'#8a8070'}}>Bids: </span><span>{auc.bidsCount||0}</span></div>
-                    <div><span style={{color:'#8a8070'}}>Status: </span><span style={{fontWeight:600,color:auc.status==='Sold'?'#4a9e6b':auc.status==='Live'?'#c45c4a':'#8a8070'}}>{auc.status}</span></div>
-                    {myBid&&<div><span style={{color:'#8a8070'}}>Your bid: </span><span style={S.gold}>R {fmt(myBid.amount)}</span></div>}
-                  </div>
-                  {isLive&&!buyer?.auctionApproved&&(
-                    <div style={{padding:'10px 14px',background:'rgba(182,139,46,0.06)',borderRadius:8,fontSize:12,color:'#8a6a1e'}}>
-                      To place bids, contact Vollard Black at concierge@vollardblack.com to request auction access.
+                <div key={auc.id} style={{...S.card,overflow:'hidden',padding:0,borderLeft:`3px solid ${isLeading?'#4a9e6b':isLive?'#c45c4a':'rgba(182,139,46,0.30)'}`}}>
+                  {/* Artwork image with zoom */}
+                  {auc.imageUrl&&(
+                    <div style={{position:'relative',height:220,overflow:'hidden',cursor:'zoom-in',background:'#f0ede8'}}
+                      onClick={()=>setZoomImg(auc.imageUrl)}>
+                      <img src={auc.imageUrl} alt={auc.title} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+                      <div style={{position:'absolute',bottom:8,right:8,background:'rgba(0,0,0,0.5)',borderRadius:6,padding:'4px 8px',fontSize:10,color:'#fff',letterSpacing:1}}>🔍 ZOOM</div>
+                      {isLive&&<div style={{position:'absolute',top:10,left:10,background:'#c45c4a',borderRadius:6,padding:'4px 10px',fontSize:10,fontWeight:700,color:'#fff',letterSpacing:1}}>● LIVE</div>}
                     </div>
                   )}
+                  {!auc.imageUrl&&isLive&&(
+                    <div style={{background:'rgba(196,92,74,0.08)',padding:'8px 16px',display:'flex',alignItems:'center',gap:6}}>
+                      <span style={{fontSize:10,fontWeight:700,color:'#c45c4a'}}>● LIVE AUCTION</span>
+                    </div>
+                  )}
+                  <div style={{padding:16}}>
+                    <div style={{display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:10,marginBottom:10}}>
+                      <div>
+                        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:'#1a1714',marginBottom:4}}>{auc.title}</div>
+                        <div style={{fontSize:12,color:'#8a8070'}}>{auc.artist||'—'} · {auc.galleryName||'—'}</div>
+                        {isLeading&&<div style={{fontSize:11,fontWeight:600,color:'#4a9e6b',marginTop:4}}>● You are the leading bidder</div>}
+                        {myBid&&!isLeading&&isLive&&<div style={{fontSize:11,color:'#c45c4a',marginTop:4}}>⚠ You have been outbid</div>}
+                      </div>
+                      <div style={{textAlign:'right'}}>
+                        <div style={{fontSize:10,color:'#8a8070',letterSpacing:1,textTransform:'uppercase'}}>Current Bid</div>
+                        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,...S.gold}}>R {fmt(auc.currentBid||0)}</div>
+                        <div style={{fontSize:11,color:'#8a8070'}}>Reserve: R {fmt(auc.reservePrice)}</div>
+                      </div>
+                    </div>
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,fontSize:12}}>
+                      <div><span style={{color:'#8a8070'}}>Bids: </span><span>{auc.bidsCount||0}</span></div>
+                      <div><span style={{color:'#8a8070'}}>Status: </span><span style={{fontWeight:600,color:auc.status==='Sold'?'#4a9e6b':auc.status==='Live'?'#c45c4a':'#8a8070'}}>{auc.status}</span></div>
+                      {myBid&&<div><span style={{color:'#8a8070'}}>Your bid: </span><span style={S.gold}>R {fmt(myBid.amount)}</span></div>}
+                    </div>
+                  </div>
                 </div>
               );
             })}
@@ -512,6 +570,14 @@ function BuyerDashboard({session}) {
           </div>
         )}
       </div>
+
+      {/* Zoom Modal */}
+      {zoomImg&&(
+        <div onClick={()=>setZoomImg(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.92)',zIndex:300,display:'flex',alignItems:'center',justifyContent:'center',padding:20,cursor:'zoom-out'}}>
+          <button onClick={()=>setZoomImg(null)} style={{position:'absolute',top:20,right:24,background:'none',border:'none',color:'rgba(255,255,255,0.7)',fontSize:36,cursor:'pointer',lineHeight:1}}>×</button>
+          <img src={zoomImg} alt="" style={{maxWidth:'100%',maxHeight:'90vh',objectFit:'contain',borderRadius:8,boxShadow:'0 24px 64px rgba(0,0,0,0.5)'}}/>
+        </div>
+      )}
 
       {/* Enquiry Modal */}
       {enquiry&&(
