@@ -108,10 +108,10 @@ export const db = {
     const snake = toSnake(record);
     // Remove auto-generated UUID fields for UUID-primary-key tables
     // Keep IDs for text-primary-key tables (auctions, bids, reports, schedules, payments, sales)
-    const textIdTables = ['auctions','bids','reports','schedules','payments','sales','buyers','collectors','artists','artworks'];
-    if (!textIdTables.includes(table) && snake.id && typeof snake.id === 'string' && snake.id.startsWith('VB')) {
-      delete snake.id;
-    }
+    // Keep all IDs - app now generates proper UUIDs for UUID tables
+    // and VB-prefixed IDs for text-ID tables
+    // Only strip if no ID provided at all
+    if (!snake.id) delete snake.id;
     const { data, error } = await supabase
       .from(table).insert(snake).select().single();
     if (error) { console.error(`insert ${table}:`, error.message); return null; }
