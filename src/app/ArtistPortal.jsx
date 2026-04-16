@@ -611,33 +611,9 @@ function ArtistDashboard({session}) {
           </div>
         )}
       </div>
-        {tab==='profile'&&profileForm&&(
-          <div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:'#1a1714',marginBottom:16}}>My Profile</div>
-            {profileSaved&&<div style={{padding:'10px 14px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:8,fontSize:13,color:'#4a9e6b',marginBottom:14}}>✓ Profile updated</div>}
-            <div style={S.card}>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
-                <div style={{gridColumn:'1/-1'}}><label style={S.label}>Full Name</label><input value={profileForm.name||''} onChange={e=>setProfileForm(p=>({...p,name:e.target.value}))} style={S.input}/></div>
-                <div><label style={S.label}>Mobile</label><input value={profileForm.mobile||''} onChange={e=>setProfileForm(p=>({...p,mobile:e.target.value}))} style={S.input}/></div>
-                <div><label style={S.label}>City</label><input value={profileForm.city||''} onChange={e=>setProfileForm(p=>({...p,city:e.target.value}))} style={S.input}/></div>
-                <div><label style={S.label}>Primary Medium</label><input value={profileForm.medium||''} onChange={e=>setProfileForm(p=>({...p,medium:e.target.value}))} style={S.input}/></div>
-                <div><label style={S.label}>Style</label><input value={profileForm.style||''} onChange={e=>setProfileForm(p=>({...p,style:e.target.value}))} style={S.input}/></div>
-                <div><label style={S.label}>Website</label><input value={profileForm.website||''} onChange={e=>setProfileForm(p=>({...p,website:e.target.value}))} style={S.input}/></div>
-                <div><label style={S.label}>Instagram</label><input value={profileForm.instagram||''} onChange={e=>setProfileForm(p=>({...p,instagram:e.target.value}))} style={S.input} placeholder="@handle"/></div>
-                <div style={{gridColumn:'1/-1'}}><label style={S.label}>Bio</label><textarea value={profileForm.bio||''} onChange={e=>setProfileForm(p=>({...p,bio:e.target.value}))} style={{...S.input,minHeight:80,resize:'vertical'}}/></div>
-                <div style={{gridColumn:'1/-1'}}><label style={S.label}>Email (cannot change)</label><input value={session.user.email} readOnly style={{...S.input,background:'#e8e4dd',color:'#8a8070'}}/></div>
-              </div>
-              <div style={{marginTop:16,display:'flex',justifyContent:'flex-end'}}>
-                <button onClick={async()=>{if(!artist)return;setSavingProfile(true);await supabase.from('artists').update({name:profileForm.name,mobile:profileForm.mobile,medium:profileForm.medium,style:profileForm.style,website:profileForm.website,instagram:profileForm.instagram,bio:profileForm.bio,city:profileForm.city}).eq('id',artist.id);setSavingProfile(false);setProfileSaved(true);setTimeout(()=>setProfileSaved(false),3000);}} disabled={savingProfile} style={{padding:'12px 28px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",opacity:savingProfile?0.6:1}}>{savingProfile?'Saving…':'Save Changes'}</button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 }
-
 // ── Root ──────────────────────────────────────────────────
 export default function ArtistPortal() {
   const [session,setSession] = useState(undefined);
