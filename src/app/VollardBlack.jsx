@@ -51,6 +51,15 @@ const calcDeal = (artworkValue, salePrice, model, monthsPaid, galleryPct, vbBack
 
 const fmt = (n) => Number(n||0).toLocaleString("en-ZA",{minimumFractionDigits:2,maximumFractionDigits:2});
 const uid = () => "VB"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const uuidv4 = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+};
+// UUID tables need real UUIDs; text tables use VB-prefixed IDs
+const UUID_TABLES = ['artworks','artists','collectors','buyers'];
+const newId = (table) => UUID_TABLES.includes(table) ? uuidv4() : uid();
 const td = () => new Date().toISOString().slice(0,10);
 const SK = "vollard_black_v16";
 const TABLES = ["artworks","artists","collectors","schedules","payments","sales","reports","buyers","auctions","bids"];
@@ -538,7 +547,7 @@ export default function App(){
       if(storage)storage.deleteArtworkImage(artworkId).catch(()=>{});
     },
     recordSale:(saleData)=>{
-      if(saleData.newBuyerData){up("buyers",p=>[...p,{...saleData.newBuyerData,createdAt:td()}]);}
+      if(saleData.newBuyerData){up("buyers",p=>[...p,{...saleData.newBuyerData,id:saleData.newBuyerData.id||uuidv4(),createdAt:td()}]);}
       const sale={...saleData,id:uid(),date:td()};delete sale.newBuyerData;
       up("sales",p=>[...p,sale]);
       up("artworks",p=>p.map(a=>a.id===saleData.artworkId?{...a,status:"Sold"}:a));
@@ -554,7 +563,7 @@ export default function App(){
     },
     saveBuyer:(buyer)=>{
       if(buyer.id)up("buyers",p=>p.map(b=>b.id===buyer.id?buyer:b));
-      else up("buyers",p=>[{...buyer,id:uid(),createdAt:td()},...p]);
+      else up("buyers",p=>[{...buyer,id:uuidv4(),createdAt:td()},...p]);
     },
     deleteBuyer:(id)=>{up("buyers",p=>p.filter(b=>b.id!==id));},
     // ─── AUCTION ACTIONS ───
@@ -1250,7 +1259,7 @@ function Catalogue({data,up,actions}){
   const [hoveredArt,setHoveredArt]=useState(null);
   const [lightbox,setLightbox]=useState(null);
   const blank={id:"",title:"",artist:"",artistId:"",medium:"",dimensions:"",year:"",recommendedPrice:"",imageUrl:"",status:"Available",description:"",galleryName:"",insuranceMonthly:""};
-  const save=(a)=>{if(a.id)up("artworks",p=>p.map(x=>x.id===a.id?a:x));else up("artworks",p=>[{...a,id:uid(),createdAt:td()},...p]);setModal(null);};
+  const save=(a)=>{if(a.id)up("artworks",p=>p.map(x=>x.id===a.id?a:x));else up("artworks",p=>[{...a,id:uuidv4(),createdAt:td()},...p]);setModal(null);};
   const f=data.artworks.filter(a=>(a.title+a.artist+a.status).toLowerCase().includes(search.toLowerCase()));
   const handleDelete=(art)=>{const has=(data.schedules||[]).some(s=>s.artworkId===art.id)||(data.sales||[]).some(s=>s.artworkId===art.id);if(has)setDelModal(art);else{if(confirm("Delete this artwork?"))up("artworks",p=>p.filter(a=>a.id!==art.id));}};
   const groups={};f.forEach(a=>{const key=a.artist||"Unknown Artist";if(!groups[key])groups[key]=[];groups[key].push(a);});
@@ -1340,7 +1349,7 @@ function ArtModal({art,artists,onSave,onClose}){
 function ArtistsPage({data,up}){
   const [modal,setModal]=useState(null);const [search,setSearch]=useState("");
   const blank={id:"",name:"",email:"",mobile:"",bio:"",medium:"",style:"",website:"",instagram:"",profileImageUrl:"",bankName:"",accountHolder:"",accountNumber:"",branchCode:"",accountType:"",city:"",country:"South Africa",notes:""};
-  const save=(a)=>{if(a.id)up("artists",p=>p.map(x=>x.id===a.id?a:x));else up("artists",p=>[{...a,id:uid(),createdAt:td()},...p]);setModal(null);};
+  const save=(a)=>{if(a.id)up("artists",p=>p.map(x=>x.id===a.id?a:x));else up("artists",p=>[{...a,id:uuidv4(),createdAt:td()},...p]);setModal(null);};
   const del=(id)=>{if(confirm("Delete?"))up("artists",p=>p.filter(x=>x.id!==id));};
   const arts=data.artists||[];const f=arts.filter(a=>(a.name+a.medium+a.city).toLowerCase().includes(search.toLowerCase()));
   const cnt=(id)=>data.artworks.filter(a=>a.artistId===id).length;
@@ -1379,7 +1388,7 @@ function ArtistMdl({artist,onSave,onClose}){
 function CollectorsPage({data,up,actions}){
   const [modal,setModal]=useState(null);const [link,setLink]=useState(null);const [search,setSearch]=useState("");
   const blank={id:"",type:"individual",firstName:"",lastName:"",companyName:"",email:"",mobile:"",idNumber:"",nationality:"",address:"",linkedArtworks:[]};
-  const save=(inv)=>{if(inv.id)up("collectors",p=>p.map(x=>x.id===inv.id?inv:x));else up("collectors",p=>[{...inv,id:uid(),createdAt:td()},...p]);setModal(null);};
+  const save=(inv)=>{if(inv.id)up("collectors",p=>p.map(x=>x.id===inv.id?inv:x));else up("collectors",p=>[{...inv,id:uuidv4(),createdAt:td()},...p]);setModal(null);};
   const del=(id)=>{if(confirm("Delete?"))up("collectors",p=>p.filter(x=>x.id!==id));};
   const gn=(i)=>i.type==="company"?i.companyName:`${i.firstName} ${i.lastName}`;
   const f=data.collectors.filter(i=>gn(i).toLowerCase().includes(search.toLowerCase()));
