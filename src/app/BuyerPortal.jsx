@@ -392,17 +392,7 @@ function BuyerDashboard({session}) {
                   if(!buyer?.id)return;
                   try{
                     await supabase.from('buyers').update({auction_requested:true,auction_requested_at:new Date().toISOString()}).eq('id',buyer.id);
-                    const msg=encodeURIComponent('Hi Vollard Black,
-
-I would like to request auction bidding access.
-
-Name: '+displayName+'
-Email: '+session.user.email+'
-ID: '+(buyer.idNumber||'—')+'
-
-Please verify my account.
-
-Thank you.');
+                    const msg=encodeURIComponent('Hi Vollard Black, I would like to request auction bidding access. Name: '+displayName+' | Email: '+session.user.email+' | ID: '+(buyer.idNumber||'—')+'. Please verify my account. Thank you.');
                     window.open('https://wa.me/27826503393?text='+msg,'_blank');
                     alert('Request sent! Vollard Black will review and activate your auction access.');
                   }catch(e){console.error(e);}
