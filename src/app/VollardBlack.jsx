@@ -1379,7 +1379,7 @@ function ArtistsPage({data,up}){
   const arts=data.artists||[];const f=arts.filter(a=>(a.name+a.medium+a.city).toLowerCase().includes(search.toLowerCase()));
   const cnt=(id)=>data.artworks.filter(a=>a.artistId===id).length;
   const val=(id)=>data.artworks.filter(a=>a.artistId===id).reduce((s,a)=>s+(a.recommendedPrice||0),0);
-  const kycPendingArtists=data.artists.filter(a=>a.kycStatus==="pending"||(!a.kycStatus&&(a.notes||"").includes("portal")));
+  const kycPendingArtists=data.artists.filter(a=>a.kycStatus!=="approved");
   return(<div>
     {kycPendingArtists.length>0&&<div style={{padding:"12px 16px",background:"rgba(230,190,50,0.08)",border:"1px solid rgba(230,190,50,0.25)",borderRadius:10,marginBottom:12,display:"flex",alignItems:"center",gap:10}}><span style={{color:"#e6be32",fontSize:16}}>⚠</span><span style={{fontSize:13,color:"#8a6a1e",fontWeight:600}}>{kycPendingArtists.length} artist{kycPendingArtists.length>1?"s":""} awaiting KYC approval</span></div>}
     <PT title="Artists" sub={`${arts.length} artists`} action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Add Artist</Btn>}/>
@@ -1419,7 +1419,7 @@ function CollectorsPage({data,up,actions}){
   const del=(id)=>{if(confirm("Delete?"))up("collectors",p=>p.filter(x=>x.id!==id));};
   const gn=(i)=>i.type==="company"?i.companyName:`${i.firstName||""} ${i.lastName||""}`.trim()||i.email||"Unknown";
   const f=data.collectors.filter(i=>gn(i).toLowerCase().includes(search.toLowerCase()));
-  const kycPending=data.collectors.filter(c=>c.kycStatus==="pending"||(!c.kycStatus&&c.notes?.includes("portal registration")));
+  const kycPending=data.collectors.filter(c=>c.kycStatus!=="approved");
   const handleLink=async(cId,artId,model,depositType,depositPct)=>{await actions.linkArtwork(cId,artId,model,depositType,depositPct);setLink(null);};
   const handleUnlink=(schedId)=>{if(confirm("Cancel this schedule?"))actions.unlinkArtwork(schedId);};
   return(<div>
@@ -1430,7 +1430,7 @@ function CollectorsPage({data,up,actions}){
         {label:"KYC",render:r=>{
           const kyc=r.kycStatus;
           if(kyc==="approved")return<span style={{fontSize:11,fontWeight:600,color:"#4a9e6b",padding:"3px 8px",background:"rgba(74,158,107,0.12)",borderRadius:6}}>✓ KYC Approved</span>;
-          if(kyc==="pending"||(!kyc&&r.notes?.includes("portal")))return<span style={{fontSize:11,fontWeight:600,color:"#e6be32",padding:"3px 8px",background:"rgba(230,190,50,0.12)",borderRadius:6}}>⚠ KYC Pending</span>;
+          if(kyc!=="approved")return<span style={{fontSize:11,fontWeight:600,color:"#e6be32",padding:"3px 8px",background:"rgba(230,190,50,0.12)",borderRadius:6}}>⚠ KYC Pending</span>;
           return<span style={{fontSize:11,color:"#8a8070"}}>—</span>;
         }},
         {label:"Schedules",render:r=>{const scheds=data.schedules.filter(s=>s.collectorId===r.id);if(scheds.length===0)return<span style={{color:"#8a8070"}}>None</span>;return<div>{scheds.map(s=><div key={s.id} style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><span style={{fontSize:12}}>{s.artworkTitle}</span><Badge model={s.acquisitionModel||"O1"}/><Badge status={s.status} sched/><button onClick={e=>{e.stopPropagation();handleUnlink(s.id);}} style={{background:"none",border:"none",color:"#c45c4a",cursor:"pointer",fontSize:10,textDecoration:"underline"}}>cancel</button></div>)}</div>;}},
@@ -1912,19 +1912,42 @@ function PortalsPage({data,setPendingPortalCount}){
     {!loadingReqs&&tab==="approved"&&(
       approved.length===0
         ?<Card style={{textAlign:"center",padding:40}}><div style={{fontSize:14,color:"#8a8070"}}>No approved users yet.</div></Card>
-        :approved.map(r=>(
-          <Card key={r.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
-            <div>
-              <div style={{fontWeight:600,fontSize:14,color:"#1a1714"}}>{r.full_name}</div>
-              <div style={{fontSize:12,color:"#8a8070"}}>{r.email} · {r.role}</div>
-              <div style={{fontSize:11,color:"#4a9e6b",marginTop:2}}>✓ Approved {r.reviewed_at?.slice(0,10)||""}</div>
-            </div>
-            <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>deleteUser(r)} style={{padding:"8px 12px",borderRadius:6,border:"1px solid rgba(196,92,74,0.20)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>🗑 Delete</button>
-              <button onClick={()=>reject(r)} style={{padding:"8px 14px",borderRadius:6,border:"1px solid rgba(196,92,74,0.25)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>Revoke</button>
-            </div>
-          </Card>
-        ))
+        :<div>
+          {/* Renters Section */}
+          {approved.filter(r=>r.role==="renter").length>0&&<div>
+            <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#b68b2e",marginBottom:10,marginTop:4}}>Renters ({approved.filter(r=>r.role==="renter").length})</div>
+            {approved.filter(r=>r.role==="renter").map(r=>(
+              <Card key={r.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10,borderLeft:"3px solid rgba(182,139,46,0.40)"}}>
+                <div>
+                  <div style={{fontWeight:600,fontSize:14,color:"#1a1714"}}>{r.full_name}</div>
+                  <div style={{fontSize:12,color:"#8a8070"}}>{r.email}</div>
+                  <div style={{fontSize:11,color:"#4a9e6b",marginTop:2}}>✓ Approved {r.reviewed_at?.slice(0,10)||""}</div>
+                </div>
+                <div style={{display:"flex",gap:8}}>
+                  <button onClick={()=>deleteUser(r)} style={{padding:"8px 12px",borderRadius:6,border:"1px solid rgba(196,92,74,0.20)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>🗑 Delete</button>
+                  <button onClick={()=>reject(r)} style={{padding:"8px 14px",borderRadius:6,border:"1px solid rgba(196,92,74,0.25)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>Revoke</button>
+                </div>
+              </Card>
+            ))}
+          </div>}
+          {/* Artists Section */}
+          {approved.filter(r=>r.role==="artist").length>0&&<div style={{marginTop:approved.filter(r=>r.role==="renter").length>0?16:0}}>
+            <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#648cc8",marginBottom:10}}>Artists ({approved.filter(r=>r.role==="artist").length})</div>
+            {approved.filter(r=>r.role==="artist").map(r=>(
+              <Card key={r.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10,borderLeft:"3px solid rgba(100,140,200,0.40)"}}>
+                <div>
+                  <div style={{fontWeight:600,fontSize:14,color:"#1a1714"}}>{r.full_name}</div>
+                  <div style={{fontSize:12,color:"#8a8070"}}>{r.email}</div>
+                  <div style={{fontSize:11,color:"#4a9e6b",marginTop:2}}>✓ Approved {r.reviewed_at?.slice(0,10)||""}</div>
+                </div>
+                <div style={{display:"flex",gap:8}}>
+                  <button onClick={()=>deleteUser(r)} style={{padding:"8px 12px",borderRadius:6,border:"1px solid rgba(196,92,74,0.20)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>🗑 Delete</button>
+                  <button onClick={()=>reject(r)} style={{padding:"8px 14px",borderRadius:6,border:"1px solid rgba(196,92,74,0.25)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>Revoke</button>
+                </div>
+              </Card>
+            ))}
+          </div>}
+        </div>
     )}
 
     {!loadingReqs&&tab==="rejected"&&(
