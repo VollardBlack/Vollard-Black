@@ -620,12 +620,10 @@ export default function App(){
     },
     deleteBuyer:(id)=>{up("buyers",p=>p.filter(b=>b.id!==id));},
     // ─── AUCTION ACTIONS ───
-    createAuction:async(auctionData)=>{
+    createAuction:(auctionData)=>{
+      // up() automatically syncs to Supabase - no separate db.insert needed
       const auction={...auctionData,id:uid(),createdAt:td(),status:"Draft",currentBid:0,leadBidderId:null,leadBidderName:null,bidsCount:0};
       up("auctions",p=>[...p,auction]);
-      // Save to Supabase immediately
-      const toSnake=(obj)=>{const out={};for(const[k,v]of Object.entries(obj))out[k.replace(/[A-Z]/g,m=>'_'+m.toLowerCase())]=v;return out;};
-      try{await db.insert("auctions",toSnake(auction));}catch(e){console.error("Auction save failed:",e);}
     },
     updateAuction:(id,fields)=>{up("auctions",p=>p.map(a=>a.id===id?{...a,...fields}:a));dbUp("auctions",id,fields);},
     launchAuction:(id)=>{
