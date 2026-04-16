@@ -1379,7 +1379,9 @@ function ArtistsPage({data,up}){
   const arts=data.artists||[];const f=arts.filter(a=>(a.name+a.medium+a.city).toLowerCase().includes(search.toLowerCase()));
   const cnt=(id)=>data.artworks.filter(a=>a.artistId===id).length;
   const val=(id)=>data.artworks.filter(a=>a.artistId===id).reduce((s,a)=>s+(a.recommendedPrice||0),0);
+  const kycPendingArtists=data.artists.filter(a=>a.kycStatus==="pending"||(!a.kycStatus&&(a.notes||"").includes("portal")));
   return(<div>
+    {kycPendingArtists.length>0&&<div style={{padding:"12px 16px",background:"rgba(230,190,50,0.08)",border:"1px solid rgba(230,190,50,0.25)",borderRadius:10,marginBottom:12,display:"flex",alignItems:"center",gap:10}}><span style={{color:"#e6be32",fontSize:16}}>⚠</span><span style={{fontSize:13,color:"#8a6a1e",fontWeight:600}}>{kycPendingArtists.length} artist{kycPendingArtists.length>1?"s":""} awaiting KYC approval</span></div>}
     <PT title="Artists" sub={`${arts.length} artists`} action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Add Artist</Btn>}/>
     <Card><div style={{marginBottom:16}}><input placeholder="Search..." value={search} onChange={e=>setSearch(e.target.value)} style={{...is,maxWidth:400}}/></div>
       {f.length===0?<Empty msg="No artists yet." action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Add</Btn>}/>:<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:16}}>
@@ -1417,6 +1419,7 @@ function CollectorsPage({data,up,actions}){
   const del=(id)=>{if(confirm("Delete?"))up("collectors",p=>p.filter(x=>x.id!==id));};
   const gn=(i)=>i.type==="company"?i.companyName:`${i.firstName||""} ${i.lastName||""}`.trim()||i.email||"Unknown";
   const f=data.collectors.filter(i=>gn(i).toLowerCase().includes(search.toLowerCase()));
+  const kycPending=data.collectors.filter(c=>c.kycStatus==="pending"||(!c.kycStatus&&c.notes?.includes("portal registration")));
   const handleLink=async(cId,artId,model,depositType,depositPct)=>{await actions.linkArtwork(cId,artId,model,depositType,depositPct);setLink(null);};
   const handleUnlink=(schedId)=>{if(confirm("Cancel this schedule?"))actions.unlinkArtwork(schedId);};
   return(<div>
@@ -1424,6 +1427,12 @@ function CollectorsPage({data,up,actions}){
     <Card><div style={{marginBottom:16}}><input placeholder="Search..." value={search} onChange={e=>setSearch(e.target.value)} style={{...is,maxWidth:360}}/></div>
       {f.length===0?<Empty msg="No collectors yet." action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Add</Btn>}/>:<Tbl cols={[
         {label:"Name",bold:true,render:r=>gn(r)},{label:"Type",key:"type"},{label:"Email",key:"email"},
+        {label:"KYC",render:r=>{
+          const kyc=r.kycStatus;
+          if(kyc==="approved")return<span style={{fontSize:11,fontWeight:600,color:"#4a9e6b",padding:"3px 8px",background:"rgba(74,158,107,0.12)",borderRadius:6}}>✓ KYC Approved</span>;
+          if(kyc==="pending"||(!kyc&&r.notes?.includes("portal")))return<span style={{fontSize:11,fontWeight:600,color:"#e6be32",padding:"3px 8px",background:"rgba(230,190,50,0.12)",borderRadius:6}}>⚠ KYC Pending</span>;
+          return<span style={{fontSize:11,color:"#8a8070"}}>—</span>;
+        }},
         {label:"Schedules",render:r=>{const scheds=data.schedules.filter(s=>s.collectorId===r.id);if(scheds.length===0)return<span style={{color:"#8a8070"}}>None</span>;return<div>{scheds.map(s=><div key={s.id} style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><span style={{fontSize:12}}>{s.artworkTitle}</span><Badge model={s.acquisitionModel||"O1"}/><Badge status={s.status} sched/><button onClick={e=>{e.stopPropagation();handleUnlink(s.id);}} style={{background:"none",border:"none",color:"#c45c4a",cursor:"pointer",fontSize:10,textDecoration:"underline"}}>cancel</button></div>)}</div>;}},
         {label:"",render:r=><div style={{display:"flex",gap:6}}><Btn small ghost onClick={e=>{e.stopPropagation();setLink(r);}}>Link Art</Btn><button onClick={e=>{e.stopPropagation();setModal(r);}} style={{background:"none",border:"none",color:"#6b635a",cursor:"pointer"}}>{I.edit}</button><button onClick={e=>{e.stopPropagation();del(r.id);}} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer"}}>{I.del}</button></div>},
       ]} data={f}/>}
@@ -1782,7 +1791,7 @@ function PortalsPage({data,setPendingPortalCount}){
           last_name: lastName,
           email: req.email,
           mobile: req.mobile||"",
-          status: "Pending Setup",
+          kyc_status: "pending",
           notes: "Auto-created from portal registration. Link artwork to activate.",
           linked_artworks: "[]",
           created_at: new Date().toISOString(),
@@ -1797,6 +1806,7 @@ function PortalsPage({data,setPendingPortalCount}){
           name: req.full_name,
           email: req.email,
           mobile: req.mobile||"",
+          kyc_status: "pending",
           notes: "Auto-created from portal registration.",
           created_at: new Date().toISOString(),
         });
