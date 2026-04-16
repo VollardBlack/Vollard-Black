@@ -1818,6 +1818,16 @@ function PortalsPage({data,setPendingPortalCount}){
     setRejecting(null);
   };
 
+  const deleteUser=async(req)=>{
+    if(!confirm("Permanently delete "+req.full_name+"? This removes their portal request and auth account."))return;
+    // Delete portal request
+    await supabase.from("portal_requests").delete().eq("id",req.id);
+    // Delete auth user via admin - we can only do this from SQL
+    // Show SQL instruction
+    alert("Portal request deleted.\n\nTo fully remove their login, run this in Supabase SQL Editor:\n\nDELETE FROM auth.users WHERE email = '"+req.email+"';");
+    await loadRequests();
+  };
+
   const renterUrl=typeof window!=="undefined"?window.location.origin+"/renter":"";
   const artistUrl=typeof window!=="undefined"?window.location.origin+"/artist":"";
   const pending=requests.filter(r=>r.status==="pending");
@@ -1879,7 +1889,8 @@ function PortalsPage({data,setPendingPortalCount}){
                 {r.message&&<div style={{fontSize:12,color:"#8a8070",marginTop:4,fontStyle:"italic"}}>"{r.message}"</div>}
                 <div style={{fontSize:11,color:"#a09890",marginTop:4}}>Requested: {r.created_at?.slice(0,10)||"—"}</div>
               </div>
-              <div style={{display:"flex",gap:8,flexShrink:0}}>
+              <div style={{display:"flex",gap:8,flexShrink:0,flexWrap:"wrap"}}>
+                <button onClick={()=>deleteUser(r)} style={{padding:"10px 14px",borderRadius:8,border:"1px solid rgba(196,92,74,0.20)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>🗑 Delete</button>
                 <button onClick={()=>reject(r)} disabled={rejecting===r.id} style={{padding:"10px 18px",borderRadius:8,border:"1px solid rgba(196,92,74,0.30)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>{rejecting===r.id?"...":"Decline"}</button>
                 <button onClick={()=>approve(r)} disabled={approving===r.id} style={{padding:"10px 18px",borderRadius:8,border:"none",background:"linear-gradient(135deg,#b68b2e,#8a6a1e)",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>{approving===r.id?"Approving...":"Approve"}</button>
               </div>
@@ -1898,7 +1909,10 @@ function PortalsPage({data,setPendingPortalCount}){
               <div style={{fontSize:12,color:"#8a8070"}}>{r.email} · {r.role}</div>
               <div style={{fontSize:11,color:"#4a9e6b",marginTop:2}}>✓ Approved {r.reviewed_at?.slice(0,10)||""}</div>
             </div>
-            <button onClick={()=>reject(r)} style={{padding:"8px 14px",borderRadius:6,border:"1px solid rgba(196,92,74,0.25)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>Revoke</button>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>deleteUser(r)} style={{padding:"8px 12px",borderRadius:6,border:"1px solid rgba(196,92,74,0.20)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>🗑 Delete</button>
+              <button onClick={()=>reject(r)} style={{padding:"8px 14px",borderRadius:6,border:"1px solid rgba(196,92,74,0.25)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>Revoke</button>
+            </div>
           </Card>
         ))
     )}
