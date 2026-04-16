@@ -187,6 +187,36 @@ function NotApprovedScreen({onSignOut,status}) {
   );
 }
 
+function AuctionAccessButton({buyer, supabase, displayName, email}) {
+  const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  const handleRequest = async() => {
+    if(!buyer?.id || sent) return;
+    setSending(true);
+    try {
+      await supabase.from('buyers').update({
+        auction_requested: true,
+        auction_requested_at: new Date().toISOString()
+      }).eq('id', buyer.id);
+      setSent(true);
+    } catch(e) { console.error(e); }
+    setSending(false);
+  };
+
+  if(sent || buyer?.auctionRequested) return (
+    <div style={{padding:'12px 16px',background:'rgba(74,158,107,0.06)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:8,fontSize:13,color:'#4a9e6b',fontWeight:600}}>
+      ✓ Request submitted — Vollard Black will review and activate your access shortly.
+    </div>
+  );
+
+  return (
+    <button onClick={handleRequest} disabled={sending} style={{padding:'12px 28px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",opacity:sending?0.6:1}}>
+      {sending?'Submitting…':'Request Auction Access'}
+    </button>
+  );
+}
+
 function BuyerDashboard({session}) {
   const [tab,setTab] = useState('gallery');
   const [buyer,setBuyer] = useState(null);
@@ -394,17 +424,7 @@ function BuyerDashboard({session}) {
               <div style={{padding:'16px 18px',background:'rgba(182,139,46,0.06)',border:'1px solid rgba(182,139,46,0.25)',borderRadius:12,marginBottom:20}}>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:'#1a1714',marginBottom:6}}>Request Bidding Access</div>
                 <div style={{fontSize:13,color:'#6b635a',marginBottom:14,lineHeight:1.6}}>To place bids you need to be KYC verified. Click the button below — Vollard Black will be notified via WhatsApp and activate your access.</div>
-                <button onClick={async()=>{
-                  if(!buyer?.id)return;
-                  try{
-                    await supabase.from('buyers').update({auction_requested:true,auction_requested_at:new Date().toISOString()}).eq('id',buyer.id);
-                    const msg=encodeURIComponent('Hi Vollard Black, I would like to request auction bidding access. Name: '+displayName+' | Email: '+session.user.email+' | ID: '+(buyer.idNumber||'—')+'. Please verify my account. Thank you.');
-                    window.open('https://wa.me/27826503393?text='+msg,'_blank');
-                    alert('Request sent! Vollard Black will review and activate your auction access.');
-                  }catch(e){console.error(e);}
-                }} style={{padding:'12px 28px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
-                  Request Auction Access via WhatsApp
-                </button>
+                <AuctionAccessButton buyer={buyer} supabase={supabase} displayName={displayName} email={session.user.email}/>
               </div>
             )}
             {buyer&&buyer.auctionApproved&&(
