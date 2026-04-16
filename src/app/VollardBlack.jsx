@@ -1403,7 +1403,18 @@ function ArtistMdl({artist,onSave,onClose}){
     <div style={{display:"flex",gap:4,marginBottom:20,borderBottom:"1px solid rgba(182,139,46,0.18)",paddingBottom:12}}>
       {[["personal","Personal"],["art","Artistic"],["bank","Banking"]].map(([id,l])=><button key={id} onClick={()=>setTab(id)} style={{padding:"8px 16px",borderRadius:6,border:"none",cursor:"pointer",fontSize:12,fontWeight:tab===id?600:400,fontFamily:"DM Sans,sans-serif",background:tab===id?"rgba(182,139,46,0.25)":"transparent",color:tab===id?"#b68b2e":"#6b635a"}}>{l}</button>)}
     </div>
-    {tab==="personal"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}><Field label="Full Name" style={{gridColumn:"1/-1"}}><input value={f.name} onChange={e=>s("name",e.target.value)} style={is}/></Field><Field label="Email"><input value={f.email} onChange={e=>s("email",e.target.value)} style={is}/></Field><Field label="Mobile"><input value={f.mobile} onChange={e=>s("mobile",e.target.value)} style={is}/></Field><Field label="City"><input value={f.city} onChange={e=>s("city",e.target.value)} style={is}/></Field><Field label="Country"><select value={f.country||""} onChange={e=>s("country",e.target.value)} style={ss}><option value="">— Select</option>{COUNTRIES.map(c=><option key={c} value={c}>{c}</option>)}</select></Field><Field label="Profile Image URL" style={{gridColumn:"1/-1"}}><input value={f.profileImageUrl} onChange={e=>s("profileImageUrl",e.target.value)} style={is}/></Field></div>}
+    {tab==="personal"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+      <Field label="Full Name" style={{gridColumn:"1/-1"}}><input value={f.name} onChange={e=>s("name",e.target.value)} style={is}/></Field>
+      <Field label="Email"><input value={f.email} onChange={e=>s("email",e.target.value)} style={is}/></Field>
+      <Field label="Mobile"><input value={f.mobile} onChange={e=>s("mobile",e.target.value)} style={is}/></Field>
+      <Field label="ID / Passport"><input value={f.idNumber||""} onChange={e=>s("idNumber",e.target.value)} style={is}/></Field>
+      <Field label="Nationality"><input value={f.nationality||""} onChange={e=>s("nationality",e.target.value)} style={is}/></Field>
+      <Field label="City"><input value={f.city||""} onChange={e=>s("city",e.target.value)} style={is}/></Field>
+      <Field label="Country"><select value={f.country||"South Africa"} onChange={e=>s("country",e.target.value)} style={ss}><option value="">— Select</option>{COUNTRIES.map(c=><option key={c} value={c}>{c}</option>)}</select></Field>
+      <Field label="Address" style={{gridColumn:"1/-1"}}><textarea value={f.address||""} onChange={e=>s("address",e.target.value)} style={{...is,minHeight:60,resize:"vertical"}}/></Field>
+      <Field label="Notes" style={{gridColumn:"1/-1"}}><textarea value={f.notes||""} onChange={e=>s("notes",e.target.value)} style={{...is,minHeight:60,resize:"vertical"}} placeholder="Additional notes..."/></Field>
+      <Field label="Profile Image URL" style={{gridColumn:"1/-1"}}><input value={f.profileImageUrl||""} onChange={e=>s("profileImageUrl",e.target.value)} style={is}/></Field>
+    </div>}
     {tab==="art"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}><Field label="Medium"><select value={f.medium||""} onChange={e=>s("medium",e.target.value)} style={ss}><option value="">— Select</option>{ART_MEDIUMS.map(m=><option key={m} value={m}>{m}</option>)}</select></Field><Field label="Style"><input value={f.style} onChange={e=>s("style",e.target.value)} style={is}/></Field><Field label="Website"><input value={f.website} onChange={e=>s("website",e.target.value)} style={is}/></Field><Field label="Instagram"><input value={f.instagram} onChange={e=>s("instagram",e.target.value)} style={is}/></Field><Field label="Bio" style={{gridColumn:"1/-1"}}><textarea value={f.bio} onChange={e=>s("bio",e.target.value)} style={{...is,minHeight:100,resize:"vertical"}}/></Field></div>}
     {tab==="bank"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}><Field label="Bank"><select value={f.bankName||""} onChange={e=>s("bankName",e.target.value)} style={ss}><option value="">— Select</option>{SA_BANKS.map(b=><option key={b} value={b}>{b}</option>)}</select></Field><Field label="Account Holder"><input value={f.accountHolder} onChange={e=>s("accountHolder",e.target.value)} style={is}/></Field><Field label="Account No"><input value={f.accountNumber} onChange={e=>s("accountNumber",e.target.value)} style={is}/></Field><Field label="Branch Code"><input value={f.branchCode} onChange={e=>s("branchCode",e.target.value)} style={is}/></Field><Field label="Type"><select value={f.accountType} onChange={e=>s("accountType",e.target.value)} style={ss}><option value="">—</option><option>Cheque</option><option>Savings</option><option>Business</option></select></Field></div>}
     <div style={{display:"flex",gap:10,marginTop:24,justifyContent:"flex-end"}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>{if(!f.name)return alert("Name required");onSave(f);}}>{artist.id?"Save":"Add"}</Btn></div>
@@ -1800,6 +1811,12 @@ function PortalsPage({data,setPendingPortalCount}){
         const nameParts=(req.full_name||"").trim().split(" ");
         const lastName=nameParts.length>1?nameParts.slice(1).join(" "):"";
         const firstName=nameParts[0]||req.full_name;
+        // Parse extra fields from message
+        const msgFields={};
+        (req.message||"").split(" | ").forEach(part=>{
+          const [key,...val]=part.split(": ");
+          if(key&&val.length)msgFields[key.toLowerCase()]=val.join(": ");
+        });
         await supabase.from("collectors").insert({
           id: crypto.randomUUID(),
           type: "individual",
@@ -1807,8 +1824,13 @@ function PortalsPage({data,setPendingPortalCount}){
           last_name: lastName,
           email: req.email,
           mobile: req.mobile||"",
+          id_number: msgFields["id"]||"",
+          nationality: msgFields["nationality"]||"",
+          city: msgFields["city"]||"",
+          country: msgFields["country"]||"South Africa",
+          address: msgFields["address"]||"",
           kyc_status: "pending",
-          notes: "Auto-created from portal registration. Link artwork to activate.",
+          notes: "Portal registration. Link artwork to activate.",
           linked_artworks: "[]",
           created_at: new Date().toISOString(),
         });
@@ -1817,13 +1839,26 @@ function PortalsPage({data,setPendingPortalCount}){
       // Check if artist already exists with this email
       const {data:existing}=await supabase.from("artists").select("id").eq("email",req.email).single();
       if(!existing){
+        // Parse extra fields from message
+        const msgFieldsA={};
+        (req.message||"").split(" | ").forEach(part=>{
+          const [key,...val]=part.split(": ");
+          if(key&&val.length)msgFieldsA[key.toLowerCase()]=val.join(": ");
+        });
         await supabase.from("artists").insert({
           id: crypto.randomUUID(),
           name: req.full_name,
           email: req.email,
           mobile: req.mobile||"",
+          id_number: msgFieldsA["id"]||"",
+          nationality: msgFieldsA["nationality"]||"",
+          city: msgFieldsA["city"]||"",
+          country: msgFieldsA["country"]||"South Africa",
+          address: msgFieldsA["address"]||"",
+          medium: msgFieldsA["medium"]||"",
+          instagram: msgFieldsA["instagram"]||"",
           kyc_status: "pending",
-          notes: "Auto-created from portal registration.",
+          notes: "Portal registration.",
           created_at: new Date().toISOString(),
         });
       }
