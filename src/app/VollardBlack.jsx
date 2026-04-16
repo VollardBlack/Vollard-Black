@@ -819,6 +819,13 @@ function Dashboard({data,navTo,chasing,inDispute,cancelled,pendingPortalRequests
     <PT title="Dashboard" sub="Vollard Black — Fine Art Acquisitions"/>
     {data.artworks.filter(a=>a.approvalStatus==="pending").length>0&&<div onClick={()=>navTo("catalogue")} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 18px",background:"rgba(182,139,46,0.08)",border:"1px solid rgba(182,139,46,0.25)",borderRadius:10,cursor:"pointer",marginBottom:10}}><span style={{color:"#b68b2e",fontSize:16}}>◆</span><span style={{fontSize:13,color:"#b68b2e",fontWeight:600}}>● {data.artworks.filter(a=>a.approvalStatus==="pending").length} artwork{data.artworks.filter(a=>a.approvalStatus==="pending").length>1?"s":""} submitted by artists awaiting approval</span><span style={{fontSize:11,color:"#b68b2e",marginLeft:"auto",opacity:0.7}}>Review now →</span></div>}
     {pendingPortalRequests>0&&<div onClick={()=>navTo("portals")} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 18px",background:"rgba(182,139,46,0.08)",border:"1px solid rgba(182,139,46,0.25)",borderRadius:10,cursor:"pointer",marginBottom:10}}><span style={{color:"#b68b2e",fontSize:16}}>◆</span><span style={{fontSize:13,color:"#b68b2e",fontWeight:600}}>● {pendingPortalRequests} portal access request{pendingPortalRequests>1?"s":""} awaiting approval</span><span style={{fontSize:11,color:"#b68b2e",marginLeft:"auto",opacity:0.7}}>Review now →</span></div>}
+    {(data.buyers||[]).filter(b=>b.auctionRequested&&!b.auctionApproved).length>0&&(
+      <div onClick={()=>navTo("buyers")} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 18px",background:"rgba(220,120,40,0.08)",border:"1px solid rgba(220,120,40,0.25)",borderRadius:10,cursor:"pointer",marginBottom:10}}>
+        <span style={{color:"#dc7828",fontSize:16}}>⚖</span>
+        <span style={{fontSize:13,color:"#dc7828",fontWeight:600}}>● {(data.buyers||[]).filter(b=>b.auctionRequested&&!b.auctionApproved).length} buyer{(data.buyers||[]).filter(b=>b.auctionRequested&&!b.auctionApproved).length>1?"s":""} requesting auction access</span>
+        <span style={{fontSize:11,color:"#dc7828",marginLeft:"auto",opacity:0.7}}>Review now →</span>
+      </div>
+    )}
     {(data.enquiries||[]).filter(e=>!e.read).length>0&&(
       <div style={{padding:"12px 18px",background:"rgba(100,140,200,0.08)",border:"1px solid rgba(100,140,200,0.25)",borderRadius:10,marginBottom:10,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
@@ -1611,7 +1618,8 @@ function BuyersPage({data,actions}){
               {r.kycStatus==="approved"
                 ?<span style={{fontSize:10,fontWeight:600,color:"#4a9e6b",padding:"2px 8px",background:"rgba(74,158,107,0.12)",borderRadius:6}}>✓ KYC Approved</span>
                 :<><span style={{fontSize:10,fontWeight:600,color:"#e6be32",padding:"2px 8px",background:"rgba(230,190,50,0.12)",borderRadius:6}}>⚠ KYC Pending</span>
-                <button onClick={e=>{e.stopPropagation();actions.saveBuyer({...r,kycStatus:"approved"});db.update("buyers",r.id,{kyc_status:"approved"});}} style={{fontSize:10,padding:"2px 10px",borderRadius:6,border:"none",background:"linear-gradient(135deg,#b68b2e,#8a6a1e)",color:"#fff",cursor:"pointer",fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>Approve KYC</button></>
+                <button onClick={e=>{e.stopPropagation();actions.saveBuyer({...r,kycStatus:"approved"});db.update("buyers",r.id,{kyc_status:"approved"});}} style={{fontSize:10,padding:"2px 10px",borderRadius:6,border:"none",background:"linear-gradient(135deg,#b68b2e,#8a6a1e)",color:"#fff",cursor:"pointer",fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>Approve KYC</button>
+                {r.auctionRequested&&!r.auctionApproved&&<button onClick={e=>{e.stopPropagation();actions.approveForAuction(r.id);}} style={{fontSize:10,padding:"2px 10px",borderRadius:6,border:"none",background:"linear-gradient(135deg,#4a9e6b,#3a7e5b)",color:"#fff",cursor:"pointer",fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>⚖ Approve Auction</button>}</>
               }
             </div>
           </div>},
