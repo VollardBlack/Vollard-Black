@@ -16,17 +16,23 @@ const toCamel = (obj) => {
     out[k.replace(/_([a-z])/g, (_, c) => c.toUpperCase())] = v;
   return out;
 };
+const toSnake = (obj) => {
+  if (!obj || typeof obj !== 'object') return obj;
+  const out = {};
+  for (const [k, v] of Object.entries(obj))
+    out[k.replace(/[A-Z]/g, m => '_' + m.toLowerCase())] = v;
+  return out;
+};
 
 const S = {
   page: { minHeight:'100vh', background:'#f5f3ef', fontFamily:"'DM Sans',sans-serif", color:'#2a2622' },
   card: { background:'#fff', border:'1px solid rgba(182,139,46,0.18)', borderRadius:12, padding:20, marginBottom:16 },
   input: { width:'100%', padding:'12px 14px', background:'#f5f3ef', border:'1px solid rgba(182,139,46,0.25)', borderRadius:8, color:'#1a1714', fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:'none', boxSizing:'border-box' },
   label: { display:'block', fontSize:10, fontWeight:500, letterSpacing:2, textTransform:'uppercase', color:'#6b635a', marginBottom:6 },
-  btn: (gold) => ({ width:'100%', padding:14, borderRadius:8, border: gold?'none':'1px solid rgba(182,139,46,0.30)', background: gold?'linear-gradient(135deg,#b68b2e,#8a6a1e)':'transparent', color: gold?'#fff':'#b68b2e', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:"'DM Sans',sans-serif" }),
+  btn: (gold) => ({ padding:'12px 24px', borderRadius:8, border: gold?'none':'1px solid rgba(182,139,46,0.30)', background: gold?'linear-gradient(135deg,#b68b2e,#8a6a1e)':'transparent', color: gold?'#fff':'#b68b2e', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:"'DM Sans',sans-serif" }),
   tab: (a) => ({ padding:'10px 18px', border:'none', borderBottom: a?'2px solid #b68b2e':'2px solid transparent', background:'transparent', color: a?'#b68b2e':'#6b635a', fontSize:13, fontWeight:a?600:400, cursor:'pointer', fontFamily:"'DM Sans',sans-serif" }),
   gold: { color:'#b68b2e', fontWeight:600 },
   green: { color:'#4a9e6b', fontWeight:600 },
-  red: { color:'#c45c4a', fontWeight:600 },
 };
 
 const Logo = ({sub}) => (
@@ -39,13 +45,8 @@ const Logo = ({sub}) => (
   </div>
 );
 
-// ── Registration ──────────────────────────────────────────
 function RegisterScreen({onRegistered}) {
-  const [form,setForm] = useState({
-    fullName:'', email:'', mobile:'', idNumber:'', nationality:'',
-    address:'', city:'', country:'South Africa',
-    password:'', confirm:'', message:''
-  });
+  const [form,setForm] = useState({fullName:'',email:'',mobile:'',idNumber:'',nationality:'',address:'',city:'',country:'South Africa',password:'',confirm:'',message:''});
   const [loading,setLoading] = useState(false);
   const [error,setError] = useState('');
   const [showPw,setShowPw] = useState(false);
@@ -58,58 +59,35 @@ function RegisterScreen({onRegistered}) {
     if(form.password!==form.confirm) return setError('Passwords do not match.');
     setLoading(true); setError('');
     try {
-      const {data:authData, error:authErr} = await supabase.auth.signUp({
-        email: form.email, password: form.password,
-      });
+      const {data:authData,error:authErr} = await supabase.auth.signUp({email:form.email,password:form.password});
       if(authErr) throw authErr;
       await supabase.from('portal_requests').insert({
-        id: authData.user?.id,
-        email: form.email,
-        full_name: form.fullName,
-        mobile: form.mobile,
-        role: 'buyer',
-        message: [
-          form.idNumber&&'ID: '+form.idNumber,
-          form.nationality&&'Nationality: '+form.nationality,
-          form.city&&'City: '+form.city,
-          form.country&&'Country: '+form.country,
-          form.address&&'Address: '+form.address,
-          form.message
-        ].filter(Boolean).join(' | '),
-        status: 'pending',
+        id: authData.user?.id, email:form.email, full_name:form.fullName, mobile:form.mobile, role:'buyer',
+        message: [form.idNumber&&'ID: '+form.idNumber,form.nationality&&'Nationality: '+form.nationality,form.city&&'City: '+form.city,form.country&&'Country: '+form.country,form.address&&'Address: '+form.address,form.message].filter(Boolean).join(' | '),
+        status:'pending',
       });
       onRegistered(form.email);
-    } catch(e) {
-      setError(e.message||'Registration failed. Please try again.');
-    }
+    } catch(e) { setError(e.message||'Registration failed.'); }
     setLoading(false);
   };
 
   return (
-    <div style={{...S.page, display:'flex', alignItems:'center', justifyContent:'center', padding:20}}>
-      <div style={{width:'100%', maxWidth:440}}>
+    <div style={{...S.page,display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>
+      <div style={{width:'100%',maxWidth:440}}>
         <Logo sub="Buyer Portal"/>
-        <div style={{...S.card, padding:32, boxShadow:'0 8px 32px rgba(0,0,0,0.06)'}}>
-          <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:22, color:'#1a1714', marginBottom:4}}>Request Access</div>
-          <div style={{fontSize:12, color:'#8a8070', marginBottom:24}}>Register to participate in Vollard Black auctions. All registrations are reviewed before access is granted.</div>
+        <div style={{...S.card,padding:32,boxShadow:'0 8px 32px rgba(0,0,0,0.06)'}}>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,color:'#1a1714',marginBottom:4}}>Request Access</div>
+          <div style={{fontSize:12,color:'#8a8070',marginBottom:24}}>Register to browse and purchase artwork from Vollard Black.</div>
           <form onSubmit={handleRegister}>
-            {[
-              ['fullName','Full Name *','Your full name','text'],
-              ['email','Email *','your@email.com','email'],
-              ['mobile','Mobile','+27 82 000 0000','text'],
-              ['idNumber','ID / Passport Number','ID or passport number','text'],
-              ['nationality','Nationality','e.g. South African','text'],
-              ['city','City','Your city','text'],
-              ['country','Country','South Africa','text'],
-            ].map(([key,label,placeholder,type])=>(
+            {[['fullName','Full Name *','text'],['email','Email *','email'],['mobile','Mobile','text'],['idNumber','ID / Passport Number','text'],['nationality','Nationality','text'],['city','City','text'],['country','Country','text']].map(([key,label,type])=>(
               <div key={key} style={{marginBottom:14}}>
                 <label style={S.label}>{label}</label>
-                <input type={type} value={form[key]} onChange={e=>s(key,e.target.value)} style={S.input} placeholder={placeholder} autoComplete={key==='email'?'email':undefined}/>
+                <input type={type} value={form[key]} onChange={e=>s(key,e.target.value)} style={S.input} autoComplete={key==='email'?'email':undefined}/>
               </div>
             ))}
             <div style={{marginBottom:14}}>
               <label style={S.label}>Address</label>
-              <textarea value={form.address} onChange={e=>s('address',e.target.value)} style={{...S.input,minHeight:60,resize:'vertical'}} placeholder="Your address"/>
+              <textarea value={form.address} onChange={e=>s('address',e.target.value)} style={{...S.input,minHeight:60,resize:'vertical'}}/>
             </div>
             <div style={{marginBottom:14}}>
               <label style={S.label}>Password * (min 8 characters)</label>
@@ -127,21 +105,16 @@ function RegisterScreen({onRegistered}) {
               <textarea value={form.message} onChange={e=>s('message',e.target.value)} style={{...S.input,minHeight:60,resize:'vertical'}} placeholder="Tell us about yourself..."/>
             </div>
             {error&&<div style={{padding:'10px 14px',background:'rgba(196,92,74,0.08)',border:'1px solid rgba(196,92,74,0.2)',borderRadius:8,fontSize:13,color:'#c45c4a',marginBottom:14}}>{error}</div>}
-            <button type="submit" disabled={loading} style={{...S.btn(true),opacity:loading?0.6:1}}>{loading?'Submitting…':'Submit Registration'}</button>
+            <button type="submit" disabled={loading} style={{...S.btn(true),width:'100%',opacity:loading?0.6:1}}>{loading?'Submitting…':'Submit Registration'}</button>
           </form>
-          <div style={{textAlign:'center',marginTop:16,fontSize:12,color:'#8a8070'}}>
-            Already registered?{' '}
-            <button onClick={()=>onRegistered(null)} style={{background:'none',border:'none',color:'#b68b2e',cursor:'pointer',fontSize:12,fontFamily:"'DM Sans',sans-serif",textDecoration:'underline'}}>Sign in</button>
-          </div>
+          <div style={{textAlign:'center',marginTop:16,fontSize:12,color:'#8a8070'}}>Already registered? <button onClick={()=>onRegistered(null)} style={{background:'none',border:'none',color:'#b68b2e',cursor:'pointer',fontSize:12,fontFamily:"'DM Sans',sans-serif",textDecoration:'underline'}}>Sign in</button></div>
         </div>
-        <div style={{textAlign:'center',marginTop:20,fontSize:11,color:'#a09890'}}>Vollard Black (Pty) Ltd · Hermanus, South Africa</div>
       </div>
     </div>
   );
 }
 
-// ── Pending Screen ────────────────────────────────────────
-function PendingScreen({email, onSignIn}) {
+function PendingScreen({email,onSignIn}) {
   return (
     <div style={{...S.page,display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>
       <div style={{width:'100%',maxWidth:420,textAlign:'center'}}>
@@ -149,20 +122,15 @@ function PendingScreen({email, onSignIn}) {
         <div style={{...S.card,padding:36}}>
           <div style={{fontSize:48,marginBottom:16}}>◆</div>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:'#1a1714',marginBottom:8}}>Registration Submitted</div>
-          <div style={{fontSize:13,color:'#6b635a',lineHeight:1.7,marginBottom:20}}>
-            Thank you. Your registration has been sent to Vollard Black for review.<br/>
-            You will be notified once your account is approved.<br/><br/>
-            <strong>{email}</strong>
-          </div>
-          <button onClick={onSignIn} style={{...S.btn(false),width:'auto',padding:'10px 24px'}}>Sign In Instead</button>
+          <div style={{fontSize:13,color:'#6b635a',lineHeight:1.7,marginBottom:20}}>Thank you. Your registration is under review.<br/>You will be notified once approved.<br/><br/><strong>{email}</strong></div>
+          <button onClick={onSignIn} style={{...S.btn(false)}}>Sign In Instead</button>
         </div>
       </div>
     </div>
   );
 }
 
-// ── Login Screen ──────────────────────────────────────────
-function LoginScreen({onLogin, onRegister}) {
+function LoginScreen({onLogin,onRegister}) {
   const [email,setEmail] = useState('');
   const [password,setPassword] = useState('');
   const [loading,setLoading] = useState(false);
@@ -185,12 +153,9 @@ function LoginScreen({onLogin, onRegister}) {
         <Logo sub="Buyer Portal"/>
         <div style={{...S.card,padding:32,boxShadow:'0 8px 32px rgba(0,0,0,0.06)'}}>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,color:'#1a1714',marginBottom:4}}>Sign In</div>
-          <div style={{fontSize:12,color:'#8a8070',marginBottom:24}}>Access your Vollard Black buyer account</div>
+          <div style={{fontSize:12,color:'#8a8070',marginBottom:24}}>Browse and purchase fine art from Vollard Black</div>
           <form onSubmit={handleLogin}>
-            <div style={{marginBottom:14}}>
-              <label style={S.label}>Email</label>
-              <input type="email" value={email} onChange={e=>{setEmail(e.target.value);setError('');}} style={S.input} autoComplete="email"/>
-            </div>
+            <div style={{marginBottom:14}}><label style={S.label}>Email</label><input type="email" value={email} onChange={e=>{setEmail(e.target.value);setError('');}} style={S.input} autoComplete="email"/></div>
             <div style={{marginBottom:20}}>
               <label style={S.label}>Password</label>
               <div style={{position:'relative'}}>
@@ -199,69 +164,64 @@ function LoginScreen({onLogin, onRegister}) {
               </div>
             </div>
             {error&&<div style={{padding:'10px 14px',background:'rgba(196,92,74,0.08)',border:'1px solid rgba(196,92,74,0.2)',borderRadius:8,fontSize:13,color:'#c45c4a',marginBottom:14}}>{error}</div>}
-            <button type="submit" disabled={loading} style={{...S.btn(true),opacity:loading?0.6:1}}>{loading?'Signing in…':'Sign In'}</button>
+            <button type="submit" disabled={loading} style={{...S.btn(true),width:'100%',opacity:loading?0.6:1}}>{loading?'Signing in…':'Sign In'}</button>
           </form>
-          <div style={{textAlign:'center',marginTop:16,fontSize:12,color:'#8a8070'}}>
-            Not registered?{' '}
-            <button onClick={onRegister} style={{background:'none',border:'none',color:'#b68b2e',cursor:'pointer',fontSize:12,fontFamily:"'DM Sans',sans-serif",textDecoration:'underline'}}>Request Access</button>
-          </div>
+          <div style={{textAlign:'center',marginTop:16,fontSize:12,color:'#8a8070'}}>Not registered? <button onClick={onRegister} style={{background:'none',border:'none',color:'#b68b2e',cursor:'pointer',fontSize:12,fontFamily:"'DM Sans',sans-serif",textDecoration:'underline'}}>Request Access</button></div>
         </div>
-        <div style={{textAlign:'center',marginTop:20,fontSize:11,color:'#a09890'}}>Vollard Black (Pty) Ltd · Hermanus, South Africa</div>
       </div>
     </div>
   );
 }
 
-// ── Not Approved ──────────────────────────────────────────
-function NotApprovedScreen({onSignOut, status}) {
+function NotApprovedScreen({onSignOut,status}) {
   return (
     <div style={{...S.page,display:'flex',alignItems:'center',justifyContent:'center',padding:20,flexDirection:'column',gap:16}}>
       <Logo sub="Buyer Portal"/>
       <div style={{...S.card,padding:36,textAlign:'center',maxWidth:420,width:'100%'}}>
         <div style={{fontSize:48,marginBottom:16}}>{status==='rejected'?'✗':'⏳'}</div>
-        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,color:'#1a1714',marginBottom:8}}>
-          {status==='rejected'?'Registration Declined':'Awaiting Approval'}
-        </div>
-        <div style={{fontSize:13,color:'#6b635a',lineHeight:1.7,marginBottom:20}}>
-          {status==='rejected'
-            ?'Your registration was not approved. Please contact Vollard Black directly for more information.'
-            :'Your account is pending approval from Vollard Black. Please check back soon or contact us directly.'
-          }
-        </div>
-        <button onClick={onSignOut} style={{...S.btn(false),width:'auto',padding:'10px 24px'}}>Sign Out</button>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,color:'#1a1714',marginBottom:8}}>{status==='rejected'?'Registration Declined':'Awaiting Approval'}</div>
+        <div style={{fontSize:13,color:'#6b635a',lineHeight:1.7,marginBottom:20}}>{status==='rejected'?'Your registration was not approved. Please contact Vollard Black.':'Your account is pending approval. Please check back soon.'}</div>
+        <button onClick={onSignOut} style={S.btn(false)}>Sign Out</button>
       </div>
     </div>
   );
 }
 
-// ── Buyer Dashboard ───────────────────────────────────────
 function BuyerDashboard({session}) {
-  const [tab,setTab] = useState('auctions');
+  const [tab,setTab] = useState('gallery');
   const [buyer,setBuyer] = useState(null);
+  const [artworks,setArtworks] = useState([]);
   const [auctions,setAuctions] = useState([]);
   const [bids,setBids] = useState([]);
   const [purchases,setPurchases] = useState([]);
   const [loading,setLoading] = useState(true);
+  const [enquiry,setEnquiry] = useState(null);
+  const [profileEdit,setProfileEdit] = useState(false);
+  const [profileForm,setProfileForm] = useState({});
+  const [saving,setSaving] = useState(false);
+  const [saveMsg,setSaveMsg] = useState('');
+  const [enquiryMsg,setEnquiryMsg] = useState('');
+  const [search,setSearch] = useState('');
 
   useEffect(()=>{ loadData(); },[session]);
 
   const loadData = async() => {
     setLoading(true);
     try {
-      // Load buyer record
       const {data:buyers} = await supabase.from('buyers').select('*').eq('email',session.user.email);
-      if(buyers&&buyers.length>0) setBuyer(toCamel(buyers[0]));
+      if(buyers&&buyers.length>0){ const b=toCamel(buyers[0]); setBuyer(b); setProfileForm(b); }
 
-      // Load live and recent auctions
-      const {data:aucs} = await supabase.from('auctions').select('*').in('status',['Live','Draft','Sold','No Sale']).order('created_at',{ascending:false});
+      // Available artworks
+      const {data:arts} = await supabase.from('artworks').select('*').eq('status','Available').order('created_at',{ascending:false});
+      setArtworks((arts||[]).map(toCamel));
+
+      // Auctions
+      const {data:aucs} = await supabase.from('auctions').select('*').in('status',['Live','Sold','No Sale']).order('created_at',{ascending:false});
       setAuctions((aucs||[]).map(toCamel));
 
-      // Load this buyer's bids
       if(buyers&&buyers.length>0){
         const {data:myBids} = await supabase.from('bids').select('*').eq('buyer_id',buyers[0].id).order('timestamp',{ascending:false});
         setBids((myBids||[]).map(toCamel));
-
-        // Load purchases
         const {data:sales} = await supabase.from('sales').select('*').eq('buyer_id',buyers[0].id);
         setPurchases((sales||[]).map(toCamel));
       }
@@ -269,12 +229,33 @@ function BuyerDashboard({session}) {
     setLoading(false);
   };
 
+  const saveProfile = async() => {
+    if(!buyer) return;
+    setSaving(true);
+    const snake = toSnake(profileForm);
+    delete snake.id;
+    await supabase.from('buyers').update(snake).eq('id',buyer.id);
+    setBuyer({...buyer,...profileForm});
+    setSaveMsg('Profile updated successfully.');
+    setTimeout(()=>setSaveMsg(''),3000);
+    setSaving(false);
+    setProfileEdit(false);
+  };
+
+  const sendEnquiry = () => {
+    const art = enquiry;
+    const subject = encodeURIComponent(`Enquiry: ${art.title}`);
+    const body = encodeURIComponent(`Hi Vollard Black,\n\nI am interested in purchasing "${art.title}" by ${art.artist||'—'}.\n\nDeclared value: R ${fmt(art.recommendedPrice)}\n\nPlease contact me to discuss further.\n\nKind regards,\n${buyer?`${buyer.firstName||''} ${buyer.lastName||''}`.trim():session.user.email}`);
+    window.open(`mailto:concierge@vollardblack.com?subject=${subject}&body=${body}`);
+    setEnquiryMsg('Enquiry email opened. Send it to contact Vollard Black.');
+    setTimeout(()=>setEnquiryMsg(''),4000);
+    setEnquiry(null);
+  };
+
   const signOut = () => supabase.auth.signOut();
+  const displayName = buyer?`${buyer.firstName||''} ${buyer.lastName||''}`.trim()||buyer.companyName||'':session.user.email.split('@')[0];
   const liveAuctions = auctions.filter(a=>a.status==='Live');
-  const pastAuctions = auctions.filter(a=>['Sold','No Sale'].includes(a.status));
-  const myBidAuctionIds = new Set(bids.map(b=>b.auctionId));
-  const nameParts = session.user.email.split('@')[0];
-  const displayName = buyer ? (buyer.type==='company'?buyer.companyName:`${buyer.firstName||''} ${buyer.lastName||''}`.trim()) : nameParts;
+  const filteredArts = artworks.filter(a=>(a.title+' '+(a.artist||'')+' '+(a.galleryName||'')).toLowerCase().includes(search.toLowerCase()));
 
   if(loading) return <div style={{...S.page,display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:'#b68b2e',letterSpacing:6,opacity:0.6}}>Loading…</div></div>;
 
@@ -287,101 +268,68 @@ function BuyerDashboard({session}) {
           <div style={{fontSize:9,letterSpacing:3,textTransform:'uppercase',color:'#8a8070'}}>Buyer Portal</div>
         </div>
         <div style={{display:'flex',alignItems:'center',gap:12}}>
-          <div style={{textAlign:'right'}}>
-            <div style={{fontSize:13,color:'#1a1714',fontWeight:500}}>{displayName}</div>
-            <div style={{fontSize:11,color:'#8a8070'}}>{session.user.email}</div>
-          </div>
+          <span style={{fontSize:13,color:'#1a1714',fontWeight:500}}>{displayName}</span>
           <button onClick={signOut} style={{padding:'8px 16px',borderRadius:6,border:'1px solid rgba(182,139,46,0.25)',background:'transparent',color:'#8a8070',cursor:'pointer',fontSize:11,fontFamily:"'DM Sans',sans-serif"}}>Sign Out</button>
         </div>
       </div>
 
-      <div style={{maxWidth:900,margin:'0 auto',padding:'20px 16px'}}>
+      <div style={{maxWidth:1000,margin:'0 auto',padding:'20px 16px'}}>
+        {/* Auction live banner */}
+        {liveAuctions.length>0&&(
+          <div onClick={()=>setTab('auctions')} style={{padding:'12px 18px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.25)',borderRadius:10,marginBottom:16,cursor:'pointer',display:'flex',alignItems:'center',gap:10}}>
+            <span style={{color:'#4a9e6b',fontSize:16}}>●</span>
+            <span style={{fontSize:13,fontWeight:600,color:'#4a9e6b'}}>{liveAuctions.length} live auction{liveAuctions.length>1?'s':''} happening now</span>
+            <span style={{fontSize:11,color:'#4a9e6b',marginLeft:'auto'}}>View →</span>
+          </div>
+        )}
 
-        {/* Auction approval status */}
-        {buyer&&!buyer.auctionApproved&&(
-          <div style={{padding:'14px 18px',background:'rgba(182,139,46,0.06)',border:'1px solid rgba(182,139,46,0.25)',borderRadius:10,marginBottom:20,display:'flex',alignItems:'center',gap:12}}>
-            <span style={{fontSize:20}}>⏳</span>
-            <div>
-              <div style={{fontSize:13,fontWeight:600,color:'#b68b2e'}}>Auction Access Pending</div>
-              <div style={{fontSize:12,color:'#6b635a',marginTop:2}}>Your KYC has been approved but auction bidding access is still being reviewed. You will be notified once you can place bids.</div>
-            </div>
-          </div>
-        )}
-        {buyer&&buyer.auctionApproved&&(
-          <div style={{padding:'12px 18px',background:'rgba(74,158,107,0.06)',border:'1px solid rgba(74,158,107,0.20)',borderRadius:10,marginBottom:20,display:'flex',alignItems:'center',gap:10}}>
-            <span style={{color:'#4a9e6b',fontSize:16}}>✓</span>
-            <span style={{fontSize:13,fontWeight:600,color:'#4a9e6b'}}>Auction access approved — you may place bids</span>
-          </div>
-        )}
+        {enquiryMsg&&<div style={{padding:'12px 16px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:8,marginBottom:14,fontSize:13,color:'#4a9e6b'}}>{enquiryMsg}</div>}
 
         {/* Tabs */}
         <div style={{display:'flex',borderBottom:'1px solid rgba(182,139,46,0.15)',marginBottom:20,gap:4,overflowX:'auto'}}>
-          {[['auctions','Live Auctions'+(liveAuctions.length>0?' ('+liveAuctions.length+')':'')],['mybids','My Bids'+(bids.length>0?' ('+bids.length+')':'')],['purchases','Purchases'],['profile','My Profile']].map(([id,lbl])=>(
+          {[['gallery','Gallery'+(artworks.length>0?' ('+artworks.length+')':'')],['auctions','Auctions'+(liveAuctions.length>0?' 🔴':'')],['mybids','My Bids'],['purchases','Purchases'],['profile','My Profile']].map(([id,lbl])=>(
             <button key={id} onClick={()=>setTab(id)} style={S.tab(tab===id)}>{lbl}</button>
           ))}
         </div>
 
-        {/* Live Auctions */}
-        {tab==='auctions'&&(
+        {/* GALLERY TAB */}
+        {tab==='gallery'&&(
           <div>
-            {liveAuctions.length===0?(
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:10,marginBottom:20}}>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,fontWeight:300,color:'#1a1714'}}>Available Artworks</div>
+              <input placeholder="Search artworks..." value={search} onChange={e=>setSearch(e.target.value)} style={{...S.input,maxWidth:260,padding:'10px 14px'}}/>
+            </div>
+            {filteredArts.length===0?(
               <div style={{...S.card,textAlign:'center',padding:48}}>
                 <div style={{fontSize:32,marginBottom:12}}>◆</div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,color:'#1a1714',marginBottom:8}}>No Live Auctions</div>
-                <div style={{fontSize:13,color:'#8a8070'}}>There are no active auctions at the moment. Check back soon.</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,color:'#1a1714',marginBottom:8}}>No Artworks Available</div>
+                <div style={{fontSize:13,color:'#8a8070'}}>Check back soon for new additions.</div>
               </div>
             ):(
-              <div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:'#1a1714',marginBottom:16}}>Live Auctions</div>
-                {liveAuctions.map(auc=>{
-                  const myBid = bids.find(b=>b.auctionId===auc.id);
-                  const isLeading = auc.leadBidderId===buyer?.id;
-                  return(
-                    <div key={auc.id} style={{...S.card,borderLeft:`3px solid ${isLeading?'#4a9e6b':'rgba(182,139,46,0.40)'}` }}>
-                      <div style={{display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:10,marginBottom:12}}>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:20}}>
+                {filteredArts.map(art=>(
+                  <div key={art.id} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:12,overflow:'hidden',transition:'box-shadow 0.2s'}}>
+                    {/* Image */}
+                    <div style={{height:220,background:'#f0ede8',overflow:'hidden',position:'relative'}}>
+                      {art.imageUrl
+                        ?<img src={art.imageUrl} alt={art.title} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+                        :<div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',color:'#b68b2e',fontSize:32}}>◆</div>
+                      }
+                    </div>
+                    {/* Info */}
+                    <div style={{padding:16}}>
+                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:'#1a1714',marginBottom:2}}>{art.title}</div>
+                      <div style={{fontSize:12,color:'#8a8070',marginBottom:8}}>{art.artist||'—'} · {art.medium||'—'} · {art.year||'—'}</div>
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
                         <div>
-                          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:'#1a1714'}}>{auc.title}</div>
-                          <div style={{fontSize:12,color:'#8a8070',marginTop:2}}>{auc.artist||'—'} · {auc.galleryName||'—'}</div>
-                          {isLeading&&<div style={{fontSize:11,fontWeight:600,color:'#4a9e6b',marginTop:4}}>● You are the leading bidder</div>}
-                          {myBid&&!isLeading&&<div style={{fontSize:11,color:'#c45c4a',marginTop:4}}>⚠ You have been outbid</div>}
+                          <div style={{fontSize:10,color:'#8a8070',letterSpacing:1,textTransform:'uppercase'}}>Price</div>
+                          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,...S.gold}}>R {fmt(art.recommendedPrice)}</div>
                         </div>
-                        <div style={{textAlign:'right'}}>
-                          <div style={{fontSize:10,color:'#8a8070',letterSpacing:1,textTransform:'uppercase'}}>Current Bid</div>
-                          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,...S.gold}}>R {fmt(auc.currentBid||0)}</div>
-                          <div style={{fontSize:11,color:'#8a8070'}}>Reserve: R {fmt(auc.reservePrice)}</div>
-                        </div>
+                        {art.galleryName&&<div style={{fontSize:11,color:'#8a8070',textAlign:'right'}}>{art.galleryName}</div>}
                       </div>
-                      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,fontSize:12,marginBottom:12}}>
-                        <div><span style={{color:'#8a8070'}}>Bids placed: </span><span>{auc.bidsCount||0}</span></div>
-                        <div><span style={{color:'#8a8070'}}>Increment: </span><span>{auc.incrementLabel}</span></div>
-                        {myBid&&<div><span style={{color:'#8a8070'}}>Your last bid: </span><span style={S.gold}>R {fmt(myBid.amount)}</span></div>}
-                      </div>
-                      {!buyer?.auctionApproved&&(
-                        <div style={{padding:'10px 14px',background:'rgba(182,139,46,0.06)',borderRadius:8,fontSize:12,color:'#8a6a1e'}}>
-                          Auction access pending approval — contact Vollard Black to bid.
-                        </div>
-                      )}
+                      {art.description&&<div style={{fontSize:12,color:'#6b635a',marginBottom:12,fontStyle:'italic',lineHeight:1.5}}>{art.description}</div>}
+                      <button onClick={()=>setEnquiry(art)} style={{...S.btn(true),width:'100%',padding:'10px',fontSize:12}}>Enquire to Purchase</button>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-            {pastAuctions.length>0&&(
-              <div style={{marginTop:24}}>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:'#1a1714',marginBottom:12}}>Recent Auctions</div>
-                {pastAuctions.map(auc=>(
-                  <div key={auc.id} style={S.card}>
-                    <div style={{display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8}}>
-                      <div>
-                        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:'#1a1714'}}>{auc.title}</div>
-                        <div style={{fontSize:12,color:'#8a8070'}}>{auc.artist||'—'}</div>
-                      </div>
-                      <div style={{textAlign:'right'}}>
-                        <span style={{padding:'4px 12px',borderRadius:6,fontSize:11,fontWeight:600,background:auc.status==='Sold'?'rgba(74,158,107,0.12)':'rgba(182,139,46,0.12)',color:auc.status==='Sold'?'#4a9e6b':'#b68b2e'}}>{auc.status}</span>
-                        <div style={{fontSize:13,...S.gold,marginTop:4}}>R {fmt(auc.currentBid||0)}</div>
-                      </div>
-                    </div>
-                    {myBidAuctionIds.has(auc.id)&&<div style={{fontSize:11,color:'#8a8070',marginTop:6}}>You participated in this auction</div>}
                   </div>
                 ))}
               </div>
@@ -389,10 +337,54 @@ function BuyerDashboard({session}) {
           </div>
         )}
 
-        {/* My Bids */}
+        {/* AUCTIONS TAB */}
+        {tab==='auctions'&&(
+          <div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,fontWeight:300,color:'#1a1714',marginBottom:20}}>Auctions</div>
+            {auctions.length===0?(
+              <div style={{...S.card,textAlign:'center',padding:48}}><div style={{fontSize:32,marginBottom:12}}>◆</div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,color:'#1a1714',marginBottom:8}}>No Auctions</div><div style={{fontSize:13,color:'#8a8070'}}>No auctions at the moment. Check back soon.</div></div>
+            ):auctions.map(auc=>{
+              const myBid=bids.find(b=>b.auctionId===auc.id);
+              const isLeading=auc.leadBidderId===buyer?.id;
+              const isLive=auc.status==='Live';
+              return(
+                <div key={auc.id} style={{...S.card,borderLeft:`3px solid ${isLeading?'#4a9e6b':isLive?'rgba(196,92,74,0.5)':'rgba(182,139,46,0.30)'}`}}>
+                  <div style={{display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:10,marginBottom:10}}>
+                    <div>
+                      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
+                        {isLive&&<span style={{fontSize:10,fontWeight:600,color:'#c45c4a',padding:'2px 8px',background:'rgba(196,92,74,0.12)',borderRadius:6}}>● LIVE</span>}
+                        <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:'#1a1714'}}>{auc.title}</span>
+                      </div>
+                      <div style={{fontSize:12,color:'#8a8070'}}>{auc.artist||'—'} · {auc.galleryName||'—'}</div>
+                      {isLeading&&<div style={{fontSize:11,fontWeight:600,color:'#4a9e6b',marginTop:4}}>● You are the leading bidder</div>}
+                      {myBid&&!isLeading&&isLive&&<div style={{fontSize:11,color:'#c45c4a',marginTop:4}}>⚠ You have been outbid</div>}
+                    </div>
+                    <div style={{textAlign:'right'}}>
+                      <div style={{fontSize:10,color:'#8a8070',letterSpacing:1,textTransform:'uppercase'}}>Current Bid</div>
+                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,...S.gold}}>R {fmt(auc.currentBid||0)}</div>
+                      <div style={{fontSize:11,color:'#8a8070'}}>Reserve: R {fmt(auc.reservePrice)}</div>
+                    </div>
+                  </div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,fontSize:12,marginBottom:10}}>
+                    <div><span style={{color:'#8a8070'}}>Bids: </span><span>{auc.bidsCount||0}</span></div>
+                    <div><span style={{color:'#8a8070'}}>Status: </span><span style={{fontWeight:600,color:auc.status==='Sold'?'#4a9e6b':auc.status==='Live'?'#c45c4a':'#8a8070'}}>{auc.status}</span></div>
+                    {myBid&&<div><span style={{color:'#8a8070'}}>Your bid: </span><span style={S.gold}>R {fmt(myBid.amount)}</span></div>}
+                  </div>
+                  {isLive&&!buyer?.auctionApproved&&(
+                    <div style={{padding:'10px 14px',background:'rgba(182,139,46,0.06)',borderRadius:8,fontSize:12,color:'#8a6a1e'}}>
+                      To place bids, contact Vollard Black at concierge@vollardblack.com to request auction access.
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* MY BIDS TAB */}
         {tab==='mybids'&&(
           <div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:'#1a1714',marginBottom:16}}>My Bids</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,fontWeight:300,color:'#1a1714',marginBottom:20}}>My Bids</div>
             {bids.length===0?(
               <div style={{...S.card,textAlign:'center',padding:40}}><div style={{fontSize:14,color:'#8a8070'}}>No bids placed yet.</div></div>
             ):(
@@ -405,17 +397,14 @@ function BuyerDashboard({session}) {
                     <tbody>
                       {bids.map(b=>{
                         const auc=auctions.find(a=>a.id===b.auctionId);
-                        const isWinning=auc&&auc.leadBidderId===buyer?.id&&auc.status==='Live';
+                        const won=auc?.status==='Sold'&&auc?.leadBidderId===buyer?.id;
+                        const leading=auc?.status==='Live'&&auc?.leadBidderId===buyer?.id;
                         return(
                           <tr key={b.id} style={{borderBottom:'1px solid rgba(182,139,46,0.08)'}}>
                             <td style={{padding:'10px 10px',fontWeight:500}}>{auc?.title||'—'}</td>
                             <td style={{padding:'10px 10px',textAlign:'right',...S.gold}}>R {fmt(b.amount)}</td>
                             <td style={{padding:'10px 10px',color:'#8a8070'}}>{b.timestamp?.slice(0,10)||'—'}</td>
-                            <td style={{padding:'10px 10px'}}>
-                              {isWinning?<span style={{fontSize:11,fontWeight:600,...S.green}}>● Leading</span>
-                              :auc?.status==='Sold'&&auc?.leadBidderId===buyer?.id?<span style={{fontSize:11,fontWeight:600,...S.green}}>Won</span>
-                              :<span style={{fontSize:11,color:'#8a8070'}}>Outbid</span>}
-                            </td>
+                            <td style={{padding:'10px 10px'}}>{won?<span style={{fontSize:11,fontWeight:600,...S.green}}>Won</span>:leading?<span style={{fontSize:11,fontWeight:600,...S.green}}>● Leading</span>:<span style={{fontSize:11,color:'#8a8070'}}>Outbid</span>}</td>
                           </tr>
                         );
                       })}
@@ -427,10 +416,10 @@ function BuyerDashboard({session}) {
           </div>
         )}
 
-        {/* Purchases */}
+        {/* PURCHASES TAB */}
         {tab==='purchases'&&(
           <div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:'#1a1714',marginBottom:16}}>Purchases</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,fontWeight:300,color:'#1a1714',marginBottom:20}}>Purchases</div>
             {purchases.length===0?(
               <div style={{...S.card,textAlign:'center',padding:40}}><div style={{fontSize:14,color:'#8a8070'}}>No purchases yet.</div></div>
             ):purchases.map(p=>(
@@ -450,40 +439,74 @@ function BuyerDashboard({session}) {
           </div>
         )}
 
-        {/* Profile */}
+        {/* PROFILE TAB */}
         {tab==='profile'&&(
           <div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:'#1a1714',marginBottom:16}}>My Profile</div>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20,flexWrap:'wrap',gap:10}}>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,fontWeight:300,color:'#1a1714'}}>My Profile</div>
+              {!profileEdit&&<button onClick={()=>setProfileEdit(true)} style={S.btn(false)}>Edit Profile</button>}
+            </div>
+            {saveMsg&&<div style={{padding:'10px 14px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:8,fontSize:13,color:'#4a9e6b',marginBottom:14}}>✓ {saveMsg}</div>}
             {!buyer?(
               <div style={{...S.card,textAlign:'center',padding:40}}><div style={{fontSize:14,color:'#8a8070'}}>Profile not linked yet. Contact Vollard Black.</div></div>
-            ):(
+            ):!profileEdit?(
               <div style={S.card}>
-                {[
-                  ['Name',buyer.type==='company'?buyer.companyName:`${buyer.firstName||''} ${buyer.lastName||''}`.trim()],
-                  ['Email',buyer.email],
-                  ['Mobile',buyer.mobile||'—'],
-                  ['ID / Passport',buyer.idNumber||'—'],
-                  ['Nationality',buyer.nationality||'—'],
-                  ['City',buyer.city||'—'],
-                  ['Country',buyer.country||'—'],
-                  ['KYC Status',buyer.kycStatus==='approved'?'✓ Approved':'⚠ Pending'],
-                  ['Auction Access',buyer.auctionApproved?'✓ Approved':'Pending'],
-                ].map(([label,value])=>(
+                {[['Name',`${buyer.firstName||''} ${buyer.lastName||''}`.trim()||buyer.companyName||'—'],['Email',buyer.email||'—'],['Mobile',buyer.mobile||'—'],['ID / Passport',buyer.idNumber||'—'],['Nationality',buyer.nationality||'—'],['City',buyer.city||'—'],['Country',buyer.country||'—'],['KYC Status',buyer.kycStatus==='approved'?'✓ Approved':'⚠ Pending'],['Auction Access',buyer.auctionApproved?'✓ Approved':'Pending']].map(([label,value])=>(
                   <div key={label} style={{display:'flex',justifyContent:'space-between',padding:'10px 0',borderBottom:'1px solid rgba(182,139,46,0.08)',fontSize:13}}>
                     <span style={{color:'#8a8070'}}>{label}</span>
                     <span style={{fontWeight:500,color:value?.toString().includes('✓')?'#4a9e6b':value?.toString().includes('⚠')?'#e6be32':'#1a1714'}}>{value}</span>
                   </div>
                 ))}
               </div>
+            ):(
+              <div style={S.card}>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+                  {[['firstName','First Name'],['lastName','Last Name'],['mobile','Mobile'],['idNumber','ID / Passport'],['nationality','Nationality'],['city','City'],['country','Country']].map(([key,label])=>(
+                    <div key={key}>
+                      <label style={S.label}>{label}</label>
+                      <input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={S.input}/>
+                    </div>
+                  ))}
+                  <div style={{gridColumn:'1/-1'}}>
+                    <label style={S.label}>Address</label>
+                    <textarea value={profileForm.address||''} onChange={e=>setProfileForm(p=>({...p,address:e.target.value}))} style={{...S.input,minHeight:70,resize:'vertical'}}/>
+                  </div>
+                </div>
+                <div style={{display:'flex',gap:10,marginTop:16,justifyContent:'flex-end'}}>
+                  <button onClick={()=>setProfileEdit(false)} style={S.btn(false)}>Cancel</button>
+                  <button onClick={saveProfile} disabled={saving} style={{...S.btn(true),opacity:saving?0.6:1}}>{saving?'Saving…':'Save Profile'}</button>
+                </div>
+              </div>
             )}
           </div>
         )}
       </div>
+
+      {/* Enquiry Modal */}
+      {enquiry&&(
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.6)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>
+          <div style={{background:'#fff',borderRadius:16,padding:28,maxWidth:460,width:'100%'}}>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,color:'#1a1714',marginBottom:4}}>Enquire to Purchase</div>
+            <div style={{fontSize:12,color:'#8a8070',marginBottom:20}}>Clicking Send will open your email app with a pre-filled message to Vollard Black.</div>
+            <div style={{display:'flex',gap:14,marginBottom:16}}>
+              {enquiry.imageUrl&&<div style={{width:80,height:80,borderRadius:8,overflow:'hidden',flexShrink:0}}><img src={enquiry.imageUrl} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}}/></div>}
+              <div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:'#1a1714'}}>{enquiry.title}</div>
+                <div style={{fontSize:12,color:'#8a8070',marginTop:2}}>{enquiry.artist||'—'} · {enquiry.medium||'—'}</div>
+                <div style={{fontSize:16,fontWeight:600,color:'#b68b2e',marginTop:4}}>R {fmt(enquiry.recommendedPrice)}</div>
+              </div>
+            </div>
+            <div style={{display:'flex',gap:10,justifyContent:'flex-end'}}>
+              <button onClick={()=>setEnquiry(null)} style={S.btn(false)}>Cancel</button>
+              <button onClick={sendEnquiry} style={S.btn(true)}>Send Enquiry</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-// ── Root ──────────────────────────────────────────────────
 export default function BuyerPortal() {
   const [session,setSession] = useState(undefined);
   const [screen,setScreen] = useState('login');
@@ -497,19 +520,17 @@ export default function BuyerPortal() {
   },[]);
 
   useEffect(()=>{
-    if(!session){ setRequestStatus(null); return; }
+    if(!session){setRequestStatus(null);return;}
     supabase.from('portal_requests').select('status').eq('email',session.user.email).single()
       .then(({data})=>setRequestStatus(data?.status||'pending'));
   },[session]);
 
   if(session===undefined) return <div style={{minHeight:'100vh',background:'#f5f3ef',display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,letterSpacing:8,color:'#b68b2e',opacity:0.5}}>VOLLARD BLACK</div></div>;
-
   if(!session){
     if(screen==='register') return <RegisterScreen onRegistered={(email)=>{if(email){setPendingEmail(email);setScreen('pending');}else{setScreen('login');}}}/>;
     if(screen==='pending') return <PendingScreen email={pendingEmail} onSignIn={()=>setScreen('login')}/>;
     return <LoginScreen onLogin={s=>setSession(s)} onRegister={()=>setScreen('register')}/>;
   }
-
   if(requestStatus===null) return <div style={{minHeight:'100vh',background:'#f5f3ef',display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:'#b68b2e',opacity:0.5}}>Checking access…</div></div>;
   if(requestStatus!=='approved') return <NotApprovedScreen status={requestStatus} onSignOut={()=>supabase.auth.signOut()}/>;
   return <BuyerDashboard session={session}/>;
