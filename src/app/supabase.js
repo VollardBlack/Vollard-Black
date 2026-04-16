@@ -40,6 +40,11 @@ export const auth = {
     const { data } = await supabase.auth.getUser();
     return data?.user || null;
   },
+  async isAdmin() {
+    if (!supabase) return true; // local mode = always admin
+    const { data } = await supabase.from('admin_profiles').select('id').single();
+    return !!data;
+  },
   onAuthStateChange(callback) {
     if (!supabase) return { data: { subscription: { unsubscribe: () => {} } } };
     return supabase.auth.onAuthStateChange(callback);
