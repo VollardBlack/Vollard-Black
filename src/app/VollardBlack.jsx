@@ -1493,7 +1493,9 @@ function BuyersPage({data,actions}){
   const f=data.buyers.filter(b=>buyerName(b).toLowerCase().includes(search.toLowerCase())||(b.email||"").toLowerCase().includes(search.toLowerCase()));
   const getPurchases=(buyerId)=>data.sales.filter(s=>s.buyerId===buyerId);
   const getTotalSpend=(buyerId)=>getPurchases(buyerId).reduce((s,x)=>s+(x.salePrice||0),0);
+  const kycPendingBuyers=data.buyers.filter(b=>b.kycStatus!=="approved");
   return(<div>
+    {kycPendingBuyers.length>0&&<div style={{padding:"12px 16px",background:"rgba(230,190,50,0.08)",border:"1px solid rgba(230,190,50,0.25)",borderRadius:10,marginBottom:12,display:"flex",alignItems:"center",gap:10}}><span style={{color:"#e6be32",fontSize:16}}>⚠</span><span style={{fontSize:13,color:"#8a6a1e",fontWeight:600}}>{kycPendingBuyers.length} buyer{kycPendingBuyers.length>1?"s":""} awaiting KYC approval</span></div>}
     <PT title="Buyers" sub={`${data.buyers.length} registered buyers`} action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Register Buyer</Btn>}/>
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:14,marginBottom:28}}>
       <Stat label="Total Buyers" value={data.buyers.length} gold/><Stat label="Repeat Buyers" value={data.buyers.filter(b=>getPurchases(b.id).length>1).length} green/><Stat label="Total Purchases" value={data.sales.filter(s=>s.buyerId).length}/><Stat label="Total Spend" value={"R "+fmt(data.sales.filter(s=>s.buyerId).reduce((s,x)=>s+(x.salePrice||0),0))} gold/>
@@ -1502,7 +1504,16 @@ function BuyersPage({data,actions}){
       <Card>
         <div style={{marginBottom:16}}><input placeholder="Search buyers..." value={search} onChange={e=>setSearch(e.target.value)} style={{...is,maxWidth:400}}/></div>
         {f.length===0?<Empty msg="No buyers yet." action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Register</Btn>}/>:<Tbl cols={[
-          {label:"Name",bold:true,render:r=><button onClick={()=>setSelected(selected?.id===r.id?null:r)} style={{background:"none",border:"none",color:"#b68b2e",cursor:"pointer",fontSize:13,fontWeight:600,textDecoration:"underline"}}>{buyerName(r)}</button>},
+          {label:"Name",bold:true,render:r=><div>
+            <button onClick={()=>setSelected(selected?.id===r.id?null:r)} style={{background:"none",border:"none",color:"#b68b2e",cursor:"pointer",fontSize:13,fontWeight:600,textDecoration:"underline",fontFamily:"DM Sans,sans-serif"}}>{buyerName(r)}</button>
+            <div style={{display:"flex",gap:6,marginTop:4,flexWrap:"wrap",alignItems:"center"}}>
+              {r.kycStatus==="approved"
+                ?<span style={{fontSize:10,fontWeight:600,color:"#4a9e6b",padding:"2px 8px",background:"rgba(74,158,107,0.12)",borderRadius:6}}>✓ KYC Approved</span>
+                :<><span style={{fontSize:10,fontWeight:600,color:"#e6be32",padding:"2px 8px",background:"rgba(230,190,50,0.12)",borderRadius:6}}>⚠ KYC Pending</span>
+                <button onClick={e=>{e.stopPropagation();actions.saveBuyer({...r,kycStatus:"approved"});db.update("buyers",r.id,{kyc_status:"approved"});}} style={{fontSize:10,padding:"2px 10px",borderRadius:6,border:"none",background:"linear-gradient(135deg,#b68b2e,#8a6a1e)",color:"#fff",cursor:"pointer",fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>Approve KYC</button></>
+              }
+            </div>
+          </div>},
           {label:"Type",render:r=>r.type==="company"?"Company":"Individual"},{label:"Email",key:"email"},{label:"Nationality",key:"nationality"},
           {label:"Purchases",render:r=><span style={{color:"#b68b2e",fontWeight:600}}>{getPurchases(r.id).length}</span>},
           {label:"Total Spend",right:true,gold:true,render:r=>"R "+fmt(getTotalSpend(r.id))},
