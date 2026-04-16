@@ -472,6 +472,42 @@ export default function App(){
       setLoading(false);
     }
     init();
+
+    // Real-time listeners — update data instantly when DB changes
+    if(!supabase||!session)return;
+    const channels=TABLES.map(table=>{
+      return supabase.channel('realtime:'+table)
+        .on('postgres_changes',{event:'*',schema:'public',table},(payload)=>{
+          const toCamelKey=(k)=>k.replace(/_([a-z])/g,(_,c)=>c.toUpperCase());
+          const toCamel=(obj)=>{if(!obj||typeof obj!=='object')return obj;const out={};for(const[k,v]of Object.entries(obj))out[toCamelKey(k)]=v;return out;};
+          const rec=toCamel(payload.new||{});
+          const oldRec=toCamel(payload.old||{});
+          setData(prev=>{
+            const arr=prev[table]||[];
+            if(payload.eventType==='INSERT')return{...prev,[table]:[rec,...arr.filter(x=>x.id!==rec.id)]};
+            if(payload.eventType==='UPDATE')return{...prev,[table]:arr.map(x=>x.id===rec.id?{...x,...rec}:x)};
+            if(payload.eventType==='DELETE')return{...prev,[table]:arr.filter(x=>x.id!==oldRec.id)};
+            return prev;
+          });
+          // Refresh portal count when portal_requests changes
+          if(table==='portal_requests'||table.includes('request')){
+            supabase.from('portal_requests').select('id',{count:'exact'}).eq('status','pending').then(({count})=>setPendingPortalCount(count||0));
+          }
+        })
+        .subscribe();
+    });
+
+    // Also listen for portal_requests specifically
+    const portalChannel=supabase.channel('realtime:portal_requests')
+      .on('postgres_changes',{event:'*',schema:'public',table:'portal_requests'},(payload)=>{
+        supabase.from('portal_requests').select('id',{count:'exact'}).eq('status','pending').then(({count})=>setPendingPortalCount(count||0));
+      })
+      .subscribe();
+
+    return()=>{
+      channels.forEach(c=>supabase.removeChannel(c));
+      supabase.removeChannel(portalChannel);
+    };
   },[session]);
 
   useEffect(()=>{
