@@ -205,6 +205,16 @@ function BuyerDashboard({session}) {
 
   useEffect(()=>{ loadData(); },[session]);
 
+  // Real-time listener for live auction updates
+  useEffect(()=>{
+    if(!session) return;
+    const ch = supabase.channel('buyer-auctions')
+      .on('postgres_changes',{event:'*',schema:'public',table:'auctions'},()=>loadData())
+      .on('postgres_changes',{event:'*',schema:'public',table:'bids'},()=>loadData())
+      .subscribe();
+    return ()=>supabase.removeChannel(ch);
+  },[session]);
+
   const loadData = async() => {
     setLoading(true);
     try {
@@ -216,7 +226,7 @@ function BuyerDashboard({session}) {
       setArtworks((arts||[]).map(toCamel));
 
       // Auctions
-      const {data:aucs} = await supabase.from('auctions').select('*').in('status',['Live','Sold','No Sale']).order('created_at',{ascending:false});
+      const {data:aucs} = await supabase.from('auctions').select('*').in('status',['Live','Draft','Sold','No Sale']).order('created_at',{ascending:false});
       setAuctions((aucs||[]).map(toCamel));
 
       if(buyers&&buyers.length>0){
@@ -242,16 +252,37 @@ function BuyerDashboard({session}) {
     setProfileEdit(false);
   };
 
-  const sendEnquiry = () => {
+  const sendEnquiry = async() => {
     const art = enquiry;
-    const subject = encodeURIComponent(`Enquiry: ${art.title}`);
-    const body = encodeURIComponent(`Hi Vollard Black,\n\nI am interested in purchasing "${art.title}" by ${art.artist||'—'}.\n\nDeclared value: R ${fmt(art.recommendedPrice)}\n\nPlease contact me to discuss further.\n\nKind regards,\n${buyer?`${buyer.firstName||''} ${buyer.lastName||''}`.trim():session.user.email}`);
-    window.open(`mailto:concierge@vollardblack.com?subject=${subject}&body=${body}`);
-    setEnquiryMsg('Enquiry email opened. Send it to contact Vollard Black.');
-    setTimeout(()=>setEnquiryMsg(''),4000);
+    const buyerName = buyer?`${buyer.firstName||''} ${buyer.lastName||''}`.trim()||buyer.companyName||'':session.user.email.split('@')[0];
+    const buyerMobile = buyer?.mobile||'';
+
+    // Save enquiry to Supabase so admin sees notification
+    try {
+      await supabase.from('enquiries').insert({
+        id: crypto.randomUUID(),
+        artwork_id: art.id,
+        artwork_title: art.title,
+        buyer_id: buyer?.id||null,
+        buyer_name: buyerName,
+        buyer_email: session.user.email,
+        buyer_mobile: buyerMobile,
+        message: `Interested in purchasing "${art.title}" — R ${fmt(art.recommendedPrice)}`,
+        read: false,
+        created_at: new Date().toISOString(),
+      });
+    } catch(e) { console.error('Enquiry save failed:', e); }
+
+    // Open WhatsApp to Vollard Black
+    const waMsg = encodeURIComponent(
+      `Hi Vollard Black,\n\nI am interested in purchasing the following artwork:\n\n*${art.title}*\nArtist: ${art.artist||'—'}\nValue: R ${fmt(art.recommendedPrice)}\n\nPlease contact me to discuss.\n\nKind regards,\n${buyerName}${buyerMobile?' — '+buyerMobile:''}`
+    );
+    window.open(`https://wa.me/27826503393?text=${waMsg}`, '_blank');
+
+    setEnquiryMsg('Enquiry sent! Vollard Black will contact you shortly.');
+    setTimeout(()=>setEnquiryMsg(''),5000);
     setEnquiry(null);
   };
-
   const signOut = () => supabase.auth.signOut();
   const displayName = buyer?`${buyer.firstName||''} ${buyer.lastName||''}`.trim()||buyer.companyName||'':session.user.email.split('@')[0];
   const liveAuctions = auctions.filter(a=>a.status==='Live');
