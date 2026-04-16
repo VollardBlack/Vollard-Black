@@ -404,6 +404,8 @@ function LoginScreen({onLogin}){
 // ═══════════════════════════════════════════
 export default function App(){
   const [session,setSession]=useState(undefined);
+  const [isAdminUser,setIsAdminUser]=useState(false);
+  const [isAdminChecked,setIsAdminChecked]=useState(false);
   const [data,setData]=useState(fresh);
   const [page,setPage]=useState("dashboard");
   const [sb,setSb]=useState(false);
@@ -429,8 +431,18 @@ export default function App(){
       setSession(null);
       return;
     }
-    auth.getSession().then(s=>setSession(s));
-    const {data:{subscription}}=auth.onAuthStateChange((_event,s)=>setSession(s));
+    auth.getSession().then(s=>{
+      setSession(s);
+      if(s) auth.isAdmin().then(a=>{setIsAdminUser(a);setIsAdminChecked(true);});
+    });
+    const {data:{subscription}}=auth.onAuthStateChange((_event,s)=>{
+      setSession(s);
+      if(s){
+        auth.isAdmin().then(a=>{setIsAdminUser(a);setIsAdminChecked(true);});
+      } else {
+        setIsAdminUser(false);setIsAdminChecked(false);
+      }
+    });
     return()=>subscription.unsubscribe();
   },[]);
 
@@ -652,6 +664,13 @@ export default function App(){
   // ── Session gate ──
   if(session===undefined)return<div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",background:"#f5f3ef"}}><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:24,fontWeight:300,letterSpacing:8,color:"#b68b2e",opacity:0.5}}>VOLLARD BLACK</div></div>;
   if(session===null&&db.isConnected())return<LoginScreen onLogin={s=>setSession(s)}/>;
+  if(session&&db.isConnected()&&isAdminChecked&&!isAdminUser)return(
+    <div style={{minHeight:"100vh",background:"#f5f3ef",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:16,padding:20}}>
+      <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:28,color:"#1a1714"}}>Access Denied</div>
+      <div style={{fontSize:14,color:"#8a8070",textAlign:"center"}}>This portal is for administrators only.<br/>Please use your renter or artist portal instead.</div>
+      <button onClick={()=>auth.signOut()} style={{padding:"12px 24px",background:"linear-gradient(135deg,#b68b2e,#8a6a1e)",border:"none",borderRadius:8,color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>Sign Out</button>
+    </div>
+  );
 
   if(loading)return<div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",background:"#f5f3ef"}}><div style={{textAlign:"center"}}><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:36,fontWeight:300,letterSpacing:10,color:"#1a1714",marginBottom:10}}>VOLLARD <span style={{color:"#b68b2e"}}>BLACK</span></div><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:14,fontWeight:300,letterSpacing:4,color:"#b68b2e",marginBottom:20,fontStyle:"italic"}}>Licensed Display Position Platform</div><div style={{width:32,height:1,background:"rgba(182,139,46,0.3)",margin:"0 auto 20px"}}/><div style={{fontSize:11,color:"#a09890",letterSpacing:3,textTransform:"uppercase"}}>Loading platform...</div></div></div>;
 
