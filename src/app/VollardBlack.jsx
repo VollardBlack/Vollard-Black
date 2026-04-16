@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { db, storage, auth } from "./supabase";
+import { db, storage, auth, supabase } from "./supabase";
 
 // ─── Constants ───
 const MODELS = {
@@ -406,6 +406,7 @@ export default function App(){
   const [session,setSession]=useState(undefined);
   const [isAdminUser,setIsAdminUser]=useState(false);
   const [isAdminChecked,setIsAdminChecked]=useState(false);
+  const [pendingPortalCount,setPendingPortalCount]=useState(0);
   const [data,setData]=useState(fresh);
   const [page,setPage]=useState("dashboard");
   const [sb,setSb]=useState(false);
@@ -433,7 +434,10 @@ export default function App(){
     }
     auth.getSession().then(s=>{
       setSession(s);
-      if(s) auth.isAdmin().then(a=>{setIsAdminUser(a);setIsAdminChecked(true);});
+      if(s){
+        auth.isAdmin().then(a=>{setIsAdminUser(a);setIsAdminChecked(true);});
+        if(supabase)supabase.from('portal_requests').select('id',{count:'exact'}).eq('status','pending').then(({count})=>setPendingPortalCount(count||0));
+      }
     });
     const {data:{subscription}}=auth.onAuthStateChange((_event,s)=>{
       setSession(s);
@@ -462,6 +466,7 @@ export default function App(){
           for(const t of TABLES){safe[t]=Array.isArray(results[t])?results[t]:[];}
           safe.collectors=safe.collectors.map(c=>({...c,linkedArtworks:c.linkedArtworks||[]}));
           console.log("Supabase connected, loaded tables:",Object.keys(results).map(t=>t+":"+results[t].length));setData(safe);setDbMode(true);dbModeRef.current=true;
+          if(supabase)supabase.from('portal_requests').select('id',{count:'exact'}).eq('status','pending').then(({count})=>setPendingPortalCount(count||0));
         }catch(e){console.error(e);setData(loadLocal());}
       } else setData(loadLocal());
       setLoading(false);
@@ -647,7 +652,7 @@ export default function App(){
   const pendingApprovalCount=(d.buyers||[]).filter(b=>b.auctionRequested&&!b.auctionApproved).length;
 
   const pg={
-    dashboard:<Dashboard data={d} navTo={navTo} chasing={chasing} inDispute={inDispute} cancelled={cancelled}/>,
+    dashboard:<Dashboard data={d} navTo={navTo} chasing={chasing} inDispute={inDispute} cancelled={cancelled} pendingPortalRequests={pendingPortalCount}/>,
     catalogue:<Catalogue data={d} up={up} actions={actions}/>,
     artists:<ArtistsPage data={d} up={up}/>,
     collectors:<CollectorsPage data={d} up={up} actions={actions}/>,
@@ -658,7 +663,7 @@ export default function App(){
     sales:<SalesPage data={d} actions={actions}/>,
     auction:<AuctionPage data={d} actions={actions}/>,
     reports:<ReportsPage data={d} actions={actions}/>,
-    portals:<PortalsPage data={d}/>,
+    portals:<PortalsPage data={d} setPendingPortalCount={setPendingPortalCount}/>,
   };
 
   // ── Session gate ──
@@ -705,7 +710,7 @@ export default function App(){
         </div>
         <nav style={{flex:1,padding:"16px 12px",overflowY:"auto"}}>
           {nav.map(n=>{
-            const alertCount=n.id==="invoices"?chasing.length+inDispute.length+cancelled.length:n.id==="auction"?(liveAuctionCount>0?liveAuctionCount:0)+(pendingApprovalCount>0?pendingApprovalCount:0):0;
+            const alertCount=n.id==="invoices"?chasing.length+inDispute.length+cancelled.length:n.id==="auction"?(liveAuctionCount>0?liveAuctionCount:0)+(pendingApprovalCount>0?pendingApprovalCount:0):n.id==="portals"?pendingPortalCount:0;
             return<button key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:"12px 14px",background:page===n.id?"rgba(182,139,46,0.20)":"transparent",border:"none",borderRadius:10,color:page===n.id?"#b68b2e":"#6b635a",fontSize:13,fontWeight:page===n.id?600:400,cursor:"pointer",marginBottom:4,fontFamily:"DM Sans,sans-serif"}}>{n.icon}<span style={{flex:1,textAlign:"left"}}>{n.label}</span>{alertCount>0&&<span style={{fontSize:10,background:n.id==="auction"&&liveAuctionCount>0?"rgba(74,158,107,0.2)":"rgba(196,92,74,0.2)",color:n.id==="auction"&&liveAuctionCount>0?"#4a9e6b":"#c45c4a",padding:"2px 6px",borderRadius:8,fontWeight:700}}>{alertCount}</span>}</button>;
           })}
         </nav>
@@ -733,7 +738,7 @@ export default function App(){
           {id:"reports",icon:I.report,label:"Reports"},
         ].map(n=>{
           const active=page===n.id;
-          const alertCount=n.id==="invoices"?chasing.length+inDispute.length+cancelled.length:n.id==="auction"?(liveAuctionCount>0?liveAuctionCount:0)+(pendingApprovalCount>0?pendingApprovalCount:0):0;
+          const alertCount=n.id==="invoices"?chasing.length+inDispute.length+cancelled.length:n.id==="auction"?(liveAuctionCount>0?liveAuctionCount:0)+(pendingApprovalCount>0?pendingApprovalCount:0):n.id==="portals"?pendingPortalCount:0;
           return<button key={n.id} onClick={()=>navTo(n.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"8px 0",background:"transparent",border:"none",color:active?"#b68b2e":"#8a8070",cursor:"pointer",position:"relative",gap:3}}>
             <div style={{color:active?"#b68b2e":"#8a8070"}}>{n.icon}</div>
             <span style={{fontSize:9,letterSpacing:0.5,fontWeight:active?600:400}}>{n.label}</span>
@@ -752,7 +757,7 @@ export default function App(){
 // ═══════════════════════════════════════════
 // DASHBOARD
 // ═══════════════════════════════════════════
-function Dashboard({data,navTo,chasing,inDispute,cancelled}){
+function Dashboard({data,navTo,chasing,inDispute,cancelled,pendingPortalRequests}){
   const totalPay=data.payments.reduce((s,p)=>s+(p.amount||0),0);
   const md={};data.payments.forEach(p=>{const k=(p.date||"").slice(0,7);if(k)md[k]=(md[k]||0)+(p.amount||0);});
   const sm=Object.keys(md).sort();const mx=Math.max(...Object.values(md),1);
@@ -762,6 +767,7 @@ function Dashboard({data,navTo,chasing,inDispute,cancelled}){
   const liveAuctions=(data.auctions||[]).filter(a=>a.status==="Live");
   return(<div>
     <PT title="Dashboard" sub="Vollard Black — Fine Art Acquisitions"/>
+    {pendingPortalRequests>0&&<div onClick={()=>navTo("portals")} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 18px",background:"rgba(182,139,46,0.08)",border:"1px solid rgba(182,139,46,0.25)",borderRadius:10,cursor:"pointer",marginBottom:10}}><span style={{color:"#b68b2e",fontSize:16}}>◆</span><span style={{fontSize:13,color:"#b68b2e",fontWeight:600}}>● {pendingPortalRequests} portal access request{pendingPortalRequests>1?"s":""} awaiting approval</span><span style={{fontSize:11,color:"#b68b2e",marginLeft:"auto",opacity:0.7}}>Review now →</span></div>}
     {cancelled.length>0&&<Banner type="red" count={cancelled.length} label="agreements cancelled" onClick={()=>navTo("invoices","Cancelled")}/>}
     {inDispute.length>0&&<Banner type="orange" count={inDispute.length} label="accounts in dispute" onClick={()=>navTo("invoices","In Dispute")}/>}
     {chasing.length>0&&<Banner type="yellow" count={chasing.length} label="license holders being chased" onClick={()=>navTo("invoices","Chasing")}/>}
@@ -1738,7 +1744,7 @@ function ReportsPage({data,actions}){
 // ═══════════════════════════════════════════
 // PORTAL USERS MANAGEMENT
 // ═══════════════════════════════════════════
-function PortalsPage({data}){
+function PortalsPage({data,setPendingPortalCount}){
   const [tab,setTab]=useState("pending");
   const [requests,setRequests]=useState([]);
   const [loadingReqs,setLoadingReqs]=useState(true);
@@ -1760,6 +1766,8 @@ function PortalsPage({data}){
     setApproving(req.id);
     await supabase.from("portal_requests").update({status:"approved",reviewed_at:new Date().toISOString()}).eq("id",req.id);
     await loadRequests();
+    // Refresh count
+    supabase.from('portal_requests').select('id',{count:'exact'}).eq('status','pending').then(({count})=>setPendingPortalCount&&setPendingPortalCount(count||0));
     setApproving(null);
   };
 
