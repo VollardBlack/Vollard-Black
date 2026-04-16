@@ -1739,84 +1739,136 @@ function ReportsPage({data,actions}){
 // PORTAL USERS MANAGEMENT
 // ═══════════════════════════════════════════
 function PortalsPage({data}){
-  const [tab,setTab]=useState("renters");
-  const collectors=data.collectors||[];
-  const artists=data.artists||[];
-  const gn=(c)=>c.type==="company"?c.companyName:`${c.firstName||""} ${c.lastName||""}`.trim();
+  const [tab,setTab]=useState("pending");
+  const [requests,setRequests]=useState([]);
+  const [loadingReqs,setLoadingReqs]=useState(true);
+  const [approving,setApproving]=useState(null);
+  const [rejecting,setRejecting]=useState(null);
 
-  const copySQL=(email,role)=>{
-    const sql=role==="renter"
-      ? `INSERT INTO portal_profiles (id, email, role, linked_id, linked_name)
-SELECT u.id, u.email, 'renter', c.id::text,
-COALESCE(c.company_name, c.first_name || ' ' || c.last_name)
-FROM auth.users u
-JOIN collectors c ON c.email = u.email
-WHERE u.email = '${email}'
-ON CONFLICT (id) DO NOTHING;`
-      : `INSERT INTO portal_profiles (id, email, role, linked_id, linked_name)
-SELECT u.id, u.email, 'artist', a.id::text, a.name
-FROM auth.users u
-JOIN artists a ON a.email = u.email
-WHERE u.email = '${email}'
-ON CONFLICT (id) DO NOTHING;`;
-    navigator.clipboard.writeText(sql).then(()=>alert("SQL copied! Paste into Supabase SQL Editor after creating the auth user."));
+  useEffect(()=>{loadRequests();},[]);
+
+  const loadRequests=async()=>{
+    setLoadingReqs(true);
+    try{
+      const {data:reqs}=await supabase.from("portal_requests").select("*").order("created_at",{ascending:false});
+      setRequests(reqs||[]);
+    }catch(e){console.error(e);}
+    setLoadingReqs(false);
   };
 
+  const approve=async(req)=>{
+    setApproving(req.id);
+    await supabase.from("portal_requests").update({status:"approved",reviewed_at:new Date().toISOString()}).eq("id",req.id);
+    await loadRequests();
+    setApproving(null);
+  };
+
+  const reject=async(req)=>{
+    setRejecting(req.id);
+    await supabase.from("portal_requests").update({status:"rejected",reviewed_at:new Date().toISOString()}).eq("id",req.id);
+    await loadRequests();
+    setRejecting(null);
+  };
+
+  const renterUrl=typeof window!=="undefined"?window.location.origin+"/renter":"";
+  const artistUrl=typeof window!=="undefined"?window.location.origin+"/artist":"";
+  const pending=requests.filter(r=>r.status==="pending");
+  const approved=requests.filter(r=>r.status==="approved");
+  const rejected=requests.filter(r=>r.status==="rejected");
+
   return(<div>
-    <PT title="Portal Users" sub="Manage renter and artist portal access"/>
-    <Card style={{marginBottom:20, background:"rgba(182,139,46,0.04)", border:"1px solid rgba(182,139,46,0.20)"}}>
-      <div style={{fontSize:13, color:"#6b635a", marginBottom:8, fontWeight:600}}>How to invite someone to their portal:</div>
-      <div style={{fontSize:12, color:"#8a8070", lineHeight:1.8}}>
-        1. Go to <strong>Supabase → Authentication → Users → Add user</strong><br/>
-        2. Enter their email and a temporary password → check <strong>Auto Confirm User</strong> → Create<br/>
-        3. Come back here and click <strong>Copy SQL</strong> next to their name → paste into Supabase SQL Editor → Run<br/>
-        4. Send them their portal URL and temporary password
+    <PT title="Portal Users" sub="Manage renter and artist access requests"/>
+
+    {/* Share Links */}
+    <Card style={{marginBottom:20}}>
+      <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:12}}>Share these links with your renters and artists</div>
+      <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+        {[["Renter Portal",renterUrl],["Artist Portal",artistUrl]].map(([label,url])=>(
+          <div key={label} style={{flex:1,minWidth:220,padding:"14px 16px",background:"#f5f3ef",border:"1px solid rgba(182,139,46,0.20)",borderRadius:10}}>
+            <div style={{fontSize:11,color:"#8a8070",marginBottom:4,letterSpacing:1,textTransform:"uppercase"}}>{label}</div>
+            <div style={{fontSize:13,color:"#b68b2e",fontWeight:600,marginBottom:10,wordBreak:"break-all"}}>{url}</div>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>navigator.clipboard.writeText(url).then(()=>alert("Link copied!"))} style={{flex:1,padding:"8px 0",background:"transparent",border:"1px solid rgba(182,139,46,0.30)",borderRadius:6,color:"#b68b2e",cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>Copy Link</button>
+              <button onClick={()=>window.open("https://wa.me/?text="+encodeURIComponent("Hi, here is your Vollard Black portal link: "+url),"_blank")} style={{flex:1,padding:"8px 0",background:"rgba(37,211,102,0.10)",border:"1px solid rgba(37,211,102,0.30)",borderRadius:6,color:"#25d366",cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>WhatsApp</button>
+            </div>
+          </div>
+        ))}
       </div>
-      <div style={{marginTop:12, display:"flex", gap:8, flexWrap:"wrap"}}>
-        <div style={{padding:"8px 14px", background:"rgba(182,139,46,0.10)", borderRadius:8, fontSize:12}}>
-          Renter portal: <strong>vollard-black.vercel.app/renter</strong>
-        </div>
-        <div style={{padding:"8px 14px", background:"rgba(182,139,46,0.10)", borderRadius:8, fontSize:12}}>
-          Artist portal: <strong>vollard-black.vercel.app/artist</strong>
-        </div>
+      <div style={{marginTop:12,padding:"10px 14px",background:"rgba(182,139,46,0.06)",borderRadius:8,fontSize:12,color:"#6b635a",lineHeight:1.7}}>
+        <strong>How it works:</strong> You share the link → they register with their name, email and password → you see their request here → you approve or reject it → if approved they can log in and see their data.
       </div>
     </Card>
 
-    <div style={{display:"flex", borderBottom:"1px solid rgba(182,139,46,0.15)", marginBottom:20, gap:4}}>
-      {[["renters","Renters ("+collectors.length+")"],["artists","Artists ("+artists.length+")"]].map(([id,lbl])=>(
-        <button key={id} onClick={()=>setTab(id)} style={{padding:"10px 18px",border:"none",borderBottom:tab===id?"2px solid #b68b2e":"2px solid transparent",background:"transparent",color:tab===id?"#b68b2e":"#6b635a",fontSize:13,fontWeight:tab===id?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{lbl}</button>
+    {/* Tabs */}
+    <div style={{display:"flex",borderBottom:"1px solid rgba(182,139,46,0.15)",marginBottom:20,gap:4}}>
+      {[
+        ["pending","Pending ("+pending.length+")",pending.length>0?"#c45c4a":null],
+        ["approved","Approved ("+approved.length+")","#4a9e6b"],
+        ["rejected","Rejected ("+rejected.length+")",null],
+      ].map(([id,lbl,color])=>(
+        <button key={id} onClick={()=>setTab(id)} style={{padding:"10px 18px",border:"none",borderBottom:tab===id?"2px solid #b68b2e":"2px solid transparent",background:"transparent",color:tab===id?"#b68b2e":"#6b635a",fontSize:13,fontWeight:tab===id?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif",display:"flex",alignItems:"center",gap:6}}>
+          {lbl}
+          {color&&pending.length>0&&id==="pending"&&<div style={{width:8,height:8,borderRadius:"50%",background:color}}/>}
+        </button>
       ))}
     </div>
 
-    {tab==="renters"&&(<div>
-      {collectors.length===0?<Empty msg="No renters yet."/>:collectors.map(c=>(
-        <Card key={c.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
-          <div>
-            <div style={{fontWeight:600, fontSize:14, color:"#1a1714"}}>{gn(c)}</div>
-            <div style={{fontSize:12, color:"#8a8070", marginTop:2}}>{c.email||"No email set"}</div>
-          </div>
-          <div style={{display:"flex", gap:8, alignItems:"center"}}>
-            {!c.email&&<span style={{fontSize:11, color:"#c45c4a"}}>⚠ No email — add one first</span>}
-            {c.email&&<Btn small gold onClick={()=>copySQL(c.email,"renter")}>Copy SQL</Btn>}
-          </div>
-        </Card>
-      ))}
-    </div>)}
+    {loadingReqs&&<div style={{textAlign:"center",padding:40,color:"#8a8070",fontSize:13}}>Loading requests...</div>}
 
-    {tab==="artists"&&(<div>
-      {artists.length===0?<Empty msg="No artists yet."/>:artists.map(a=>(
-        <Card key={a.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
-          <div>
-            <div style={{fontWeight:600, fontSize:14, color:"#1a1714"}}>{a.name}</div>
-            <div style={{fontSize:12, color:"#8a8070", marginTop:2}}>{a.email||"No email set"}</div>
-          </div>
-          <div style={{display:"flex", gap:8, alignItems:"center"}}>
-            {!a.email&&<span style={{fontSize:11, color:"#c45c4a"}}>⚠ No email — add one first</span>}
-            {a.email&&<Btn small gold onClick={()=>copySQL(a.email,"artist")}>Copy SQL</Btn>}
-          </div>
-        </Card>
-      ))}
-    </div>)}
+    {!loadingReqs&&tab==="pending"&&(
+      pending.length===0
+        ?<Card style={{textAlign:"center",padding:40}}><div style={{fontSize:32,marginBottom:12}}>◆</div><div style={{fontSize:14,color:"#8a8070"}}>No pending requests.</div><div style={{fontSize:12,color:"#8a8070",marginTop:4}}>Share your portal links above and requests will appear here.</div></Card>
+        :pending.map(r=>(
+          <Card key={r.id} style={{marginBottom:12}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:12}}>
+              <div>
+                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
+                  <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:20,color:"#1a1714"}}>{r.full_name}</div>
+                  <span style={{padding:"3px 10px",borderRadius:6,fontSize:10,fontWeight:600,background:r.role==="renter"?"rgba(182,139,46,0.15)":"rgba(100,140,200,0.15)",color:r.role==="renter"?"#b68b2e":"#648cc8",textTransform:"uppercase",letterSpacing:1}}>{r.role}</span>
+                </div>
+                <div style={{fontSize:13,color:"#6b635a"}}>{r.email}</div>
+                {r.mobile&&<div style={{fontSize:12,color:"#8a8070",marginTop:2}}>{r.mobile}</div>}
+                {r.message&&<div style={{fontSize:12,color:"#8a8070",marginTop:4,fontStyle:"italic"}}>"{r.message}"</div>}
+                <div style={{fontSize:11,color:"#a09890",marginTop:4}}>Requested: {r.created_at?.slice(0,10)||"—"}</div>
+              </div>
+              <div style={{display:"flex",gap:8,flexShrink:0}}>
+                <button onClick={()=>reject(r)} disabled={rejecting===r.id} style={{padding:"10px 18px",borderRadius:8,border:"1px solid rgba(196,92,74,0.30)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>{rejecting===r.id?"...":"Decline"}</button>
+                <button onClick={()=>approve(r)} disabled={approving===r.id} style={{padding:"10px 18px",borderRadius:8,border:"none",background:"linear-gradient(135deg,#b68b2e,#8a6a1e)",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>{approving===r.id?"Approving...":"Approve"}</button>
+              </div>
+            </div>
+          </Card>
+        ))
+    )}
+
+    {!loadingReqs&&tab==="approved"&&(
+      approved.length===0
+        ?<Card style={{textAlign:"center",padding:40}}><div style={{fontSize:14,color:"#8a8070"}}>No approved users yet.</div></Card>
+        :approved.map(r=>(
+          <Card key={r.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
+            <div>
+              <div style={{fontWeight:600,fontSize:14,color:"#1a1714"}}>{r.full_name}</div>
+              <div style={{fontSize:12,color:"#8a8070"}}>{r.email} · {r.role}</div>
+              <div style={{fontSize:11,color:"#4a9e6b",marginTop:2}}>✓ Approved {r.reviewed_at?.slice(0,10)||""}</div>
+            </div>
+            <button onClick={()=>reject(r)} style={{padding:"8px 14px",borderRadius:6,border:"1px solid rgba(196,92,74,0.25)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>Revoke</button>
+          </Card>
+        ))
+    )}
+
+    {!loadingReqs&&tab==="rejected"&&(
+      rejected.length===0
+        ?<Card style={{textAlign:"center",padding:40}}><div style={{fontSize:14,color:"#8a8070"}}>No rejected requests.</div></Card>
+        :rejected.map(r=>(
+          <Card key={r.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
+            <div>
+              <div style={{fontWeight:600,fontSize:14,color:"#1a1714"}}>{r.full_name}</div>
+              <div style={{fontSize:12,color:"#8a8070"}}>{r.email} · {r.role}</div>
+              <div style={{fontSize:11,color:"#c45c4a",marginTop:2}}>✗ Declined {r.reviewed_at?.slice(0,10)||""}</div>
+            </div>
+            <button onClick={()=>approve(r)} style={{padding:"8px 14px",borderRadius:6,border:"1px solid rgba(74,158,107,0.25)",background:"transparent",color:"#4a9e6b",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>Approve</button>
+          </Card>
+        ))
+    )}
   </div>);}
 
 
