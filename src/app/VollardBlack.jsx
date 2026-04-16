@@ -1415,7 +1415,7 @@ function CollectorsPage({data,up,actions}){
   const blank={id:"",type:"individual",firstName:"",lastName:"",companyName:"",email:"",mobile:"",idNumber:"",nationality:"",address:"",linkedArtworks:[]};
   const save=(inv)=>{if(inv.id)up("collectors",p=>p.map(x=>x.id===inv.id?inv:x));else up("collectors",p=>[{...inv,id:uuidv4(),createdAt:td()},...p]);setModal(null);};
   const del=(id)=>{if(confirm("Delete?"))up("collectors",p=>p.filter(x=>x.id!==id));};
-  const gn=(i)=>i.type==="company"?i.companyName:`${i.firstName} ${i.lastName}`;
+  const gn=(i)=>i.type==="company"?i.companyName:`${i.firstName||""} ${i.lastName||""}`.trim()||i.email||"Unknown";
   const f=data.collectors.filter(i=>gn(i).toLowerCase().includes(search.toLowerCase()));
   const handleLink=async(cId,artId,model,depositType,depositPct)=>{await actions.linkArtwork(cId,artId,model,depositType,depositPct);setLink(null);};
   const handleUnlink=(schedId)=>{if(confirm("Cancel this schedule?"))actions.unlinkArtwork(schedId);};
@@ -1764,11 +1764,51 @@ function PortalsPage({data,setPendingPortalCount}){
 
   const approve=async(req)=>{
     setApproving(req.id);
+    // 1. Approve the request
     await supabase.from("portal_requests").update({status:"approved",reviewed_at:new Date().toISOString()}).eq("id",req.id);
+
+    // 2. Auto-create in the right table based on role
+    if(req.role==="renter"){
+      // Check if collector already exists with this email
+      const {data:existing}=await supabase.from("collectors").select("id").eq("email",req.email).single();
+      if(!existing){
+        const nameParts=(req.full_name||"").trim().split(" ");
+        const lastName=nameParts.length>1?nameParts.slice(1).join(" "):"";
+        const firstName=nameParts[0]||req.full_name;
+        await supabase.from("collectors").insert({
+          id: crypto.randomUUID(),
+          type: "individual",
+          first_name: firstName,
+          last_name: lastName,
+          email: req.email,
+          mobile: req.mobile||"",
+          status: "Pending Setup",
+          notes: "Auto-created from portal registration. Link artwork to activate.",
+          linked_artworks: "[]",
+          created_at: new Date().toISOString(),
+        });
+      }
+    } else if(req.role==="artist"){
+      // Check if artist already exists with this email
+      const {data:existing}=await supabase.from("artists").select("id").eq("email",req.email).single();
+      if(!existing){
+        await supabase.from("artists").insert({
+          id: crypto.randomUUID(),
+          name: req.full_name,
+          email: req.email,
+          mobile: req.mobile||"",
+          notes: "Auto-created from portal registration.",
+          created_at: new Date().toISOString(),
+        });
+      }
+    }
+
     await loadRequests();
-    // Refresh count
     supabase.from('portal_requests').select('id',{count:'exact'}).eq('status','pending').then(({count})=>setPendingPortalCount&&setPendingPortalCount(count||0));
     setApproving(null);
+    alert(req.role==="renter"
+      ?"✓ Approved. "+req.full_name+" has been added to License Holders. Go there to link their artwork."
+      :"✓ Approved. "+req.full_name+" has been added to Artists.");
   };
 
   const reject=async(req)=>{
