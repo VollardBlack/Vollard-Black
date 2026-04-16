@@ -1388,7 +1388,7 @@ function ArtistsPage({data,up}){
         {f.map(a=><div key={a.id} style={{background:"#e8e4dd",border:"1px solid rgba(182,139,46,0.18)",borderRadius:12,padding:20}} onMouseEnter={e=>e.currentTarget.style.borderColor="rgba(182,139,46,0.25)"} onMouseLeave={e=>e.currentTarget.style.borderColor="rgba(182,139,46,0.18)"}>
           <div style={{display:"flex",gap:14}}>
             <div style={{width:56,height:56,borderRadius:12,flexShrink:0,background:"linear-gradient(135deg,rgba(182,139,46,0.50),rgba(182,139,46,0.12))",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>{a.profileImageUrl?<img src={a.profileImageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span style={{fontFamily:"Cormorant Garamond,serif",fontSize:22,color:"#b68b2e",fontWeight:600}}>{a.name.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase()}</span>}</div>
-            <div style={{flex:1}}><div style={{fontSize:16,fontWeight:600,color:"#1a1714"}}>{a.name}</div><div style={{fontSize:12,color:"#6b635a"}}>{[a.medium,a.city].filter(Boolean).join(" · ")}</div><div style={{display:"flex",gap:12,marginTop:8,fontSize:11}}><span style={{color:"#b68b2e"}}>{cnt(a.id)} works</span><span style={{color:"#6b635a"}}>R {fmt(val(a.id))}</span></div></div>
+            <div style={{flex:1}}><div style={{fontSize:16,fontWeight:600,color:"#1a1714"}}>{a.name}</div><div style={{fontSize:12,color:"#6b635a"}}>{[a.medium,a.city].filter(Boolean).join(" · ")}</div><div style={{display:"flex",gap:8,marginTop:6,flexWrap:"wrap",alignItems:"center"}}><span style={{fontSize:11,color:"#b68b2e"}}>{cnt(a.id)} works</span><span style={{fontSize:11,color:"#6b635a"}}>R {fmt(val(a.id))}</span>{a.kycStatus==="approved"?<span style={{fontSize:10,fontWeight:600,color:"#4a9e6b",padding:"2px 8px",background:"rgba(74,158,107,0.12)",borderRadius:6}}>✓ KYC Approved</span>:<><span style={{fontSize:10,fontWeight:600,color:"#e6be32",padding:"2px 8px",background:"rgba(230,190,50,0.12)",borderRadius:6}}>⚠ KYC Pending</span><button onClick={e=>{e.stopPropagation();up("artists",p=>p.map(x=>x.id===a.id?{...x,kycStatus:"approved"}:x));db.update("artists",a.id,{kyc_status:"approved"});}} style={{fontSize:10,padding:"2px 10px",borderRadius:6,border:"none",background:"linear-gradient(135deg,#b68b2e,#8a6a1e)",color:"#fff",cursor:"pointer",fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>Approve KYC</button></>}</div></div>
             <div style={{display:"flex",gap:4}}><button onClick={e=>{e.stopPropagation();setModal(a);}} style={{background:"none",border:"none",color:"#6b635a",cursor:"pointer"}}>{I.edit}</button><button onClick={e=>{e.stopPropagation();del(a.id);}} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer"}}>{I.del}</button></div>
           </div>
         </div>)}
@@ -1426,13 +1426,18 @@ function CollectorsPage({data,up,actions}){
     <PT title="Display License Agreement Holders" sub={`${data.collectors.length} registered`} action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Add</Btn>}/>
     <Card><div style={{marginBottom:16}}><input placeholder="Search..." value={search} onChange={e=>setSearch(e.target.value)} style={{...is,maxWidth:360}}/></div>
       {f.length===0?<Empty msg="No collectors yet." action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Add</Btn>}/>:<Tbl cols={[
-        {label:"Name",bold:true,render:r=>gn(r)},{label:"Type",key:"type"},{label:"Email",key:"email"},
-        {label:"KYC",render:r=>{
-          const kyc=r.kycStatus;
-          if(kyc==="approved")return<span style={{fontSize:11,fontWeight:600,color:"#4a9e6b",padding:"3px 8px",background:"rgba(74,158,107,0.12)",borderRadius:6}}>✓ KYC Approved</span>;
-          if(kyc!=="approved")return<span style={{fontSize:11,fontWeight:600,color:"#e6be32",padding:"3px 8px",background:"rgba(230,190,50,0.12)",borderRadius:6}}>⚠ KYC Pending</span>;
-          return<span style={{fontSize:11,color:"#8a8070"}}>—</span>;
-        }},
+        {label:"Name",bold:true,render:r=><div>
+          <div style={{fontWeight:600,marginBottom:3}}>{gn(r)}</div>
+          <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
+            {r.kycStatus==="approved"
+              ?<span style={{fontSize:10,fontWeight:600,color:"#4a9e6b",padding:"2px 8px",background:"rgba(74,158,107,0.12)",borderRadius:6}}>✓ KYC Approved</span>
+              :<><span style={{fontSize:10,fontWeight:600,color:"#e6be32",padding:"2px 8px",background:"rgba(230,190,50,0.12)",borderRadius:6}}>⚠ KYC Pending</span>
+              <button onClick={e=>{e.stopPropagation();up("collectors",p=>p.map(c=>c.id===r.id?{...c,kycStatus:"approved"}:c));db.update("collectors",r.id,{kyc_status:"approved"});}} style={{fontSize:10,padding:"2px 10px",borderRadius:6,border:"none",background:"linear-gradient(135deg,#b68b2e,#8a6a1e)",color:"#fff",cursor:"pointer",fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>Approve KYC</button></>
+            }
+          </div>
+        </div>},
+        {label:"Email",key:"email"},
+        {label:"Mobile",key:"mobile"},
         {label:"Schedules",render:r=>{const scheds=data.schedules.filter(s=>s.collectorId===r.id);if(scheds.length===0)return<span style={{color:"#8a8070"}}>None</span>;return<div>{scheds.map(s=><div key={s.id} style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><span style={{fontSize:12}}>{s.artworkTitle}</span><Badge model={s.acquisitionModel||"O1"}/><Badge status={s.status} sched/><button onClick={e=>{e.stopPropagation();handleUnlink(s.id);}} style={{background:"none",border:"none",color:"#c45c4a",cursor:"pointer",fontSize:10,textDecoration:"underline"}}>cancel</button></div>)}</div>;}},
         {label:"",render:r=><div style={{display:"flex",gap:6}}><Btn small ghost onClick={e=>{e.stopPropagation();setLink(r);}}>Link Art</Btn><button onClick={e=>{e.stopPropagation();setModal(r);}} style={{background:"none",border:"none",color:"#6b635a",cursor:"pointer"}}>{I.edit}</button><button onClick={e=>{e.stopPropagation();del(r.id);}} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer"}}>{I.del}</button></div>},
       ]} data={f}/>}
