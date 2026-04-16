@@ -484,13 +484,17 @@ export default function App(){
           const oldRec=toCamel(payload.old||{});
           setData(prev=>{
             const arr=prev[table]||[];
-            if(payload.eventType==='INSERT')return{...prev,[table]:[rec,...arr.filter(x=>x.id!==rec.id)]};
+            // INSERT: only add if not already in local state (prevents duplicate from our own save)
+            if(payload.eventType==='INSERT'){
+              const exists=arr.some(x=>x.id===rec.id);
+              if(exists)return prev; // already have it, skip
+              return{...prev,[table]:[rec,...arr]};
+            }
             if(payload.eventType==='UPDATE')return{...prev,[table]:arr.map(x=>x.id===rec.id?{...x,...rec}:x)};
             if(payload.eventType==='DELETE')return{...prev,[table]:arr.filter(x=>x.id!==oldRec.id)};
             return prev;
           });
-          // Refresh portal count when portal_requests changes
-          if(table==='portal_requests'||table.includes('request')){
+          if(table==='portal_requests'){
             supabase.from('portal_requests').select('id',{count:'exact'}).eq('status','pending').then(({count})=>setPendingPortalCount(count||0));
           }
         })
@@ -521,16 +525,25 @@ export default function App(){
   },[data,loading]);
 
   const up=useCallback((table,valOrFn)=>{
+    // Compute new array OUTSIDE setState to avoid stale closure issues
     setData(prev=>{
       const oldArr=prev[table]||[];
       const newArr=typeof valOrFn==="function"?valOrFn(oldArr):valOrFn;
+      // Schedule DB sync after state update completes
       if(dbModeRef.current&&Array.isArray(oldArr)&&Array.isArray(newArr)){
         const added=newArr.filter(n=>!oldArr.find(o=>o.id===n.id));
         const removed=oldArr.filter(o=>!newArr.find(n=>n.id===o.id));
         const updated=newArr.filter(n=>{const o=oldArr.find(x=>x.id===n.id);return o&&JSON.stringify(o)!==JSON.stringify(n);});
-        added.forEach(item=>db.insert(table,item).catch(e=>console.error('DB insert failed:',table,e)));
-        removed.forEach(item=>db.remove(table,item.id).catch(e=>console.error('DB remove failed:',table,e)));
-        updated.forEach(item=>db.update(table,item.id,item).catch(e=>console.error('DB update failed:',table,e)));
+        // Use setTimeout(0) to run DB ops outside React's render cycle
+        setTimeout(()=>{
+          added.forEach(item=>{
+            db.insert(table,item)
+              .then(saved=>{if(!saved)console.error('DB insert returned null:',table,item.id);else console.log('DB saved:',table,item.id);})
+              .catch(e=>console.error('DB insert failed:',table,e));
+          });
+          removed.forEach(item=>db.remove(table,item.id).catch(e=>console.error('DB remove failed:',table,e)));
+          updated.forEach(item=>db.update(table,item.id,item).catch(e=>console.error('DB update failed:',table,e)));
+        },0);
       }
       return{...prev,[table]:newArr};
     });
