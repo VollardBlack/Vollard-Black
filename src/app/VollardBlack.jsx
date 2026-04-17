@@ -1113,7 +1113,7 @@ function AuctionPage({data,actions}){
     </div>}
 
     {/* Buyer approvals view */}
-    {view==="buyers"&&<AucBuyerApproval buyers={buyers} actions={actions} fmt={fmt}/>}
+    {view==="buyers"&&<AucBuyerApproval buyers={buyers} auctions={auctions} bids={bids} actions={actions} fmt={fmt}/>}
 
     {/* Modals */}
     {createModal&&<AucCreateModal artworks={artworks} onSave={(d)=>{actions.createAuction(d);}} onClose={()=>setCreateModal(false)} fmt={fmt}/>}
@@ -1223,7 +1223,7 @@ function AucManageRow({auction,bids,buyers,collectors,schedules,fmt,actions,onBi
   </div>;
 }
 
-function AucBuyerApproval({buyers,actions,fmt}){
+function AucBuyerApproval({buyers,auctions,bids,actions,fmt}){
   const pending=buyers.filter(b=>b.auctionRequested&&!b.auctionApproved);
   const approved=buyers.filter(b=>b.auctionApproved);
   const unapproved=buyers.filter(b=>!b.auctionApproved&&!b.auctionRequested);
@@ -1247,7 +1247,25 @@ function AucBuyerApproval({buyers,actions,fmt}){
     </div>}
     <div style={{marginBottom:24}}>
       <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#4a9e6b",marginBottom:14}}>Approved ({approved.length})</div>
-      {approved.length===0?<p style={{fontSize:13,color:"#8a8070"}}>No approved buyers yet.</p>:<Tbl cols={[{label:"Name",bold:true,render:r=>bn(r)},{label:"Email",key:"email"},{label:"ID",key:"idNumber"},{label:"Nationality",key:"nationality"},{label:"Approved",render:r=><span style={{fontSize:11,fontWeight:600,color:"#4a9e6b"}}>✓ {r.auctionApprovedAt||""}</span>},{label:"",render:r=><button onClick={()=>actions.revokeAuctionApproval(r.id)} style={{background:"none",border:"1px solid rgba(196,92,74,0.3)",borderRadius:6,color:"#c45c4a",cursor:"pointer",padding:"4px 10px",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>Revoke</button>}]} data={approved}/>}
+      {approved.length===0?<p style={{fontSize:13,color:"#8a8070"}}>No approved buyers yet.</p>:<Tbl cols={[
+        {label:"Name",bold:true,render:r=>bn(r)},
+        {label:"Email",key:"email"},
+        {label:"ID",key:"idNumber"},
+        {label:"Auction Record",render:r=>{
+          const buyerBids=(bids||[]).filter(b=>b.buyerId===r.id);
+          const wins=(auctions||[]).filter(a=>a.status==="Sold"&&a.leadBidderId===r.id);
+          const live=(auctions||[]).filter(a=>a.status==="Live"&&a.leadBidderId===r.id);
+          const totalBid=buyerBids.reduce((s,b)=>Math.max(s,b.amount||0),0);
+          return<div style={{display:"flex",flexDirection:"column",gap:3}}>
+            {wins.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#4a9e6b"}}>🏆 {wins.length} win{wins.length!==1?"s":""} · R {fmt(wins.reduce((s,a)=>s+(a.currentBid||0),0))}</span>}
+            {live.length>0&&<span style={{fontSize:10,fontWeight:600,color:"#c45c4a"}}>● Leading {live.length} live</span>}
+            {buyerBids.length>0&&<span style={{fontSize:10,color:"#8a8070"}}>{buyerBids.length} bid{buyerBids.length!==1?"s":""} placed</span>}
+            {buyerBids.length===0&&wins.length===0&&<span style={{fontSize:10,color:"#c0b8b0"}}>No bids yet</span>}
+          </div>;
+        }},
+        {label:"Approved",render:r=><span style={{fontSize:11,fontWeight:600,color:"#4a9e6b"}}>✓ {r.auctionApprovedAt||""}</span>},
+        {label:"",render:r=><button onClick={()=>actions.revokeAuctionApproval(r.id)} style={{background:"none",border:"1px solid rgba(196,92,74,0.3)",borderRadius:6,color:"#c45c4a",cursor:"pointer",padding:"4px 10px",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>Revoke</button>},
+      ]} data={approved}/>}
     </div>
     <div>
       <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>Mark Buyer as Requesting Access</div>
@@ -1732,14 +1750,21 @@ function BuyersPage({data,actions}){
   const f=data.buyers.filter(b=>buyerName(b).toLowerCase().includes(search.toLowerCase())||(b.email||"").toLowerCase().includes(search.toLowerCase()));
   const getPurchases=(buyerId)=>data.sales.filter(s=>s.buyerId===buyerId);
   const getTotalSpend=(buyerId)=>getPurchases(buyerId).reduce((s,x)=>s+(x.salePrice||0),0);
+  const getBids=(buyerId)=>(data.bids||[]).filter(b=>b.buyerId===buyerId);
+  const getAuctionWins=(buyerId)=>(data.auctions||[]).filter(a=>a.status==="Sold"&&a.leadBidderId===buyerId);
+  const getActiveBids=(buyerId)=>(data.auctions||[]).filter(a=>a.status==="Live"&&(data.bids||[]).some(b=>b.buyerId===buyerId&&b.auctionId===a.id));
+  const totalAuctionWins=(data.auctions||[]).filter(a=>a.status==="Sold"&&a.leadBidderId);
   const kycPendingBuyers=data.buyers.filter(b=>b.kycStatus!=="approved");
   const auctionPendingBuyers=data.buyers.filter(b=>b.auctionRequested&&!b.auctionApproved);
   return(<div>
     {kycPendingBuyers.length>0&&<div style={{padding:"12px 16px",background:"rgba(230,190,50,0.08)",border:"1px solid rgba(230,190,50,0.25)",borderRadius:10,marginBottom:12,display:"flex",alignItems:"center",gap:10}}><span style={{color:"#e6be32",fontSize:16}}>⚠</span><span style={{fontSize:13,color:"#8a6a1e",fontWeight:600}}>{kycPendingBuyers.length} buyer{kycPendingBuyers.length>1?"s":""} awaiting KYC approval</span></div>}
     {auctionPendingBuyers.length>0&&<div style={{padding:"12px 16px",background:"rgba(74,158,107,0.06)",border:"1px solid rgba(74,158,107,0.25)",borderRadius:10,marginBottom:12,display:"flex",alignItems:"center",gap:10}}><span style={{color:"#4a9e6b",fontSize:16}}>⚖</span><span style={{fontSize:13,color:"#2d7a4a",fontWeight:600}}>{auctionPendingBuyers.length} buyer{auctionPendingBuyers.length>1?"s":""} requesting auction bidding access</span></div>}
     <PT title="Buyers" sub={`${data.buyers.length} registered buyers`} action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Register Buyer</Btn>}/>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:14,marginBottom:28}}>
-      <Stat label="Total Buyers" value={data.buyers.length} gold/><Stat label="Repeat Buyers" value={data.buyers.filter(b=>getPurchases(b.id).length>1).length} green/><Stat label="Total Purchases" value={data.sales.filter(s=>s.buyerId).length}/><Stat label="Total Spend" value={"R "+fmt(data.sales.filter(s=>s.buyerId).reduce((s,x)=>s+(x.salePrice||0),0))} gold/>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:14,marginBottom:28}}>
+      <Stat label="Total Buyers" value={data.buyers.length} gold/>
+      <Stat label="Auction Wins" value={totalAuctionWins} green/>
+      <Stat label="Total Purchases" value={data.sales.filter(s=>s.buyerId).length}/>
+      <Stat label="Total Spend" value={"R "+fmt(data.sales.filter(s=>s.buyerId).reduce((s,x)=>s+(x.salePrice||0),0))} gold/>
     </div>
     <div style={{display:"grid",gridTemplateColumns:selected?"1fr 380px":"1fr",gap:20}}>
       <Card>
@@ -1767,25 +1792,73 @@ function BuyersPage({data,actions}){
                   <button onClick={e=>{e.stopPropagation();actions.approveForAuction(r.id);}} style={{fontSize:9,padding:"1px 8px",borderRadius:6,border:"1px solid rgba(74,158,107,0.3)",background:"transparent",color:"#4a9e6b",cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>Grant Access</button></>
             }
           </div>},
+          {label:"Auction Activity",render:r=>{
+            const wins=getAuctionWins(r.id);
+            const active=getActiveBids(r.id);
+            const allBids=getBids(r.id);
+            return<div style={{display:"flex",flexDirection:"column",gap:3}}>
+              {wins.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#4a9e6b",background:"rgba(74,158,107,0.10)",padding:"2px 8px",borderRadius:4}}>🏆 {wins.length} win{wins.length!==1?"s":""}</span>}
+              {active.length>0&&<span style={{fontSize:10,fontWeight:600,color:"#c45c4a",background:"rgba(196,92,74,0.08)",padding:"2px 8px",borderRadius:4}}>● {active.length} live bid{active.length!==1?"s":""}</span>}
+              {allBids.length>0&&<span style={{fontSize:10,color:"#8a8070"}}>{allBids.length} total bid{allBids.length!==1?"s":""}</span>}
+              {wins.length===0&&active.length===0&&allBids.length===0&&<span style={{fontSize:10,color:"#c0b8b0"}}>—</span>}
+            </div>;
+          }},
           {label:"Purchases",render:r=><span style={{color:"#b68b2e",fontWeight:600}}>{getPurchases(r.id).length}</span>},
           {label:"Total Spend",right:true,gold:true,render:r=>"R "+fmt(getTotalSpend(r.id))},
           {label:"",render:r=><div style={{display:"flex",gap:6}}><button onClick={e=>{e.stopPropagation();setModal(r);}} style={{background:"none",border:"none",color:"#6b635a",cursor:"pointer"}}>{I.edit}</button><button onClick={e=>{e.stopPropagation();if(confirm("Delete buyer?"))actions.deleteBuyer(r.id);}} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer"}}>{I.del}</button></div>},
         ]} data={f}/>}
       </Card>
-      {selected&&<BuyerProfile buyer={selected} purchases={getPurchases(selected.id)} artworks={data.artworks} collectors={data.collectors} onClose={()=>setSelected(null)} onEdit={()=>setModal(selected)}/>}
+      {selected&&<BuyerProfile buyer={selected} purchases={getPurchases(selected.id)} artworks={data.artworks} collectors={data.collectors} auctions={data.auctions||[]} bids={data.bids||[]} onClose={()=>setSelected(null)} onEdit={()=>setModal(selected)}/>}
     </div>
     {modal&&<BuyerModal buyer={modal==="add"?blank:modal} onSave={(b)=>{actions.saveBuyer(b);setModal(null);if(selected?.id===b.id)setSelected(b);}} onClose={()=>setModal(null)}/>}
   </div>);}
 
-function BuyerProfile({buyer,purchases,artworks,collectors,onClose,onEdit}){
-  return<Card style={{position:"sticky",top:20}}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
+function BuyerProfile({buyer,purchases,artworks,collectors,auctions,bids,onClose,onEdit}){
+  const buyerBids=(bids||[]).filter(b=>b.buyerId===buyer.id).sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+  const buyerAuctions=[...new Set(buyerBids.map(b=>b.auctionId))].map(aid=>{
+    const auc=(auctions||[]).find(a=>a.id===aid);
+    const topBid=buyerBids.filter(b=>b.auctionId===aid).sort((a,b)=>b.amount-a.amount)[0];
+    return auc?{...auc,myTopBid:topBid?.amount||0,won:auc.status==="Sold"&&auc.leadBidderId===buyer.id,leading:auc.status==="Live"&&auc.leadBidderId===buyer.id}:null;
+  }).filter(Boolean);
+  const wins=buyerAuctions.filter(a=>a.won);
+  return<Card style={{position:"sticky",top:20,maxHeight:"85vh",overflowY:"auto"}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
       <div><div style={{fontFamily:"Cormorant Garamond,serif",fontSize:20,fontWeight:400,color:"#1a1714"}}>{buyerName(buyer)}</div><div style={{fontSize:11,color:"#8a8070",marginTop:2,letterSpacing:1,textTransform:"uppercase"}}>{buyer.type==="company"?"Company":"Individual"} · {buyer.nationality||"—"}</div></div>
       <div style={{display:"flex",gap:6}}><Btn small ghost onClick={onEdit}>{I.edit}</Btn><button onClick={onClose} style={{background:"none",border:"none",color:"#6b635a",cursor:"pointer"}}>{I.x}</button></div>
     </div>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:12,marginBottom:16}}>{[["Email",buyer.email],["Mobile",buyer.mobile],["ID",buyer.idNumber],["City",buyer.city],["Country",buyer.country]].map(([l,v])=>v?<div key={l}><div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:2}}>{l}</div><div style={{color:"#2a2622"}}>{v}</div></div>:null)}</div>
-    <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>Purchase History ({purchases.length})</div>
-    {purchases.length===0?<p style={{fontSize:13,color:"#8a8070"}}>No purchases yet.</p>:purchases.map(sale=>{const art=artworks.find(a=>a.id===sale.artworkId);const col=collectors.find(c=>c.id===sale.collectorId);const colName=col?(col.type==="company"?col.companyName:`${col.firstName} ${col.lastName}`):"—";return<div key={sale.id} style={{padding:12,background:"#e8e4dd",borderRadius:8,marginBottom:8}}><div style={{display:"flex",gap:10}}>{art?.imageUrl&&<div style={{width:40,height:40,borderRadius:6,overflow:"hidden",flexShrink:0}}><img src={art.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div>}<div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:"#1a1714"}}>{sale.artworkTitle}</div><div style={{fontSize:11,color:"#8a8070",marginTop:2}}>{sale.date} · LH: {colName}</div><div style={{display:"flex",gap:12,marginTop:4,fontSize:12}}><span style={{color:"#b68b2e",fontWeight:600}}>R {fmt(sale.salePrice)}</span><Badge model={sale.acquisitionModel||"O1"}/></div></div></div></div>;})}
+
+    {/* KYC + Auction status badges */}
+    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>
+      <span style={{fontSize:10,fontWeight:600,padding:"3px 10px",borderRadius:6,background:buyer.kycStatus==="approved"?"rgba(74,158,107,0.12)":"rgba(230,190,50,0.12)",color:buyer.kycStatus==="approved"?"#4a9e6b":"#e6be32"}}>{buyer.kycStatus==="approved"?"✓ KYC Approved":"⚠ KYC Pending"}</span>
+      <span style={{fontSize:10,fontWeight:600,padding:"3px 10px",borderRadius:6,background:buyer.auctionApproved?"rgba(74,158,107,0.12)":"rgba(182,139,46,0.08)",color:buyer.auctionApproved?"#4a9e6b":"#8a8070"}}>{buyer.auctionApproved?"⚖ Bid Approved":"⚖ No Bid Access"}</span>
+      {wins.length>0&&<span style={{fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:6,background:"rgba(74,158,107,0.15)",color:"#2d7a4a"}}>🏆 {wins.length} Auction Win{wins.length!==1?"s":""}</span>}
+    </div>
+
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:12,marginBottom:14}}>{[["Email",buyer.email],["Mobile",buyer.mobile],["ID",buyer.idNumber],["City",buyer.city],["Country",buyer.country]].map(([l,v])=>v?<div key={l}><div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:2}}>{l}</div><div style={{color:"#2a2622"}}>{v}</div></div>:null)}</div>
+
+    {/* Auction Activity */}
+    {buyerAuctions.length>0&&<div style={{marginBottom:14}}>
+      <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:8}}>Auction Activity ({buyerAuctions.length})</div>
+      {buyerAuctions.map(auc=><div key={auc.id} style={{padding:"10px 12px",background:auc.won?"rgba(74,158,107,0.06)":auc.leading?"rgba(182,139,46,0.06)":"#e8e4dd",border:`1px solid ${auc.won?"rgba(74,158,107,0.25)":auc.leading?"rgba(182,139,46,0.25)":"rgba(182,139,46,0.10)"}`,borderRadius:8,marginBottom:6}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:12,fontWeight:600,color:"#1a1714",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{auc.title}</div>
+            <div style={{fontSize:10,color:"#8a8070",marginTop:2}}>{auc.closedAt||auc.startedAt||auc.createdAt||"—"}</div>
+          </div>
+          <div style={{textAlign:"right",flexShrink:0}}>
+            <div style={{fontSize:11,fontWeight:700,color:auc.won?"#4a9e6b":auc.leading?"#b68b2e":"#6b635a"}}>
+              {auc.won?"🏆 WON":auc.leading?"● LEADING":auc.status==="No Sale"?"No Sale":auc.status}
+            </div>
+            <div style={{fontSize:11,color:"#b68b2e",fontWeight:600,fontFamily:"Cormorant Garamond,serif"}}>R {fmt(auc.myTopBid)}</div>
+            {auc.won&&<div style={{fontSize:9,color:"#8a8070"}}>Final: R {fmt(auc.currentBid)}</div>}
+          </div>
+        </div>
+      </div>)}
+    </div>}
+
+    {/* Purchase History */}
+    <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:8}}>Purchase History ({purchases.length})</div>
+    {purchases.length===0?<p style={{fontSize:13,color:"#8a8070",marginBottom:8}}>No purchases yet.</p>:purchases.map(sale=>{const art=artworks.find(a=>a.id===sale.artworkId);const col=collectors.find(c=>c.id===sale.collectorId);const colName=col?(col.type==="company"?col.companyName:`${col.firstName} ${col.lastName}`):"—";return<div key={sale.id} style={{padding:12,background:"#e8e4dd",borderRadius:8,marginBottom:8}}><div style={{display:"flex",gap:10}}>{art?.imageUrl&&<div style={{width:40,height:40,borderRadius:6,overflow:"hidden",flexShrink:0}}><img src={art.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div>}<div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:"#1a1714"}}>{sale.artworkTitle}</div><div style={{fontSize:11,color:"#8a8070",marginTop:2}}>{sale.date} · {sale.source==="auction"?"⚖ Auction":"Direct"} · LH: {colName}</div><div style={{display:"flex",gap:12,marginTop:4,fontSize:12}}><span style={{color:"#b68b2e",fontWeight:600}}>R {fmt(sale.salePrice)}</span><Badge model={sale.acquisitionModel||"O1"}/></div></div></div></div>;})}
     {purchases.length>0&&<div style={{borderTop:"1px solid rgba(182,139,46,0.18)",paddingTop:10,marginTop:4,display:"flex",justifyContent:"space-between",fontSize:13}}><span style={{color:"#6b635a"}}>Total spend:</span><span style={{color:"#b68b2e",fontWeight:700}}>R {fmt(purchases.reduce((s,x)=>s+(x.salePrice||0),0))}</span></div>}
     {buyer.notes&&<div style={{marginTop:12,fontSize:12,color:"#6b635a",padding:"10px 12px",background:"#e8e4dd",borderRadius:8}}>{buyer.notes}</div>}
   </Card>;}
