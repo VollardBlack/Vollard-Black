@@ -26,17 +26,17 @@ const toSnake = (obj) => {
 
 
 // ─── Sound Engine (Web Audio API — no external files needed) ─────────────────
-const AudioCtx = typeof window !== 'undefined' ? (window.AudioContext || window.webkitAudioContext) : null;
-let _audioCtx = null;
-const getCtx = () => {
-  if(!AudioCtx) return null;
-  if(!_audioCtx) _audioCtx = new AudioCtx();
-  if(_audioCtx.state === 'suspended') _audioCtx.resume();
-  return _audioCtx;
+const _AudioCtxClass = typeof window !== 'undefined' ? (window.AudioContext || window.webkitAudioContext) : null;
+let _buyerAudioCtx = null;
+const _getAudioCtxBuyer = () => {
+  if(!_AudioCtxClass) return null;
+  if(!_buyerAudioCtx) _buyerAudioCtx = new _AudioCtxClass();
+  if(_buyerAudioCtx.state === 'suspended') _buyerAudioCtx.resume();
+  return _buyerAudioCtx;
 };
 
 const playTone = (frequency, duration, type='sine', volume=0.3, delay=0) => {
-  const ctx = getCtx(); if(!ctx) return;
+  const ctx = _getAudioCtxBuyer(); if(!ctx) return;
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.connect(gain); gain.connect(ctx.destination);
@@ -78,7 +78,7 @@ const soundSold = () => {
 
 // Auction launched — gavel strike simulation
 const soundGavel = () => {
-  const ctx = getCtx(); if(!ctx) return;
+  const ctx = _getAudioCtxBuyer(); if(!ctx) return;
   // Low thump
   const buf = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
   const data = buf.getChannelData(0);
@@ -319,6 +319,7 @@ function BidModal({auction, buyer, myBids, onClose, onBidPlaced}) {
     : Math.max(Number(auction.reservePrice)||0, 1);
 
   const [amount,setAmount] = useState(String(baseBid));
+  const [stage,setStage] = useState('entry'); // 'entry' | 'confirm'
   const [submitting,setSubmitting] = useState(false);
   const [error,setError] = useState('');
   const [success,setSuccess] = useState(false);
@@ -403,7 +404,7 @@ function BidModal({auction, buyer, myBids, onClose, onBidPlaced}) {
         {/* Quick options */}
         <div style={{display:'flex',gap:8,marginBottom:14}}>
           {quickOpts.map(({label,val})=>(
-            <button key={label} onClick={()=>{setAmount(String(val));setError('');}}
+            <button key={label} onClick={()=>{setAmount(String(val));setError('');setStage('entry');}}
               style={{flex:1,padding:'10px 4px',borderRadius:8,border:`2px solid ${numAmount===val?'#b68b2e':'rgba(182,139,46,0.2)'}`,background:numAmount===val?'rgba(182,139,46,0.12)':'#f5f3ef',color:numAmount===val?'#b68b2e':'#6b635a',fontSize:10,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",fontWeight:numAmount===val?700:400,textAlign:'center'}}>
               <div>{label}</div>
               <div style={{fontWeight:700,fontSize:12,marginTop:2,fontFamily:"'Cormorant Garamond',serif"}}>R {fmt(val)}</div>
@@ -417,7 +418,7 @@ function BidModal({auction, buyer, myBids, onClose, onBidPlaced}) {
           <div style={{display:'flex',alignItems:'center',background:'#f5f3ef',border:`2px solid ${aboveMin||!numAmount?'rgba(182,139,46,0.4)':'rgba(196,92,74,0.5)'}`,borderRadius:10,overflow:'hidden'}}>
             <span style={{padding:'0 14px',fontSize:14,color:'#8a8070',borderRight:'1px solid rgba(182,139,46,0.18)',height:52,display:'flex',alignItems:'center',flexShrink:0}}>R</span>
             <input type="number" inputMode="numeric" value={amount}
-              onChange={e=>{setAmount(e.target.value);setError('');}}
+              onChange={e=>{setAmount(e.target.value);setError('');setStage('entry');}}
               min={baseBid}
               style={{flex:1,padding:'0 16px',height:52,background:'transparent',border:'none',color:'#1a1714',fontFamily:"'DM Sans',sans-serif",fontSize:20,fontWeight:700,outline:'none',minWidth:0}}/>
           </div>
@@ -433,12 +434,43 @@ function BidModal({auction, buyer, myBids, onClose, onBidPlaced}) {
         {error&&<div style={{padding:'10px 14px',background:'rgba(196,92,74,0.08)',border:'1px solid rgba(196,92,74,0.2)',borderRadius:8,fontSize:13,color:'#c45c4a',marginBottom:12}}>{error}</div>}
         {success&&<div style={{padding:'12px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.25)',borderRadius:8,fontSize:14,color:'#4a9e6b',fontWeight:600,textAlign:'center',marginBottom:12}}>✓ Bid placed successfully!</div>}
 
-        <div style={{fontSize:11,color:'#8a8070',marginBottom:14,lineHeight:1.6}}>By placing a bid you agree to purchase this artwork at your bid price if you are the winning bidder when the auction closes.</div>
+        {stage==='entry'&&(
+          <button
+            onClick={()=>{ if(!aboveMin) return setError(`Minimum bid is R ${fmt(baseBid)}`); if(auctionEnded) return setError('This auction has ended.'); setError(''); setStage('confirm'); }}
+            disabled={!aboveMin||auctionEnded}
+            style={{width:'100%',padding:'14px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:15,fontWeight:700,cursor:!aboveMin||auctionEnded?'not-allowed':'pointer',fontFamily:"'DM Sans',sans-serif",opacity:!aboveMin&&numAmount>0?0.6:1}}>
+            Review Bid — R {fmt(numAmount)}
+          </button>
+        )}
 
-        <button onClick={handleBid} disabled={submitting||!aboveMin||success||auctionEnded}
-          style={{width:'100%',padding:'14px',borderRadius:10,border:'none',background:success?'#4a9e6b':'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:15,fontWeight:700,cursor:submitting||!aboveMin||success||auctionEnded?'not-allowed':'pointer',fontFamily:"'DM Sans',sans-serif",opacity:submitting||(!aboveMin&&numAmount>0)?0.6:1}}>
-          {success?'✓ Bid Placed!':submitting?'Placing bid…':`Confirm Bid — R ${fmt(numAmount)}`}
-        </button>
+        {stage==='confirm'&&(
+          <div style={{background:'rgba(182,139,46,0.06)',border:'2px solid #b68b2e',borderRadius:12,padding:18,marginBottom:0}}>
+            <div style={{fontSize:12,letterSpacing:2,textTransform:'uppercase',color:'#8a8070',marginBottom:10}}>Confirm Your Bid</div>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+              <span style={{fontSize:14,color:'#6b635a'}}>Artwork</span>
+              <span style={{fontSize:14,fontWeight:600,color:'#1a1714'}}>{auction.title}</span>
+            </div>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+              <span style={{fontSize:14,color:'#6b635a'}}>Your bid</span>
+              <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:700,color:'#b68b2e'}}>R {fmt(numAmount)}</span>
+            </div>
+            <div style={{fontSize:11,color:'#8a8070',marginBottom:14,lineHeight:1.6}}>
+              By confirming you agree to purchase this artwork at this price if you are the winning bidder when the auction closes.
+            </div>
+            {error&&<div style={{padding:'10px 14px',background:'rgba(196,92,74,0.08)',border:'1px solid rgba(196,92,74,0.2)',borderRadius:8,fontSize:13,color:'#c45c4a',marginBottom:12}}>{error}</div>}
+            {success&&<div style={{padding:'12px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.25)',borderRadius:8,fontSize:14,color:'#4a9e6b',fontWeight:600,textAlign:'center',marginBottom:12}}>✓ Bid placed!</div>}
+            <div style={{display:'flex',gap:10}}>
+              <button onClick={()=>{setStage('entry');setError('');}} disabled={submitting||success}
+                style={{flex:1,padding:'13px',borderRadius:10,border:'1px solid rgba(182,139,46,0.3)',background:'transparent',color:'#b68b2e',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
+                ← Change
+              </button>
+              <button onClick={handleBid} disabled={submitting||success}
+                style={{flex:2,padding:'13px',borderRadius:10,border:'none',background:success?'#4a9e6b':'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:15,fontWeight:700,cursor:submitting||success?'not-allowed':'pointer',fontFamily:"'DM Sans',sans-serif",opacity:submitting?0.7:1}}>
+                {success?'✓ Bid Placed!':submitting?'Placing…':'Confirm Bid'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -514,15 +546,45 @@ function AuctionCard({auc, buyer, myBids, onBid}) {
 
 // ─── Push notification helper ─────────────────────────────────────────────────
 async function requestNotifPermission() {
-  if(!('Notification' in window)) return false;
-  if(Notification.permission==='granted') return true;
-  if(Notification.permission==='denied') return false;
-  const p = await Notification.requestPermission();
-  return p==='granted';
+  if(typeof window === 'undefined' || !('Notification' in window)) return false;
+  if(Notification.permission === 'denied') return false;
+  let granted = Notification.permission === 'granted';
+  if(!granted) {
+    const p = await Notification.requestPermission();
+    granted = p === 'granted';
+  }
+  // Register service worker for proper mobile push (shows even when tab is backgrounded)
+  if(granted && 'serviceWorker' in navigator) {
+    try {
+      await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+    } catch(e) { console.warn('SW registration failed:', e); }
+  }
+  return granted;
 }
 function pushNotif(title, body, tag) {
   if(!('Notification' in window)||Notification.permission!=='granted') return;
-  try { new Notification(title,{body,tag,icon:'/favicon.ico',badge:'/favicon.ico'}); } catch(e){}
+  try {
+    // Use ServiceWorker registration if available (works on mobile when tab backgrounded)
+    if(navigator.serviceWorker && navigator.serviceWorker.ready) {
+      navigator.serviceWorker.ready.then(reg => {
+        reg.showNotification(title, {
+          body,
+          tag,
+          icon: '/favicon.ico',
+          badge: '/favicon.ico',
+          vibrate: [200, 100, 200],
+          requireInteraction: tag && tag.startsWith('outbid'),
+        }).catch(()=>{
+          // Fallback to basic notification
+          try { new Notification(title,{body,tag}); } catch(e){}
+        });
+      }).catch(()=>{
+        try { new Notification(title,{body,tag}); } catch(e){}
+      });
+    } else {
+      new Notification(title,{body,tag,icon:'/favicon.ico'});
+    }
+  } catch(e){}
 }
 
 function BuyerDashboard({session}) {
@@ -544,7 +606,10 @@ function BuyerDashboard({session}) {
   const [bidTarget,setBidTarget] = useState(null);
   const [toast,setToast] = useState(null); // {msg, type: 'bid'|'outbid'|'sold'|'info'}
   const [notifEnabled,setNotifEnabled] = useState(false);
+  const [soundReady,setSoundReady] = useState(false);
   const buyerRef = useRef(null);
+
+  const unlockSound = () => { const ctx = _getAudioCtxBuyer(); if(ctx) setSoundReady(true); };
   const auctionsRef = useRef([]);
   const toastTimer = useRef(null);
 
@@ -722,13 +787,21 @@ function BuyerDashboard({session}) {
       {toast&&<div onClick={()=>setToast(null)} style={{position:'fixed',top:72,left:'50%',transform:'translateX(-50%)',zIndex:400,maxWidth:380,width:'calc(100% - 32px)',padding:'14px 18px',borderRadius:12,boxShadow:'0 8px 32px rgba(0,0,0,0.22)',background:toast.type==='outbid'?'#c45c4a':toast.type==='sold'?'#2d7a4a':'#1a1714',color:'#fff',fontSize:13,fontWeight:600,display:'flex',alignItems:'center',gap:10,cursor:'pointer',animation:'slideDown 0.25s ease'}}><span style={{flex:1}}>{toast.msg}</span><span style={{opacity:0.5,fontSize:18,flexShrink:0}}>x</span></div>}
 
       <div style={{maxWidth:960,margin:'0 auto',padding:'16px 16px 80px'}}>
+        {/* Sound unlock — one tap needed for browser audio policy */}
+        {!soundReady&&(
+          <div onClick={()=>unlockSound()} style={{padding:'10px 16px',background:'rgba(26,23,20,0.04)',border:'1px solid rgba(26,23,20,0.12)',borderRadius:10,marginBottom:10,display:'flex',alignItems:'center',gap:10,flexWrap:'wrap',cursor:'pointer'}}>
+            <span style={{fontSize:16}}>🔊</span>
+            <span style={{fontSize:12,color:'#2a2622',flex:1}}>Tap to enable auction sounds</span>
+            <span style={{fontSize:11,color:'#8a8070'}}>Tap →</span>
+          </div>
+        )}
         {!notifEnabled&&typeof window!=='undefined'&&'Notification' in window&&Notification.permission!=='denied'&&(
           <div style={{padding:'10px 16px',background:'rgba(182,139,46,0.06)',border:'1px solid rgba(182,139,46,0.2)',borderRadius:10,marginBottom:10,display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
             <span style={{fontSize:12,color:'#8a6a1e',flex:1}}>Enable push notifications for instant outbid alerts</span>
             <button onClick={()=>requestNotifPermission().then(g=>setNotifEnabled(g))} style={{padding:'6px 14px',borderRadius:6,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:11,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>Enable</button>
           </div>
         )}
-        {liveAuctions.length>0&&<div onClick={()=>setTab('auctions')} style={{padding:'12px 18px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.25)',borderRadius:10,marginBottom:10,cursor:'pointer',display:'flex',alignItems:'center',gap:10}}><span style={{color:'#4a9e6b'}}>●</span><span style={{fontSize:13,fontWeight:600,color:'#4a9e6b'}}>{liveAuctions.length} live auction{liveAuctions.length>1?'s':''} happening now</span><span style={{fontSize:11,color:'#4a9e6b',marginLeft:'auto'}}>Bid now →</span></div>}
+        {liveAuctions.length>0&&<div onClick={()=>{setTab('auctions');setTimeout(()=>window.scrollTo({top:0,behavior:'smooth'}),50);}} style={{padding:'12px 18px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.25)',borderRadius:10,marginBottom:10,cursor:'pointer',display:'flex',alignItems:'center',gap:10}}><span style={{color:'#4a9e6b'}}>●</span><span style={{fontSize:13,fontWeight:600,color:'#4a9e6b'}}>{liveAuctions.length} live auction{liveAuctions.length>1?'s':''} happening now</span><span style={{fontSize:11,color:'#4a9e6b',marginLeft:'auto'}}>Bid now →</span></div>}
         {isOutbid&&<div onClick={()=>setTab('auctions')} style={{padding:'12px 18px',background:'rgba(196,92,74,0.06)',border:'1px solid rgba(196,92,74,0.25)',borderRadius:10,marginBottom:10,cursor:'pointer',display:'flex',alignItems:'center',gap:10}}><span style={{color:'#c45c4a'}}>⚠</span><span style={{fontSize:13,fontWeight:600,color:'#c45c4a'}}>You've been outbid — act now</span><span style={{fontSize:11,color:'#c45c4a',marginLeft:'auto'}}>Bid →</span></div>}
         {enquiryMsg&&<div style={{padding:'12px 16px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:8,marginBottom:10,fontSize:13,color:'#4a9e6b'}}>{enquiryMsg}</div>}
 
@@ -788,7 +861,11 @@ function BuyerDashboard({session}) {
             )}
             {auctions.length===0?(
               <div style={{...S.card,textAlign:'center',padding:48}}><div style={{fontSize:32,marginBottom:12,color:'#b68b2e'}}>◆</div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:'#1a1714',marginBottom:8}}>No Auctions</div><div style={{fontSize:13,color:'#8a8070'}}>Check back soon.</div></div>
-            ):auctions.map(auc=>(
+            ):auctions.filter(auc=>{
+                if(auc.status==='Live'||auc.status==='Frozen') return true;
+                // Show closed auctions only if buyer placed a bid on them
+                return bids.some(b=>b.auctionId===auc.id);
+              }).map(auc=>(
               <AuctionCard key={auc.id} auc={auc} buyer={buyer} myBids={bids} onBid={()=>setBidTarget(auc)}/>
             ))}
           </div>
