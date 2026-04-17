@@ -438,6 +438,19 @@ function AuctionCard({auc, buyer, myBids, onBid}) {
   );
 }
 
+// ─── Push notification helper ─────────────────────────────────────────────────
+async function requestNotifPermission() {
+  if(!('Notification' in window)) return false;
+  if(Notification.permission==='granted') return true;
+  if(Notification.permission==='denied') return false;
+  const p = await Notification.requestPermission();
+  return p==='granted';
+}
+function pushNotif(title, body, tag) {
+  if(!('Notification' in window)||Notification.permission!=='granted') return;
+  try { new Notification(title,{body,tag,icon:'/favicon.ico',badge:'/favicon.ico'}); } catch(e){}
+}
+
 function BuyerDashboard({session}) {
   const [tab,setTab] = useState('gallery');
   const [buyer,setBuyer] = useState(null);
@@ -455,16 +468,91 @@ function BuyerDashboard({session}) {
   const [zoomImg,setZoomImg] = useState(null);
   const [search,setSearch] = useState('');
   const [bidTarget,setBidTarget] = useState(null);
+  const [toast,setToast] = useState(null); // {msg, type: 'bid'|'outbid'|'sold'|'info'}
+  const [notifEnabled,setNotifEnabled] = useState(false);
+  const buyerRef = useRef(null);
+  const auctionsRef = useRef([]);
+  const toastTimer = useRef(null);
+
+  const showToast = (msg, type='info') => {
+    setToast({msg,type});
+    if(toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(()=>setToast(null), 5000);
+  };
+
+  // Request notification permission on mount
+  useEffect(()=>{
+    requestNotifPermission().then(granted=>setNotifEnabled(granted));
+  },[]);
 
   useEffect(()=>{ loadData(true); },[session]);
+
+  // Keep refs in sync for use inside realtime callbacks
+  useEffect(()=>{ buyerRef.current = buyer; },[buyer]);
+  useEffect(()=>{ auctionsRef.current = auctions; },[auctions]);
 
   useEffect(()=>{
     if(!session||!supabase) return;
     const ch = supabase.channel('buyer-rt')
-      .on('postgres_changes',{event:'*',schema:'public',table:'auctions'},()=>loadData(false))
-      .on('postgres_changes',{event:'*',schema:'public',table:'bids'},()=>loadData(false))
-      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'buyers'},()=>loadData(false))
-      .subscribe();
+      // ── Auction changes: apply payload directly to state ──
+      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'auctions'},(payload)=>{
+        const updated = toCamel(payload.new);
+        const prev = auctionsRef.current.find(a=>a.id===updated.id);
+        const me = buyerRef.current;
+
+        // Update auction in state immediately — no re-fetch
+        setAuctions(prev=>prev.map(a=>a.id===updated.id?{...a,...updated,imageUrl:a.imageUrl}:a));
+
+        if(!me||!prev) return;
+
+        // Was I just outbid?
+        if(prev.leadBidderId===me.id && updated.leadBidderId!==me.id && updated.status==='Live') {
+          showToast(`⚠ You've been outbid on "${updated.title}" — R ${fmt(updated.currentBid)}`, 'outbid');
+          pushNotif('⚠ Outbid — Vollard Black', `${updated.title}: new bid R ${fmt(updated.currentBid)}. Bid now!`, 'outbid-'+updated.id);
+        }
+        // Auction just closed and I won
+        if(updated.status==='Sold' && updated.leadBidderId===me.id) {
+          showToast(`🏆 You won "${updated.title}" at R ${fmt(updated.currentBid)}!`, 'sold');
+          pushNotif('🏆 You Won! — Vollard Black', `Congratulations! You won "${updated.title}" at R ${fmt(updated.currentBid)}.`, 'won-'+updated.id);
+        }
+        // New bid on an auction I'm watching (not by me)
+        if(updated.leadBidderId!==me.id && updated.bidsCount>(prev.bidsCount||0) && updated.status==='Live') {
+          showToast(`New bid on "${updated.title}" — R ${fmt(updated.currentBid)}`, 'bid');
+        }
+      })
+      // ── New auction goes live ──
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'auctions'},(payload)=>{
+        const a = toCamel(payload.new);
+        if(a.status==='Live') {
+          setAuctions(prev=>[a,...prev]);
+          showToast(`🔴 New auction live: "${a.title}"`, 'bid');
+          pushNotif('🔴 Live Auction — Vollard Black', `"${a.title}" is now live. Place your bid!`, 'live-'+a.id);
+        }
+      })
+      // ── New bid inserted: add to bids state immediately ──
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'bids'},(payload)=>{
+        const newBid = toCamel(payload.new);
+        const me = buyerRef.current;
+        // Add to bids list if it's mine
+        if(me && newBid.buyerId===me.id) {
+          setBids(prev=>[newBid,...prev.filter(b=>b.id!==newBid.id)]);
+        }
+      })
+      // ── Buyer record updated (e.g. auction approved) ──
+      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'buyers'},(payload)=>{
+        const updated = toCamel(payload.new);
+        const me = buyerRef.current;
+        if(me && updated.id===me.id) {
+          setBuyer(b=>({...b,...updated}));
+          if(updated.auctionApproved && !me.auctionApproved) {
+            showToast('✓ Auction access approved — you can now place bids!', 'sold');
+            pushNotif('✓ Auction Access Approved', 'Vollard Black has approved your auction access. You can now place bids.', 'approved');
+          }
+        }
+      })
+      .subscribe((status)=>{
+        if(status==='SUBSCRIBED') console.log('Realtime connected');
+      });
     return ()=>supabase.removeChannel(ch);
   },[session]);
 
@@ -553,7 +641,17 @@ function BuyerDashboard({session}) {
         </div>
       </div>
 
+      {/* Toast */}
+      <style>{`@keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}`}</style>
+      {toast&&<div onClick={()=>setToast(null)} style={{position:'fixed',top:72,left:'50%',transform:'translateX(-50%)',zIndex:400,maxWidth:380,width:'calc(100% - 32px)',padding:'14px 18px',borderRadius:12,boxShadow:'0 8px 32px rgba(0,0,0,0.22)',background:toast.type==='outbid'?'#c45c4a':toast.type==='sold'?'#2d7a4a':'#1a1714',color:'#fff',fontSize:13,fontWeight:600,display:'flex',alignItems:'center',gap:10,cursor:'pointer',animation:'slideDown 0.25s ease'}}><span style={{flex:1}}>{toast.msg}</span><span style={{opacity:0.5,fontSize:18,flexShrink:0}}>x</span></div>}
+
       <div style={{maxWidth:960,margin:'0 auto',padding:'16px 16px 80px'}}>
+        {!notifEnabled&&typeof window!=='undefined'&&'Notification' in window&&Notification.permission!=='denied'&&(
+          <div style={{padding:'10px 16px',background:'rgba(182,139,46,0.06)',border:'1px solid rgba(182,139,46,0.2)',borderRadius:10,marginBottom:10,display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+            <span style={{fontSize:12,color:'#8a6a1e',flex:1}}>Enable push notifications for instant outbid alerts</span>
+            <button onClick={()=>requestNotifPermission().then(g=>setNotifEnabled(g))} style={{padding:'6px 14px',borderRadius:6,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:11,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>Enable</button>
+          </div>
+        )}
         {liveAuctions.length>0&&<div onClick={()=>setTab('auctions')} style={{padding:'12px 18px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.25)',borderRadius:10,marginBottom:10,cursor:'pointer',display:'flex',alignItems:'center',gap:10}}><span style={{color:'#4a9e6b'}}>●</span><span style={{fontSize:13,fontWeight:600,color:'#4a9e6b'}}>{liveAuctions.length} live auction{liveAuctions.length>1?'s':''} happening now</span><span style={{fontSize:11,color:'#4a9e6b',marginLeft:'auto'}}>Bid now →</span></div>}
         {isOutbid&&<div onClick={()=>setTab('auctions')} style={{padding:'12px 18px',background:'rgba(196,92,74,0.06)',border:'1px solid rgba(196,92,74,0.25)',borderRadius:10,marginBottom:10,cursor:'pointer',display:'flex',alignItems:'center',gap:10}}><span style={{color:'#c45c4a'}}>⚠</span><span style={{fontSize:13,fontWeight:600,color:'#c45c4a'}}>You've been outbid — act now</span><span style={{fontSize:11,color:'#c45c4a',marginLeft:'auto'}}>Bid →</span></div>}
         {enquiryMsg&&<div style={{padding:'12px 16px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:8,marginBottom:10,fontSize:13,color:'#4a9e6b'}}>{enquiryMsg}</div>}
