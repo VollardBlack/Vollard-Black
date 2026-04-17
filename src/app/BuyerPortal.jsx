@@ -24,6 +24,79 @@ const toSnake = (obj) => {
   return out;
 };
 
+
+// ─── Sound Engine (Web Audio API — no external files needed) ─────────────────
+const AudioCtx = typeof window !== 'undefined' ? (window.AudioContext || window.webkitAudioContext) : null;
+let _audioCtx = null;
+const getCtx = () => {
+  if(!AudioCtx) return null;
+  if(!_audioCtx) _audioCtx = new AudioCtx();
+  if(_audioCtx.state === 'suspended') _audioCtx.resume();
+  return _audioCtx;
+};
+
+const playTone = (frequency, duration, type='sine', volume=0.3, delay=0) => {
+  const ctx = getCtx(); if(!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.type = type;
+  osc.frequency.setValueAtTime(frequency, ctx.currentTime + delay);
+  gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+  gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + delay + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
+  osc.start(ctx.currentTime + delay);
+  osc.stop(ctx.currentTime + delay + duration + 0.05);
+};
+
+// Bid placed (buyer) — ascending chime: punchy & satisfying
+const soundBidPlaced = () => {
+  playTone(440, 0.12, 'sine', 0.25, 0);
+  playTone(554, 0.12, 'sine', 0.25, 0.08);
+  playTone(659, 0.20, 'sine', 0.30, 0.16);
+  playTone(880, 0.35, 'sine', 0.20, 0.30);
+};
+
+// Outbid alert — tense descending tone
+const soundOutbid = () => {
+  playTone(660, 0.10, 'sawtooth', 0.15, 0);
+  playTone(550, 0.10, 'sawtooth', 0.15, 0.12);
+  playTone(440, 0.25, 'sawtooth', 0.20, 0.24);
+};
+
+// New bid received (admin) — cash register / auction house feel
+const soundNewBid = () => {
+  playTone(800, 0.06, 'square', 0.12, 0);
+  playTone(1000, 0.06, 'square', 0.12, 0.07);
+  playTone(1200, 0.15, 'sine', 0.20, 0.14);
+};
+
+// Auction sold — triumphant fanfare
+const soundSold = () => {
+  [[523,0.15,0],[659,0.15,0.12],[784,0.15,0.24],[1047,0.50,0.36]].forEach(([f,d,t]) => playTone(f, d, 'sine', 0.25, t));
+};
+
+// Auction launched — gavel strike simulation
+const soundGavel = () => {
+  const ctx = getCtx(); if(!ctx) return;
+  // Low thump
+  const buf = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for(let i = 0; i < data.length; i++) {
+    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.04));
+  }
+  const src = ctx.createBufferSource();
+  const gain = ctx.createGain();
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass'; filter.frequency.value = 200;
+  src.buffer = buf;
+  src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+  gain.gain.setValueAtTime(0.8, ctx.currentTime);
+  src.start();
+  // Follow with a short tone
+  playTone(180, 0.25, 'sine', 0.3, 0.05);
+};
+
 const calcMinBid = (currentBid, increment) => {
   if (!increment || (!increment.type && !increment.value)) return (currentBid || 0) + 1;
   const base = currentBid || 0;
@@ -287,6 +360,7 @@ function BidModal({auction, buyer, myBids, onClose, onBidPlaced}) {
         bids_count:(auction.bidsCount||0)+1,
       }).eq('id',auction.id);
       if(aucErr) throw aucErr;
+      soundBidPlaced();
       setSuccess(true);
       setTimeout(()=>{ onBidPlaced(); onClose(); },1200);
     } catch(e) {
@@ -507,11 +581,13 @@ function BuyerDashboard({session}) {
 
         // Was I just outbid?
         if(prev.leadBidderId===me.id && updated.leadBidderId!==me.id && updated.status==='Live') {
+          soundOutbid();
           showToast(`⚠ You've been outbid on "${updated.title}" — R ${fmt(updated.currentBid)}`, 'outbid');
           pushNotif('⚠ Outbid — Vollard Black', `${updated.title}: new bid R ${fmt(updated.currentBid)}. Bid now!`, 'outbid-'+updated.id);
         }
         // Auction just closed and I won
         if(updated.status==='Sold' && updated.leadBidderId===me.id) {
+          soundSold();
           showToast(`🏆 You won "${updated.title}" at R ${fmt(updated.currentBid)}!`, 'sold');
           pushNotif('🏆 You Won! — Vollard Black', `Congratulations! You won "${updated.title}" at R ${fmt(updated.currentBid)}.`, 'won-'+updated.id);
         }
