@@ -721,6 +721,20 @@ export default function App(){
       dbUp("auctions",auctionId,{currentBid:amount,leadBidderId:buyerId,leadBidderName:buyerName});
       sendPushNotification("New Bid — Vollard Black",`${buyerName} bid R ${amount.toLocaleString("en-ZA")} on ${auction?.title||"artwork"}`);
     },
+    rollbackBid:(auctionId,bidId)=>{
+      // Remove the bid from local state
+      up("bids",p=>p.filter(b=>b.id!==bidId));
+      // Find the previous bid for this auction (second highest)
+      const remaining=(dataRef.current.bids||[]).filter(b=>b.auctionId===auctionId&&b.id!==bidId).sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+      const prev=remaining[0]||null;
+      const newBid=prev?prev.amount:0;
+      const newLeadId=prev?prev.buyerId:null;
+      const newLeadName=prev?prev.buyerName:null;
+      const newCount=Math.max(0,(dataRef.current.auctions||[]).find(a=>a.id===auctionId)?.bidsCount-1||0);
+      up("auctions",p=>p.map(a=>a.id===auctionId?{...a,currentBid:newBid,leadBidderId:newLeadId,leadBidderName:newLeadName,bidsCount:newCount}:a));
+      dbUp("auctions",auctionId,{current_bid:newBid,lead_bidder_id:newLeadId,lead_bidder_name:newLeadName,bids_count:newCount});
+      if(supabase)supabase.from("bids").delete().eq("id",bidId);
+    },
     approveForAuction:(buyerId)=>{up("buyers",p=>p.map(b=>b.id===buyerId?{...b,auctionApproved:true,auctionApprovedAt:td()}:b));dbUp("buyers",buyerId,{auctionApproved:true,auctionApprovedAt:td()});},
     revokeAuctionApproval:(buyerId)=>{up("buyers",p=>p.map(b=>b.id===buyerId?{...b,auctionApproved:false,auctionRequested:false}:b));dbUp("buyers",buyerId,{auctionApproved:false});},
     updateBuyerAuctionRequest:(buyerId)=>{up("buyers",p=>p.map(b=>b.id===buyerId?{...b,auctionRequested:true,auctionRequestedAt:td()}:b));dbUp("buyers",buyerId,{auctionRequested:true,auctionRequestedAt:td()});},
@@ -949,6 +963,8 @@ function AuctionPage({data,actions}){
   const [createModal,setCreateModal]=useState(false);
   const [bidModal,setBidModal]=useState(null);
   const [notifModal,setNotifModal]=useState(null);
+  const [soundOn,setSoundOn]=useState(false);
+  const unlockAdminSound=()=>{ const ctx=_getAudioCtx(); if(ctx){setSoundOn(true);_tone(880,0.1,'sine',0.15,0);} };
 
   const auctions=data.auctions||[];
   const bids=data.bids||[];
@@ -980,6 +996,10 @@ function AuctionPage({data,actions}){
       </div>
       <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
         {pendingApproval.length>0&&<div onClick={()=>setView("buyers")} style={{padding:"8px 14px",background:"rgba(220,120,40,0.1)",border:"1px solid rgba(220,120,40,0.3)",borderRadius:8,fontSize:12,color:"#dc7828",fontWeight:600,cursor:"pointer"}}>{pendingApproval.length} approval{pendingApproval.length>1?"s":""} pending</div>}
+        {!soundOn
+          ?<button onClick={unlockAdminSound} style={{padding:"8px 14px",background:"rgba(182,139,46,0.10)",border:"1px solid rgba(182,139,46,0.30)",borderRadius:8,fontSize:12,color:"#b68b2e",fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>🔊 Enable Sound</button>
+          :<span style={{fontSize:11,color:"#4a9e6b",padding:"8px 12px",background:"rgba(74,158,107,0.08)",borderRadius:8,border:"1px solid rgba(74,158,107,0.2)"}}>🔊 Sound On</span>
+        }
         <Btn ghost onClick={()=>setNotifModal(true)}>🔔 Push Notification</Btn>
         <Btn gold onClick={()=>setCreateModal(true)}>{I.plus} Create Auction</Btn>
       </div>
@@ -1143,7 +1163,26 @@ function AucManageRow({auction,bids,buyers,collectors,schedules,fmt,actions,onBi
         </div>
       </div>
       {expanded&&<div style={{marginTop:16,borderTop:"1px solid rgba(182,139,46,0.12)",paddingTop:16}}>
-        {auctionBids.length===0?<p style={{fontSize:13,color:"#8a8070"}}>No bids yet.</p>:<Tbl cols={[{label:"#",render:(r,i)=>auctionBids.length-auctionBids.indexOf(r)},{label:"Bidder",render:r=>r.buyerName},{label:"Amount",right:true,gold:true,render:r=>"R "+fmt(r.amount)},{label:"Time",right:true,render:r=>r.timestamp.slice(0,16).replace("T"," ")},{label:"Status",right:true,render:(r,i)=>auctionBids[0]===r?<span style={{fontSize:11,fontWeight:600,color:"#4a9e6b"}}>LEAD</span>:<span style={{fontSize:11,color:"#8a8070"}}>Outbid</span>}]} data={auctionBids}/>}
+        {auctionBids.length===0?<p style={{fontSize:13,color:"#8a8070"}}>No bids yet.</p>:(
+          <div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+              <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070"}}>Bid History — {auctionBids.length} bid{auctionBids.length!==1?"s":""}</div>
+              {auctionBids.length>0&&(auction.status==="Live"||auction.status==="Frozen")&&<button onClick={()=>{if(confirm(`Rollback last bid by ${auctionBids[0].buyerName} — R ${fmt(auctionBids[0].amount)}?\n\nThis will restore the previous bid.`))actions.rollbackBid(auction.id,auctionBids[0].id);}} style={{padding:"5px 12px",borderRadius:6,border:"1px solid rgba(196,92,74,0.4)",background:"rgba(196,92,74,0.06)",color:"#c45c4a",cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"DM Sans,sans-serif",display:"flex",alignItems:"center",gap:5}}>↩ Rollback Last Bid</button>}
+            </div>
+            <Tbl cols={[
+              {label:"#",render:(r)=>auctionBids.length-auctionBids.indexOf(r)},
+              {label:"Bidder",render:r=>r.buyerName},
+              {label:"Amount",right:true,gold:true,render:r=>"R "+fmt(r.amount)},
+              {label:"Time",right:true,render:r=>r.timestamp.slice(0,16).replace("T"," ")},
+              {label:"Status",right:true,render:(r)=>auctionBids[0]===r
+                ?<span style={{fontSize:11,fontWeight:600,color:"#4a9e6b"}}>LEAD</span>
+                :<span style={{fontSize:11,color:"#8a8070"}}>Outbid</span>},
+              {label:"",right:true,render:(r)=>auctionBids[0]===r&&(auction.status==="Live"||auction.status==="Frozen")
+                ?<button onClick={()=>{if(confirm(`Rollback this bid by ${r.buyerName} — R ${fmt(r.amount)}?`))actions.rollbackBid(auction.id,r.id);}} style={{padding:"3px 8px",borderRadius:5,border:"1px solid rgba(196,92,74,0.35)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:10,fontFamily:"DM Sans,sans-serif"}}>↩</button>
+                :null},
+            ]} data={auctionBids}/>
+          </div>
+        )}
       </div>}
     </div>
   </div>;
