@@ -707,9 +707,39 @@ export default function App(){
       const auction=(dataRef.current.auctions||[]).find(a=>a.id===id);if(!auction)return;
       const reserveMet=(auction.currentBid||0)>=(auction.reservePrice||0);
       const newStatus=reserveMet?"Sold":"No Sale";
-      up("auctions",p=>p.map(a=>a.id===id?{...a,status:newStatus,closedAt:td()}:a));
-      dbUp("auctions",id,{status:newStatus,closedAt:td()});
-      if(reserveMet&&auction.artworkId){up("artworks",p=>p.map(a=>a.id===auction.artworkId?{...a,status:"Sold"}:a));}
+      const closedAt=td();
+      up("auctions",p=>p.map(a=>a.id===id?{...a,status:newStatus,closedAt}:a));
+      dbUp("auctions",id,{status:newStatus,closed_at:closedAt});
+      if(reserveMet&&auction.artworkId){
+        up("artworks",p=>p.map(a=>a.id===auction.artworkId?{...a,status:"Sold"}:a));
+        dbUp("artworks",auction.artworkId,{status:"Sold"});
+        // ── Auto-create a sales record so it appears in Sales, Invoicing & Reports ──
+        const winnerBuyer=(dataRef.current.buyers||[]).find(b=>b.id===auction.leadBidderId);
+        const art=(dataRef.current.artworks||[]).find(a=>a.id===auction.artworkId);
+        const sched=(dataRef.current.schedules||[]).find(s=>s.artworkId===auction.artworkId&&s.status!=="Cancelled");
+        const artworkValue=art?.recommendedPrice||auction.artworkValue||auction.currentBid;
+        const monthsPaid=sched?.monthsPaid||0;
+        const acqModel=sched?.acquisitionModel||"O1";
+        const deal=calcDeal(artworkValue,auction.currentBid,acqModel,monthsPaid,40,30,30,0);
+        const winnerName=winnerBuyer?(winnerBuyer.type==="company"?winnerBuyer.companyName:`${winnerBuyer.firstName||""} ${winnerBuyer.lastName||""}`.trim()):auction.leadBidderName||"—";
+        const collectorName=sched?((dataRef.current.collectors||[]).find(c=>c.id===sched.collectorId)?.type==="company"?(dataRef.current.collectors||[]).find(c=>c.id===sched.collectorId)?.companyName:`${(dataRef.current.collectors||[]).find(c=>c.id===sched.collectorId)?.firstName||""} ${(dataRef.current.collectors||[]).find(c=>c.id===sched.collectorId)?.lastName||""}`.trim()):"—";
+        const auctionSale={
+          id:uid(),date:closedAt,
+          artworkId:auction.artworkId,artworkTitle:auction.title,
+          acquisitionModel:acqModel,
+          collectorId:sched?.collectorId||null,collectorName,
+          buyerId:auction.leadBidderId||null,buyerName:winnerName,
+          salePrice:auction.currentBid,artworkValue,monthsPaid,
+          colNet:deal.colNet||0,colProfit:deal.colProfit||0,colROI:deal.colROI||0,
+          vbTotal:deal.vbTotal||0,vbBalance:deal.vbBalance||0,
+          collectorShare:deal.colNet||0,vbShare:deal.vbFee||0,
+          galleryShare:deal.galleryAmt||0,vbNet:deal.vbAmt||0,artistShare:deal.artistAmt||0,
+          source:"auction",auctionId:id,
+        };
+        up("sales",p=>[...p,auctionSale]);
+        // Complete the schedule if one exists
+        if(sched){up("schedules",p=>p.map(s=>s.id===sched.id?{...s,status:"Complete"}:s));dbUp("schedules",sched.id,{status:"Complete"});}
+      }
       if(reserveMet) setTimeout(()=>adminSoundSold(),200); else adminSoundClick();
       sendPushNotification(reserveMet?"✓ Auction Sold":"Auction Closed",reserveMet?`${auction.title} sold for R ${fmt(auction.currentBid)}`:`${auction.title} — reserve not met.`);
     },
@@ -744,7 +774,12 @@ export default function App(){
       if(existing&&locked){if(!confirm(`${getMonthLabel(yearMonth)} is locked.\n\nOverride?`))return;}
       const monthPayments=(dataRef.current.payments||[]).filter(p=>(p.date||"").startsWith(yearMonth));
       const monthSales=(dataRef.current.sales||[]).filter(s=>(s.date||"").startsWith(yearMonth));
-      const snap={activeCount:liveSchedules.filter(s=>s.status==="Active").length,chasingCount:liveSchedules.filter(s=>s.status==="Chasing").length,disputeCount:liveSchedules.filter(s=>s.status==="In Dispute").length,cancelledCount:liveSchedules.filter(s=>s.status==="Cancelled").length,totalCollected:monthPayments.reduce((s,p)=>s+(p.amount||0),0),payments:monthPayments,chasing:liveSchedules.filter(s=>s.status==="Chasing").map(s=>{const col=dataRef.current.collectors.find(c=>c.id===s.collectorId);return{...s,mobile:col?.mobile||""};}),dispute:liveSchedules.filter(s=>s.status==="In Dispute").map(s=>{const col=dataRef.current.collectors.find(c=>c.id===s.collectorId);return{...s,mobile:col?.mobile||""};}),cancelled:liveSchedules.filter(s=>s.status==="Cancelled").map(s=>{const col=dataRef.current.collectors.find(c=>c.id===s.collectorId);return{...s,mobile:col?.mobile||""};}),salesPayout:monthSales,auctionResults:(dataRef.current.auctions||[]).filter(a=>(a.closedAt||a.createdAt||"").startsWith(yearMonth))};
+      const auctionSales=monthSales.filter(s=>s.source==="auction");
+      const directSales=monthSales.filter(s=>s.source!=="auction");
+      const totalSalesValue=monthSales.reduce((s,x)=>s+(x.salePrice||0),0);
+      const totalCollectorPayouts=monthSales.reduce((s,x)=>s+(x.colNet||x.collectorShare||0),0);
+      const totalVBRevenue=monthSales.reduce((s,x)=>s+(x.vbTotal||x.vbShare||0),0);
+      const snap={activeCount:liveSchedules.filter(s=>s.status==="Active").length,chasingCount:liveSchedules.filter(s=>s.status==="Chasing").length,disputeCount:liveSchedules.filter(s=>s.status==="In Dispute").length,cancelledCount:liveSchedules.filter(s=>s.status==="Cancelled").length,totalCollected:monthPayments.reduce((s,p)=>s+(p.amount||0),0),totalSalesValue,totalCollectorPayouts,totalVBRevenue,salesCount:monthSales.length,auctionSalesCount:auctionSales.length,directSalesCount:directSales.length,payments:monthPayments,sales:monthSales,auctionSales,directSales,chasing:liveSchedules.filter(s=>s.status==="Chasing").map(s=>{const col=dataRef.current.collectors.find(c=>c.id===s.collectorId);return{...s,mobile:col?.mobile||""};}),dispute:liveSchedules.filter(s=>s.status==="In Dispute").map(s=>{const col=dataRef.current.collectors.find(c=>c.id===s.collectorId);return{...s,mobile:col?.mobile||""};}),cancelled:liveSchedules.filter(s=>s.status==="Cancelled").map(s=>{const col=dataRef.current.collectors.find(c=>c.id===s.collectorId);return{...s,mobile:col?.mobile||""};}),salesPayout:monthSales,auctionResults:(dataRef.current.auctions||[]).filter(a=>(a.closedAt||a.createdAt||"").startsWith(yearMonth))};
       const report={id:existing?.id||uid(),month:yearMonth,generatedAt:td(),locked,snapshot:snap,totalCollected:snap.totalCollected,activeCount:snap.activeCount,chasingCount:snap.chasingCount,disputeCount:snap.disputeCount,cancelledCount:snap.cancelledCount};
       if(existing)up("reports",p=>p.map(r=>r.month===yearMonth?report:r));
       else up("reports",p=>[...p,report]);
@@ -1911,12 +1946,45 @@ function EmailReviewModal({config,collectors,schedules,onClose,TEMPLATES_LOCAL})
 // SALES
 // ═══════════════════════════════════════════
 function SalesPage({data,actions}){
-  const [modal,setModal]=useState(false);const [settlementModal,setSettlementModal]=useState(null);
+  const [modal,setModal]=useState(false);const [settlementModal,setSettlementModal]=useState(null);const [sourceFilter,setSourceFilter]=useState("all");
   const sellable=data.artworks.filter(a=>["Reserved","In Gallery","Available"].includes(a.status));
+  const allSales=[...data.sales].reverse();
+  const filtered=sourceFilter==="all"?allSales:allSales.filter(s=>s.source===sourceFilter||(sourceFilter==="manual"&&!s.source));
+  const auctionSales=data.sales.filter(s=>s.source==="auction");
+  const manualSales=data.sales.filter(s=>s.source!=="auction");
   return(<div>
-    <PT title="Sales" sub={`${data.sales.length} completed`} action={<Btn gold onClick={()=>setModal(true)}>{I.plus} Record Sale</Btn>}/>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:14,marginBottom:24}}><Stat label="Sales" value={data.sales.length}/><Stat label="Total Value" value={"R "+fmt(data.sales.reduce((s,x)=>s+(x.salePrice||0),0))}/><Stat label="Signature" value={data.sales.filter(s=>s.acquisitionModel==="O1").length} gold/><Stat label="Premier" value={data.sales.filter(s=>s.acquisitionModel==="O2").length} green/><Stat label="Select" value={data.sales.filter(s=>s.acquisitionModel==="O3").length}/><Stat label="Collector Payouts" value={"R "+fmt(data.sales.reduce((s,x)=>s+(x.colNet||x.collectorShare||0),0))} green/></div>
-    <Card>{data.sales.length===0?<Empty msg="No sales yet." action={<Btn gold onClick={()=>setModal(true)}>{I.plus} Record Sale</Btn>}/>:<Tbl cols={[{label:"Date",key:"date"},{label:"Artwork",key:"artworkTitle",bold:true},{label:"Model",render:r=><Badge model={r.acquisitionModel||"O1"}/>},{label:"Collector",key:"collectorName"},{label:"Buyer",render:r=>r.buyerName?<span style={{color:"#b68b2e"}}>{r.buyerName}</span>:<span style={{color:"#8a8070"}}>—</span>},{label:"Sale Price",right:true,render:r=>"R "+fmt(r.salePrice)},{label:"Collector Net",right:true,render:r=><span style={{color:"#4a9e6b",fontWeight:600}}>R {fmt(r.colNet||r.collectorShare||0)}</span>},{label:"VB Total",right:true,gold:true,render:r=>"R "+fmt(r.vbTotal||r.vbShare||0)},{label:"",render:r=><div style={{display:"flex",gap:6}}><button onClick={e=>{e.stopPropagation();setSettlementModal(r);}} style={{background:"none",border:"none",color:"#b68b2e",cursor:"pointer",fontSize:11,textDecoration:"underline"}}>Sheet</button><button onClick={e=>{e.stopPropagation();if(confirm("Delete sale?"))actions.deleteSale(r.id);}} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer"}}>{I.del}</button></div>}]} data={[...data.sales].reverse()}/>}</Card>
+    <PT title="Sales" sub={`${data.sales.length} completed sale${data.sales.length!==1?"s":""}`} action={<Btn gold onClick={()=>setModal(true)}>{I.plus} Record Sale</Btn>}/>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:14,marginBottom:24}}>
+      <Stat label="Total Sales" value={data.sales.length} gold/>
+      <Stat label="Total Value" value={"R "+fmt(data.sales.reduce((s,x)=>s+(x.salePrice||0),0))} gold/>
+      <Stat label="Auction Sales" value={auctionSales.length} green/>
+      <Stat label="Direct Sales" value={manualSales.length}/>
+      <Stat label="Collector Payouts" value={"R "+fmt(data.sales.reduce((s,x)=>s+(x.colNet||x.collectorShare||0),0))} green/>
+      <Stat label="VB Revenue" value={"R "+fmt(data.sales.reduce((s,x)=>s+(x.vbTotal||x.vbShare||0),0))} gold/>
+    </div>
+    <Card style={{marginBottom:20,padding:"12px 16px"}}>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+        <span style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginRight:4}}>Filter:</span>
+        {[["all","All"],["manual","Direct"],["auction","Auction"]].map(([key,lbl])=>(
+          <button key={key} onClick={()=>setSourceFilter(key)} style={{padding:"5px 14px",borderRadius:6,border:sourceFilter===key?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.25)",background:sourceFilter===key?"rgba(182,139,46,0.15)":"transparent",color:sourceFilter===key?"#b68b2e":"#6b635a",fontSize:12,fontWeight:sourceFilter===key?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{lbl}</button>
+        ))}
+      </div>
+    </Card>
+    <Card>{filtered.length===0?<Empty msg="No sales yet." action={<Btn gold onClick={()=>setModal(true)}>{I.plus} Record Sale</Btn>}/>:<Tbl cols={[
+      {label:"Date",key:"date"},
+      {label:"Artwork",key:"artworkTitle",bold:true},
+      {label:"Source",render:r=><span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:4,background:r.source==="auction"?"rgba(74,158,107,0.12)":"rgba(182,139,46,0.12)",color:r.source==="auction"?"#4a9e6b":"#b68b2e"}}>{r.source==="auction"?"⚖ Auction":"Direct"}</span>},
+      {label:"Model",render:r=><Badge model={r.acquisitionModel||"O1"}/>},
+      {label:"Collector",key:"collectorName"},
+      {label:"Buyer",render:r=>r.buyerName?<span style={{color:"#b68b2e"}}>{r.buyerName}</span>:<span style={{color:"#8a8070"}}>—</span>},
+      {label:"Sale Price",right:true,render:r=>"R "+fmt(r.salePrice)},
+      {label:"Collector Net",right:true,render:r=><span style={{color:"#4a9e6b",fontWeight:600}}>R {fmt(r.colNet||r.collectorShare||0)}</span>},
+      {label:"VB Total",right:true,gold:true,render:r=>"R "+fmt(r.vbTotal||r.vbShare||0)},
+      {label:"",render:r=><div style={{display:"flex",gap:6}}>
+        <button onClick={e=>{e.stopPropagation();setSettlementModal(r);}} style={{background:"none",border:"none",color:"#b68b2e",cursor:"pointer",fontSize:11,textDecoration:"underline"}}>Sheet</button>
+        <button onClick={e=>{e.stopPropagation();if(confirm("Delete sale?"))actions.deleteSale(r.id);}} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer"}}>{I.del}</button>
+      </div>},
+    ]} data={filtered}/>}</Card>
     {modal&&<SaleMdl data={data} sellable={sellable} onSale={(sd)=>{actions.recordSale(sd);setModal(false);}} onClose={()=>setModal(false)}/>}
     {settlementModal&&<SettlementModal sale={settlementModal} data={data} onClose={()=>setSettlementModal(null)}/>}
   </div>);}
@@ -1974,10 +2042,45 @@ function ReportsPage({data,actions}){
         <div style={{padding:20}}>
           <div style={{display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
             <div style={{flex:1,minWidth:200}}><div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4,flexWrap:"wrap"}}><span style={{fontFamily:"Cormorant Garamond,serif",fontSize:20,fontWeight:400,color:"#1a1714"}}>{getMonthLabel(ym)}</span>{isCurrent&&<span style={{fontSize:10,background:"rgba(182,139,46,0.30)",color:"#b68b2e",padding:"3px 8px",borderRadius:6,fontWeight:600}}>CURRENT</span>}{isLocked&&<span style={{fontSize:10,background:"rgba(100,140,200,0.15)",color:"#648cc8",padding:"3px 8px",borderRadius:6,fontWeight:600,display:"inline-flex",alignItems:"center",gap:4}}>{I.lock} LOCKED</span>}</div>{isLocked?<div style={{fontSize:11,color:"#8a8070"}}>Permanently locked</div>:<div style={{fontSize:11,color:"#8a8070"}}>Editable until {lock}</div>}</div>
-            {report&&<div style={{display:"flex",gap:16,fontSize:12,flexWrap:"wrap"}}><span>Collected: <strong style={{color:"#4a9e6b"}}>R {fmt(report.totalCollected)}</strong></span><span>Active: <strong style={{color:"#4a9e6b"}}>{report.activeCount}</strong></span>{report.chasingCount>0&&<span>Chasing: <strong style={{color:"#e6be32"}}>{report.chasingCount}</strong></span>}<span style={{fontSize:11,color:"#8a8070"}}>Generated: {report.generatedAt}</span></div>}
+            {report&&<div style={{display:"flex",gap:16,fontSize:12,flexWrap:"wrap"}}>
+              <span>Collected: <strong style={{color:"#4a9e6b"}}>R {fmt(report.totalCollected)}</strong></span>
+              {(report.snapshot?.salesCount>0)&&<span>Sales: <strong style={{color:"#b68b2e"}}>{report.snapshot.salesCount} · R {fmt(report.snapshot.totalSalesValue)}</strong></span>}
+              <span>Active: <strong style={{color:"#4a9e6b"}}>{report.activeCount}</strong></span>
+              {report.chasingCount>0&&<span>Chasing: <strong style={{color:"#e6be32"}}>{report.chasingCount}</strong></span>}
+              <span style={{fontSize:11,color:"#8a8070"}}>Generated: {report.generatedAt}</span>
+            </div>}
             <div style={{display:"flex",gap:8,flexShrink:0}}>{!isLocked&&<Btn small gold onClick={()=>actions.generateReport(ym)}>{report?"Regenerate":"Generate"}</Btn>}{isLocked&&<Btn small warn onClick={()=>actions.generateReport(ym)}>{I.warn} Override</Btn>}{report&&<Btn small ghost onClick={()=>generatePDF(report)}>{I.dl} PDF</Btn>}</div>
           </div>
-          {report&&<><button onClick={()=>setSelectedMonth(selectedMonth===ym?null:ym)} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer",fontSize:11,marginTop:10,display:"flex",alignItems:"center",gap:4}}><span style={{transform:selectedMonth===ym?"rotate(180deg)":"none",transition:"0.2s",display:"inline-flex"}}>{I.chevron}</span>{selectedMonth===ym?"Hide":"Show"} details</button>{selectedMonth===ym&&<div style={{marginTop:10,borderTop:"1px solid rgba(182,139,46,0.14)",paddingTop:10}}>{report.snapshot.payments&&report.snapshot.payments.length>0?<Tbl cols={[{label:"Collector",bold:true,render:r=>r.collectorName},{label:"Artwork",key:"artworkTitle"},{label:"Model",render:r=><Badge model={r.model||"O1"}/>},{label:"Month",render:r=>`Mo ${r.monthNumber}`},{label:"Method",key:"method"},{label:"Amount",right:true,gold:true,render:r=>"R "+fmt(r.amount)}]} data={report.snapshot.payments}/>:<p style={{fontSize:13,color:"#8a8070"}}>No payments this month.</p>}</div>}</>}
+          {report&&<><button onClick={()=>setSelectedMonth(selectedMonth===ym?null:ym)} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer",fontSize:11,marginTop:10,display:"flex",alignItems:"center",gap:4}}><span style={{transform:selectedMonth===ym?"rotate(180deg)":"none",transition:"0.2s",display:"inline-flex"}}>{I.chevron}</span>{selectedMonth===ym?"Hide":"Show"} details</button>{selectedMonth===ym&&<div style={{marginTop:10,borderTop:"1px solid rgba(182,139,46,0.14)",paddingTop:10}}><div>
+  {/* Payments */}
+  <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>License Payments Received</div>
+  {report.snapshot.payments&&report.snapshot.payments.length>0
+    ?<Tbl cols={[{label:"Collector",bold:true,render:r=>r.collectorName},{label:"Artwork",key:"artworkTitle"},{label:"Model",render:r=><Badge model={r.model||"O1"}/>},{label:"Month",render:r=>`Mo ${r.monthNumber}`},{label:"Method",key:"method"},{label:"Amount",right:true,gold:true,render:r=>"R "+fmt(r.amount)}]} data={report.snapshot.payments}/>
+    :<p style={{fontSize:13,color:"#8a8070",marginBottom:16}}>No payments this month.</p>}
+  {/* Sales */}
+  {report.snapshot.sales&&report.snapshot.sales.length>0&&<div style={{marginTop:20}}>
+    <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>
+      Sales This Month — {report.snapshot.salesCount} sale{report.snapshot.salesCount!==1?"s":""} · R {fmt(report.snapshot.totalSalesValue)}
+    </div>
+    <Tbl cols={[
+      {label:"Date",key:"date"},
+      {label:"Artwork",key:"artworkTitle",bold:true},
+      {label:"Source",render:r=><span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:4,background:r.source==="auction"?"rgba(74,158,107,0.12)":"rgba(182,139,46,0.12)",color:r.source==="auction"?"#4a9e6b":"#b68b2e"}}>{r.source==="auction"?"⚖ Auction":"Direct"}</span>},
+      {label:"Buyer",render:r=>r.buyerName||"—"},
+      {label:"Sale Price",right:true,render:r=>"R "+fmt(r.salePrice)},
+      {label:"Collector Net",right:true,render:r=><span style={{color:"#4a9e6b",fontWeight:600}}>R {fmt(r.colNet||r.collectorShare||0)}</span>},
+      {label:"VB Total",right:true,gold:true,render:r=>"R "+fmt(r.vbTotal||r.vbShare||0)},
+    ]} data={report.snapshot.sales}/>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginTop:12}}>
+      {[["Collector Payouts","R "+fmt(report.snapshot.totalCollectorPayouts),"#4a9e6b"],["VB Revenue","R "+fmt(report.snapshot.totalVBRevenue),"#b68b2e"],["Total Sales Value","R "+fmt(report.snapshot.totalSalesValue),"#1a1714"]].map(([l,v,c])=>(
+        <div key={l} style={{background:"#e8e4dd",borderRadius:8,padding:"10px 14px"}}>
+          <div style={{fontSize:9,letterSpacing:1.5,textTransform:"uppercase",color:"#8a8070",marginBottom:4}}>{l}</div>
+          <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:18,fontWeight:600,color:c}}>{v}</div>
+        </div>
+      ))}
+    </div>
+  </div>}
+</div></div>}</>}
         </div>
       </Card>;})}
   </div>);}
