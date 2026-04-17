@@ -24,6 +24,49 @@ const toCamel = (obj) => {
   return out;
 };
 
+
+// ─── PayFast Payment Helper ───────────────────────────────────────────────────
+// Generates a PayFast payment form and submits it
+// Uses PayFast sandbox for testing, switch PAYFAST_MERCHANT_ID/KEY for production
+
+const PAYFAST_MERCHANT_ID = '10000100';      // Replace with your Merchant ID
+const PAYFAST_MERCHANT_KEY = '46f0cd694581a'; // Replace with your Merchant Key
+const PAYFAST_URL = 'https://sandbox.payfast.co.za/eng/process'; // Change to https://www.payfast.co.za/eng/process for production
+
+function initiatePayFastPayment({amount, itemName, paymentRef, email, firstName, lastName, returnUrl, cancelUrl, notifyUrl}) {
+  // Build the form data
+  const params = {
+    merchant_id: PAYFAST_MERCHANT_ID,
+    merchant_key: PAYFAST_MERCHANT_KEY,
+    return_url: returnUrl || window.location.href + '?payment=success',
+    cancel_url: cancelUrl || window.location.href + '?payment=cancelled',
+    notify_url: notifyUrl || 'https://vollard-black.vercel.app/api/payfast-notify',
+    name_first: firstName || '',
+    name_last: lastName || '',
+    email_address: email || '',
+    m_payment_id: paymentRef,
+    amount: Number(amount).toFixed(2),
+    item_name: itemName,
+    item_description: itemName,
+    payment_method: 'eft', // Default to EFT — remove to show all methods
+  };
+
+  // Create and submit a hidden form
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = PAYFAST_URL;
+  form.style.display = 'none';
+  Object.entries(params).forEach(([key, val]) => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = key;
+    input.value = val;
+    form.appendChild(input);
+  });
+  document.body.appendChild(form);
+  form.submit();
+}
+
 const S = {
   page: { minHeight:'100vh', background:'#f5f3ef', fontFamily:"'DM Sans',sans-serif", color:'#2a2622' },
   card: { background:'#fff', border:'1px solid rgba(182,139,46,0.18)', borderRadius:12, padding:20, marginBottom:16 },
@@ -261,8 +304,45 @@ function RenterDashboard({session}) {
   const [profileForm,setProfileForm] = useState(null);
   const [savingProfile,setSavingProfile] = useState(false);
   const [profileSaved,setProfileSaved] = useState(false);
+  const [saleAlert,setSaleAlert] = useState('');
 
   useEffect(()=>{ loadData(); },[session]);
+
+  // Detect PayFast return URL params
+  useEffect(()=>{
+    if(typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if(params.get('payment')==='success') {
+      setSaleAlert('✓ Payment submitted successfully. Vollard Black will confirm and update your account shortly.');
+      // Clean up URL without reload
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if(params.get('payment')==='cancelled') {
+      setSaleAlert('⚠ Payment was cancelled. No charge was made.');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  },[]);
+
+  // Realtime — listen for sales on collector's artworks
+  useEffect(()=>{
+    if(!session||!supabase) return;
+    const ch = supabase.channel('renter-rt')
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'sales'},(payload)=>{
+        const s = payload.new;
+        // Only care if this sale is for our collector
+        loadData();
+        if(s.source==='auction') {
+          setSaleAlert(`🏆 Your artwork "${s.artwork_title}" sold at auction for R ${Number(s.sale_price||0).toLocaleString('en-ZA',{minimumFractionDigits:2})}!`);
+        } else {
+          setSaleAlert(`✓ Your artwork "${s.artwork_title}" has been sold for R ${Number(s.sale_price||0).toLocaleString('en-ZA',{minimumFractionDigits:2})}.`);
+        }
+        setTimeout(()=>setSaleAlert(''), 10000);
+      })
+      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'schedules'},(payload)=>{
+        loadData();
+      })
+      .subscribe();
+    return ()=>supabase.removeChannel(ch);
+  },[session]);
 
   const loadData = async() => {
     setLoading(true);
@@ -334,8 +414,12 @@ function RenterDashboard({session}) {
         </div>
       </div>
       <div style={{maxWidth:900,margin:'0 auto',padding:'20px 16px'}}>
+        {saleAlert&&<div style={{padding:'14px 18px',background:'rgba(74,158,107,0.10)',border:'2px solid rgba(74,158,107,0.35)',borderRadius:10,marginBottom:16,fontSize:14,fontWeight:600,color:'#2d7a4a',display:'flex',alignItems:'center',gap:10}}>
+          <span style={{fontSize:20}}>🎉</span><span>{saleAlert}</span>
+          <button onClick={()=>setSaleAlert('')} style={{marginLeft:'auto',background:'none',border:'none',color:'#4a9e6b',cursor:'pointer',fontSize:18}}>×</button>
+        </div>}
         <div style={{display:'flex',borderBottom:'1px solid rgba(182,139,46,0.15)',marginBottom:20,gap:4,overflowX:'auto'}}>
-          {[['overview','Overview'],['artworks','My Artworks'],['payments','Payments'],['statements','Statements']].map(([id,lbl])=>(
+          {[['overview','Overview'],['artworks','My Artworks'],['payments','Payments'],['statements','Statements'],['profile','My Profile'],['terms','Terms']].map(([id,lbl])=>(
             <button key={id} onClick={()=>setTab(id)} style={S.tab(tab===id)}>{lbl}</button>
           ))}
         </div>
@@ -416,6 +500,49 @@ function RenterDashboard({session}) {
               <div style={{...S.card,textAlign:'center',padding:'14px 10px'}}><div style={{fontSize:10,letterSpacing:2,textTransform:'uppercase',color:'#8a8070',marginBottom:4}}>Payments</div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:'#1a1714'}}>{payments.length}</div></div>
               <div style={{...S.card,textAlign:'center',padding:'14px 10px'}}><div style={{fontSize:10,letterSpacing:2,textTransform:'uppercase',color:'#8a8070',marginBottom:4}}>Balance</div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,...S.gold}}>R {fmt(Math.max(0,balance))}</div></div>
             </div>
+            {/* Upcoming payments due */}
+            {schedules.filter(sc=>sc.status==='Active'&&sc.monthsPaid<sc.termMonths).map(sc=>{
+              const paidMonths=new Set(payments.filter(p=>p.scheduleId===sc.id).map(p=>p.monthNumber));
+              const nextMonth=Array.from({length:sc.termMonths},(_,i)=>i+1).find(m=>!paidMonths.has(m));
+              if(!nextMonth) return null;
+              const payRef = `VB-${sc.id.slice(-8)}-M${nextMonth}`;
+              const colFirstName = collector?.firstName||'';
+              const colLastName = collector?.lastName||collector?.companyName||'';
+              return(
+                <div key={sc.id} style={{...S.card,border:'2px solid rgba(182,139,46,0.35)',marginBottom:12}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:12}}>
+                    <div>
+                      <div style={{fontSize:11,letterSpacing:2,textTransform:'uppercase',color:'#b68b2e',marginBottom:4}}>Payment Due</div>
+                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:'#1a1714',marginBottom:2}}>{sc.artworkTitle}</div>
+                      <div style={{fontSize:12,color:'#8a8070'}}>Month {nextMonth} of {sc.termMonths} · Due 25th</div>
+                    </div>
+                    <div style={{textAlign:'right'}}>
+                      <div style={{fontSize:11,color:'#8a8070',marginBottom:4}}>Amount due</div>
+                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,fontWeight:600,color:'#b68b2e'}}>R {fmt(sc.monthlyAmount)}</div>
+                    </div>
+                  </div>
+                  <div style={{marginTop:14,display:'flex',gap:10,flexWrap:'wrap'}}>
+                    <button
+                      onClick={()=>initiatePayFastPayment({
+                        amount: sc.monthlyAmount,
+                        itemName: `Vollard Black — License Fee: ${sc.artworkTitle} Mo ${nextMonth}`,
+                        paymentRef: payRef,
+                        email: session.user.email,
+                        firstName: colFirstName,
+                        lastName: colLastName,
+                      })}
+                      style={{padding:'12px 24px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",display:'flex',alignItems:'center',gap:8}}
+                    >
+                      💳 Pay R {fmt(sc.monthlyAmount)} via PayFast
+                    </button>
+                    <div style={{fontSize:11,color:'#8a8070',display:'flex',alignItems:'center'}}>Ref: {payRef}</div>
+                  </div>
+                  <div style={{fontSize:11,color:'#8a8070',marginTop:8,padding:'8px 12px',background:'rgba(182,139,46,0.04)',borderRadius:6}}>
+                    💡 After payment, Vollard Black will confirm and your account will be updated within 1 business day.
+                  </div>
+                </div>
+              );
+            })}
             {payments.length===0?<div style={{...S.card,textAlign:'center',padding:40}}><div style={{fontSize:14,color:'#8a8070'}}>No payments recorded yet.</div></div>:(
               <div style={S.card}>
                 <div style={{overflowX:'auto'}}>
@@ -513,10 +640,15 @@ function RenterDashboard({session}) {
                     </div>
                     {sale&&(
                       <div style={{marginTop:10,paddingTop:10,borderTop:'1px solid rgba(74,158,107,0.2)'}}>
-                        <div style={{fontSize:11,letterSpacing:1,textTransform:'uppercase',color:'#4a9e6b',marginBottom:6}}>Sale Settlement</div>
-                        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+                        <div style={{fontSize:11,letterSpacing:1,textTransform:'uppercase',color:'#4a9e6b',marginBottom:6,display:'flex',alignItems:'center',gap:6}}>
+                          {sale.source==='auction'?'⚖ Auction Sale':'Sale Settlement'}
+                        </div>
+                        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,fontSize:13}}>
+                          <div style={{color:'#6b635a'}}>Source</div><div style={{textAlign:'right',fontSize:11,fontWeight:600,color:sale.source==='auction'?'#4a9e6b':'#b68b2e'}}>{sale.source==='auction'?'Auction':'Direct Sale'}</div>
+                          <div style={{color:'#6b635a'}}>Sale date</div><div style={{textAlign:'right'}}>{sale.date||'—'}</div>
+                          <div style={{color:'#6b635a'}}>Buyer</div><div style={{textAlign:'right'}}>{sale.buyerName||'—'}</div>
                           <div style={{color:'#6b635a'}}>Sale price</div><div style={{textAlign:'right'}}>R {fmt(sale.salePrice)}</div>
-                          <div style={{color:'#6b635a',fontWeight:600}}>You receive</div><div style={{textAlign:'right',...S.green}}>R {fmt(sale.colNet||sale.collectorShare)}</div>
+                          <div style={{color:'#2d7a4a',fontWeight:700}}>You receive</div><div style={{textAlign:'right',...S.green,fontSize:16}}>R {fmt(sale.colNet||sale.collectorShare)}</div>
                         </div>
                       </div>
                     )}
@@ -524,7 +656,44 @@ function RenterDashboard({session}) {
                 </div>
               );
             })}
+            {/* Bank details reminder for receiving sale proceeds */}
+            {collector&&(collector.bankName||collector.accountNumber)&&(
+              <div style={{...S.card,padding:14,marginBottom:12,background:'rgba(74,158,107,0.04)',border:'1px solid rgba(74,158,107,0.2)'}}>
+                <div style={{fontSize:11,letterSpacing:2,textTransform:'uppercase',color:'#4a9e6b',marginBottom:8}}>Your Bank Details on File</div>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,fontSize:12}}>
+                  <div style={{color:'#6b635a'}}>Bank</div><div>{collector.bankName||'—'}</div>
+                  <div style={{color:'#6b635a'}}>Account</div><div>{collector.accountNumber||'—'}</div>
+                  <div style={{color:'#6b635a'}}>Branch</div><div>{collector.branchCode||'—'}</div>
+                </div>
+                <div style={{fontSize:11,color:'#8a8070',marginTop:8}}>Sale proceeds are paid to this account. Update in My Profile if needed.</div>
+              </div>
+            )}
             {schedules.length===0&&<div style={{...S.card,textAlign:'center',padding:40}}><div style={{fontSize:14,color:'#8a8070'}}>No agreements found.</div></div>}
+          </div>
+        )}
+        {tab==='terms'&&(
+          <div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:'#1a1714',marginBottom:16}}>Display License Agreement</div>
+            <div style={S.card}>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,fontWeight:300,color:'#1a1714',marginBottom:4}}>Display License Agreement</div>
+              <div style={{fontSize:12,color:'#8a8070',marginBottom:16}}>Vollard Black (Pty) Ltd · Hermanus, South Africa</div>
+              {[
+                ['1. License Fee','The display license fee is 50% of the declared artwork value, payable in monthly instalments over your agreed term. Fees are due on the 25th of each month. The payment window runs from the 25th to the 7th of the following month.'],
+                ['2. On Sale','When your artwork sells: Vollard Black retains the outstanding license fee balance from the proceeds. You receive the remainder. Any surplus above the original value is split 50/50.'],
+                ['3. Care of Artwork','You agree to display the artwork safely, not move it without consent, and notify Vollard Black immediately of any damage or theft.'],
+                ['4. Ownership','Title remains with the artist/Vollard Black until the full license fee is paid and a sale is concluded.'],
+                ['5. Cancellation','Either party may cancel with 30 days written notice. The artwork must be returned at your expense. Payments made are non-refundable.'],
+                ['6. Governing Law','This agreement is governed by the laws of South Africa. Disputes are referred to the Western Cape High Court.'],
+              ].map(([title,text])=>(
+                <div key={title} style={{marginBottom:14,paddingBottom:14,borderBottom:'1px solid rgba(182,139,46,0.10)'}}>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,color:'#1a1714',marginBottom:6}}>{title}</div>
+                  <div style={{fontSize:13,color:'#4a4440',lineHeight:1.8}}>{text}</div>
+                </div>
+              ))}
+              <div style={{padding:'10px 14px',background:'rgba(182,139,46,0.06)',borderRadius:8,fontSize:12,color:'#8a6a1e',marginTop:8}}>
+                Contact: <strong>concierge@vollardblack.com</strong>
+              </div>
+            </div>
           </div>
         )}
         {tab==='profile'&&profileForm&&(
@@ -541,10 +710,19 @@ function RenterDashboard({session}) {
                 <div><label style={S.label}>City</label><input value={profileForm.city||''} onChange={e=>setProfileForm(p=>({...p,city:e.target.value}))} style={S.input}/></div>
                 <div><label style={S.label}>Country</label><input value={profileForm.country||''} onChange={e=>setProfileForm(p=>({...p,country:e.target.value}))} style={S.input}/></div>
                 <div style={{gridColumn:'1/-1'}}><label style={S.label}>Address</label><textarea value={profileForm.address||''} onChange={e=>setProfileForm(p=>({...p,address:e.target.value}))} style={{...S.input,minHeight:60,resize:'vertical'}}/></div>
+                <div style={{gridColumn:'1/-1',paddingTop:14,borderTop:'1px solid rgba(182,139,46,0.15)',marginTop:6}}>
+                  <div style={{fontSize:11,letterSpacing:2,textTransform:'uppercase',color:'#b68b2e',marginBottom:12}}>Bank Details — for sale proceeds</div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+                    <div><label style={S.label}>Bank Name</label><input value={profileForm.bankName||''} onChange={e=>setProfileForm(p=>({...p,bankName:e.target.value}))} style={S.input} placeholder="e.g. FNB"/></div>
+                    <div><label style={S.label}>Account Holder</label><input value={profileForm.accountHolder||''} onChange={e=>setProfileForm(p=>({...p,accountHolder:e.target.value}))} style={S.input}/></div>
+                    <div><label style={S.label}>Account Number</label><input value={profileForm.accountNumber||''} onChange={e=>setProfileForm(p=>({...p,accountNumber:e.target.value}))} style={S.input}/></div>
+                    <div><label style={S.label}>Branch Code</label><input value={profileForm.branchCode||''} onChange={e=>setProfileForm(p=>({...p,branchCode:e.target.value}))} style={S.input} placeholder="e.g. 250655"/></div>
+                  </div>
+                </div>
                 <div style={{gridColumn:'1/-1'}}><label style={S.label}>Email (cannot change)</label><input value={session.user.email} readOnly style={{...S.input,background:'#e8e4dd',color:'#8a8070'}}/></div>
               </div>
               <div style={{marginTop:16,display:'flex',justifyContent:'flex-end'}}>
-                <button onClick={async()=>{if(!collector)return;setSavingProfile(true);await supabase.from('collectors').update({first_name:profileForm.firstName,last_name:profileForm.lastName,mobile:profileForm.mobile,id_number:profileForm.idNumber,nationality:profileForm.nationality,city:profileForm.city,country:profileForm.country,address:profileForm.address}).eq('id',collector.id);setSavingProfile(false);setProfileSaved(true);setTimeout(()=>setProfileSaved(false),3000);}} disabled={savingProfile} style={{padding:'12px 28px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",opacity:savingProfile?0.6:1}}>{savingProfile?'Saving…':'Save Changes'}</button>
+                <button onClick={async()=>{if(!collector)return;setSavingProfile(true);await supabase.from('collectors').update({first_name:profileForm.firstName,last_name:profileForm.lastName,mobile:profileForm.mobile,id_number:profileForm.idNumber,nationality:profileForm.nationality,city:profileForm.city,country:profileForm.country,address:profileForm.address,bank_name:profileForm.bankName||'',account_holder:profileForm.accountHolder||'',account_number:profileForm.accountNumber||'',branch_code:profileForm.branchCode||''}).eq('id',collector.id);setSavingProfile(false);setProfileSaved(true);setTimeout(()=>setProfileSaved(false),3000);}} disabled={savingProfile} style={{padding:'12px 28px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",opacity:savingProfile?0.6:1}}>{savingProfile?'Saving…':'Save Changes'}</button>
               </div>
             </div>
           </div>
