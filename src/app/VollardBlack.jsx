@@ -1753,7 +1753,7 @@ function BuyersPage({data,actions}){
   const getBids=(buyerId)=>(data.bids||[]).filter(b=>b.buyerId===buyerId);
   const getAuctionWins=(buyerId)=>(data.auctions||[]).filter(a=>a.status==="Sold"&&a.leadBidderId===buyerId);
   const getActiveBids=(buyerId)=>(data.auctions||[]).filter(a=>a.status==="Live"&&(data.bids||[]).some(b=>b.buyerId===buyerId&&b.auctionId===a.id));
-  const totalAuctionWins=(data.auctions||[]).filter(a=>a.status==="Sold"&&a.leadBidderId);
+  const totalAuctionWins=(data.auctions||[]).filter(a=>a.status==="Sold"&&a.leadBidderId).length;
   const kycPendingBuyers=data.buyers.filter(b=>b.kycStatus!=="approved");
   const auctionPendingBuyers=data.buyers.filter(b=>b.auctionRequested&&!b.auctionApproved);
   return(<div>
@@ -2124,7 +2124,7 @@ function ReportsPage({data,actions}){
             </div>}
             <div style={{display:"flex",gap:8,flexShrink:0}}>{!isLocked&&<Btn small gold onClick={()=>actions.generateReport(ym)}>{report?"Regenerate":"Generate"}</Btn>}{isLocked&&<Btn small warn onClick={()=>actions.generateReport(ym)}>{I.warn} Override</Btn>}{report&&<Btn small ghost onClick={()=>generatePDF(report)}>{I.dl} PDF</Btn>}</div>
           </div>
-          {report&&<><button onClick={()=>setSelectedMonth(selectedMonth===ym?null:ym)} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer",fontSize:11,marginTop:10,display:"flex",alignItems:"center",gap:4}}><span style={{transform:selectedMonth===ym?"rotate(180deg)":"none",transition:"0.2s",display:"inline-flex"}}>{I.chevron}</span>{selectedMonth===ym?"Hide":"Show"} details</button>{selectedMonth===ym&&<div style={{marginTop:10,borderTop:"1px solid rgba(182,139,46,0.14)",paddingTop:10}}><div>
+          {report&&<><button onClick={()=>setSelectedMonth(selectedMonth===ym?null:ym)} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer",fontSize:11,marginTop:10,display:"flex",alignItems:"center",gap:4}}><span style={{transform:selectedMonth===ym?"rotate(180deg)":"none",transition:"0.2s",display:"inline-flex"}}>{I.chevron}</span>{selectedMonth===ym?"Hide":"Show"} details</button>{selectedMonth===ym&&<div style={{marginTop:10,borderTop:"1px solid rgba(182,139,46,0.14)",paddingTop:10}}>
   {/* Payments */}
   <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>License Payments Received</div>
   {report.snapshot.payments&&report.snapshot.payments.length>0
@@ -2153,7 +2153,7 @@ function ReportsPage({data,actions}){
       ))}
     </div>
   </div>}
-</div></div>}</>}
+</div>}</>}
         </div>
       </Card>;})}
   </div>);}
