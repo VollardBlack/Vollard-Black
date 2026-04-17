@@ -241,6 +241,61 @@ function sendPushNotification(title,body){
   else if(Notification.permission!=="denied")Notification.requestPermission().then(p=>{if(p==="granted")new Notification(title,{body});});
 }
 
+
+// ─── Auction Sound Engine ─────────────────────────────────────────────────────
+const _getAudioCtx = (() => {
+  let ctx = null;
+  return () => {
+    if(typeof window === 'undefined') return null;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return null;
+    if(!ctx) ctx = new AC();
+    if(ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  };
+})();
+
+const _tone = (freq, dur, type='sine', vol=0.25, delay=0) => {
+  const ctx = _getAudioCtx(); if(!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.type = type; osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+  gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+  gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + delay + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
+  osc.start(ctx.currentTime + delay);
+  osc.stop(ctx.currentTime + delay + dur + 0.05);
+};
+
+// Admin hears: new bid incoming — cash register ping
+const adminSoundNewBid = () => {
+  _tone(1200, 0.06, 'square', 0.10, 0);
+  _tone(1600, 0.06, 'square', 0.10, 0.07);
+  _tone(2000, 0.18, 'sine',   0.18, 0.14);
+};
+
+// Auction sold — triumphant
+const adminSoundSold = () => {
+  [[523,0.14,0],[659,0.14,0.11],[784,0.14,0.22],[1047,0.55,0.34]].forEach(([f,d,t])=>_tone(f,d,'sine',0.22,t));
+};
+
+// Auction launched — gavel strike
+const adminSoundGavel = () => {
+  const ctx = _getAudioCtx(); if(!ctx) return;
+  const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate*0.3), ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for(let i=0;i<data.length;i++) data[i]=(Math.random()*2-1)*Math.exp(-i/(ctx.sampleRate*0.035));
+  const src=ctx.createBufferSource(), gain=ctx.createGain(), filt=ctx.createBiquadFilter();
+  filt.type='lowpass'; filt.frequency.value=220;
+  src.buffer=buf; src.connect(filt); filt.connect(gain); gain.connect(ctx.destination);
+  gain.gain.setValueAtTime(0.9,ctx.currentTime); src.start();
+  _tone(160,0.3,'sine',0.35,0.04);
+};
+
+// Auction frozen / resumed — soft click
+const adminSoundClick = () => { _tone(800,0.08,'sine',0.12,0); _tone(600,0.08,'sine',0.10,0.09); };
+
 // ─── Icons ───
 const I={
   dash:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
@@ -488,6 +543,7 @@ export default function App(){
             if(payload.eventType==='INSERT'){
               const exists=arr.some(x=>x.id===rec.id);
               if(exists)return prev; // already have it, skip
+              if(table==='bids') setTimeout(()=>adminSoundNewBid(),0);
               return{...prev,[table]:[rec,...arr]};
             }
             if(payload.eventType==='UPDATE')return{...prev,[table]:arr.map(x=>x.id===rec.id?{...x,...rec}:x)};
@@ -639,13 +695,13 @@ export default function App(){
       up("auctions",p=>[...p,auction]);
     },
     updateAuction:(id,fields)=>{up("auctions",p=>p.map(a=>a.id===id?{...a,...fields}:a));dbUp("auctions",id,fields);},
-    launchAuction:(id)=>{
+    launchAuction:(id)=>{ adminSoundGavel();
       const now=new Date().toISOString();
       up("auctions",p=>p.map(a=>a.id===id?{...a,status:"Live",startedAt:now}:a));
       dbUp("auctions",id,{status:"Live",startedAt:now});
       sendPushNotification("🔴 Auction Live — Vollard Black","A new auction has just gone live. Place your bid now.");
     },
-    freezeAuction:(id)=>{up("auctions",p=>p.map(a=>a.id===id?{...a,status:"Frozen"}:a));dbUp("auctions",id,{status:"Frozen"});sendPushNotification("⏸ Auction Paused","The auction has been temporarily paused.");},
+    freezeAuction:(id)=>{ adminSoundClick(); up("auctions",p=>p.map(a=>a.id===id?{...a,status:"Frozen"}:a));dbUp("auctions",id,{status:"Frozen"});sendPushNotification("⏸ Auction Paused","The auction has been temporarily paused.");},
     resumeAuction:(id)=>{up("auctions",p=>p.map(a=>a.id===id?{...a,status:"Live"}:a));dbUp("auctions",id,{status:"Live"});sendPushNotification("▶ Auction Resumed","Bidding has resumed.");},
     closeAuction:(id)=>{
       const auction=(dataRef.current.auctions||[]).find(a=>a.id===id);if(!auction)return;
@@ -654,9 +710,10 @@ export default function App(){
       up("auctions",p=>p.map(a=>a.id===id?{...a,status:newStatus,closedAt:td()}:a));
       dbUp("auctions",id,{status:newStatus,closedAt:td()});
       if(reserveMet&&auction.artworkId){up("artworks",p=>p.map(a=>a.id===auction.artworkId?{...a,status:"Sold"}:a));}
+      if(reserveMet) setTimeout(()=>adminSoundSold(),200); else adminSoundClick();
       sendPushNotification(reserveMet?"✓ Auction Sold":"Auction Closed",reserveMet?`${auction.title} sold for R ${fmt(auction.currentBid)}`:`${auction.title} — reserve not met.`);
     },
-    placeBid:(auctionId,buyerId,buyerName,amount)=>{
+    placeBid:(auctionId,buyerId,buyerName,amount)=>{ adminSoundNewBid();
       const bid={id:uid(),auctionId,buyerId,buyerName,amount,timestamp:new Date().toISOString()};
       up("bids",p=>[...p,bid]);
       const auction=(dataRef.current.auctions||[]).find(a=>a.id===auctionId);
