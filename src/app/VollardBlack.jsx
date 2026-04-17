@@ -1602,8 +1602,10 @@ function BuyersPage({data,actions}){
   const getPurchases=(buyerId)=>data.sales.filter(s=>s.buyerId===buyerId);
   const getTotalSpend=(buyerId)=>getPurchases(buyerId).reduce((s,x)=>s+(x.salePrice||0),0);
   const kycPendingBuyers=data.buyers.filter(b=>b.kycStatus!=="approved");
+  const auctionPendingBuyers=data.buyers.filter(b=>b.auctionRequested&&!b.auctionApproved);
   return(<div>
     {kycPendingBuyers.length>0&&<div style={{padding:"12px 16px",background:"rgba(230,190,50,0.08)",border:"1px solid rgba(230,190,50,0.25)",borderRadius:10,marginBottom:12,display:"flex",alignItems:"center",gap:10}}><span style={{color:"#e6be32",fontSize:16}}>⚠</span><span style={{fontSize:13,color:"#8a6a1e",fontWeight:600}}>{kycPendingBuyers.length} buyer{kycPendingBuyers.length>1?"s":""} awaiting KYC approval</span></div>}
+    {auctionPendingBuyers.length>0&&<div style={{padding:"12px 16px",background:"rgba(74,158,107,0.06)",border:"1px solid rgba(74,158,107,0.25)",borderRadius:10,marginBottom:12,display:"flex",alignItems:"center",gap:10}}><span style={{color:"#4a9e6b",fontSize:16}}>⚖</span><span style={{fontSize:13,color:"#2d7a4a",fontWeight:600}}>{auctionPendingBuyers.length} buyer{auctionPendingBuyers.length>1?"s":""} requesting auction bidding access</span></div>}
     <PT title="Buyers" sub={`${data.buyers.length} registered buyers`} action={<Btn gold onClick={()=>setModal("add")}>{I.plus} Register Buyer</Btn>}/>
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:14,marginBottom:28}}>
       <Stat label="Total Buyers" value={data.buyers.length} gold/><Stat label="Repeat Buyers" value={data.buyers.filter(b=>getPurchases(b.id).length>1).length} green/><Stat label="Total Purchases" value={data.sales.filter(s=>s.buyerId).length}/><Stat label="Total Spend" value={"R "+fmt(data.sales.filter(s=>s.buyerId).reduce((s,x)=>s+(x.salePrice||0),0))} gold/>
@@ -1618,12 +1620,22 @@ function BuyersPage({data,actions}){
               {r.kycStatus==="approved"
                 ?<span style={{fontSize:10,fontWeight:600,color:"#4a9e6b",padding:"2px 8px",background:"rgba(74,158,107,0.12)",borderRadius:6}}>✓ KYC Approved</span>
                 :<><span style={{fontSize:10,fontWeight:600,color:"#e6be32",padding:"2px 8px",background:"rgba(230,190,50,0.12)",borderRadius:6}}>⚠ KYC Pending</span>
-                <button onClick={e=>{e.stopPropagation();actions.saveBuyer({...r,kycStatus:"approved"});db.update("buyers",r.id,{kyc_status:"approved"});}} style={{fontSize:10,padding:"2px 10px",borderRadius:6,border:"none",background:"linear-gradient(135deg,#b68b2e,#8a6a1e)",color:"#fff",cursor:"pointer",fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>Approve KYC</button>
-                {r.auctionRequested&&!r.auctionApproved&&<button onClick={e=>{e.stopPropagation();actions.approveForAuction(r.id);}} style={{fontSize:10,padding:"2px 10px",borderRadius:6,border:"none",background:"linear-gradient(135deg,#4a9e6b,#3a7e5b)",color:"#fff",cursor:"pointer",fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>⚖ Approve Auction</button>}</>
+                <button onClick={e=>{e.stopPropagation();actions.saveBuyer({...r,kycStatus:"approved"});db.update("buyers",r.id,{kyc_status:"approved"});}} style={{fontSize:10,padding:"2px 10px",borderRadius:6,border:"none",background:"linear-gradient(135deg,#b68b2e,#8a6a1e)",color:"#fff",cursor:"pointer",fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>Approve KYC</button></>
               }
             </div>
           </div>},
           {label:"Type",render:r=>r.type==="company"?"Company":"Individual"},{label:"Email",key:"email"},{label:"Nationality",key:"nationality"},
+          {label:"Auction Access",render:r=><div style={{display:"flex",flexDirection:"column",gap:4,alignItems:"flex-start"}}>
+            {r.auctionApproved
+              ?<><span style={{fontSize:10,fontWeight:600,color:"#4a9e6b",padding:"2px 8px",background:"rgba(74,158,107,0.12)",borderRadius:6}}>✓ Bid Approved</span>
+                <button onClick={e=>{e.stopPropagation();if(confirm("Revoke auction access for "+buyerName(r)+"?"))actions.revokeAuctionApproval(r.id);}} style={{fontSize:9,padding:"1px 8px",borderRadius:6,border:"1px solid rgba(196,92,74,0.3)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>Revoke</button></>
+              :r.auctionRequested
+                ?<><span style={{fontSize:10,fontWeight:600,color:"#dc7828",padding:"2px 8px",background:"rgba(220,120,40,0.1)",borderRadius:6}}>⏳ Requested</span>
+                  <button onClick={e=>{e.stopPropagation();actions.approveForAuction(r.id);}} style={{fontSize:10,padding:"2px 10px",borderRadius:6,border:"none",background:"linear-gradient(135deg,#4a9e6b,#3a7e5b)",color:"#fff",cursor:"pointer",fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>✓ Approve Bidding</button></>
+                :<><span style={{fontSize:10,color:"#8a8070",padding:"2px 8px",background:"rgba(182,139,46,0.06)",borderRadius:6}}>Not requested</span>
+                  <button onClick={e=>{e.stopPropagation();actions.approveForAuction(r.id);}} style={{fontSize:9,padding:"1px 8px",borderRadius:6,border:"1px solid rgba(74,158,107,0.3)",background:"transparent",color:"#4a9e6b",cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>Grant Access</button></>
+            }
+          </div>},
           {label:"Purchases",render:r=><span style={{color:"#b68b2e",fontWeight:600}}>{getPurchases(r.id).length}</span>},
           {label:"Total Spend",right:true,gold:true,render:r=>"R "+fmt(getTotalSpend(r.id))},
           {label:"",render:r=><div style={{display:"flex",gap:6}}><button onClick={e=>{e.stopPropagation();setModal(r);}} style={{background:"none",border:"none",color:"#6b635a",cursor:"pointer"}}>{I.edit}</button><button onClick={e=>{e.stopPropagation();if(confirm("Delete buyer?"))actions.deleteBuyer(r.id);}} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer"}}>{I.del}</button></div>},
