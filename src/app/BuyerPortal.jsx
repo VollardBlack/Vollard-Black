@@ -902,6 +902,31 @@ function BuyerDashboard({session}) {
           </div>
         )}
 
+        {/* TERMS */}
+        {tab==='terms'&&(
+          <div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,fontWeight:300,color:'#1a1714',marginBottom:16}}>Buyer Terms & Conditions</div>
+            <div style={S.card}>
+              <div style={{fontSize:12,color:'#8a8070',marginBottom:16}}>Vollard Black (Pty) Ltd · Hermanus, South Africa</div>
+              {[
+                ['1. Registration & KYC','All buyers must complete KYC verification before purchasing or bidding, including a valid government-issued ID.'],
+                ['2. Auction Participation','All bids are binding. The winning bidder is obligated to complete the purchase at the winning bid price. Payment is made directly to the License Holder per the auction settlement report.'],
+                ['3. Direct Purchases','Gallery enquiries are expressions of interest only. A sale is concluded only upon written confirmation from Vollard Black and receipt of full payment.'],
+                ['4. Artwork Condition','Vollard Black accurately represents artworks. Buyers are encouraged to view in person. Minor variations between photos and physical works are not grounds for return.'],
+                ['5. Refunds','All sales are final. Refunds are not available unless an artwork is materially misrepresented. Title passes to the buyer on full payment only.'],
+                ['6. Governing Law','These terms are governed by South African law. Disputes are resolved in the Western Cape High Court.'],
+              ].map(([title,text])=>(
+                <div key={title} style={{marginBottom:14,paddingBottom:14,borderBottom:'1px solid rgba(182,139,46,0.10)'}}>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,color:'#1a1714',marginBottom:6}}>{title}</div>
+                  <div style={{fontSize:13,color:'#4a4440',lineHeight:1.8}}>{text}</div>
+                </div>
+              ))}
+              <div style={{padding:'10px 14px',background:'rgba(182,139,46,0.06)',borderRadius:8,fontSize:12,color:'#8a6a1e',marginTop:8}}>
+                Contact: <strong>concierge@vollardblack.com</strong>
+              </div>
+            </div>
+          </div>
+        )}
         {/* PURCHASES */}
         {tab==='purchases'&&(
           <div>
