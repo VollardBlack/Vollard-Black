@@ -62,8 +62,8 @@ const UUID_TABLES = ['artworks','artists','collectors','buyers'];
 const newId = (table) => UUID_TABLES.includes(table) ? uuidv4() : uid();
 const td = () => new Date().toISOString().slice(0,10);
 const SK = "vollard_black_v16";
-const TABLES = ["artworks","artists","collectors","schedules","payments","sales","reports","buyers","auctions","bids","enquiries"];
-const fresh = () => ({artworks:[],artists:[],collectors:[],schedules:[],payments:[],sales:[],reports:[],buyers:[],auctions:[],bids:[],enquiries:[]});
+const TABLES = ["artworks","artists","collectors","schedules","payments","sales","reports","buyers","auctions","bids","enquiries","payfast_notifications"];
+const fresh = () => ({artworks:[],artists:[],collectors:[],schedules:[],payments:[],sales:[],reports:[],buyers:[],auctions:[],bids:[],enquiries:[],payfast_notifications:[]});
 const loadLocal = () => { try { const d=JSON.parse(localStorage.getItem(SK)); return d?.artworks?d:fresh(); } catch{return fresh();} };
 
 const getNextDueDate = (startDate, monthNumber) => {
@@ -670,7 +670,7 @@ export default function App(){
     },
     recordSale:(saleData)=>{
       if(saleData.newBuyerData){up("buyers",p=>[...p,{...saleData.newBuyerData,id:saleData.newBuyerData.id||uuidv4(),createdAt:td()}]);}
-      const sale={...saleData,id:uid(),date:td()};delete sale.newBuyerData;
+      const sale={...saleData,id:uid(),date:td(),source:saleData.source||"manual"};delete sale.newBuyerData;
       up("sales",p=>[...p,sale]);
       up("artworks",p=>p.map(a=>a.id===saleData.artworkId?{...a,status:"Sold"}:a));
       dbUp("artworks",saleData.artworkId,{status:"Sold"});
@@ -721,6 +721,9 @@ export default function App(){
         const monthsPaid=sched?.monthsPaid||0;
         const acqModel=sched?.acquisitionModel||"O1";
         const deal=calcDeal(artworkValue,auction.currentBid,acqModel,monthsPaid,40,30,30,0);
+        // Get artist record to populate artistShare
+        const artRecord=(dataRef.current.artworks||[]).find(a=>a.id===auction.artworkId);
+        const artistRec=artRecord?.artistId?(dataRef.current.artists||[]).find(a=>a.id===artRecord.artistId):null;
         const winnerName=winnerBuyer?(winnerBuyer.type==="company"?winnerBuyer.companyName:`${winnerBuyer.firstName||""} ${winnerBuyer.lastName||""}`.trim()):auction.leadBidderName||"—";
         const collectorName=sched?((dataRef.current.collectors||[]).find(c=>c.id===sched.collectorId)?.type==="company"?(dataRef.current.collectors||[]).find(c=>c.id===sched.collectorId)?.companyName:`${(dataRef.current.collectors||[]).find(c=>c.id===sched.collectorId)?.firstName||""} ${(dataRef.current.collectors||[]).find(c=>c.id===sched.collectorId)?.lastName||""}`.trim()):"—";
         const auctionSale={
@@ -735,6 +738,7 @@ export default function App(){
           collectorShare:deal.colNet||0,vbShare:deal.vbFee||0,
           galleryShare:deal.galleryAmt||0,vbNet:deal.vbAmt||0,artistShare:deal.artistAmt||0,
           source:"auction",auctionId:id,
+          artistId:artistRec?.id||null,artistName:artistRec?.name||null,
         };
         up("sales",p=>[...p,auctionSale]);
         // Complete the schedule if one exists
@@ -799,6 +803,7 @@ export default function App(){
     {id:"auction",label:"Auction Platform",icon:I.gavel},
     {id:"reports",label:"Reports",icon:I.report},
     {id:"portals",label:"Portal Users",icon:I.ppl},
+    {id:"enquiries",label:"Enquiries",icon:I.mail},
   ];
 
   const d={artworks:Array.isArray(data.artworks)?data.artworks:[],artists:Array.isArray(data.artists)?data.artists:[],collectors:Array.isArray(data.collectors)?data.collectors:[],buyers:Array.isArray(data.buyers)?data.buyers:[],schedules:liveSchedules,payments:Array.isArray(data.payments)?data.payments:[],sales:Array.isArray(data.sales)?data.sales:[],reports:Array.isArray(data.reports)?data.reports:[],auctions:Array.isArray(data.auctions)?data.auctions:[],bids:Array.isArray(data.bids)?data.bids:[]};
@@ -820,6 +825,7 @@ export default function App(){
     auction:<AuctionPage data={d} actions={actions}/>,
     reports:<ReportsPage data={d} actions={actions}/>,
     portals:<PortalsPage data={d} setPendingPortalCount={setPendingPortalCount}/>,
+    enquiries:<EnquiriesPage data={d} up={up}/>,
   };
 
   // ── Session gate ──
@@ -866,7 +872,7 @@ export default function App(){
         </div>
         <nav style={{flex:1,padding:"16px 12px",overflowY:"auto"}}>
           {nav.map(n=>{
-            const alertCount=n.id==="invoices"?chasing.length+inDispute.length+cancelled.length:n.id==="auction"?(liveAuctionCount>0?liveAuctionCount:0)+(pendingApprovalCount>0?pendingApprovalCount:0):n.id==="portals"?pendingPortalCount:0;
+            const alertCount=n.id==="invoices"?chasing.length+inDispute.length+cancelled.length:n.id==="auction"?(liveAuctionCount>0?liveAuctionCount:0)+(pendingApprovalCount>0?pendingApprovalCount:0):n.id==="portals"?pendingPortalCount:n.id==="enquiries"?(d.enquiries||[]).filter(e=>!e.read).length:0;
             return<button key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:"12px 14px",background:page===n.id?"rgba(182,139,46,0.20)":"transparent",border:"none",borderRadius:10,color:page===n.id?"#b68b2e":"#6b635a",fontSize:13,fontWeight:page===n.id?600:400,cursor:"pointer",marginBottom:4,fontFamily:"DM Sans,sans-serif"}}>{n.icon}<span style={{flex:1,textAlign:"left"}}>{n.label}</span>{alertCount>0&&<span style={{fontSize:10,background:n.id==="auction"&&liveAuctionCount>0?"rgba(74,158,107,0.2)":"rgba(196,92,74,0.2)",color:n.id==="auction"&&liveAuctionCount>0?"#4a9e6b":"#c45c4a",padding:"2px 6px",borderRadius:8,fontWeight:700}}>{alertCount}</span>}</button>;
           })}
         </nav>
@@ -894,7 +900,7 @@ export default function App(){
           {id:"reports",icon:I.report,label:"Reports"},
         ].map(n=>{
           const active=page===n.id;
-          const alertCount=n.id==="invoices"?chasing.length+inDispute.length+cancelled.length:n.id==="auction"?(liveAuctionCount>0?liveAuctionCount:0)+(pendingApprovalCount>0?pendingApprovalCount:0):n.id==="portals"?pendingPortalCount:0;
+          const alertCount=n.id==="invoices"?chasing.length+inDispute.length+cancelled.length:n.id==="auction"?(liveAuctionCount>0?liveAuctionCount:0)+(pendingApprovalCount>0?pendingApprovalCount:0):n.id==="portals"?pendingPortalCount:n.id==="enquiries"?(d.enquiries||[]).filter(e=>!e.read).length:0;
           return<button key={n.id} onClick={()=>navTo(n.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"8px 0",background:"transparent",border:"none",color:active?"#b68b2e":"#8a8070",cursor:"pointer",position:"relative",gap:3}}>
             <div style={{color:active?"#b68b2e":"#8a8070"}}>{n.icon}</div>
             <span style={{fontSize:9,letterSpacing:0.5,fontWeight:active?600:400}}>{n.label}</span>
@@ -915,6 +921,8 @@ export default function App(){
 // ═══════════════════════════════════════════
 function Dashboard({data,navTo,chasing,inDispute,cancelled,pendingPortalRequests}){
   const totalPay=data.payments.reduce((s,p)=>s+(p.amount||0),0);
+  const totalSalesRev=data.sales.reduce((s,x)=>s+(x.salePrice||0),0);
+  const totalVBRev=data.sales.reduce((s,x)=>s+(x.vbTotal||x.vbShare||0),0);
   const md={};data.payments.forEach(p=>{const k=(p.date||"").slice(0,7);if(k)md[k]=(md[k]||0)+(p.amount||0);});
   const sm=Object.keys(md).sort();const mx=Math.max(...Object.values(md),1);
   const months=["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -958,7 +966,9 @@ function Dashboard({data,navTo,chasing,inDispute,cancelled,pendingPortalRequests
       <Stat label="License Holders" value={data.collectors.length}/>
       <Stat label="Buyers" value={data.buyers.length} gold/>
       <Stat label="Auctions" value={(data.auctions||[]).length} gold/>
-      <Stat label="Collected" value={"R "+fmt(totalPay)} green/>
+      <Stat label="License Fees Collected" value={"R "+fmt(totalPay)} green/>
+      <Stat label="Sales Revenue" value={"R "+fmt(totalSalesRev)} gold/>
+      <Stat label="VB Revenue" value={"R "+fmt(totalVBRev)} green/>
     </div>
     <Card style={{marginBottom:20}}>
       <div style={{fontSize:14,fontWeight:600,color:"#1a1714",marginBottom:16}}>Monthly Revenue</div>
@@ -1956,6 +1966,58 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
   return(<div>
     <PT title="License Invoicing" sub={`${allSchedules.length} agreements · ${data.collectors.length} License Holders`}/>
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:14,marginBottom:24}}><Stat label="Active" value={active} green/><Stat label="Chasing" value={chasing} orange/><Stat label="In Dispute" value={dispute} orange/><Stat label="Cancelled" value={cancelledCount} red/><Stat label="Collected" value={"R "+fmt(totalCollected)} gold/></div>
+    {/* PayFast pending confirmations */}
+    {(data.payfast_notifications||[]).filter(n=>!n.confirmed).length>0&&(
+      <Card style={{marginBottom:20,border:"2px solid rgba(182,139,46,0.40)",padding:0,overflow:"hidden"}}>
+        <div style={{height:3,background:"linear-gradient(90deg,#b68b2e,#8a6a1e)"}}/>
+        <div style={{padding:16}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:10}}>
+            <div>
+              <div style={{fontSize:13,fontWeight:700,color:"#1a1714"}}>💳 PayFast Payments Pending Confirmation</div>
+              <div style={{fontSize:12,color:"#8a8070",marginTop:2}}>{(data.payfast_notifications||[]).filter(n=>!n.confirmed).length} payment{(data.payfast_notifications||[]).filter(n=>!n.confirmed).length!==1?"s":""} received — confirm to log in invoicing</div>
+            </div>
+          </div>
+          {(data.payfast_notifications||[]).filter(n=>!n.confirmed).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).map(notif=>{
+            // Find the schedule this payment is for
+            const sched=notif.scheduleRef?(data.schedules||[]).find(s=>s.id.endsWith(notif.scheduleRef)||s.id.slice(-8)===notif.scheduleRef):null;
+            return(
+              <div key={notif.id} style={{padding:"12px 14px",background:"rgba(182,139,46,0.04)",border:"1px solid rgba(182,139,46,0.20)",borderRadius:10,marginBottom:10,display:"flex",alignItems:"flex-start",gap:16,flexWrap:"wrap"}}>
+                <div style={{flex:1,minWidth:200}}>
+                  <div style={{fontSize:13,fontWeight:600,color:"#1a1714"}}>{notif.itemName||"—"}</div>
+                  <div style={{fontSize:11,color:"#8a8070",marginTop:2}}>
+                    {notif.emailAddress} · Ref: {notif.paymentRef} · {notif.createdAt?.slice(0,10)||"—"}
+                  </div>
+                  {sched&&<div style={{fontSize:11,color:"#4a9e6b",marginTop:2}}>✓ Schedule matched: {sched.collectorName} · Mo {notif.monthNumber}</div>}
+                  {!sched&&<div style={{fontSize:11,color:"#e6be32",marginTop:2}}>⚠ Schedule not auto-matched — confirm manually</div>}
+                </div>
+                <div style={{textAlign:"right",flexShrink:0}}>
+                  <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:22,fontWeight:600,color:"#4a9e6b"}}>R {fmt(notif.amountGross||0)}</div>
+                  <div style={{fontSize:10,color:"#8a8070"}}>Fee: R {fmt(notif.amountFee||0)} · Net: R {fmt(notif.amountNet||0)}</div>
+                </div>
+                <div style={{display:"flex",gap:8,flexShrink:0,alignSelf:"center"}}>
+                  {sched&&notif.monthNumber&&(
+                    <button onClick={()=>{
+                      actions.recordPayment(sched, notif.monthNumber, "PayFast", notif.amountGross||0);
+                      // Mark as confirmed in Supabase
+                      if(supabase)supabase.from("payfast_notifications").update({confirmed:true,confirmed_at:new Date().toISOString()}).eq("id",notif.id);
+                      up("payfast_notifications",p=>p.map(n=>n.id===notif.id?{...n,confirmed:true}:n));
+                    }} style={{padding:"8px 16px",borderRadius:8,border:"none",background:"linear-gradient(135deg,#4a9e6b,#2d7a4a)",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"DM Sans,sans-serif"}}>
+                      ✓ Confirm Payment
+                    </button>
+                  )}
+                  <button onClick={()=>{
+                    if(supabase)supabase.from("payfast_notifications").update({confirmed:true,confirmed_at:new Date().toISOString()}).eq("id",notif.id);
+                    up("payfast_notifications",p=>p.map(n=>n.id===notif.id?{...n,confirmed:true}:n));
+                  }} style={{padding:"8px 14px",borderRadius:8,border:"1px solid rgba(182,139,46,0.3)",background:"transparent",color:"#b68b2e",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+    )}
     <Card style={{marginBottom:20,padding:16}}><div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:12}}>Mass Email Actions</div><div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
       <Btn small ghost onClick={()=>setEmailModal({status:"Active",templateKey:"upcoming",targets:buildEmailTargets("Active")})} style={{borderColor:"rgba(74,158,107,0.3)",color:"#4a9e6b"}}>{I.mail} Remind Active</Btn>
       <Btn small ghost onClick={()=>setEmailModal({status:"Chasing",templateKey:"missed",targets:buildEmailTargets("Chasing")})} style={{borderColor:"rgba(230,190,50,0.3)",color:"#e6be32"}}>{I.mail} Chase All</Btn>
@@ -2053,6 +2115,18 @@ function SalesPage({data,actions}){
       {label:"Sale Price",right:true,render:r=>"R "+fmt(r.salePrice)},
       {label:"Collector Net",right:true,render:r=><span style={{color:"#4a9e6b",fontWeight:600}}>R {fmt(r.colNet||r.collectorShare||0)}</span>},
       {label:"VB Total",right:true,gold:true,render:r=>"R "+fmt(r.vbTotal||r.vbShare||0)},
+      {label:"Payout",render:r=><div style={{display:"flex",flexDirection:"column",gap:4}}>
+        {r.collectorName&&r.collectorName!=="—"&&(
+          <button onClick={e=>{e.stopPropagation();const paid=!r.collectorPaid;up("sales",p=>p.map(s=>s.id===r.id?{...s,collectorPaid:paid,collectorPaidAt:paid?td():null}:s));if(supabase)supabase.from("sales").update({collector_paid:paid,collector_paid_at:paid?new Date().toISOString():null}).eq("id",r.id);}} style={{padding:"3px 8px",borderRadius:5,border:`1px solid ${r.collectorPaid?"rgba(74,158,107,0.4)":"rgba(182,139,46,0.3)"}`,background:r.collectorPaid?"rgba(74,158,107,0.10)":"transparent",color:r.collectorPaid?"#4a9e6b":"#8a8070",cursor:"pointer",fontSize:10,fontWeight:600,fontFamily:"DM Sans,sans-serif",whiteSpace:"nowrap"}}>
+            {r.collectorPaid?"✓ LH Paid":"Mark LH Paid"}
+          </button>
+        )}
+        {r.buyerName&&r.source==="auction"&&(
+          <button onClick={e=>{e.stopPropagation();const paid=!r.buyerPaid;up("sales",p=>p.map(s=>s.id===r.id?{...s,buyerPaid:paid,buyerPaidAt:paid?td():null}:s));if(supabase)supabase.from("sales").update({buyer_paid:paid,buyer_paid_at:paid?new Date().toISOString():null}).eq("id",r.id);}} style={{padding:"3px 8px",borderRadius:5,border:`1px solid ${r.buyerPaid?"rgba(74,158,107,0.4)":"rgba(100,140,200,0.3)"}`,background:r.buyerPaid?"rgba(74,158,107,0.10)":"transparent",color:r.buyerPaid?"#4a9e6b":"#648cc8",cursor:"pointer",fontSize:10,fontWeight:600,fontFamily:"DM Sans,sans-serif",whiteSpace:"nowrap"}}>
+            {r.buyerPaid?"✓ Buyer Paid":"Mark Buyer Paid"}
+          </button>
+        )}
+      </div>},
       {label:"",render:r=><div style={{display:"flex",gap:6}}>
         <button onClick={e=>{e.stopPropagation();setSettlementModal(r);}} style={{background:"none",border:"none",color:"#b68b2e",cursor:"pointer",fontSize:11,textDecoration:"underline"}}>Sheet</button>
         <button onClick={e=>{e.stopPropagation();if(confirm("Delete sale?"))actions.deleteSale(r.id);}} style={{background:"none",border:"none",color:"#8a8070",cursor:"pointer"}}>{I.del}</button>
@@ -2158,6 +2232,95 @@ function ReportsPage({data,actions}){
       </Card>;})}
   </div>);}
 
+
+
+// ═══════════════════════════════════════════
+// ENQUIRIES INBOX
+// ═══════════════════════════════════════════
+function EnquiriesPage({data,up}){
+  const [filter,setFilter]=useState("unread");
+  const enquiries=(data.enquiries||[]).sort((a,b)=>new Date(b.createdAt||b.created_at)-new Date(a.createdAt||a.created_at));
+  const unread=enquiries.filter(e=>!e.read);
+  const all=enquiries;
+  const shown=filter==="unread"?unread:all;
+
+  const markRead=(id)=>{
+    up("enquiries",p=>p.map(e=>e.id===id?{...e,read:true}:e));
+    if(supabase)supabase.from("enquiries").update({read:true}).eq("id",id);
+  };
+  const markAllRead=()=>{
+    up("enquiries",p=>p.map(e=>({...e,read:true})));
+    if(supabase)supabase.from("enquiries").update({read:true}).eq("read",false);
+  };
+  const deleteEnquiry=(id)=>{
+    up("enquiries",p=>p.filter(e=>e.id!==id));
+    if(supabase)supabase.from("enquiries").delete().eq("id",id);
+  };
+
+  return(<div>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24,flexWrap:"wrap",gap:12}}>
+      <div>
+        <div style={{fontSize:10,letterSpacing:4,textTransform:"uppercase",color:"#b68b2e",marginBottom:6}}>Vollard Black</div>
+        <h1 style={{fontFamily:"Cormorant Garamond,serif",fontSize:32,fontWeight:300,color:"#1a1714",margin:0}}>Buyer Enquiries</h1>
+        <p style={{fontSize:12,color:"#8a8070",marginTop:4}}>Purchase requests from buyers via the gallery portal</p>
+      </div>
+      {unread.length>0&&<Btn ghost onClick={markAllRead}>Mark All Read ({unread.length})</Btn>}
+    </div>
+
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:14,marginBottom:24}}>
+      <Stat label="Total" value={all.length}/>
+      <Stat label="Unread" value={unread.length} gold/>
+      <Stat label="Artworks" value={[...new Set(all.map(e=>e.artworkId))].length}/>
+      <Stat label="Buyers" value={[...new Set(all.map(e=>e.buyerEmail).filter(Boolean))].length}/>
+    </div>
+
+    <div style={{display:"flex",gap:8,marginBottom:16}}>
+      {[["unread","Unread ("+unread.length+")"],["all","All ("+all.length+")"]].map(([id,lbl])=>(
+        <button key={id} onClick={()=>setFilter(id)} style={{padding:"8px 18px",borderRadius:8,border:filter===id?"2px solid #b68b2e":"1px solid rgba(182,139,46,0.25)",background:filter===id?"rgba(182,139,46,0.15)":"transparent",color:filter===id?"#b68b2e":"#6b635a",fontSize:12,fontWeight:filter===id?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{lbl}</button>
+      ))}
+    </div>
+
+    {shown.length===0
+      ?<Card style={{textAlign:"center",padding:48}}>
+          <div style={{fontSize:32,marginBottom:12,color:"#b68b2e"}}>💬</div>
+          <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:20,color:"#1a1714",marginBottom:8}}>No {filter==="unread"?"unread ":""}enquiries yet</div>
+          <div style={{fontSize:13,color:"#8a8070"}}>Purchase enquiries from buyers will appear here.</div>
+        </Card>
+      :shown.map(e=>{
+        const art=(data.artworks||[]).find(a=>a.id===e.artworkId);
+        return(
+          <Card key={e.id} style={{marginBottom:12,border:e.read?"1px solid rgba(182,139,46,0.18)":"2px solid rgba(100,140,200,0.40)",padding:0,overflow:"hidden"}}>
+            {!e.read&&<div style={{height:3,background:"linear-gradient(90deg,#648cc8,#4a6aa0)"}}/>}
+            <div style={{padding:18}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:16,flexWrap:"wrap"}}>
+                <div style={{flex:1,minWidth:200}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6,flexWrap:"wrap"}}>
+                    <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:18,color:"#1a1714"}}>{e.artworkTitle||"Unknown artwork"}</div>
+                    {!e.read&&<span style={{fontSize:10,fontWeight:700,color:"#648cc8",background:"rgba(100,140,200,0.12)",padding:"2px 8px",borderRadius:4}}>NEW</span>}
+                  </div>
+                  {art&&<div style={{fontSize:12,color:"#8a8070",marginBottom:6}}>{art.artist||"—"} · R {fmt(art.recommendedPrice)} · {art.galleryName||"No gallery"}</div>}
+                  <div style={{display:"flex",gap:16,fontSize:13,flexWrap:"wrap"}}>
+                    <span style={{fontWeight:600,color:"#1a1714"}}>{e.buyerName||"—"}</span>
+                    {e.buyerEmail&&<a href={"mailto:"+e.buyerEmail} style={{color:"#b68b2e",fontSize:12}}>{e.buyerEmail}</a>}
+                    {e.buyerMobile&&<span style={{fontSize:12,color:"#6b635a"}}>{e.buyerMobile}</span>}
+                  </div>
+                  {e.message&&<div style={{marginTop:8,fontSize:13,color:"#6b635a",fontStyle:"italic",padding:"8px 12px",background:"rgba(182,139,46,0.04)",borderRadius:6}}>"{e.message}"</div>}
+                  <div style={{fontSize:11,color:"#a09890",marginTop:6}}>{e.createdAt?.slice(0,16)?.replace("T"," ")||"—"}</div>
+                </div>
+                {art?.imageUrl&&<div style={{width:64,height:64,borderRadius:8,overflow:"hidden",flexShrink:0,border:"1px solid rgba(182,139,46,0.20)"}}><img src={art.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div>}
+              </div>
+              <div style={{display:"flex",gap:8,marginTop:14,flexWrap:"wrap"}}>
+                {e.buyerMobile&&<a href={"https://wa.me/"+e.buyerMobile.replace(/\D/g,"")} target="_blank" rel="noreferrer" style={{padding:"8px 14px",borderRadius:6,border:"1px solid rgba(37,211,102,0.30)",background:"rgba(37,211,102,0.08)",color:"#25d366",cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"DM Sans,sans-serif",textDecoration:"none"}}>WhatsApp</a>}
+                {e.buyerEmail&&<a href={"mailto:"+e.buyerEmail+"?subject=Re: "+encodeURIComponent(e.artworkTitle||"Your Enquiry")+"&body=Dear "+encodeURIComponent(e.buyerName||"")+","} style={{padding:"8px 14px",borderRadius:6,border:"1px solid rgba(182,139,46,0.30)",background:"transparent",color:"#b68b2e",cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"DM Sans,sans-serif",textDecoration:"none"}}>Email</a>}
+                {!e.read&&<button onClick={()=>markRead(e.id)} style={{padding:"8px 14px",borderRadius:6,border:"1px solid rgba(100,140,200,0.30)",background:"rgba(100,140,200,0.08)",color:"#648cc8",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>Mark Read</button>}
+                <button onClick={()=>{if(confirm("Delete this enquiry?"))deleteEnquiry(e.id);}} style={{padding:"8px 12px",borderRadius:6,border:"1px solid rgba(196,92,74,0.20)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif",marginLeft:"auto"}}>{I.del}</button>
+              </div>
+            </div>
+          </Card>
+        );
+      })
+    }
+  </div>);}
 
 // ═══════════════════════════════════════════
 // PORTAL USERS MANAGEMENT
