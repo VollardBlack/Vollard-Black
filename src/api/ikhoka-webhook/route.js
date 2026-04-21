@@ -3,7 +3,7 @@
 // File: src/app/api/ikhoka-webhook/route.js
 //
 // iKhoka POSTs here when a payment completes.
-// We log it to Supabase payfast_notifications (reusing same table)
+// We log it to Supabase ikhoka_payments (reusing same table)
 // and admin confirms via Invoicing page.
 // ═══════════════════════════════════════════════════════════════
 
@@ -67,7 +67,7 @@ export async function POST(request) {
     };
 
     const { error } = await supabase
-      .from('payfast_notifications')
+      .from('ikhoka_payments')
       .insert(notification);
 
     if (error) {
