@@ -522,7 +522,7 @@ function RenterDashboard({session}) {
                       })}
                       style={{padding:'12px 24px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",display:'flex',alignItems:'center',gap:8}}
                     >
-                      💳 Pay R {fmt(sc.monthlyAmount)} via PayFast
+                      💳 Pay R {fmt(sc.monthlyAmount)} via iKhoka
                     </button>
                     <div style={{fontSize:11,color:'#8a8070',display:'flex',alignItems:'center'}}>Ref: {payRef}</div>
                   </div>
