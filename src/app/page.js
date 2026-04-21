@@ -1,5 +1,3 @@
 'use client';
-import App from './VollardBlack';
-export default function Home() {
-  return <App />;
-}
+import HubPage from './HubPage';
+export default function Home() { return <HubPage />; }
