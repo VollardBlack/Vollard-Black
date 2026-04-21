@@ -1,6 +1,6 @@
 'use client';
-import { useState, useEffect } from "react";
 import KYCRegistration from './KYCRegistration';
+import { useState, useEffect } from "react";
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -26,46 +26,29 @@ const toCamel = (obj) => {
 };
 
 
-// ─── PayFast Payment Helper ───────────────────────────────────────────────────
-// Generates a PayFast payment form and submits it
-// Uses PayFast sandbox for testing, switch PAYFAST_MERCHANT_ID/KEY for production
 
-const PAYFAST_MERCHANT_ID = '10000100';      // Replace with your Merchant ID
-const PAYFAST_MERCHANT_KEY = '46f0cd694581a'; // Replace with your Merchant Key
-const PAYFAST_URL = 'https://sandbox.payfast.co.za/eng/process'; // Change to https://www.payfast.co.za/eng/process for production
+// ─── iKhoka Payment Helper ────────────────────────────────────────────────────
+// Creates an iKhoka paylink via our secure server-side API route
+// then redirects the user to the hosted payment page
 
-function initiatePayFastPayment({amount, itemName, paymentRef, email, firstName, lastName, returnUrl, cancelUrl, notifyUrl}) {
-  // Build the form data
-  const params = {
-    merchant_id: PAYFAST_MERCHANT_ID,
-    merchant_key: PAYFAST_MERCHANT_KEY,
-    return_url: returnUrl || window.location.href + '?payment=success',
-    cancel_url: cancelUrl || window.location.href + '?payment=cancelled',
-    notify_url: notifyUrl || 'https://vollard-black.vercel.app/api/payfast-notify',
-    name_first: firstName || '',
-    name_last: lastName || '',
-    email_address: email || '',
-    m_payment_id: paymentRef,
-    amount: Number(amount).toFixed(2),
-    item_name: itemName,
-    item_description: itemName,
-    payment_method: 'eft', // Default to EFT — remove to show all methods
-  };
-
-  // Create and submit a hidden form
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = PAYFAST_URL;
-  form.style.display = 'none';
-  Object.entries(params).forEach(([key, val]) => {
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = key;
-    input.value = val;
-    form.appendChild(input);
-  });
-  document.body.appendChild(form);
-  form.submit();
+async function initiateIkhokaPayment({ amount, description, scheduleId, monthNumber, collectorEmail }) {
+  try {
+    const res = await fetch('/api/ikhoka-paylink', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount, description, scheduleId, monthNumber, collectorEmail }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.paylinkUrl) {
+      alert('Payment setup failed: ' + (data.error || 'Unknown error. Please try again.'));
+      return;
+    }
+    // Redirect to iKhoka hosted payment page
+    window.location.href = data.paylinkUrl;
+  } catch (err) {
+    alert('Payment setup failed. Please check your connection and try again.');
+    console.error('iKhoka error:', err);
+  }
 }
 
 const S = {
@@ -309,15 +292,21 @@ function RenterDashboard({session}) {
 
   useEffect(()=>{ loadData(); },[session]);
 
-  // Detect PayFast return URL params
+  // Detect iKhoka return URL params
   useEffect(()=>{
     if(typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
-    if(params.get('payment')==='success') {
-      setSaleAlert('✓ Payment submitted successfully. Vollard Black will confirm and update your account shortly.');
-      // Clean up URL without reload
+    const payStatus = params.get('payment');
+    const ref = params.get('ref');
+    if(payStatus==='success') {
+      setSaleAlert(`✓ Payment received${ref?' (Ref: '+ref+')':''} — Vollard Black will confirm and update your account within 1 business day.`);
       window.history.replaceState({}, '', window.location.pathname);
-    } else if(params.get('payment')==='cancelled') {
+      // Switch to payments tab so they see confirmation
+      setTab('payments');
+    } else if(payStatus==='failed') {
+      setSaleAlert('⚠ Payment failed. Please try again or contact Vollard Black.');
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if(payStatus==='cancelled') {
       setSaleAlert('⚠ Payment was cancelled. No charge was made.');
       window.history.replaceState({}, '', window.location.pathname);
     }
@@ -524,13 +513,12 @@ function RenterDashboard({session}) {
                   </div>
                   <div style={{marginTop:14,display:'flex',gap:10,flexWrap:'wrap'}}>
                     <button
-                      onClick={()=>initiatePayFastPayment({
+                      onClick={()=>initiateIkhokaPayment({
                         amount: sc.monthlyAmount,
-                        itemName: `Vollard Black — License Fee: ${sc.artworkTitle} Mo ${nextMonth}`,
-                        paymentRef: payRef,
-                        email: session.user.email,
-                        firstName: colFirstName,
-                        lastName: colLastName,
+                        description: `Vollard Black License Fee: ${sc.artworkTitle} Mo ${nextMonth}`,
+                        scheduleId: sc.id,
+                        monthNumber: nextMonth,
+                        collectorEmail: session.user.email,
                       })}
                       style={{padding:'12px 24px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",display:'flex',alignItems:'center',gap:8}}
                     >
@@ -761,7 +749,6 @@ export default function RenterPortal() {
   if(session===undefined) return <div style={{minHeight:'100vh',background:'#f5f3ef',display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,letterSpacing:8,color:'#b68b2e',opacity:0.5}}>VOLLARD BLACK</div></div>;
 
   if(!session){
-    if(screen==='register') return <KYCRegistration role="renter" supabase={supabase} onComplete={email=>{setPendingEmail(email);setScreen('pending');}} onSignIn={()=>setScreen('login')}/>;
     if(screen==='pending') return <PendingScreen email={pendingEmail} onSignIn={()=>setScreen('login')}/>;
     return <LoginScreen onLogin={s=>setSession(s)} onRegister={()=>setScreen('register')}/>;
   }
