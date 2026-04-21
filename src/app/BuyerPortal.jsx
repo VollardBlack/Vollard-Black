@@ -1114,6 +1114,7 @@ export default function BuyerPortal() {
 
   if(session===undefined) return <div style={{minHeight:'100vh',background:'#f5f3ef',display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,letterSpacing:8,color:'#b68b2e',opacity:0.5}}>VOLLARD BLACK</div></div>;
   if(!session){
+    if(screen==='register') return <KYCRegistration role="buyer" supabase={supabase} onComplete={email=>{setPendingEmail(email);setScreen('pending');}} onSignIn={()=>setScreen('login')}/>;
     if(screen==='pending') return <PendingScreen email={pendingEmail} onSignIn={()=>setScreen('login')}/>;
     return <LoginScreen onLogin={s=>setSession(s)} onRegister={()=>setScreen('register')}/>;
   }
