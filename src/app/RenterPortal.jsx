@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from "react";
-import KYCRegistration from '../KYCRegistration';
+import KYCRegistration from './KYCRegistration';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
