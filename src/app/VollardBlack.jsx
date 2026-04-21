@@ -1973,7 +1973,7 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
         <div style={{padding:16}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:10}}>
             <div>
-              <div style={{fontSize:13,fontWeight:700,color:"#1a1714"}}>💳 PayFast Payments Pending Confirmation</div>
+              <div style={{fontSize:13,fontWeight:700,color:"#1a1714"}}>💳 iKhoka Payments Pending Confirmation</div>
               <div style={{fontSize:12,color:"#8a8070",marginTop:2}}>{(data.payfast_notifications||[]).filter(n=>!n.confirmed).length} payment{(data.payfast_notifications||[]).filter(n=>!n.confirmed).length!==1?"s":""} received — confirm to log in invoicing</div>
             </div>
           </div>
