@@ -1,6 +1,6 @@
 'use client';
-import { useState, useEffect, useRef } from "react";
 import KYCRegistration from './KYCRegistration';
+import { useState, useEffect, useRef } from "react";
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -627,6 +627,23 @@ function BuyerDashboard({session}) {
 
   useEffect(()=>{ loadData(true); },[session]);
 
+  useEffect(()=>{
+    if(typeof window==='undefined') return;
+    const params=new URLSearchParams(window.location.search);
+    const pay=params.get('payment');
+    if(pay==='success'){
+      setEnquiryMsg('✓ Payment submitted! Vollard Black will confirm and update your account shortly.');
+      window.history.replaceState({},'',window.location.pathname);
+      setTab('purchases');
+    } else if(pay==='failed'){
+      setEnquiryMsg('⚠ Payment failed. Please try again or contact Vollard Black.');
+      window.history.replaceState({},'',window.location.pathname);
+    } else if(pay==='cancelled'){
+      setEnquiryMsg('Payment cancelled — no charge was made.');
+      window.history.replaceState({},'',window.location.pathname);
+    }
+  },[]);
+
   // Keep refs in sync for use inside realtime callbacks
   useEffect(()=>{ buyerRef.current = buyer; },[buyer]);
   useEffect(()=>{ auctionsRef.current = auctions; },[auctions]);
@@ -757,6 +774,30 @@ function BuyerDashboard({session}) {
   };
 
   const signOut = ()=>supabase.auth.signOut();
+
+  const payWithIkhoka = async({amount, description, referenceId, type}) => {
+    try {
+      const res = await fetch('/api/ikhoka-paylink', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          amount,
+          description,
+          scheduleId: referenceId,
+          monthNumber: 1,
+          collectorEmail: session.user.email,
+        }),
+      });
+      const data = await res.json();
+      if (data.paylinkUrl) {
+        window.location.href = data.paylinkUrl;
+      } else {
+        alert('Payment setup failed: ' + (data.error || 'Please try again.'));
+      }
+    } catch(e) {
+      alert('Payment error. Please try again.');
+    }
+  };
   const displayName = buyer?(`${buyer.firstName||''} ${buyer.lastName||''}`.trim()||buyer.companyName||''):session.user.email.split('@')[0];
   const liveAuctions = auctions.filter(a=>a.status==='Live');
   const isOutbid = bids.some(b=>{ const a=auctions.find(x=>x.id===b.auctionId); return a?.status==='Live'&&a?.leadBidderId!==buyer?.id; });
@@ -838,7 +879,10 @@ function BuyerDashboard({session}) {
                       {art.description&&<div style={{fontSize:12,color:'#6b635a',marginBottom:10,fontStyle:'italic',lineHeight:1.5}}>{art.description}</div>}
                       {art.status==='Reserved'
                         ?<div style={{padding:'9px',background:'rgba(182,139,46,0.08)',border:'1px solid rgba(182,139,46,0.20)',borderRadius:8,textAlign:'center',fontSize:12,color:'#b68b2e',fontWeight:600}}>⚖ In Auction</div>
-                        :<button onClick={()=>setEnquiry(art)} style={{...S.btn(true),width:'100%',padding:'10px',fontSize:12}}>Enquire to Purchase</button>
+                        :<div style={{display:'flex',gap:8}}>
+                          <button onClick={()=>setEnquiry(art)} style={{...S.btn(false),flex:1,padding:'9px',fontSize:11}}>Enquire</button>
+                          <button onClick={()=>payWithIkhoka({amount:art.recommendedPrice,description:`Vollard Black: ${art.title}`,referenceId:art.id.slice(-8),type:'gallery'})} style={{...S.btn(true),flex:1,padding:'9px',fontSize:11}}>💳 Pay Now</button>
+                        </div>
                       }
                     </div>
                   </div>
@@ -931,12 +975,54 @@ function BuyerDashboard({session}) {
         {/* PURCHASES */}
         {tab==='purchases'&&(
           <div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,fontWeight:300,color:'#1a1714',marginBottom:16}}>Purchases</div>
-            {purchases.length===0?<div style={{...S.card,textAlign:'center',padding:40}}><div style={{fontSize:14,color:'#8a8070'}}>No purchases recorded yet.</div></div>:purchases.map(p=>(
-              <div key={p.id} style={S.card}><div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:10}}>
-                <div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:'#1a1714',marginBottom:4}}>{p.artworkTitle}</div><div style={{fontSize:12,color:'#8a8070'}}>{p.date||'—'}</div></div>
-                <div style={{textAlign:'right'}}><div style={{fontSize:9,color:'#8a8070',letterSpacing:1,textTransform:'uppercase'}}>Sale Price</div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,...S.gold}}>R {fmt(p.salePrice)}</div></div>
-              </div></div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,fontWeight:300,color:'#1a1714',marginBottom:16}}>Purchases & Payments</div>
+
+            {/* Auction wins pending payment */}
+            {auctions.filter(a=>a.status==='Sold'&&a.leadBidderId===buyer?.id&&!purchases.some(p=>p.auctionId===a.id||p.artworkId===a.artworkId)).map(a=>(
+              <div key={a.id} style={{...S.card,border:'2px solid rgba(74,158,107,0.40)',marginBottom:12}}>
+                <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.2em',textTransform:'uppercase',color:'#4a9e6b',marginBottom:10}}>🏆 Auction Won — Payment Due</div>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:12,marginBottom:14}}>
+                  <div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:'#1a1714',marginBottom:4}}>{a.title}</div>
+                    <div style={{fontSize:12,color:'#8a8070'}}>Closed {a.closedAt?.slice(0,10)||'—'} · Winning bid</div>
+                  </div>
+                  <div style={{textAlign:'right'}}>
+                    <div style={{fontSize:10,color:'#8a8070',letterSpacing:1,textTransform:'uppercase'}}>Amount Due</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:600,color:'#4a9e6b'}}>R {fmt(a.currentBid)}</div>
+                  </div>
+                </div>
+                <div style={{padding:'10px 14px',background:'rgba(74,158,107,0.06)',borderRadius:8,fontSize:12,color:'#4a4440',lineHeight:1.7,marginBottom:14}}>
+                  As the winning bidder, please complete your payment. The artwork will be released to you once payment is confirmed and all license fees are settled.
+                </div>
+                <button
+                  onClick={()=>payWithIkhoka({amount:a.currentBid,description:`Vollard Black Auction Purchase: ${a.title}`,referenceId:a.id.slice(-8),type:'auction'})}
+                  style={{padding:'13px 28px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#4a9e6b,#2d7a4a)',color:'#fff',cursor:'pointer',fontSize:13,fontWeight:700,fontFamily:"'DM Sans',sans-serif",boxShadow:'0 4px 14px rgba(74,158,107,0.3)'}}>
+                  💳 Pay R {fmt(a.currentBid)} via iKhoka
+                </button>
+              </div>
+            ))}
+
+            {/* Completed purchases */}
+            {purchases.length===0&&auctions.filter(a=>a.status==='Sold'&&a.leadBidderId===buyer?.id).length===0&&(
+              <div style={{...S.card,textAlign:'center',padding:40}}><div style={{fontSize:14,color:'#8a8070'}}>No purchases recorded yet.</div></div>
+            )}
+            {purchases.map(p=>(
+              <div key={p.id} style={S.card}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:10}}>
+                  <div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:'#1a1714',marginBottom:4}}>{p.artworkTitle}</div>
+                    <div style={{display:'flex',gap:8,alignItems:'center',marginTop:4,flexWrap:'wrap'}}>
+                      <span style={{fontSize:12,color:'#8a8070'}}>{p.date||'—'}</span>
+                      <span style={{fontSize:10,fontWeight:600,padding:'2px 8px',borderRadius:4,background:p.source==='auction'?'rgba(74,158,107,0.12)':'rgba(182,139,46,0.12)',color:p.source==='auction'?'#4a9e6b':'#b68b2e'}}>{p.source==='auction'?'⚖ Auction':'Direct'}</span>
+                    </div>
+                  </div>
+                  <div style={{textAlign:'right'}}>
+                    <div style={{fontSize:9,color:'#8a8070',letterSpacing:1,textTransform:'uppercase'}}>Sale Price</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,...S.gold}}>R {fmt(p.salePrice)}</div>
+                    <div style={{fontSize:11,color:'#4a9e6b',marginTop:2,fontWeight:600}}>✓ Payment Complete</div>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -1028,7 +1114,6 @@ export default function BuyerPortal() {
 
   if(session===undefined) return <div style={{minHeight:'100vh',background:'#f5f3ef',display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,letterSpacing:8,color:'#b68b2e',opacity:0.5}}>VOLLARD BLACK</div></div>;
   if(!session){
-    if(screen==='register') return <KYCRegistration role="buyer" supabase={supabase} onComplete={email=>{setPendingEmail(email);setScreen('pending');}} onSignIn={()=>setScreen('login')}/>;
     if(screen==='pending') return <PendingScreen email={pendingEmail} onSignIn={()=>setScreen('login')}/>;
     return <LoginScreen onLogin={s=>setSession(s)} onRegister={()=>setScreen('register')}/>;
   }
