@@ -2524,7 +2524,27 @@ function PortalsPage({data,setPendingPortalCount}){
                 </div>
                 <div style={{fontSize:13,color:"#6b635a"}}>{r.email}</div>
                 {r.mobile&&<div style={{fontSize:12,color:"#8a8070",marginTop:2}}>{r.mobile}</div>}
-                {r.message&&<div style={{fontSize:12,color:"#8a8070",marginTop:4,fontStyle:"italic"}}>"{r.message}"</div>}
+                {r.message&&<div style={{fontSize:12,color:"#8a8070",marginTop:4}}>
+                  {/* Parse and display key fields */}
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:6,marginTop:6}}>
+                    {(r.message||"").split(" | ").filter(Boolean).map((part,i)=>{
+                      const [key,val]=part.split(": ");
+                      if(!key||!val)return null;
+                      const isImg=val.startsWith("http")&&(val.includes("/id-")||val.includes("/selfie"));
+                      if(isImg)return(
+                        <div key={i} style={{gridColumn:"1/-1"}}>
+                          <div style={{fontSize:10,letterSpacing:1,textTransform:"uppercase",color:"#8a8070",marginBottom:4}}>{key}</div>
+                          <img src={val} alt={key} style={{maxHeight:120,maxWidth:200,borderRadius:8,border:"1px solid rgba(182,139,46,0.2)",cursor:"pointer"}} onClick={()=>window.open(val,"_blank")}/>
+                        </div>
+                      );
+                      return(
+                        <div key={i} style={{fontSize:12,color:"#4a4440"}}>
+                          <span style={{color:"#8a8070"}}>{key}: </span><span style={{fontWeight:500}}>{val}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>}
                 <div style={{fontSize:11,color:"#a09890",marginTop:4}}>Requested: {r.created_at?.slice(0,10)||"—"}</div>
               </div>
               <div style={{display:"flex",gap:8,flexShrink:0,flexWrap:"wrap"}}>
