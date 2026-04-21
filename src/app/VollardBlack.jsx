@@ -2389,307 +2389,222 @@ function EnquiriesPage({data,up}){
 function PortalsPage({data,setPendingPortalCount}){
   const [tab,setTab]=useState("pending");
   const [requests,setRequests]=useState([]);
-  const [loadingReqs,setLoadingReqs]=useState(true);
+  const [loading,setLoading]=useState(true);
   const [approving,setApproving]=useState(null);
-  const [rejecting,setRejecting]=useState(null);
+  const [expanded,setExpanded]=useState({});
+  const [search,setSearch]=useState("");
 
   useEffect(()=>{loadRequests();},[]);
 
   const loadRequests=async()=>{
-    setLoadingReqs(true);
+    setLoading(true);
     try{
       const {data:reqs}=await supabase.from("portal_requests").select("*").order("created_at",{ascending:false});
       setRequests(reqs||[]);
     }catch(e){console.error(e);}
-    setLoadingReqs(false);
+    setLoading(false);
   };
+
+  const updateCount=()=>supabase.from("portal_requests").select("id",{count:"exact"}).eq("status","pending").then(({count})=>setPendingPortalCount&&setPendingPortalCount(count||0));
 
   const approve=async(req)=>{
     setApproving(req.id);
-    // 1. Approve the request
     await supabase.from("portal_requests").update({status:"approved",reviewed_at:new Date().toISOString()}).eq("id",req.id);
-
-    // 2. Auto-create in the right table based on role
+    const msgFields={};
+    (req.message||"").split(" | ").forEach(part=>{const [key,...val]=part.split(": ");if(key&&val.length)msgFields[key.toLowerCase()]=val.join(": ");});
+    const nameParts=(req.full_name||"").trim().split(" ");
+    const firstName=nameParts[0]||req.full_name;
+    const lastName=nameParts.length>1?nameParts.slice(1).join(" "):"";
     if(req.role==="renter"){
-      // Check if collector already exists with this email
-      const {data:existing}=await supabase.from("collectors").select("id").eq("email",req.email).single();
-      if(!existing){
-        const nameParts=(req.full_name||"").trim().split(" ");
-        const lastName=nameParts.length>1?nameParts.slice(1).join(" "):"";
-        const firstName=nameParts[0]||req.full_name;
-        // Parse extra fields from message
-        const msgFields={};
-        (req.message||"").split(" | ").forEach(part=>{
-          const [key,...val]=part.split(": ");
-          if(key&&val.length)msgFields[key.toLowerCase()]=val.join(": ");
-        });
-        await supabase.from("collectors").insert({
-          id: crypto.randomUUID(),
-          type: "individual",
-          first_name: firstName,
-          last_name: lastName,
-          email: req.email,
-          mobile: req.mobile||"",
-          id_number: msgFields["id"]||"",
-          nationality: msgFields["nationality"]||"",
-          city: msgFields["city"]||"",
-          country: msgFields["country"]||"South Africa",
-          address: msgFields["address"]||"",
-          kyc_status: "pending",
-          notes: "Portal registration. Link artwork to activate.",
-          linked_artworks: "[]",
-          created_at: new Date().toISOString(),
-        });
-      }
+      const {data:ex}=await supabase.from("collectors").select("id").eq("email",req.email).single();
+      if(!ex)await supabase.from("collectors").insert({id:crypto.randomUUID(),type:"individual",first_name:firstName,last_name:lastName,email:req.email,mobile:req.mobile||"",id_number:msgFields["id"]||"",nationality:msgFields["nationality"]||"",city:msgFields["city"]||"",country:msgFields["country"]||"South Africa",address:msgFields["address"]||"",kyc_status:"pending",notes:"Portal registration.",created_at:new Date().toISOString()});
     } else if(req.role==="buyer"){
-      const {data:existingB}=await supabase.from("buyers").select("id").eq("email",req.email).single();
-      if(!existingB){
-        const msgFieldsB={};
-        (req.message||"").split(" | ").forEach(part=>{const [key,...val]=part.split(": ");if(key&&val.length)msgFieldsB[key.toLowerCase()]=val.join(": ");});
-        const namePartsB=(req.full_name||"").trim().split(" ");
-        await supabase.from("buyers").insert({
-          id: crypto.randomUUID(),
-          type: "individual",
-          first_name: namePartsB[0]||req.full_name,
-          last_name: namePartsB.slice(1).join(" ")||"",
-          email: req.email,
-          mobile: req.mobile||"",
-          id_number: msgFieldsB["id"]||"",
-          nationality: msgFieldsB["nationality"]||"",
-          city: msgFieldsB["city"]||"",
-          country: msgFieldsB["country"]||"South Africa",
-          address: msgFieldsB["address"]||"",
-          kyc_status: "pending",
-          auction_approved: false,
-          created_at: new Date().toISOString(),
-        });
-      }
+      const {data:ex}=await supabase.from("buyers").select("id").eq("email",req.email).single();
+      if(!ex)await supabase.from("buyers").insert({id:crypto.randomUUID(),type:"individual",first_name:firstName,last_name:lastName,email:req.email,mobile:req.mobile||"",id_number:msgFields["id"]||"",nationality:msgFields["nationality"]||"",city:msgFields["city"]||"",country:msgFields["country"]||"South Africa",address:msgFields["address"]||"",kyc_status:"pending",auction_approved:false,created_at:new Date().toISOString()});
     } else if(req.role==="artist"){
-      const {data:existing}=await supabase.from("artists").select("id").eq("email",req.email).single();
-      if(!existing){
-        // Parse extra fields from message
-        const msgFieldsA={};
-        (req.message||"").split(" | ").forEach(part=>{
-          const [key,...val]=part.split(": ");
-          if(key&&val.length)msgFieldsA[key.toLowerCase()]=val.join(": ");
-        });
-        await supabase.from("artists").insert({
-          id: crypto.randomUUID(),
-          name: req.full_name,
-          email: req.email,
-          mobile: req.mobile||"",
-          id_number: msgFieldsA["id"]||"",
-          nationality: msgFieldsA["nationality"]||"",
-          city: msgFieldsA["city"]||"",
-          country: msgFieldsA["country"]||"South Africa",
-          address: msgFieldsA["address"]||"",
-          medium: msgFieldsA["medium"]||"",
-          instagram: msgFieldsA["instagram"]||"",
-          kyc_status: "pending",
-          notes: "Portal registration.",
-          created_at: new Date().toISOString(),
-        });
-      }
+      const {data:ex}=await supabase.from("artists").select("id").eq("email",req.email).single();
+      if(!ex)await supabase.from("artists").insert({id:crypto.randomUUID(),name:req.full_name,email:req.email,mobile:req.mobile||"",id_number:msgFields["id"]||"",nationality:msgFields["nationality"]||"",city:msgFields["city"]||"",country:msgFields["country"]||"South Africa",medium:msgFields["medium"]||"",instagram:msgFields["instagram"]||"",kyc_status:"pending",notes:"Portal registration.",created_at:new Date().toISOString()});
     }
-
     await loadRequests();
-    supabase.from('portal_requests').select('id',{count:'exact'}).eq('status','pending').then(({count})=>setPendingPortalCount&&setPendingPortalCount(count||0));
+    updateCount();
     setApproving(null);
-    alert(req.role==="renter"
-      ?"✓ Approved. "+req.full_name+" has been added to License Holders. Go there to link their artwork."
-      :req.role==="buyer"?"✓ Approved. "+req.full_name+" has been added to Buyers. Go there to complete KYC and grant auction access.":"✓ Approved. "+req.full_name+" has been added to Artists.");
   };
 
-  const reject=async(req)=>{
-    setRejecting(req.id);
+  const revoke=async(req)=>{
+    if(!confirm("Revoke access for "+req.full_name+"? They will no longer be able to log in."))return;
     await supabase.from("portal_requests").update({status:"rejected",reviewed_at:new Date().toISOString()}).eq("id",req.id);
     await loadRequests();
-    setRejecting(null);
+    updateCount();
   };
 
   const deleteUser=async(req)=>{
-    if(!confirm("Permanently delete "+req.full_name+"? This removes their portal request and auth account."))return;
-    // Delete portal request
+    if(!confirm("Permanently delete "+req.full_name+"?\n\nThis removes their portal request. To remove their login go to Supabase → Authentication → Users and delete: "+req.email))return;
     await supabase.from("portal_requests").delete().eq("id",req.id);
-    // Delete auth user via admin - we can only do this from SQL
-    // Show SQL instruction
-    alert("Portal request deleted.\n\nTo fully remove their login, run this in Supabase SQL Editor:\n\nDELETE FROM auth.users WHERE email = '"+req.email+"';");
     await loadRequests();
+    updateCount();
   };
 
-  // Always use the stable production URL, not preview deployment URLs
+  const reapprove=async(req)=>{
+    await supabase.from("portal_requests").update({status:"approved",reviewed_at:new Date().toISOString()}).eq("id",req.id);
+    await loadRequests();
+    updateCount();
+  };
+
   const getBaseUrl=()=>{
     if(typeof window==="undefined")return"";
     const host=window.location.hostname;
-    // If on a Vercel preview URL, use the stable production URL
-    if(host.includes("-vollardblacks-projects.vercel.app")||host.includes("vollard-black-"))
-      return"https://vollard-black.vercel.app";
+    if(host.includes("-vollardblacks-projects.vercel.app")||host.includes("vollard-black-"))return"https://vollard-black.vercel.app";
     return window.location.origin;
   };
-  const renterUrl=getBaseUrl()+"/renter";
-  const artistUrl=getBaseUrl()+"/artist";
-  const buyerUrl=getBaseUrl()+"/buyer";
+
+  const roleColor={renter:"#b68b2e",buyer:"#4a9e6b",artist:"#648cc8"};
+  const roleBg={renter:"rgba(182,139,46,0.12)",buyer:"rgba(74,158,107,0.12)",artist:"rgba(100,140,200,0.12)"};
+  const roleBorder={renter:"rgba(182,139,46,0.40)",buyer:"rgba(74,158,107,0.40)",artist:"rgba(100,140,200,0.40)"};
+
   const pending=requests.filter(r=>r.status==="pending");
   const approved=requests.filter(r=>r.status==="approved");
   const rejected=requests.filter(r=>r.status==="rejected");
+  const filtered=(tab==="pending"?pending:tab==="approved"?approved:rejected)
+    .filter(r=>!search||(r.full_name||"").toLowerCase().includes(search.toLowerCase())||(r.email||"").toLowerCase().includes(search.toLowerCase()));
+
+  const base=getBaseUrl();
+
+  const UserCard=({r,showApprove=false,showRevoke=false,showReapprove=false})=>{
+    const isExpanded=expanded[r.id];
+    const msgParts=(r.message||"").split(" | ").filter(Boolean).map(p=>{const [k,...v]=p.split(": ");return{k,v:v.join(": ")};}).filter(p=>p.k&&p.v);
+    const docs=msgParts.filter(p=>p.v.startsWith("http")&&(p.v.includes("/id-")||p.v.includes("/selfie")||p.v.includes("/signature")));
+    const fields=msgParts.filter(p=>!p.v.startsWith("http")||(!p.v.includes("/id-")&&!p.v.includes("/selfie")&&!p.v.includes("/signature")));
+    const mobile=(r.mobile||"").replace(/\D/g,"");
+
+    return(
+      <Card key={r.id} style={{marginBottom:10,padding:0,overflow:"hidden",borderLeft:`3px solid ${roleBorder[r.role]||"rgba(182,139,46,0.3)"}`}}>
+        <div style={{padding:"14px 16px"}}>
+          {/* Header row */}
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,flexWrap:"wrap"}}>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4,flexWrap:"wrap"}}>
+                <span style={{fontFamily:"Cormorant Garamond,serif",fontSize:18,color:"#1a1714",fontWeight:400}}>{r.full_name||"—"}</span>
+                <span style={{fontSize:9,fontWeight:700,letterSpacing:"0.15em",textTransform:"uppercase",padding:"3px 8px",borderRadius:4,background:roleBg[r.role],color:roleColor[r.role]}}>{r.role}</span>
+                {r.status==="approved"&&<span style={{fontSize:9,fontWeight:700,color:"#4a9e6b",background:"rgba(74,158,107,0.10)",padding:"3px 8px",borderRadius:4}}>✓ APPROVED</span>}
+                {r.status==="rejected"&&<span style={{fontSize:9,fontWeight:700,color:"#c45c4a",background:"rgba(196,92,74,0.10)",padding:"3px 8px",borderRadius:4}}>✗ DECLINED</span>}
+              </div>
+              <div style={{fontSize:13,color:"#6b635a"}}>{r.email}</div>
+              {r.mobile&&<div style={{fontSize:12,color:"#8a8070"}}>{r.mobile}</div>}
+              <div style={{fontSize:11,color:"#a09890",marginTop:2}}>
+                Registered: {r.created_at?.slice(0,10)||"—"}
+                {r.reviewed_at&&<span style={{marginLeft:8}}>· Reviewed: {r.reviewed_at?.slice(0,10)}</span>}
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div style={{display:"flex",gap:6,flexShrink:0,flexWrap:"wrap",alignItems:"center"}}>
+              {mobile&&<a href={"https://wa.me/"+mobile} target="_blank" rel="noreferrer" style={{padding:"8px 12px",borderRadius:6,border:"1px solid rgba(37,211,102,0.30)",background:"rgba(37,211,102,0.08)",color:"#25d366",cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"DM Sans,sans-serif",textDecoration:"none"}}>WhatsApp</a>}
+              {showApprove&&<button onClick={()=>approve(r)} disabled={approving===r.id} style={{padding:"8px 16px",borderRadius:6,border:"none",background:"linear-gradient(135deg,#b68b2e,#8a6a1e)",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>{approving===r.id?"Approving…":"✓ Approve"}</button>}
+              {showRevoke&&<button onClick={()=>revoke(r)} style={{padding:"8px 12px",borderRadius:6,border:"1px solid rgba(196,92,74,0.30)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>Revoke</button>}
+              {showReapprove&&<button onClick={()=>reapprove(r)} style={{padding:"8px 12px",borderRadius:6,border:"1px solid rgba(74,158,107,0.30)",background:"transparent",color:"#4a9e6b",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>Re-approve</button>}
+              <button onClick={()=>deleteUser(r)} style={{padding:"8px 10px",borderRadius:6,border:"1px solid rgba(196,92,74,0.20)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>🗑</button>
+              {(fields.length>0||docs.length>0)&&<button onClick={()=>setExpanded(p=>({...p,[r.id]:!p[r.id]}))} style={{padding:"8px 10px",borderRadius:6,border:"1px solid rgba(182,139,46,0.25)",background:"transparent",color:"#b68b2e",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>{isExpanded?"▲ Less":"▼ Details"}</button>}
+            </div>
+          </div>
+
+          {/* Expanded KYC details */}
+          {isExpanded&&(
+            <div style={{marginTop:14,paddingTop:14,borderTop:"1px solid rgba(182,139,46,0.12)"}}>
+              {fields.length>0&&(
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:8,marginBottom:docs.length>0?14:0}}>
+                  {fields.map((f,i)=>(
+                    <div key={i} style={{fontSize:12}}>
+                      <span style={{fontSize:9,letterSpacing:"0.15em",textTransform:"uppercase",color:"#8a8070"}}>{f.k}: </span>
+                      <span style={{fontWeight:500,color:"#1a1714"}}>{f.v}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {docs.length>0&&(
+                <div>
+                  <div style={{fontSize:9,letterSpacing:"0.15em",textTransform:"uppercase",color:"#8a8070",marginBottom:8}}>KYC Documents</div>
+                  <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+                    {docs.map((d,i)=>(
+                      <div key={i} style={{textAlign:"center"}}>
+                        <img src={d.v} alt={d.k} style={{height:100,maxWidth:140,objectFit:"cover",borderRadius:8,border:"1px solid rgba(182,139,46,0.20)",cursor:"pointer",display:"block"}} onClick={()=>window.open(d.v,"_blank")}/>
+                        <div style={{fontSize:9,color:"#8a8070",marginTop:4,letterSpacing:"0.1em",textTransform:"uppercase"}}>{d.k}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </Card>
+    );
+  };
 
   return(<div>
-    <PT title="Portal Users" sub="Manage renter and artist access requests"/>
+    <PT title="Portal Users" sub="Manage renter, artist and buyer access"/>
 
-    {/* Share Links */}
+    {/* Stats */}
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:14,marginBottom:24}}>
+      <Stat label="Total Users" value={requests.length}/>
+      <Stat label="Pending" value={pending.length} orange/>
+      <Stat label="Approved" value={approved.length} green/>
+      <Stat label="License Holders" value={approved.filter(r=>r.role==="renter").length} gold/>
+      <Stat label="Buyers" value={approved.filter(r=>r.role==="buyer").length} green/>
+      <Stat label="Artists" value={approved.filter(r=>r.role==="artist").length}/>
+    </div>
+
+    {/* Share links */}
     <Card style={{marginBottom:20}}>
-      <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:12}}>Share these links with your renters and artists</div>
+      <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:12}}>Share Portal Links</div>
       <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-        {[["Renter Portal",renterUrl],["Artist Portal",artistUrl],["Buyer Portal",buyerUrl]].map(([label,url])=>(
-          <div key={label} style={{flex:1,minWidth:220,padding:"14px 16px",background:"#f5f3ef",border:"1px solid rgba(182,139,46,0.20)",borderRadius:10}}>
-            <div style={{fontSize:11,color:"#8a8070",marginBottom:4,letterSpacing:1,textTransform:"uppercase"}}>{label}</div>
-            <div style={{fontSize:13,color:"#b68b2e",fontWeight:600,marginBottom:10,wordBreak:"break-all"}}>{url}</div>
-            <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>navigator.clipboard.writeText(url).then(()=>alert("Link copied!"))} style={{flex:1,padding:"8px 0",background:"transparent",border:"1px solid rgba(182,139,46,0.30)",borderRadius:6,color:"#b68b2e",cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>Copy Link</button>
-              <button onClick={()=>window.open("https://wa.me/?text="+encodeURIComponent("Hi, here is your Vollard Black portal link: "+url),"_blank")} style={{flex:1,padding:"8px 0",background:"rgba(37,211,102,0.10)",border:"1px solid rgba(37,211,102,0.30)",borderRadius:6,color:"#25d366",cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>WhatsApp</button>
+        {[["License Holder",base+"/renter","#b68b2e"],["Artist",base+"/artist","#648cc8"],["Buyer",base+"/buyer","#4a9e6b"]].map(([label,url,color])=>(
+          <div key={label} style={{flex:1,minWidth:200,padding:"12px 14px",background:"#f5f3ef",border:"1px solid rgba(182,139,46,0.20)",borderRadius:10}}>
+            <div style={{fontSize:10,letterSpacing:1,textTransform:"uppercase",color:"#8a8070",marginBottom:4}}>{label} Portal</div>
+            <div style={{fontSize:12,color,fontWeight:600,marginBottom:8,wordBreak:"break-all"}}>{url}</div>
+            <div style={{display:"flex",gap:6}}>
+              <button onClick={()=>navigator.clipboard.writeText(url).then(()=>alert("Copied!"))} style={{flex:1,padding:"7px 0",background:"transparent",border:"1px solid rgba(182,139,46,0.30)",borderRadius:6,color:"#b68b2e",cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>Copy</button>
+              <button onClick={()=>window.open("https://wa.me/?text="+encodeURIComponent("Hi! Here is your Vollard Black portal link:\n"+url),"_blank")} style={{flex:1,padding:"7px 0",background:"rgba(37,211,102,0.08)",border:"1px solid rgba(37,211,102,0.30)",borderRadius:6,color:"#25d366",cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>WhatsApp</button>
             </div>
           </div>
         ))}
       </div>
-      <div style={{marginTop:12,padding:"10px 14px",background:"rgba(182,139,46,0.06)",borderRadius:8,fontSize:12,color:"#6b635a",lineHeight:1.7}}>
-        <strong>How it works:</strong> You share the link → they register with their name, email and password → you see their request here → you approve or reject it → if approved they can log in and see their data.
-      </div>
     </Card>
 
-    {/* Tabs */}
-    <div style={{display:"flex",borderBottom:"1px solid rgba(182,139,46,0.15)",marginBottom:20,gap:4}}>
-      {[
-        ["pending","Pending ("+pending.length+")",pending.length>0?"#c45c4a":null],
-        ["approved","Approved ("+approved.length+")","#4a9e6b"],
-        ["rejected","Rejected ("+rejected.length+")",null],
-      ].map(([id,lbl,color])=>(
+    {/* Search + Tabs */}
+    <div style={{display:"flex",gap:12,alignItems:"center",marginBottom:16,flexWrap:"wrap"}}>
+      <input placeholder="Search by name or email…" value={search} onChange={e=>setSearch(e.target.value)} style={{flex:1,minWidth:200,padding:"9px 14px",background:"#f5f3ef",border:"1px solid rgba(182,139,46,0.25)",borderRadius:8,color:"#1a1714",fontFamily:"DM Sans,sans-serif",fontSize:13,outline:"none"}}/>
+      <button onClick={loadRequests} style={{padding:"9px 16px",borderRadius:8,border:"1px solid rgba(182,139,46,0.25)",background:"transparent",color:"#b68b2e",cursor:"pointer",fontSize:12,fontFamily:"DM Sans,sans-serif"}}>↻ Refresh</button>
+    </div>
+
+    <div style={{display:"flex",borderBottom:"1px solid rgba(182,139,46,0.15)",marginBottom:16,gap:4}}>
+      {[["pending",`Pending (${pending.length})`],["approved",`Approved (${approved.length})`],["rejected",`Declined (${rejected.length})`]].map(([id,lbl])=>(
         <button key={id} onClick={()=>setTab(id)} style={{padding:"10px 18px",border:"none",borderBottom:tab===id?"2px solid #b68b2e":"2px solid transparent",background:"transparent",color:tab===id?"#b68b2e":"#6b635a",fontSize:13,fontWeight:tab===id?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif",display:"flex",alignItems:"center",gap:6}}>
           {lbl}
-          {color&&pending.length>0&&id==="pending"&&<div style={{width:8,height:8,borderRadius:"50%",background:color}}/>}
+          {id==="pending"&&pending.length>0&&<div style={{width:7,height:7,borderRadius:"50%",background:"#c45c4a"}}/>}
         </button>
       ))}
     </div>
 
-    {loadingReqs&&<div style={{textAlign:"center",padding:40,color:"#8a8070",fontSize:13}}>Loading requests...</div>}
+    {loading&&<div style={{textAlign:"center",padding:40,color:"#8a8070",fontSize:13}}>Loading…</div>}
 
-    {!loadingReqs&&tab==="pending"&&(
-      pending.length===0
-        ?<Card style={{textAlign:"center",padding:40}}><div style={{fontSize:32,marginBottom:12}}>◆</div><div style={{fontSize:14,color:"#8a8070"}}>No pending requests.</div><div style={{fontSize:12,color:"#8a8070",marginTop:4}}>Share your portal links above and requests will appear here.</div></Card>
-        :pending.map(r=>(
-          <Card key={r.id} style={{marginBottom:12}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:12}}>
-              <div>
-                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
-                  <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:20,color:"#1a1714"}}>{r.full_name}</div>
-                  <span style={{padding:"3px 10px",borderRadius:6,fontSize:10,fontWeight:600,background:r.role==="renter"?"rgba(182,139,46,0.15)":"rgba(100,140,200,0.15)",color:r.role==="renter"?"#b68b2e":"#648cc8",textTransform:"uppercase",letterSpacing:1}}>{r.role}</span>
-                </div>
-                <div style={{fontSize:13,color:"#6b635a"}}>{r.email}</div>
-                {r.mobile&&<div style={{fontSize:12,color:"#8a8070",marginTop:2}}>{r.mobile}</div>}
-                {r.message&&<div style={{fontSize:12,color:"#8a8070",marginTop:4}}>
-                  {/* Parse and display key fields */}
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:6,marginTop:6}}>
-                    {(r.message||"").split(" | ").filter(Boolean).map((part,i)=>{
-                      const [key,val]=part.split(": ");
-                      if(!key||!val)return null;
-                      const isImg=val.startsWith("http")&&(val.includes("/id-")||val.includes("/selfie"));
-                      if(isImg)return(
-                        <div key={i} style={{gridColumn:"1/-1"}}>
-                          <div style={{fontSize:10,letterSpacing:1,textTransform:"uppercase",color:"#8a8070",marginBottom:4}}>{key}</div>
-                          <img src={val} alt={key} style={{maxHeight:120,maxWidth:200,borderRadius:8,border:"1px solid rgba(182,139,46,0.2)",cursor:"pointer"}} onClick={()=>window.open(val,"_blank")}/>
-                        </div>
-                      );
-                      return(
-                        <div key={i} style={{fontSize:12,color:"#4a4440"}}>
-                          <span style={{color:"#8a8070"}}>{key}: </span><span style={{fontWeight:500}}>{val}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>}
-                <div style={{fontSize:11,color:"#a09890",marginTop:4}}>Requested: {r.created_at?.slice(0,10)||"—"}</div>
-              </div>
-              <div style={{display:"flex",gap:8,flexShrink:0,flexWrap:"wrap"}}>
-                <button onClick={()=>deleteUser(r)} style={{padding:"10px 14px",borderRadius:8,border:"1px solid rgba(196,92,74,0.20)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>🗑 Delete</button>
-                <button onClick={()=>reject(r)} disabled={rejecting===r.id} style={{padding:"10px 18px",borderRadius:8,border:"1px solid rgba(196,92,74,0.30)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>{rejecting===r.id?"...":"Decline"}</button>
-                <button onClick={()=>approve(r)} disabled={approving===r.id} style={{padding:"10px 18px",borderRadius:8,border:"none",background:"linear-gradient(135deg,#b68b2e,#8a6a1e)",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>{approving===r.id?"Approving...":"Approve"}</button>
-              </div>
-            </div>
-          </Card>
-        ))
-    )}
-
-    {!loadingReqs&&tab==="approved"&&(
-      approved.length===0
-        ?<Card style={{textAlign:"center",padding:40}}><div style={{fontSize:14,color:"#8a8070"}}>No approved users yet.</div></Card>
-        :<div>
-          {/* Renters Section */}
-          {approved.filter(r=>r.role==="renter").length>0&&<div>
-            <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#b68b2e",marginBottom:10,marginTop:4}}>Renters ({approved.filter(r=>r.role==="renter").length})</div>
-            {approved.filter(r=>r.role==="renter").map(r=>(
-              <Card key={r.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10,borderLeft:"3px solid rgba(182,139,46,0.40)"}}>
-                <div>
-                  <div style={{fontWeight:600,fontSize:14,color:"#1a1714"}}>{r.full_name}</div>
-                  <div style={{fontSize:12,color:"#8a8070"}}>{r.email}</div>
-                  <div style={{fontSize:11,color:"#4a9e6b",marginTop:2}}>✓ Approved {r.reviewed_at?.slice(0,10)||""}</div>
-                </div>
-                <div style={{display:"flex",gap:8}}>
-                  <button onClick={()=>deleteUser(r)} style={{padding:"8px 12px",borderRadius:6,border:"1px solid rgba(196,92,74,0.20)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>🗑 Delete</button>
-                  <button onClick={()=>reject(r)} style={{padding:"8px 14px",borderRadius:6,border:"1px solid rgba(196,92,74,0.25)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>Revoke</button>
-                </div>
-              </Card>
-            ))}
-          </div>}
-          {/* Buyers Section */}
-          {approved.filter(r=>r.role==="buyer").length>0&&<div style={{marginTop:16}}>
-            <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#4a9e6b",marginBottom:10}}>Buyers ({approved.filter(r=>r.role==="buyer").length})</div>
-            {approved.filter(r=>r.role==="buyer").map(r=>(
-              <Card key={r.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10,borderLeft:"3px solid rgba(74,158,107,0.40)"}}>
-                <div>
-                  <div style={{fontWeight:600,fontSize:14,color:"#1a1714"}}>{r.full_name}</div>
-                  <div style={{fontSize:12,color:"#8a8070"}}>{r.email}</div>
-                  <div style={{fontSize:11,color:"#4a9e6b",marginTop:2}}>✓ Approved {r.reviewed_at?.slice(0,10)||""}</div>
-                </div>
-                <div style={{display:"flex",gap:8}}>
-                  <button onClick={()=>deleteUser(r)} style={{padding:"8px 12px",borderRadius:6,border:"1px solid rgba(196,92,74,0.20)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>🗑 Delete</button>
-                  <button onClick={()=>reject(r)} style={{padding:"8px 14px",borderRadius:6,border:"1px solid rgba(196,92,74,0.25)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>Revoke</button>
-                </div>
-              </Card>
-            ))}
-          </div>}
-          {/* Artists Section */}
-          {approved.filter(r=>r.role==="artist").length>0&&<div style={{marginTop:approved.filter(r=>r.role==="renter").length>0?16:0}}>
-            <div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#648cc8",marginBottom:10}}>Artists ({approved.filter(r=>r.role==="artist").length})</div>
-            {approved.filter(r=>r.role==="artist").map(r=>(
-              <Card key={r.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10,borderLeft:"3px solid rgba(100,140,200,0.40)"}}>
-                <div>
-                  <div style={{fontWeight:600,fontSize:14,color:"#1a1714"}}>{r.full_name}</div>
-                  <div style={{fontSize:12,color:"#8a8070"}}>{r.email}</div>
-                  <div style={{fontSize:11,color:"#4a9e6b",marginTop:2}}>✓ Approved {r.reviewed_at?.slice(0,10)||""}</div>
-                </div>
-                <div style={{display:"flex",gap:8}}>
-                  <button onClick={()=>deleteUser(r)} style={{padding:"8px 12px",borderRadius:6,border:"1px solid rgba(196,92,74,0.20)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>🗑 Delete</button>
-                  <button onClick={()=>reject(r)} style={{padding:"8px 14px",borderRadius:6,border:"1px solid rgba(196,92,74,0.25)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>Revoke</button>
-                </div>
-              </Card>
-            ))}
-          </div>}
+    {!loading&&filtered.length===0&&(
+      <Card style={{textAlign:"center",padding:48}}>
+        <div style={{fontSize:32,marginBottom:12,color:"#b68b2e"}}>◆</div>
+        <div style={{fontSize:14,color:"#8a8070"}}>
+          {tab==="pending"?"No pending requests — share your portal links above to get registrations."
+          :tab==="approved"?"No approved users yet."
+          :"No declined requests."}
         </div>
+      </Card>
     )}
 
-    {!loadingReqs&&tab==="rejected"&&(
-      rejected.length===0
-        ?<Card style={{textAlign:"center",padding:40}}><div style={{fontSize:14,color:"#8a8070"}}>No rejected requests.</div></Card>
-        :rejected.map(r=>(
-          <Card key={r.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
-            <div>
-              <div style={{fontWeight:600,fontSize:14,color:"#1a1714"}}>{r.full_name}</div>
-              <div style={{fontSize:12,color:"#8a8070"}}>{r.email} · {r.role}</div>
-              <div style={{fontSize:11,color:"#c45c4a",marginTop:2}}>✗ Declined {r.reviewed_at?.slice(0,10)||""}</div>
-            </div>
-            <button onClick={()=>approve(r)} style={{padding:"8px 14px",borderRadius:6,border:"1px solid rgba(74,158,107,0.25)",background:"transparent",color:"#4a9e6b",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>Approve</button>
-          </Card>
-        ))
-    )}
+    {!loading&&filtered.map(r=>(
+      <UserCard key={r.id} r={r}
+        showApprove={tab==="pending"}
+        showRevoke={tab==="approved"}
+        showReapprove={tab==="rejected"}
+      />
+    ))}
   </div>);}
 
 
