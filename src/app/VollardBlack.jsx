@@ -62,8 +62,8 @@ const UUID_TABLES = ['artworks','artists','collectors','buyers'];
 const newId = (table) => UUID_TABLES.includes(table) ? uuidv4() : uid();
 const td = () => new Date().toISOString().slice(0,10);
 const SK = "vollard_black_v16";
-const TABLES = ["artworks","artists","collectors","schedules","payments","sales","reports","buyers","auctions","bids","enquiries","payfast_notifications"];
-const fresh = () => ({artworks:[],artists:[],collectors:[],schedules:[],payments:[],sales:[],reports:[],buyers:[],auctions:[],bids:[],enquiries:[],payfast_notifications:[]});
+const TABLES = ["artworks","artists","collectors","schedules","payments","sales","reports","buyers","auctions","bids","enquiries","ikhoka_payments"];
+const fresh = () => ({artworks:[],artists:[],collectors:[],schedules:[],payments:[],sales:[],reports:[],buyers:[],auctions:[],bids:[],enquiries:[],ikhoka_payments:[]});
 const loadLocal = () => { try { const d=JSON.parse(localStorage.getItem(SK)); return d?.artworks?d:fresh(); } catch{return fresh();} };
 
 const getNextDueDate = (startDate, monthNumber) => {
@@ -1983,18 +1983,18 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
   return(<div>
     <PT title="License Invoicing" sub={`${allSchedules.length} agreements · ${data.collectors.length} License Holders`}/>
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:14,marginBottom:24}}><Stat label="Active" value={active} green/><Stat label="Chasing" value={chasing} orange/><Stat label="In Dispute" value={dispute} orange/><Stat label="Cancelled" value={cancelledCount} red/><Stat label="Collected" value={"R "+fmt(totalCollected)} gold/></div>
-    {/* PayFast pending confirmations */}
-    {(data.payfast_notifications||[]).filter(n=>!n.confirmed).length>0&&(
+    {/* iKhoka pending confirmations */}
+    {(data.ikhoka_payments||[]).filter(n=>!n.confirmed).length>0&&(
       <Card style={{marginBottom:20,border:"2px solid rgba(182,139,46,0.40)",padding:0,overflow:"hidden"}}>
         <div style={{height:3,background:"linear-gradient(90deg,#b68b2e,#8a6a1e)"}}/>
         <div style={{padding:16}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:10}}>
             <div>
               <div style={{fontSize:13,fontWeight:700,color:"#1a1714"}}>💳 iKhoka Payments Pending Confirmation</div>
-              <div style={{fontSize:12,color:"#8a8070",marginTop:2}}>{(data.payfast_notifications||[]).filter(n=>!n.confirmed).length} payment{(data.payfast_notifications||[]).filter(n=>!n.confirmed).length!==1?"s":""} received — confirm to log in invoicing</div>
+              <div style={{fontSize:12,color:"#8a8070",marginTop:2}}>{(data.ikhoka_payments||[]).filter(n=>!n.confirmed).length} payment{(data.ikhoka_payments||[]).filter(n=>!n.confirmed).length!==1?"s":""} received — confirm to log in invoicing</div>
             </div>
           </div>
-          {(data.payfast_notifications||[]).filter(n=>!n.confirmed).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).map(notif=>{
+          {(data.ikhoka_payments||[]).filter(n=>!n.confirmed).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).map(notif=>{
             // Find the schedule this payment is for
             const sched=notif.scheduleRef?(data.schedules||[]).find(s=>s.id.endsWith(notif.scheduleRef)||s.id.slice(-8)===notif.scheduleRef):null;
             return(
@@ -2014,17 +2014,17 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
                 <div style={{display:"flex",gap:8,flexShrink:0,alignSelf:"center"}}>
                   {sched&&notif.monthNumber&&(
                     <button onClick={()=>{
-                      actions.recordPayment(sched, notif.monthNumber, "PayFast", notif.amountGross||0);
+                      actions.recordPayment(sched, notif.monthNumber, "iKhoka", notif.amountGross||0);
                       // Mark as confirmed in Supabase
-                      if(supabase)supabase.from("payfast_notifications").update({confirmed:true,confirmed_at:new Date().toISOString()}).eq("id",notif.id);
-                      up("payfast_notifications",p=>p.map(n=>n.id===notif.id?{...n,confirmed:true}:n));
+                      if(supabase)supabase.from("ikhoka_payments").update({confirmed:true,confirmed_at:new Date().toISOString()}).eq("id",notif.id);
+                      up("ikhoka_payments",p=>p.map(n=>n.id===notif.id?{...n,confirmed:true}:n));
                     }} style={{padding:"8px 16px",borderRadius:8,border:"none",background:"linear-gradient(135deg,#4a9e6b,#2d7a4a)",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"DM Sans,sans-serif"}}>
                       ✓ Confirm Payment
                     </button>
                   )}
                   <button onClick={()=>{
-                    if(supabase)supabase.from("payfast_notifications").update({confirmed:true,confirmed_at:new Date().toISOString()}).eq("id",notif.id);
-                    up("payfast_notifications",p=>p.map(n=>n.id===notif.id?{...n,confirmed:true}:n));
+                    if(supabase)supabase.from("ikhoka_payments").update({confirmed:true,confirmed_at:new Date().toISOString()}).eq("id",notif.id);
+                    up("ikhoka_payments",p=>p.map(n=>n.id===notif.id?{...n,confirmed:true}:n));
                   }} style={{padding:"8px 14px",borderRadius:8,border:"1px solid rgba(182,139,46,0.3)",background:"transparent",color:"#b68b2e",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>
                     Dismiss
                   </button>
@@ -2241,7 +2241,7 @@ function SaleMdl({data,sellable,onSale,onClose}){
 // ═══════════════════════════════════════════
 function ReportsPage({data,actions}){
   const [selectedMonth,setSelectedMonth]=useState(null);const [yearFilter,setYearFilter]=useState(new Date().getFullYear().toString());
-  const generateMonthList=()=>{const months=[];const now=new Date();let start=new Date(now.getFullYear()-1,0,1);const earliest=(data.schedules||[]).reduce((min,s)=>(!min||s.startDate<min)?s.startDate:min,null);if(earliest)start=new Date(earliest.slice(0,7)+"-01");const cur=new Date(start);while(cur<=now){months.push(cur.toISOString().slice(0,7));cur.setMonth(cur.getMonth()+1);}return months.reverse();};
+  const generateMonthList=()=>{const cur=getCurrentMonth();const existing=(data.reports||[]).map(r=>r.month).filter(Boolean);const all=[...new Set([cur,...existing])];return all.sort().reverse();};
   const monthList=generateMonthList();const years=[...new Set(monthList.map(m=>m.slice(0,4)))];const filteredMonths=monthList.filter(m=>m.startsWith(yearFilter));const getReport=(ym)=>data.reports.find(r=>r.month===ym);const locked=(ym)=>isReportLocked(ym);
   return(<div>
     <PT title="Reports" sub="Monthly snapshots — permanent record"/>
