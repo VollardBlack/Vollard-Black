@@ -151,64 +151,6 @@ const Logo = ({sub}) => (
   </div>
 );
 
-function RegisterScreen({onRegistered}) {
-  const [form,setForm] = useState({fullName:'',email:'',mobile:'',idNumber:'',nationality:'',address:'',city:'',country:'South Africa',password:'',confirm:'',message:''});
-  const [loading,setLoading] = useState(false);
-  const [error,setError] = useState('');
-  const [showPw,setShowPw] = useState(false);
-  const s = (k,v) => setForm(p=>({...p,[k]:v}));
-  const handleRegister = async(e) => {
-    e.preventDefault();
-    if(!form.fullName||!form.email||!form.password) return setError('Please fill in all required fields.');
-    if(form.password.length<8) return setError('Password must be at least 8 characters.');
-    if(form.password!==form.confirm) return setError('Passwords do not match.');
-    setLoading(true); setError('');
-    try {
-      const {data:authData,error:authErr} = await supabase.auth.signUp({email:form.email,password:form.password});
-      if(authErr) throw authErr;
-      await supabase.from('portal_requests').insert({
-        id: authData.user?.id, email:form.email, full_name:form.fullName, mobile:form.mobile, role:'buyer',
-        message:[form.idNumber&&'ID: '+form.idNumber,form.nationality&&'Nationality: '+form.nationality,form.city&&'City: '+form.city,form.country&&'Country: '+form.country,form.address&&'Address: '+form.address,form.message].filter(Boolean).join(' | '),
-        status:'pending',
-      });
-      onRegistered(form.email);
-    } catch(e) { setError(e.message||'Registration failed.'); }
-    setLoading(false);
-  };
-  return (
-    <div style={{...S.page,display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>
-      <div style={{width:'100%',maxWidth:440}}>
-        <Logo sub="Buyer Portal"/>
-        <div style={{...S.card,padding:32}}>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,color:'#1a1714',marginBottom:4}}>Request Access</div>
-          <div style={{fontSize:12,color:'#8a8070',marginBottom:24}}>Register to browse and purchase artwork from Vollard Black.</div>
-          <form onSubmit={handleRegister}>
-            {[['fullName','Full Name *','text'],['email','Email *','email'],['mobile','Mobile','text'],['idNumber','ID / Passport Number','text'],['nationality','Nationality','text'],['city','City','text'],['country','Country','text']].map(([key,label,type])=>(
-              <div key={key} style={{marginBottom:14}}>
-                <label style={S.label}>{label}</label>
-                <input type={type} value={form[key]} onChange={e=>s(key,e.target.value)} style={S.input}/>
-              </div>
-            ))}
-            <div style={{marginBottom:14}}><label style={S.label}>Address</label><textarea value={form.address} onChange={e=>s('address',e.target.value)} style={{...S.input,minHeight:60,resize:'vertical'}}/></div>
-            <div style={{marginBottom:14}}>
-              <label style={S.label}>Password * (min 8 characters)</label>
-              <div style={{position:'relative'}}>
-                <input type={showPw?'text':'password'} value={form.password} onChange={e=>s('password',e.target.value)} style={{...S.input,paddingRight:56}} autoComplete="new-password"/>
-                <button type="button" onClick={()=>setShowPw(p=>!p)} style={{position:'absolute',right:12,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',color:'#8a8070',cursor:'pointer',fontSize:12}}>{showPw?'Hide':'Show'}</button>
-              </div>
-            </div>
-            <div style={{marginBottom:14}}><label style={S.label}>Confirm Password *</label><input type="password" value={form.confirm} onChange={e=>s('confirm',e.target.value)} style={S.input}/></div>
-            <div style={{marginBottom:20}}><label style={S.label}>Message (optional)</label><textarea value={form.message} onChange={e=>s('message',e.target.value)} style={{...S.input,minHeight:60,resize:'vertical'}}/></div>
-            {error&&<div style={{padding:'10px 14px',background:'rgba(196,92,74,0.08)',border:'1px solid rgba(196,92,74,0.2)',borderRadius:8,fontSize:13,color:'#c45c4a',marginBottom:14}}>{error}</div>}
-            <button type="submit" disabled={loading} style={{...S.btn(true),width:'100%',opacity:loading?0.6:1}}>{loading?'Submitting…':'Submit Registration'}</button>
-          </form>
-          <div style={{textAlign:'center',marginTop:16,fontSize:12,color:'#8a8070'}}>Already registered? <button onClick={()=>onRegistered(null)} style={{background:'none',border:'none',color:'#b68b2e',cursor:'pointer',fontSize:12,fontFamily:"'DM Sans',sans-serif",textDecoration:'underline'}}>Sign in</button></div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function PendingScreen({email,onSignIn}) {
   return (
     <div style={{...S.page,display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>
