@@ -327,7 +327,7 @@ const I={
 const stC={Available:{bg:"rgba(74,158,107,0.12)",c:"#4a9e6b"},Reserved:{bg:"rgba(182,139,46,0.25)",c:"#b68b2e"},"In Gallery":{bg:"rgba(100,140,200,0.12)",c:"#648cc8"},Sold:{bg:"rgba(196,92,74,0.12)",c:"#c45c4a"},"In Dispute":{bg:"rgba(196,92,74,0.12)",c:"#c45c4a"}};
 const schedC={Active:{bg:"rgba(74,158,107,0.12)",c:"#4a9e6b"},Chasing:{bg:"rgba(230,190,50,0.15)",c:"#e6be32"},"In Dispute":{bg:"rgba(220,120,40,0.15)",c:"#dc7828"},Cancelled:{bg:"rgba(196,92,74,0.15)",c:"#c45c4a"},Complete:{bg:"rgba(100,140,200,0.12)",c:"#648cc8"},Override:{bg:"rgba(160,100,220,0.12)",c:"#a064dc"}};
 const modelC={O1:{bg:"rgba(182,139,46,0.25)",c:"#b68b2e",label:"Standard"},O2:{bg:"rgba(74,158,107,0.12)",c:"#4a9e6b",label:"Extended"},O3:{bg:"rgba(100,140,200,0.12)",c:"#648cc8",label:"Premium"}};
-const payM=["EFT / Bank Transfer","PayFast","Crypto (USDT)","Cash","Other"];
+const payM=["EFT / Bank Transfer","iKhoka","Crypto (USDT)","Cash","Other"];
 
 const is={width:"100%",padding:"12px 14px",background:"#e8e4dd",border:"1px solid rgba(182,139,46,0.20)",borderRadius:8,color:"#1a1714",fontFamily:"DM Sans,sans-serif",fontSize:14,outline:"none"};
 const ss={...is,cursor:"pointer",appearance:"none",WebkitAppearance:"none"};
@@ -1947,6 +1947,23 @@ function CalcPage({data={},actions={}}){
 // ═══════════════════════════════════════════
 function InvoicePage({data,actions,initialFilter,clearFilter}){
   const [activeTab,setActiveTab]=useState("all");const [statusFilter,setStatusFilter]=useState(initialFilter||"all");const [payModal,setPayModal]=useState(null);const [missModal,setMissModal]=useState(null);const [overrideModal,setOverrideModal]=useState(null);const [graceModal,setGraceModal]=useState(null);const [emailModal,setEmailModal]=useState(null);const [reportTab,setReportTab]=useState(null);const [expanded,setExpanded]=useState({});const [search,setSearch]=useState("");const [pg,setPg]=useState(0);
+  const [ikhokaLoading,setIkhokaLoading]=useState(null);
+  const [ikhokaLink,setIkhokaLink]=useState(null);
+
+  const generateIkhokaLink=async(sched,nextMonth)=>{
+    setIkhokaLoading(sched.id);
+    setIkhokaLink(null);
+    try{
+      const res=await fetch('/api/ikhoka-paylink',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:sched.monthlyAmount,description:`Vollard Black License Fee: ${sched.artworkTitle} Mo ${nextMonth}`,scheduleId:sched.id,monthNumber:nextMonth,collectorEmail:''})});
+      const data=await res.json();
+      if(data.paylinkUrl){
+        setIkhokaLink({url:data.paylinkUrl,ref:data.externalTransactionID,sched,month:nextMonth});
+      } else {
+        alert('Failed to generate link: '+(data.error||'Unknown error'));
+      }
+    }catch(e){alert('Error: '+e.message);}
+    setIkhokaLoading(null);
+  };
   useEffect(()=>{if(initialFilter){setStatusFilter(initialFilter);clearFilter();}},[initialFilter]);
   const gn=c=>c?c.type==="company"?c.companyName:`${c.firstName} ${c.lastName}`:"";
   const collectorsWithSchedules=data.collectors.filter(c=>data.schedules.some(s=>s.collectorId===c.id));
@@ -2049,6 +2066,7 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
             <div style={{display:"flex",gap:6,flexShrink:0,flexWrap:"wrap",justifyContent:"flex-end",maxWidth:300}}>
               {nextMonth&&sched.status!=="Cancelled"&&sched.status!=="Complete"&&<><Btn small gold onClick={()=>setPayModal({sched,nextMonth,nextDue})}>{I.ok} Pay Mo {nextMonth}</Btn><Btn small danger onClick={()=>setMissModal({sched,nextMonth})}>Miss Mo {nextMonth}</Btn></>}
               {["Chasing","In Dispute","Cancelled"].includes(sched.status)&&<Btn small ghost onClick={()=>setOverrideModal(sched)} style={{borderColor:"rgba(160,100,220,0.3)",color:"#a064dc"}}>Override</Btn>}
+              {nextMonth&&<Btn small ghost onClick={()=>generateIkhokaLink(sched,nextMonth)} style={{borderColor:"rgba(182,139,46,0.30)",color:"#b68b2e",opacity:ikhokaLoading===sched.id?0.5:1}}>{ikhokaLoading===sched.id?"Generating…":"💳 iKhoka Link"}</Btn>}
               <Btn small ghost onClick={()=>setGraceModal(sched)}>Grace</Btn>
               <button onClick={()=>toggleExpand(sched.id)} style={{background:"none",border:"1px solid rgba(182,139,46,0.30)",borderRadius:6,color:"#6b635a",cursor:"pointer",padding:"6px 10px",display:"flex",alignItems:"center",gap:4,fontSize:11}}><span style={{transform:isExpanded?"rotate(180deg)":"none",transition:"0.2s",display:"inline-flex"}}>{I.chevron}</span>{history.length} paid</button>
             </div>
@@ -2057,7 +2075,54 @@ function InvoicePage({data,actions,initialFilter,clearFilter}){
         </div>
       </Card>;})}
     {activeTab==="all"&&totalPages>1&&<div style={{display:"flex",justifyContent:"center",gap:8,marginTop:20}}><Btn small ghost disabled={pg===0} onClick={()=>setPg(p=>p-1)}>← Prev</Btn><span style={{padding:"8px 16px",fontSize:13,color:"#6b635a"}}>Page {pg+1} of {totalPages}</span><Btn small ghost disabled={pg>=totalPages-1} onClick={()=>setPg(p=>p+1)}>Next →</Btn></div>}
-    {payModal&&<Modal title={`Record Payment — Month ${payModal.nextMonth}`} onClose={()=>setPayModal(null)}><Card style={{background:"#e8e4dd",marginBottom:16}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:13}}><span style={{color:"#6b635a"}}>License Holder:</span><span style={{fontWeight:600}}>{payModal.sched.collectorName}</span><span style={{color:"#6b635a"}}>Artwork:</span><span>{payModal.sched.artworkTitle}</span><span style={{color:"#6b635a"}}>Month:</span><span>{payModal.nextMonth} of {payModal.sched.termMonths}</span><span style={{color:"#6b635a"}}>Amount:</span><span style={{color:"#b68b2e",fontWeight:700,fontSize:16}}>R {fmt(payModal.sched.monthlyAmount)}</span></div></Card><div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>Payment Method</div>{["EFT / Bank Transfer","PayFast","Crypto (USDT)","Cash","Other"].map(m=><button key={m} onClick={()=>{actions.recordPayment(payModal.sched,payModal.nextMonth,m,payModal.sched.monthlyAmount);setPayModal(null);}} style={{display:"block",width:"100%",padding:12,marginBottom:8,borderRadius:8,border:"1px solid rgba(182,139,46,0.30)",background:"#e8e4dd",color:"#2a2622",cursor:"pointer",fontSize:13,fontFamily:"DM Sans,sans-serif",textAlign:"left"}} onMouseEnter={e=>{e.currentTarget.style.background="#252320";}} onMouseLeave={e=>{e.currentTarget.style.background="#e8e4dd";}}>{m}</button>)}</Modal>}
+    {/* iKhoka Link Modal */}
+    {ikhokaLink&&<Modal title="iKhoka Payment Link Generated" onClose={()=>setIkhokaLink(null)}>
+      <div style={{padding:"14px 16px",background:"rgba(74,158,107,0.08)",border:"1px solid rgba(74,158,107,0.25)",borderRadius:10,marginBottom:16}}>
+        <div style={{fontSize:13,fontWeight:600,color:"#1a1714",marginBottom:4}}>{ikhokaLink.sched.collectorName} — {ikhokaLink.sched.artworkTitle}</div>
+        <div style={{fontSize:12,color:"#6b635a"}}>Month {ikhokaLink.month} · R {fmt(ikhokaLink.sched.monthlyAmount)}</div>
+        <div style={{fontSize:11,color:"#8a8070",marginTop:4}}>Ref: {ikhokaLink.ref}</div>
+      </div>
+      <div style={{padding:"12px 14px",background:"#e8e4dd",borderRadius:8,marginBottom:16}}>
+        <div style={{fontSize:11,letterSpacing:1,textTransform:"uppercase",color:"#8a8070",marginBottom:6}}>Payment Link</div>
+        <div style={{fontSize:13,color:"#b68b2e",wordBreak:"break-all",fontWeight:600,marginBottom:10}}>{ikhokaLink.url}</div>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          <button onClick={()=>navigator.clipboard.writeText(ikhokaLink.url).then(()=>alert("Link copied!"))} style={{padding:"8px 16px",borderRadius:6,border:"1px solid rgba(182,139,46,0.3)",background:"transparent",color:"#b68b2e",cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>📋 Copy Link</button>
+          <button onClick={()=>{const col=data.collectors.find(c=>c.id===ikhokaLink.sched.collectorId);const mobile=(col?.mobile||"").replace(/\D/g,"");const msg=encodeURIComponent(`Hi ${ikhokaLink.sched.collectorName},
+
+Your Vollard Black license fee payment is due:
+
+*${ikhokaLink.sched.artworkTitle}*
+Month ${ikhokaLink.month} of ${ikhokaLink.sched.termMonths}
+Amount: R ${fmt(ikhokaLink.sched.monthlyAmount)}
+
+Pay securely here:
+${ikhokaLink.url}
+
+Ref: ${ikhokaLink.ref}
+
+Kind regards,
+Vollard Black`);window.open(`https://wa.me/${mobile||"27"}?text=${msg}`,"_blank");}} style={{padding:"8px 16px",borderRadius:6,border:"1px solid rgba(37,211,102,0.3)",background:"rgba(37,211,102,0.08)",color:"#25d366",cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>💬 WhatsApp</button>
+          <button onClick={()=>{const col=data.collectors.find(c=>c.id===ikhokaLink.sched.collectorId);const email=col?.email||"";const subj=encodeURIComponent(`Vollard Black — License Fee Due: ${ikhokaLink.sched.artworkTitle} Mo ${ikhokaLink.month}`);const body=encodeURIComponent(`Dear ${ikhokaLink.sched.collectorName},
+
+Your license fee payment is due:
+
+Artwork: ${ikhokaLink.sched.artworkTitle}
+Month: ${ikhokaLink.month} of ${ikhokaLink.sched.termMonths}
+Amount: R ${fmt(ikhokaLink.sched.monthlyAmount)}
+
+Pay securely here:
+${ikhokaLink.url}
+
+Reference: ${ikhokaLink.ref}
+
+Kind regards,
+Vollard Black`);window.open(`mailto:${email}?subject=${subj}&body=${body}`,"_blank");}} style={{padding:"8px 16px",borderRadius:6,border:"1px solid rgba(182,139,46,0.3)",background:"transparent",color:"#b68b2e",cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>✉ Email</button>
+          <button onClick={()=>window.open(ikhokaLink.url,"_blank")} style={{padding:"8px 16px",borderRadius:6,border:"none",background:"linear-gradient(135deg,#b68b2e,#8a6a1e)",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>Open Link ↗</button>
+        </div>
+      </div>
+      <div style={{fontSize:11,color:"#8a8070",lineHeight:1.6}}>Send this link to the collector. They will be taken to the iKhoka secure payment page. Once paid, it will appear in the Pending Confirmations panel above.</div>
+    </Modal>}
+    {payModal&&<Modal title={`Record Payment — Month ${payModal.nextMonth}`} onClose={()=>setPayModal(null)}><Card style={{background:"#e8e4dd",marginBottom:16}}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:13}}><span style={{color:"#6b635a"}}>License Holder:</span><span style={{fontWeight:600}}>{payModal.sched.collectorName}</span><span style={{color:"#6b635a"}}>Artwork:</span><span>{payModal.sched.artworkTitle}</span><span style={{color:"#6b635a"}}>Month:</span><span>{payModal.nextMonth} of {payModal.sched.termMonths}</span><span style={{color:"#6b635a"}}>Amount:</span><span style={{color:"#b68b2e",fontWeight:700,fontSize:16}}>R {fmt(payModal.sched.monthlyAmount)}</span></div></Card><div style={{fontSize:11,letterSpacing:2,textTransform:"uppercase",color:"#8a8070",marginBottom:10}}>Payment Method</div>{["EFT / Bank Transfer","iKhoka","Crypto (USDT)","Cash","Other"].map(m=><button key={m} onClick={()=>{actions.recordPayment(payModal.sched,payModal.nextMonth,m,payModal.sched.monthlyAmount);setPayModal(null);}} style={{display:"block",width:"100%",padding:12,marginBottom:8,borderRadius:8,border:"1px solid rgba(182,139,46,0.30)",background:"#e8e4dd",color:"#2a2622",cursor:"pointer",fontSize:13,fontFamily:"DM Sans,sans-serif",textAlign:"left"}} onMouseEnter={e=>{e.currentTarget.style.background="#252320";}} onMouseLeave={e=>{e.currentTarget.style.background="#e8e4dd";}}>{m}</button>)}</Modal>}
     {missModal&&<Modal title={`Mark Month ${missModal.nextMonth} as Missed`} onClose={()=>setMissModal(null)}><div style={{padding:16,background:"rgba(196,92,74,0.08)",border:"1px solid rgba(196,92,74,0.2)",borderRadius:10,marginBottom:20}}><div style={{fontSize:13,color:"#2a2622",marginBottom:6}}><strong>{missModal.sched.collectorName}</strong> — {missModal.sched.artworkTitle}</div><div style={{fontSize:12,color:"#6b635a",marginTop:4}}>Strikes: {missModal.sched.strikes} → {Math.min((missModal.sched.strikes||0)+1,3)} · New status: <strong style={{color:"#c45c4a"}}>{(missModal.sched.strikes||0)+1===1?"Chasing":(missModal.sched.strikes||0)+1===2?"In Dispute":"Cancelled"}</strong></div></div><div style={{display:"flex",gap:10,justifyContent:"flex-end"}}><Btn ghost onClick={()=>setMissModal(null)}>Cancel</Btn><Btn danger onClick={()=>{actions.recordMissed(missModal.sched,missModal.nextMonth);setMissModal(null);}}>Confirm Miss Mo {missModal.nextMonth}</Btn></div></Modal>}
     {overrideModal&&<OverrideModal sched={overrideModal} onSave={(note)=>{actions.overrideSchedule(overrideModal.id,note);setOverrideModal(null);}} onClose={()=>setOverrideModal(null)}/>}
     {graceModal&&<GraceModal sched={graceModal} onSave={(date,month,note)=>{actions.setGraceException(graceModal.id,date,month,note);setGraceModal(null);}} onClose={()=>setGraceModal(null)}/>}
