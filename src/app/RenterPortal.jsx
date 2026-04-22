@@ -608,8 +608,8 @@ function RenterDashboard({session, kycComplete=true}){
               </div>
             ):(
               <div>
-                <div style={{...CARD,marginBottom:16}}><div style={CP}><div style={SH}>Personal Information</div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>{[['firstName','First Name'],['lastName','Last Name'],['mobile','Mobile'],['idNumber','ID / Passport'],['nationality','Nationality'],['city','City'],['country','Country']].map(([key,label])=><div key={key}><label style={lbl}>{label}</label><input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={inp}/></div>)}<div style={{gridColumn:'1/-1'}}><label style={lbl}>Address</label><textarea value={profileForm.address||''} onChange={e=>setProfileForm(p=>({...p,address:e.target.value}))} style={{...inp,minHeight:60,resize:'vertical'}}/></div></div></div></div>
-                <div style={{...CARD,marginBottom:16}}><div style={CP}><div style={SH}>Banking Details</div><div style={{fontSize:12,color:'#8a8070',marginBottom:16,lineHeight:1.7}}>Your payout account. Changes require re-verification by Vollard Black.</div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>{[['bankName','Bank Name'],['accountHolder','Account Holder'],['accountNumber','Account Number'],['branchCode','Branch Code']].map(([key,label])=><div key={key}><label style={lbl}>{label}</label><input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={inp} inputMode={key==='accountNumber'||key==='branchCode'?'numeric':undefined}/></div>)}</div><div style={{marginTop:14,padding:'11px 14px',background:'rgba(230,190,50,0.05)',border:'1px solid rgba(230,190,50,0.18)',borderRadius:10,fontSize:12,color:'#8a8070',lineHeight:1.6}}>⚠ Changes flag your account for verification before payouts resume.</div></div></div>
+                <div style={{...CARD,marginBottom:16}}><div style={CP}><div style={SH}>Personal Information</div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>{[['firstName','First Name'],['lastName','Last Name'],['mobile','Mobile'],['idNumber','ID / Passport'],['nationality','Nationality'],['city','City'],['country','Country']].map(([key,label])=><div key={key}><label style={lbl}>{label}</label><input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={inp2}/></div>)}<div style={{gridColumn:'1/-1'}}><label style={lbl}>Address</label><textarea value={profileForm.address||''} onChange={e=>setProfileForm(p=>({...p,address:e.target.value}))} style={{...inp2,minHeight:60,resize:'vertical'}}/></div></div></div></div>
+                <div style={{...CARD,marginBottom:16}}><div style={CP}><div style={SH}>Banking Details</div><div style={{fontSize:12,color:'#8a8070',marginBottom:16,lineHeight:1.7}}>Your payout account. Changes require re-verification by Vollard Black.</div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>{[['bankName','Bank Name'],['accountHolder','Account Holder'],['accountNumber','Account Number'],['branchCode','Branch Code']].map(([key,label])=><div key={key}><label style={lbl}>{label}</label><input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={inp2} inputMode={key==='accountNumber'||key==='branchCode'?'numeric':undefined}/></div>)}</div><div style={{marginTop:14,padding:'11px 14px',background:'rgba(230,190,50,0.05)',border:'1px solid rgba(230,190,50,0.18)',borderRadius:10,fontSize:12,color:'#8a8070',lineHeight:1.6}}>⚠ Changes flag your account for verification before payouts resume.</div></div></div>
                 <div style={{display:'flex',gap:10,justifyContent:'flex-end'}}><button onClick={()=>setProfileEdit(false)} style={{padding:'12px 22px',borderRadius:12,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:SAN}}>Cancel</button><button onClick={saveProfile} disabled={savingProfile} style={{padding:'12px 28px',borderRadius:12,border:'none',background:`linear-gradient(135deg,${C.gold},${C.goldD})`,color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:SAN,opacity:savingProfile?0.6:1,boxShadow:'0 4px 14px rgba(182,139,46,0.28)'}}>{savingProfile?'Saving…':'Save Changes'}</button></div>
               </div>
             )}
@@ -630,84 +630,10 @@ function RenterDashboard({session, kycComplete=true}){
         {[['overview','🏠','Home'],['artworks','🖼','Works'],['payments','💳','Pay'],['calendar','📅','Calendar'],['profile','👤','Profile']].map(([id,icon,l])=>(
           <button key={id} onClick={()=>setTab(id)} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,padding:'4px 8px',background:'none',border:'none',cursor:'pointer',fontFamily:SAN}}>
             <span style={{fontSize:18,opacity:tab===id?1:0.4}}>{icon}</span>
-            <span style={{fontSize:9,letterSpacing:'0.06em',textTransform:'uppercase',color:tab===id?C.gold:ts,fontWeight:tab===id?700:400}}>{l}</span>
+            <span style={{fontSize:9,letterSpacing:'0.06em',textTransform:'uppercase',color:tab===id?C.gold:'#6b635a',fontWeight:tab===id?700:400}}>{l}</span>
           </button>
         ))}
       </div>
-    </div>
-  );
-}
-
-// ── KYC Docs Banner ─────────────────────────────────────────
-function KycBanner({email}){
-  const[uploading,setUploading]=useState(false);
-  const[done,setDone]=useState(false);
-  const[idFile,setIdFile]=useState(null);
-  const[selfieFile,setSelfieFile]=useState(null);
-  const[open,setOpen]=useState(false);
-
-  const upload=async()=>{
-    if(!idFile&&!selfieFile)return;
-    setUploading(true);
-    try{
-      const now=Date.now();
-      let idUrl='',selfieUrl='';
-      if(idFile){
-        const path=`kyc/${email}/id_${now}.${idFile.name.split('.').pop()}`;
-        await sb.storage.from('kyc-documents').upload(path,idFile,{upsert:true});
-        idUrl=sb.storage.from('kyc-documents').getPublicUrl(path).data?.publicUrl||'';
-      }
-      if(selfieFile){
-        const path=`kyc/${email}/selfie_${now}.${selfieFile.name.split('.').pop()}`;
-        await sb.storage.from('kyc-documents').upload(path,selfieFile,{upsert:true});
-        selfieUrl=sb.storage.from('kyc-documents').getPublicUrl(path).data?.publicUrl||'';
-      }
-      // Update portal_requests with doc URLs
-      const updates={};
-      if(idUrl)updates.id_document_url=idUrl;
-      if(selfieUrl)updates.selfie_url=selfieUrl;
-      if(Object.keys(updates).length)
-        await sb.from('portal_requests').update(updates).eq('email',email);
-      setDone(true);
-    }catch(e){console.error(e);}
-    setUploading(false);
-  };
-
-  if(done)return null;
-
-  return(
-    <div style={{background:'rgba(230,190,50,0.10)',border:'1.5px solid rgba(182,139,46,0.30)',borderRadius:12,padding:'14px 18px',marginBottom:16,fontFamily:F.san}}>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:10}}>
-        <div style={{display:'flex',gap:10,alignItems:'center'}}>
-          <span style={{fontSize:18}}>⚠️</span>
-          <div>
-            <div style={{fontSize:13,fontWeight:700,color:'#7a5c00',marginBottom:2}}>KYC Documents Required</div>
-            <div style={{fontSize:12,color:'#8a7040',lineHeight:1.5}}>Please upload your ID document and a selfie. Artworks will only be released once verified.</div>
-          </div>
-        </div>
-        <button onClick={()=>setOpen(o=>!o)} style={{padding:'8px 16px',borderRadius:8,border:'1px solid rgba(182,139,46,0.30)',background:'transparent',color:G.gold,cursor:'pointer',fontSize:12,fontWeight:600,fontFamily:F.san,flexShrink:0}}>
-          {open?'Hide':'Upload Documents'}
-        </button>
-      </div>
-      {open&&(
-        <div style={{marginTop:14,display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-          <div>
-            <label style={{display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:G.mid,marginBottom:6}}>ID Document</label>
-            <input type="file" accept="image/*,.pdf" onChange={e=>setIdFile(e.target.files[0])} style={{width:'100%',fontSize:12,fontFamily:F.san}}/>
-            {idFile&&<div style={{fontSize:11,color:G.greenD,marginTop:4}}>✓ {idFile.name}</div>}
-          </div>
-          <div>
-            <label style={{display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:G.mid,marginBottom:6}}>Selfie with ID</label>
-            <input type="file" accept="image/*" capture="user" onChange={e=>setSelfieFile(e.target.files[0])} style={{width:'100%',fontSize:12,fontFamily:F.san}}/>
-            {selfieFile&&<div style={{fontSize:11,color:G.greenD,marginTop:4}}>✓ {selfieFile.name}</div>}
-          </div>
-          <div style={{gridColumn:'1/-1'}}>
-            <button onClick={upload} disabled={uploading||(!idFile&&!selfieFile)} style={{width:'100%',padding:'11px',borderRadius:10,border:'none',background:`linear-gradient(135deg,${G.gold},${G.goldD})`,color:G.white,fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:F.san,opacity:uploading||(!idFile&&!selfieFile)?0.5:1}}>
-              {uploading?'Uploading…':'Submit Documents'}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
