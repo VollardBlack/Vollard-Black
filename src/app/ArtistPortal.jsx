@@ -46,7 +46,13 @@ function AuthScreen({onAuth}){
     setLoading(true);setError('');
     const{data,error:e}=await sb.auth.signInWithPassword({email:email.trim().toLowerCase(),password:pw});
     setLoading(false);
-    if(e)return setError('Incorrect email or password. Please try again.');
+    if(e){
+      if(e.message.includes('Email not confirmed'))
+        return setError('Please confirm your email address first. Check your inbox for a confirmation email.');
+      if(e.message.includes('Invalid login credentials'))
+        return setError('Incorrect email or password. Please try again or create an account.');
+      return setError(e.message);
+    }
     onAuth(data.session,'login');
   };
 
@@ -703,7 +709,15 @@ export default function ArtistPortal(){
       }else{
         setScreen('kyc');
       }
-    }catch(e){console.error(e);setScreen('auth');}
+    }catch(e){
+      console.error('checkAccess error:',e);
+      // If RLS/permission error, user needs to register
+      if(e.message?.includes('permission') || e.message?.includes('policy') || e.code===403){
+        setScreen('kyc');
+      } else {
+        setScreen('kyc'); // Default to KYC so user can register rather than being stuck
+      }
+    }
   };
 
   if(session===undefined||screen==='loading')
