@@ -252,8 +252,39 @@ function ArtistDashboard({session}){
               </button>
             </div>
 
-            {/* Price history chart - shows sold vs listed values */}
-            {sales.length>0&&<div style={CARD2}><div style={{...CP}}><div style={SH}>Price History</div>{sales.map((s,i)=>{const art=artworks.find(a=>a.id===s.artworkId);const reserve=art?.recommendedPrice||0;const sold=s.salePrice||0;const pct=reserve>0?Math.round((sold/reserve)*100):100;const w=Math.min(pct,150)+'%';const barBg=pct>=100?'linear-gradient(90deg,'+C.green+',#2d9e5a)':'linear-gradient(90deg,'+C.gold+','+C.goldD+')';return(<div key={i} style={{marginBottom:14}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}><span style={{fontSize:13,color:textPrimary,fontWeight:500}}>{s.artworkTitle}</span><span style={{fontSize:13,color:pct>=100?C.green:C.gold,fontWeight:700}}>R {fmt(sold)} <span style={{fontSize:10,opacity:0.7}}>({pct}% of value)</span></span></div><div style={{height:6,background:darkMode?'rgba(255,255,255,0.1)':'rgba(182,139,46,0.10)',borderRadius:3,overflow:'hidden'}}><div style={{height:'100%',width:w,background:barBg,borderRadius:3,transition:'width 1s ease'}}/></div></div>);})}</div></div></div>}
+            {/* Price history chart */}
+            {sales.length>0&&(
+              <div style={CARD2}>
+                <div style={{...CP}}>
+                  <div style={SH}>Price History</div>
+                  {sales.map((s,i)=>{
+                    const art=artworks.find(a=>a.id===s.artworkId);
+                    const sold=s.salePrice||0;
+                    const reserve=art?.recommendedPrice||0;
+                    const pct=reserve>0?Math.round((sold/reserve)*100):100;
+                    const barW=Math.min(pct,150).toString()+'%';
+                    const pctLabel=pct.toString()+'% of value';
+                    const barBg=pct>=100
+                      ?'linear-gradient(90deg,'+C.green+',#2d9e5a)'
+                      :'linear-gradient(90deg,'+C.gold+','+C.goldD+')';
+                    return(
+                      <div key={i} style={{marginBottom:14}}>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                          <span style={{fontSize:13,color:textPrimary,fontWeight:500}}>{s.artworkTitle}</span>
+                          <span style={{fontSize:13,color:pct>=100?C.green:C.gold,fontWeight:700}}>
+                            R {fmt(sold)}
+                            <span style={{fontSize:10,opacity:0.7,marginLeft:4}}>{pctLabel}</span>
+                          </span>
+                        </div>
+                        <div style={{height:6,background:darkMode?'rgba(255,255,255,0.1)':'rgba(182,139,46,0.10)',borderRadius:3,overflow:'hidden'}}>
+                          <div style={{height:'100%',width:barW,background:barBg,borderRadius:3,transition:'width 1s ease'}}/>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {(artist.instagram||artist.website)&&<div style={CARD2}><div style={{...CP}}><div style={SH}>Connect</div><div style={{display:'flex',gap:10,flexWrap:'wrap'}}>{artist.instagram&&<a href={'https://instagram.com/'+artist.instagram.replace('@','')} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:8,padding:'10px 18px',borderRadius:24,background:`rgba(182,139,46,0.08)`,border:`1px solid ${C.goldB}`,color:C.gold,textDecoration:'none',fontSize:13,fontWeight:600}}>📸 @{artist.instagram.replace('@','')}</a>}{artist.website&&<a href={artist.website} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:8,padding:'10px 18px',borderRadius:24,background:'rgba(100,140,200,0.08)',border:'1px solid rgba(100,140,200,0.20)',color:C.blue,textDecoration:'none',fontSize:13,fontWeight:600}}>🌐 Website</a>}</div></div></div>}
 
