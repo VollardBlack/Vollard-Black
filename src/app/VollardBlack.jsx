@@ -1516,7 +1516,7 @@ function Catalogue({data,up,actions}){
   const [hoveredArt,setHoveredArt]=useState(null);
   const [lightbox,setLightbox]=useState(null);
   const blank={id:"",title:"",artist:"",artistId:"",medium:"",dimensions:"",year:"",recommendedPrice:"",imageUrl:"",status:"Available",description:"",galleryName:"",insuranceMonthly:""};
-  const save=(a)=>{if(a.id)const aFull={...a,artistName:a.artistName||a.artist||""};if(aFull.id&&data.artworks.find(x=>x.id===aFull.id)){up("artworks",p=>p.map(x=>x.id===aFull.id?aFull:x));dbUp("artworks",aFull.id,{artist_name:aFull.artistName||aFull.artist||""});}else{up("artworks",p=>[{...aFull,id:uuidv4(),createdAt:td()},...p]);}setModal(null);};
+  const save=(a)=>{const aFull={...a,artistName:a.artistName||a.artist||""};if(aFull.id&&data.artworks.find(x=>x.id===aFull.id)){up("artworks",p=>p.map(x=>x.id===aFull.id?aFull:x));dbUp("artworks",aFull.id,{artist_name:aFull.artistName||aFull.artist||""});}else{up("artworks",p=>[{...aFull,id:uuidv4(),createdAt:td()},...p]);}setModal(null);};
   const f=data.artworks.filter(a=>(a.title+(a.artistName||a.artist||"")+a.status).toLowerCase().includes(search.toLowerCase()));
   const handleDelete=(art)=>{const has=(data.schedules||[]).some(s=>s.artworkId===art.id)||(data.sales||[]).some(s=>s.artworkId===art.id);if(has)setDelModal(art);else{if(confirm("Delete this artwork?"))up("artworks",p=>p.filter(a=>a.id!==art.id));}};
   const groups={};f.forEach(a=>{const key=a.artistName||a.artist||"Unknown Artist";if(!groups[key])groups[key]=[];groups[key].push(a);});
