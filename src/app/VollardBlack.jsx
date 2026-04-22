@@ -1304,7 +1304,7 @@ function AucCreateModal({artworks,onSave,onClose,fmt}){
   const [lots,setLots]=useState([]);
 
   const available=artworks.filter(a=>["Available","Reserved","In Gallery"].includes(a.status));
-  const filtered=available.filter(a=>(a.title+a.artist+a.galleryName).toLowerCase().includes(search.toLowerCase()));
+  const filtered=available.filter(a=>(a.title+a.artistName||a.artist||""+a.galleryName).toLowerCase().includes(search.toLowerCase()));
   const selectedIds=new Set(lots.map(l=>l.artworkId));
 
   const toggleArt=(art)=>{
@@ -1516,10 +1516,10 @@ function Catalogue({data,up,actions}){
   const [hoveredArt,setHoveredArt]=useState(null);
   const [lightbox,setLightbox]=useState(null);
   const blank={id:"",title:"",artist:"",artistId:"",medium:"",dimensions:"",year:"",recommendedPrice:"",imageUrl:"",status:"Available",description:"",galleryName:"",insuranceMonthly:""};
-  const save=(a)=>{if(a.id)up("artworks",p=>p.map(x=>x.id===a.id?a:x));else up("artworks",p=>[{...a,id:uuidv4(),createdAt:td()},...p]);setModal(null);};
-  const f=data.artworks.filter(a=>(a.title+a.artist+a.status).toLowerCase().includes(search.toLowerCase()));
+  const save=(a)=>{if(a.id)const aFull={...a,artistName:a.artistName||a.artist||""};if(aFull.id&&data.artworks.find(x=>x.id===aFull.id)){up("artworks",p=>p.map(x=>x.id===aFull.id?aFull:x));dbUp("artworks",aFull.id,{artist_name:aFull.artistName||aFull.artist||""});}else{up("artworks",p=>[{...aFull,id:uuidv4(),createdAt:td()},...p]);}setModal(null);};
+  const f=data.artworks.filter(a=>(a.title+(a.artistName||a.artist||"")+a.status).toLowerCase().includes(search.toLowerCase()));
   const handleDelete=(art)=>{const has=(data.schedules||[]).some(s=>s.artworkId===art.id)||(data.sales||[]).some(s=>s.artworkId===art.id);if(has)setDelModal(art);else{if(confirm("Delete this artwork?"))up("artworks",p=>p.filter(a=>a.id!==art.id));}};
-  const groups={};f.forEach(a=>{const key=a.artist||"Unknown Artist";if(!groups[key])groups[key]=[];groups[key].push(a);});
+  const groups={};f.forEach(a=>{const key=a.artistName||a.artist||"Unknown Artist";if(!groups[key])groups[key]=[];groups[key].push(a);});
   const artistNames=Object.keys(groups).sort();
   const isOpen=(name)=>expanded[name]!==false;
   const toggle=(name)=>setExpanded(p=>({...p,[name]:!isOpen(name)}));
@@ -1561,7 +1561,7 @@ function Catalogue({data,up,actions}){
       <div style={{fontSize:13,fontWeight:600,color:"#b68b2e",marginBottom:10}}>◆ {pending.length} artwork{pending.length>1?"s":""} submitted by artists — awaiting your approval</div>
       {pending.map(a=><div key={a.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:"1px solid rgba(182,139,46,0.12)",flexWrap:"wrap"}}>
         {a.imageUrl&&<div style={{width:40,height:40,borderRadius:6,overflow:"hidden",flexShrink:0}}><img src={a.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div>}
-        <div style={{flex:1,minWidth:150}}><div style={{fontWeight:600,fontSize:13}}>{a.title}</div><div style={{fontSize:11,color:"#8a8070"}}>by {a.artist||a.submittedBy||"—"} · R {fmt(a.recommendedPrice)}</div></div>
+        <div style={{flex:1,minWidth:150}}><div style={{fontWeight:600,fontSize:13}}>{a.title}</div><div style={{fontSize:11,color:"#8a8070"}}>by {a.artistName||a.artist||a.submittedBy||"—"} · R {fmt(a.recommendedPrice)}</div></div>
         <div style={{display:"flex",gap:6}}>
           <button onClick={()=>{up("artworks",p=>p.map(x=>x.id===a.id?{...x,approvalStatus:"approved"}:x));db.update("artworks",a.id,{approval_status:"approved"});}} style={{padding:"6px 14px",borderRadius:6,border:"none",background:"linear-gradient(135deg,#b68b2e,#8a6a1e)",color:"#fff",cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>✓ Approve</button>
           <button onClick={()=>{if(confirm("Reject and delete this artwork?"))up("artworks",p=>p.filter(x=>x.id!==a.id));}} style={{padding:"6px 14px",borderRadius:6,border:"1px solid rgba(196,92,74,0.3)",background:"transparent",color:"#c45c4a",cursor:"pointer",fontSize:11,fontFamily:"DM Sans,sans-serif"}}>✗ Reject</button>
@@ -1672,7 +1672,7 @@ function ArtistMdl({artist,onSave,onClose}){
       <Field label="Profile Image URL" style={{gridColumn:"1/-1"}}><input value={f.profileImageUrl||""} onChange={e=>s("profileImageUrl",e.target.value)} style={is}/></Field>
     </div>}
     {tab==="art"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}><Field label="Medium"><select value={f.medium||""} onChange={e=>s("medium",e.target.value)} style={ss}><option value="">— Select</option>{ART_MEDIUMS.map(m=><option key={m} value={m}>{m}</option>)}</select></Field><Field label="Style"><input value={f.style} onChange={e=>s("style",e.target.value)} style={is}/></Field><Field label="Website"><input value={f.website} onChange={e=>s("website",e.target.value)} style={is}/></Field><Field label="Instagram"><input value={f.instagram} onChange={e=>s("instagram",e.target.value)} style={is}/></Field><Field label="Bio" style={{gridColumn:"1/-1"}}><textarea value={f.bio} onChange={e=>s("bio",e.target.value)} style={{...is,minHeight:100,resize:"vertical"}}/></Field></div>}
-    {tab==="bank"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}><Field label="Bank"><select value={f.bankName||""} onChange={e=>s("bankName",e.target.value)} style={ss}><option value="">— Select</option>{SA_BANKS.map(b=><option key={b} value={b}>{b}</option>)}</select></Field><Field label="Account Holder"><input value={f.accountHolder} onChange={e=>s("accountHolder",e.target.value)} style={is}/></Field><Field label="Account No"><input value={f.accountNumber} onChange={e=>s("accountNumber",e.target.value)} style={is}/></Field><Field label="Branch Code"><input value={f.branchCode} onChange={e=>s("branchCode",e.target.value)} style={is}/></Field><Field label="Type"><select value={f.accountType} onChange={e=>s("accountType",e.target.value)} style={ss}><option value="">—</option><option>Cheque</option><option>Savings</option><option>Business</option></select></Field></div>}
+    {tab==="bank"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}><Field label="Bank"><select value={f.bankName||""} onChange={e=>s("bankName",e.target.value)} style={ss}><option value="">— Select</option>{SA_BANKS.map(b=><option key={b} value={b}>{b}</option>)}</select></Field><Field label="Account Holder"><input value={f.accountHolder||""} onChange={e=>s("accountHolder",e.target.value)} style={is}/></Field><Field label="Account No"><input value={f.accountNumber||""} onChange={e=>s("accountNumber",e.target.value)} style={is}/></Field><Field label="Branch Code"><input value={f.branchCode||""} onChange={e=>s("branchCode",e.target.value)} style={is}/></Field><Field label="Bank Verified" style={{gridColumn:"1/-1"}}><div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0"}}><span style={{fontSize:13,color:f.bankVerified?"#4a9e6b":"#e6be32",fontWeight:700}}>{f.bankVerified?"✓ Verified":"⏳ Pending Verification"}</span><button type="button" onClick={()=>s("bankVerified",!f.bankVerified)} style={{padding:"8px 16px",borderRadius:6,border:"none",background:f.bankVerified?"rgba(196,92,74,0.12)":"rgba(74,158,107,0.12)",color:f.bankVerified?"#c45c4a":"#4a9e6b",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>{f.bankVerified?"Revoke Verification":"✓ Mark as Verified"}</button></div></Field><Field label="Type"><select value={f.accountType} onChange={e=>s("accountType",e.target.value)} style={ss}><option value="">—</option><option>Cheque</option><option>Savings</option><option>Business</option></select></Field></div>}
     <div style={{display:"flex",gap:10,marginTop:24,justifyContent:"flex-end"}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>{if(!f.name)return alert("Name required");onSave(f);}}>{artist.id?"Save":"Add"}</Btn></div>
   </Modal>);}
 
