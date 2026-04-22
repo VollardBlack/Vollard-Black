@@ -16,6 +16,11 @@ const toSnake = obj => { if(!obj||typeof obj!=='object')return obj; const o={}; 
 const C={gold:'#b68b2e',goldD:'#8a6a1e',goldL:'rgba(182,139,46,0.12)',goldB:'rgba(182,139,46,0.22)',cream:'#f5f3ef',dark:'#1a1714',mid:'#6b635a',light:'#8a8070',red:'#c45c4a',green:'#4a9e6b',greenD:'#2d7a4a',blue:'#648cc8',white:'#ffffff'};
 const SER="'Cormorant Garamond',serif";
 const SAN="'DM Sans',sans-serif";
+const inp = {width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:'#1a1714',fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box'};
+const lbl = {display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:'#6b635a',marginBottom:8};
+const CARD = {background:'#ffffff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16};
+const CP = {padding:'20px'};
+const SH = {fontSize:10,fontWeight:700,letterSpacing:'0.20em',textTransform:'uppercase',color:'#b68b2e',marginBottom:14,paddingBottom:10,borderBottom:'1px solid rgba(182,139,46,0.12)'};
 
 function Logo({sub}){return(<div style={{textAlign:'center',marginBottom:40}}><div style={{fontFamily:SER,fontSize:36,fontWeight:300,letterSpacing:10,color:C.dark}}>VOLLARD <span style={{color:C.gold}}>BLACK</span></div><div style={{fontSize:10,letterSpacing:4,textTransform:'uppercase',color:C.light,marginTop:6}}>{sub}</div><div style={{width:40,height:1,background:'rgba(182,139,46,0.4)',margin:'16px auto 0'}}/></div>);}
 
@@ -148,7 +153,7 @@ function RenterDashboard({session}){
   const CARD={background:'#ffffff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16};
   const CP={padding:'20px'};
   const SH={fontSize:10,fontWeight:700,letterSpacing:'0.20em',textTransform:'uppercase',color:C.gold,marginBottom:14,paddingBottom:10,borderBottom:`1px solid ${C.goldL}`};
-  const inp={width:'100%',padding:'13px 16px',background:ib,border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:'#1a1714',fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box'};
+  const inp2={width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:'#1a1714',fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box'};
   const lbl={display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:'#8a8070',marginBottom:8};
 
   if(loading)return<div style={{minHeight:'100vh',background:'#f5f3ef',display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:SER,fontSize:24,color:C.gold,letterSpacing:6,opacity:0.6}}>Loading…</div></div>;
@@ -460,8 +465,10 @@ export default function RenterPortal(){
   useEffect(()=>{
     if(!session){setApproved(null);return;}
     supabase.from('portal_requests').select('status').eq('email',session.user.email).eq('role','renter').order('created_at',{ascending:false}).limit(1).single().then(({data,error})=>{
-      // No record = not yet registered — sign out so they can register
-      if(!data||error){supabase.auth.signOut();return;}
+      // No portal_requests row = either new user or admin-created
+      // Only sign out if it's definitively a "no rows found" error
+      if(error&&error.code!=='PGRST116'){setApproved(null);return;}
+      if(!data){setApproved(null);return;}
       setApproved(data.status==='approved'?true:data.status==='pending'?'pending':false);
     });
   },[session]);
@@ -471,7 +478,7 @@ export default function RenterPortal(){
     if(screen==='pending')return<PendingScreen email={pendingEmail} onSignIn={()=>setScreen('login')}/>;
     return<LoginScreen onLogin={s=>setSession(s)} onRegister={()=>setScreen('register')}/>;
   }
-  if(approved===null)return<div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:SER,fontSize:18,color:C.gold,opacity:0.5}}>Checking access…</div></div>;
+  if(approved===null)return<div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:16}}><div style={{fontFamily:SER,fontSize:18,color:C.gold,opacity:0.5}}>Checking access…</div><button onClick={()=>supabase.auth.signOut()} style={{fontSize:12,color:C.light,background:'none',border:'none',cursor:'pointer',fontFamily:SAN}}>Cancel</button></div>;
   // 'pending' or false = registered but not yet approved / rejected
   if(approved==='pending'||(!approved&&approved!==null))return<NotApprovedScreen onSignOut={()=>supabase.auth.signOut()}/>;
   return<RenterDashboard session={session}/>;
