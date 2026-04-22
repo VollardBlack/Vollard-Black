@@ -461,7 +461,11 @@ export default function ArtistPortal(){
 
   useEffect(()=>{
     if(!session){setApproved(null);return;}
-    supabase.from('portal_requests').select('status').eq('email',session.user.email).eq('role','artist').order('created_at',{ascending:false}).limit(1).single().then(({data})=>{setApproved(data?.status==='approved');});
+    supabase.from('portal_requests').select('status').eq('email',session.user.email).eq('role','artist').order('created_at',{ascending:false}).limit(1).single().then(({data,error})=>{
+      // No record = not registered yet — sign out so they can register
+      if(!data||error){supabase.auth.signOut();return;}
+      setApproved(data.status==='approved'?true:data.status==='pending'?'pending':false);
+    });
   },[session]);
 
   if(session===undefined)return<div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:SER,fontSize:24,letterSpacing:8,color:C.gold,opacity:0.5}}>VOLLARD BLACK</div></div>;
