@@ -50,6 +50,23 @@ function generateCert(art,artistName){
 }
 
 // ── Portfolio PDF export ────────────────────────────────────
+function sharePortfolio(artworks,artistName,bio,medium){
+  // Generate portfolio HTML and offer share/download
+  const w=window.open('','_blank');
+  const works=artworks.filter(a=>a.status!=='Pending Approval');
+  const html=`<!DOCTYPE html><html><head><title>${artistName} — Portfolio</title><style>@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@400;600&display=swap');body{margin:0;padding:0;background:#fff;font-family:'DM Sans',sans-serif;color:#1a1714;}@page{size:A4;margin:20mm;}.cover{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:48px;page-break-after:always;background:linear-gradient(135deg,#1a1714 0%,#2a2018 100%);}.cover-logo{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;letter-spacing:0.4em;color:rgba(245,243,239,0.6);margin-bottom:48px;}.cover-logo span{color:#b68b2e;}.cover-name{font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:300;color:#f5f3ef;margin-bottom:8px;}.cover-medium{font-size:13px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(182,139,46,0.7);margin-bottom:40px;}.cover-bio{max-width:440px;font-size:14px;color:rgba(245,243,239,0.65);line-height:1.8;font-style:italic;}.page{padding:40px;page-break-after:always;display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start;}.art-img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;background:#f0ede8;}.art-info{padding-top:8px;}.art-title{font-family:'Cormorant Garamond',serif;font-size:28px;color:#1a1714;margin-bottom:6px;}.art-artist{font-size:13px;color:#b68b2e;font-weight:600;margin-bottom:20px;}.dl{margin-bottom:10px;}.dl-label{font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:#8a8070;margin-bottom:2px;}.dl-value{font-size:13px;font-weight:600;}.price-box{margin-top:20px;padding:14px;background:#f5f3ef;border-radius:6px;}.price-label{font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:#8a8070;margin-bottom:2px;}.price-value{font-family:'Cormorant Garamond',serif;font-size:26px;color:#b68b2e;font-weight:600;}</style></head><body><div class="cover"><div class="cover-logo">VOLLARD <span>BLACK</span></div><div class="cover-name">${artistName}</div><div class="cover-medium">${medium||'Fine Art'}</div>${bio?'<div class="cover-bio">"'+bio+'"</div>':''}</div>${works.map(art=>'<div class="page">'+(art.imageUrl?'<img src="'+art.imageUrl+'" class="art-img" alt="'+art.title+'"/>':(art.imageUrl===''?'':'<div class="art-img" style="display:flex;align-items:center;justify-content:center;font-size:48px;color:rgba(182,139,46,0.3)">🖼</div>'))+'<div class="art-info"><div class="art-title">'+art.title+'</div><div class="art-artist">'+artistName+'</div>'+(art.medium?'<div class="dl"><div class="dl-label">Medium</div><div class="dl-value">'+art.medium+'</div></div>':'')+(art.year?'<div class="dl"><div class="dl-label">Year</div><div class="dl-value">'+art.year+'</div></div>':'')+(art.dimensions?'<div class="dl"><div class="dl-label">Dimensions</div><div class="dl-value">'+art.dimensions+'</div></div>':'')+'<div class="price-box"><div class="price-label">Asking Price</div><div class="price-value">R '+Number(art.recommendedPrice||0).toLocaleString('en-ZA',{minimumFractionDigits:2})+'</div></div>'+(art.description?'<div style="margin-top:16px;font-size:12px;color:#4a4440;line-height:1.8;font-style:italic;">'+art.description+'</div>':'')+'</div></div>').join('')}</body></html>`;
+  w.document.write(html);
+  w.document.close();
+  // After render, offer share
+  setTimeout(()=>{
+    if(navigator.share){
+      navigator.share({title:artistName+' — Portfolio',text:'View my art portfolio on Vollard Black',url:window.location.origin+'/artist'}).catch(()=>{});
+    } else {
+      w.print();
+    }
+  },800);
+}
+
 function generatePortfolio(artworks,artistName,bio,medium){
   const w=window.open('','_blank');
   const works=artworks.filter(a=>a.status!=='Pending Approval');
@@ -75,7 +92,6 @@ function ArtistDashboard({session}){
   const[profileEdit,setProfileEdit]=useState(false);
   const[savingProfile,setSavingProfile]=useState(false);
   const[saveMsg,setSaveMsg]=useState('');
-  const[darkMode,setDarkMode]=useState(false);
   const[selectedArt,setSelectedArt]=useState(null);
   const[saving,setSaving]=useState(false);
 
@@ -160,63 +176,59 @@ function ArtistDashboard({session}){
   const pendingWorks=artworks.filter(a=>a.status==='Pending Approval');
 
   // Dark mode colors
-  const bg=darkMode?'#0f0d0b':'#f5f3ef';
-  const cardBg=darkMode?'#1a1714':'#ffffff';
-  const cardBorder=darkMode?'rgba(182,139,46,0.20)':'rgba(182,139,46,0.15)';
-  const textPrimary=darkMode?'#f5f3ef':'#1a1714';
-  const textSecondary=darkMode?'rgba(245,243,239,0.55)':'#8a8070';
-  const inputBg=darkMode?'#2a2318':'#ffffff';
+  
+  
+  const cardBorder='rgba(182,139,46,0.18)';
+  
+  const textSecondary='#8a8070';
+  
 
-  const CARD2={background:cardBg,border:`1px solid ${cardBorder}`,borderRadius:16,overflow:'hidden',marginBottom:16};
-  const inp2={...inp,background:inputBg,color:textPrimary,border:`1.5px solid ${darkMode?'rgba(182,139,46,0.30)':C.goldB}`};
+  const CARD2={background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16};
+  const inp2={...inp,background:'#f7f5f1',color:'#1a1714',border:'1.5px solid rgba(182,139,46,0.22)'};
 
-  if(loading)return<div style={{minHeight:'100vh',background:bg,display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:SER,fontSize:24,color:C.gold,letterSpacing:6,opacity:0.6}}>Loading…</div></div>;
+  if(loading)return<div style={{minHeight:'100vh',background:'#f5f3ef',display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:SER,fontSize:24,color:C.gold,letterSpacing:6,opacity:0.6}}>Loading…</div></div>;
 
-  if(!artist)return(<div style={{minHeight:'100vh',background:bg,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:16,padding:20,fontFamily:SAN}}><Logo sub="Artist Portal"/><div style={{...CARD2,padding:40,textAlign:'center',maxWidth:420,width:'100%'}}><div style={{fontFamily:SER,fontSize:22,color:textPrimary,marginBottom:8}}>Account Not Linked</div><div style={{fontSize:13,color:textSecondary,marginBottom:16}}>Contact Vollard Black to link your artist account.</div><button onClick={signOut} style={{padding:'10px 24px',borderRadius:8,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:SAN}}>Sign Out</button></div></div>);
+  if(!artist)return(<div style={{minHeight:'100vh',background:'#f5f3ef',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:16,padding:20,fontFamily:SAN}}><Logo sub="Artist Portal"/><div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16,padding:40,textAlign:'center',maxWidth:420,width:'100%'}}><div style={{fontFamily:SER,fontSize:22,color:'#1a1714',marginBottom:8}}>Account Not Linked</div><div style={{fontSize:13,color:'#8a8070',marginBottom:16}}>Contact Vollard Black to link your artist account.</div><button onClick={signOut} style={{padding:'10px 24px',borderRadius:8,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:SAN}}>Sign Out</button></div></div>);
 
   return(
-    <div style={{minHeight:'100vh',background:bg,fontFamily:SAN,color:textPrimary,transition:'background 0.3s'}}>
+    <div style={{minHeight:'100vh',background:'#f5f3ef',fontFamily:SAN,color:'#1a1714',transition:'background 0.3s'}}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap');*{box-sizing:border-box;}input:focus,select:focus,textarea:focus{border-color:${C.gold}!important;box-shadow:0 0 0 3px rgba(182,139,46,0.12)!important;outline:none;}.art-img-wrap:hover .img-overlay{opacity:1!important;}`}</style>
 
       {/* Top bar */}
-      <div style={{background:darkMode?'#1a1714':'#fff',borderBottom:`1px solid ${cardBorder}`,padding:'0 20px',height:56,display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:50,boxShadow:'0 1px 12px rgba(0,0,0,0.06)'}}>
+      <div style={{background:'#fff',borderBottom:'1px solid rgba(182,139,46,0.18)',padding:'0 20px',height:56,display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:50,boxShadow:'0 1px 12px rgba(0,0,0,0.06)'}}>
         <a href="/" style={{textDecoration:'none',display:'flex',alignItems:'center',gap:10}}>
-          <div style={{fontFamily:SER,fontSize:18,fontWeight:300,letterSpacing:'0.20em',color:textPrimary}}>VOLLARD <span style={{color:C.gold}}>BLACK</span></div>
+          <div style={{fontFamily:SER,fontSize:18,fontWeight:300,letterSpacing:'0.20em',color:'#1a1714'}}>VOLLARD <span style={{color:C.gold}}>BLACK</span></div>
           <div style={{width:1,height:14,background:C.goldB}}/>
           <span style={{fontSize:9,letterSpacing:'0.18em',textTransform:'uppercase',color:C.blue,fontWeight:700}}>Artist</span>
         </a>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
-          <button onClick={()=>setDarkMode(d=>!d)} style={{padding:'7px 12px',borderRadius:8,border:`1px solid ${cardBorder}`,background:'transparent',color:textSecondary,cursor:'pointer',fontSize:14,lineHeight:1}} title="Toggle dark mode">{darkMode?'☀':'🌙'}</button>
+
           <NotifCentre notifs={notifs} onClear={()=>setNotifs([])}/>
           <button onClick={()=>window.open('https://wa.me/27826503393?text='+encodeURIComponent('Hi Vollard Black, I need assistance with my artist portal.'),'_blank')} style={{padding:'7px 12px',borderRadius:8,border:'1px solid rgba(37,211,102,0.30)',background:'rgba(37,211,102,0.08)',color:'#25d366',cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:SAN}}>Chat</button>
-          <span style={{fontSize:13,color:textSecondary,fontWeight:500}}>{artist.name}</span>
-          <button onClick={signOut} style={{padding:'7px 14px',borderRadius:8,border:`1px solid ${cardBorder}`,background:'transparent',color:textSecondary,cursor:'pointer',fontSize:11,fontFamily:SAN}}>Sign Out</button>
+          <span style={{fontSize:13,color:'#8a8070',fontWeight:500}}>{artist.name}</span>
+          <button onClick={signOut} style={{padding:'7px 14px',borderRadius:8,border:'1px solid rgba(182,139,46,0.18)',background:'transparent',color:'#8a8070',cursor:'pointer',fontSize:11,fontFamily:SAN}}>Sign Out</button>
         </div>
       </div>
 
-      {/* Hero */}
-      <div style={{background:'linear-gradient(135deg,#1a1714 0%,#2a2018 60%,#1e1a10 100%)',padding:'40px 20px 32px',position:'relative',overflow:'hidden'}}>
-        <div style={{position:'absolute',inset:0,backgroundImage:'radial-gradient(ellipse at 75% 50%, rgba(182,139,46,0.15) 0%, transparent 60%)',pointerEvents:'none'}}/>
-        <div style={{position:'absolute',bottom:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent,rgba(182,139,46,0.5),transparent)'}}/>
-        <div style={{maxWidth:960,margin:'0 auto',position:'relative'}}>
-          <div style={{display:'flex',gap:20,alignItems:'flex-start',flexWrap:'wrap'}}>
-            <div style={{width:72,height:72,borderRadius:'50%',background:'linear-gradient(135deg,rgba(182,139,46,0.3),rgba(182,139,46,0.08))',border:'2px solid rgba(182,139,46,0.4)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:28,color:'rgba(182,139,46,0.8)',fontFamily:SER,fontWeight:300}}>
+      {/* Header */}
+      <div style={{background:'#fff',borderBottom:'1px solid rgba(182,139,46,0.18)',padding:'24px 20px 20px'}}>
+        <div style={{maxWidth:960,margin:'0 auto'}}>
+          <div style={{display:'flex',gap:16,alignItems:'flex-start',flexWrap:'wrap',marginBottom:20}}>
+            <div style={{width:64,height:64,borderRadius:'50%',background:'rgba(182,139,46,0.10)',border:'2px solid rgba(182,139,46,0.25)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:26,color:'#b68b2e',fontFamily:SER,fontWeight:300}}>
               {artist.name?artist.name[0].toUpperCase():'A'}
             </div>
             <div style={{flex:1}}>
-              <div style={{fontFamily:SER,fontSize:36,fontWeight:300,color:'#f5f3ef',letterSpacing:'0.02em',lineHeight:1.1,marginBottom:4}}>{artist.name}</div>
-              <div style={{fontSize:13,color:'rgba(245,243,239,0.50)',marginBottom:artist.bio?12:0}}>{[artist.medium,artist.style].filter(Boolean).join(' · ')||'Artist'}</div>
-              {artist.bio&&<div style={{fontSize:14,color:'rgba(245,243,239,0.72)',lineHeight:1.8,maxWidth:560,fontStyle:'italic'}}>"{artist.bio}"</div>}
+              <div style={{fontFamily:SER,fontSize:32,fontWeight:300,color:'#1a1714',letterSpacing:'0.02em',lineHeight:1.1,marginBottom:4}}>{artist.name}</div>
+              <div style={{fontSize:13,color:'#8a8070',marginBottom:artist.bio?8:0}}>{[artist.medium,artist.style].filter(Boolean).join(' · ')||'Artist'}</div>
+              {artist.bio&&<div style={{fontSize:13,color:'#6b635a',lineHeight:1.7,maxWidth:560,fontStyle:'italic'}}>"{artist.bio}"</div>}
             </div>
-            <div style={{display:'flex',gap:8,flexShrink:0}}>
-              <button onClick={()=>generatePortfolio(artworks,artist.name,artist.bio,artist.medium)} style={{padding:'8px 16px',borderRadius:24,border:'1px solid rgba(182,139,46,0.3)',background:'rgba(182,139,46,0.08)',color:'rgba(182,139,46,0.9)',cursor:'pointer',fontSize:11,fontWeight:600,fontFamily:SAN}}>📄 Portfolio PDF</button>
-            </div>
+            <button onClick={()=>sharePortfolio(artworks,artist.name,artist.bio,artist.medium)} style={{padding:'9px 18px',borderRadius:24,border:'1px solid rgba(182,139,46,0.28)',background:'transparent',color:'#b68b2e',cursor:'pointer',fontSize:12,fontWeight:600,fontFamily:SAN,flexShrink:0}}>📄 Share Portfolio</button>
           </div>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginTop:28}}>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10}}>
             {[['Works Listed',listedWorks.length],['Pending',pendingWorks.length],['Sold',artworks.filter(a=>a.status==='Sold').length],['Total Sales','R '+fmt(totalSalesValue)]].map(([l,v])=>(
-              <div key={l} style={{background:'rgba(255,255,255,0.05)',border:'1px solid rgba(182,139,46,0.18)',borderRadius:12,padding:'14px 12px',textAlign:'center'}}>
-                <div style={{fontSize:9,letterSpacing:'0.18em',textTransform:'uppercase',color:'rgba(182,139,46,0.65)',marginBottom:6}}>{l}</div>
-                <div style={{fontFamily:SER,fontSize:22,fontWeight:300,color:'#f5f3ef'}}>{v}</div>
+              <div key={l} style={{background:'#f7f5f1',border:'1px solid rgba(182,139,46,0.18)',borderRadius:10,padding:'12px 10px',textAlign:'center'}}>
+                <div style={{fontSize:9,letterSpacing:'0.16em',textTransform:'uppercase',color:'#8a8070',marginBottom:6}}>{l}</div>
+                <div style={{fontFamily:SER,fontSize:20,fontWeight:300,color:'#1a1714'}}>{v}</div>
               </div>
             ))}
           </div>
@@ -237,24 +249,24 @@ function ArtistDashboard({session}){
         {/* OVERVIEW */}
         {tab==='overview'&&(
           <div>
-            {!artist.bio&&<div onClick={()=>{setTab('profile');setProfileEdit(true);}} style={{...CARD2,cursor:'pointer',border:`1.5px dashed ${C.goldB}`,background:darkMode?'rgba(182,139,46,0.05)':'rgba(182,139,46,0.03)',marginBottom:20}}><div style={{padding:'16px 20px',display:'flex',alignItems:'center',gap:16}}><div style={{width:44,height:44,borderRadius:'50%',background:`rgba(182,139,46,0.12)`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0}}>✍</div><div><div style={{fontWeight:700,fontSize:14,color:C.gold,marginBottom:2}}>Add your artist biography</div><div style={{fontSize:12,color:textSecondary}}>Tell collectors about your practice and inspiration. Tap to add.</div></div><div style={{marginLeft:'auto',fontSize:20,color:`rgba(182,139,46,0.4)`}}>→</div></div></div>}
+            {!artist.bio&&<div onClick={()=>{setTab('profile');setProfileEdit(true);}} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16,cursor:'pointer',border:`1.5px dashed ${C.goldB}`,background:'rgba(182,139,46,0.03)',marginBottom:20}}><div style={{padding:'16px 20px',display:'flex',alignItems:'center',gap:16}}><div style={{width:44,height:44,borderRadius:'50%',background:`rgba(182,139,46,0.12)`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0}}>✍</div><div><div style={{fontWeight:700,fontSize:14,color:C.gold,marginBottom:2}}>Add your artist biography</div><div style={{fontSize:12,color:'#8a8070'}}>Tell collectors about your practice and inspiration. Tap to add.</div></div><div style={{marginLeft:'auto',fontSize:20,color:`rgba(182,139,46,0.4)`}}>→</div></div></div>}
 
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:16}}>
-              <button onClick={()=>setTab('upload')} style={{...CARD2,marginBottom:0,padding:'20px',cursor:'pointer',border:'none',textAlign:'left',display:'block',background:`linear-gradient(135deg,${C.gold},${C.goldD})`,boxShadow:'0 8px 24px rgba(182,139,46,0.30)'}}>
+              <button onClick={()=>setTab('upload')} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16,marginBottom:0,padding:'20px',cursor:'pointer',border:'none',textAlign:'left',display:'block',background:`linear-gradient(135deg,${C.gold},${C.goldD})`,boxShadow:'0 8px 24px rgba(182,139,46,0.30)'}}>
                 <div style={{fontSize:28,marginBottom:8}}>🖼</div>
                 <div style={{fontFamily:SER,fontSize:20,color:'#fff',marginBottom:2}}>Upload Artwork</div>
                 <div style={{fontSize:11,color:'rgba(255,255,255,0.6)'}}>Submit for gallery listing</div>
               </button>
-              <button onClick={()=>setTab('works')} style={{...CARD2,marginBottom:0,padding:'20px',cursor:'pointer',textAlign:'left',display:'block'}}>
+              <button onClick={()=>setTab('works')} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16,marginBottom:0,padding:'20px',cursor:'pointer',textAlign:'left',display:'block'}}>
                 <div style={{fontSize:28,marginBottom:8}}>📦</div>
-                <div style={{fontFamily:SER,fontSize:20,color:textPrimary,marginBottom:2}}>My Works</div>
-                <div style={{fontSize:11,color:textSecondary}}>{artworks.length} artwork{artworks.length!==1?'s':''} total</div>
+                <div style={{fontFamily:SER,fontSize:20,color:'#1a1714',marginBottom:2}}>My Works</div>
+                <div style={{fontSize:11,color:'#8a8070'}}>{artworks.length} artwork{artworks.length!==1?'s':''} total</div>
               </button>
             </div>
 
             {/* Price history chart */}
             {sales.length>0&&(
-              <div style={CARD2}>
+              <div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16}}>
                 <div style={{...CP}}>
                   <div style={SH}>Price History</div>
                   {sales.map((s,i)=>{
@@ -270,13 +282,13 @@ function ArtistDashboard({session}){
                     return(
                       <div key={i} style={{marginBottom:14}}>
                         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
-                          <span style={{fontSize:13,color:textPrimary,fontWeight:500}}>{s.artworkTitle}</span>
+                          <span style={{fontSize:13,color:'#1a1714',fontWeight:500}}>{s.artworkTitle}</span>
                           <span style={{fontSize:13,color:pct>=100?C.green:C.gold,fontWeight:700}}>
                             R {fmt(sold)}
                             <span style={{fontSize:10,opacity:0.7,marginLeft:4}}>{pctLabel}</span>
                           </span>
                         </div>
-                        <div style={{height:6,background:darkMode?'rgba(255,255,255,0.1)':'rgba(182,139,46,0.10)',borderRadius:3,overflow:'hidden'}}>
+                        <div style={{height:6,background:'rgba(182,139,46,0.10)',borderRadius:3,overflow:'hidden'}}>
                           <div style={{height:'100%',width:barW,background:barBg,borderRadius:3,transition:'width 1s ease'}}/>
                         </div>
                       </div>
@@ -286,9 +298,9 @@ function ArtistDashboard({session}){
               </div>
             )}
 
-            {(artist.instagram||artist.website)&&<div style={CARD2}><div style={{...CP}}><div style={SH}>Connect</div><div style={{display:'flex',gap:10,flexWrap:'wrap'}}>{artist.instagram&&<a href={'https://instagram.com/'+artist.instagram.replace('@','')} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:8,padding:'10px 18px',borderRadius:24,background:`rgba(182,139,46,0.08)`,border:`1px solid ${C.goldB}`,color:C.gold,textDecoration:'none',fontSize:13,fontWeight:600}}>📸 @{artist.instagram.replace('@','')}</a>}{artist.website&&<a href={artist.website} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:8,padding:'10px 18px',borderRadius:24,background:'rgba(100,140,200,0.08)',border:'1px solid rgba(100,140,200,0.20)',color:C.blue,textDecoration:'none',fontSize:13,fontWeight:600}}>🌐 Website</a>}</div></div></div>}
+            {(artist.instagram||artist.website)&&<div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16}}><div style={{...CP}}><div style={SH}>Connect</div><div style={{display:'flex',gap:10,flexWrap:'wrap'}}>{artist.instagram&&<a href={'https://instagram.com/'+artist.instagram.replace('@','')} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:8,padding:'10px 18px',borderRadius:24,background:`rgba(182,139,46,0.08)`,border:`1px solid ${C.goldB}`,color:C.gold,textDecoration:'none',fontSize:13,fontWeight:600}}>📸 @{artist.instagram.replace('@','')}</a>}{artist.website&&<a href={artist.website} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:8,padding:'10px 18px',borderRadius:24,background:'rgba(100,140,200,0.08)',border:'1px solid rgba(100,140,200,0.20)',color:C.blue,textDecoration:'none',fontSize:13,fontWeight:600}}>🌐 Website</a>}</div></div></div>}
 
-            {artworks.length>0&&<div style={CARD2}><div style={{padding:'20px 20px 12px'}}><div style={SH}>Recent Works</div></div><div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(150px,1fr))',gap:1,borderTop:`1px solid ${C.goldL}`}}>{artworks.slice(0,6).map(art=><div key={art.id} onClick={()=>{setTab('works');}} style={{position:'relative',paddingBottom:'100%',background:art.imageUrl?'#e8e4dd':'rgba(182,139,46,0.04)',cursor:'pointer',overflow:'hidden'}} className="art-img-wrap">{art.imageUrl?<img src={art.imageUrl} alt="" style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}}/>:<div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}><div style={{fontSize:28,opacity:0.2}}>🖼</div></div>}<div className="img-overlay" style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',opacity:0,transition:'opacity 0.2s'}}><div style={{fontSize:12,fontWeight:600,color:'#fff',textAlign:'center',padding:'0 8px'}}>{art.title}</div><div style={{fontSize:10,color:'rgba(255,255,255,0.7)',marginTop:4}}>R {fmt(art.recommendedPrice)}</div></div><div style={{position:'absolute',top:6,right:6,padding:'2px 6px',borderRadius:10,fontSize:9,fontWeight:700,background:art.status==='Sold'?'rgba(100,140,200,0.9)':art.approvalStatus==='pending'?'rgba(230,190,50,0.9)':'rgba(74,158,107,0.9)',color:'#fff'}}>{art.status==='Sold'?'SOLD':art.approvalStatus==='pending'?'PENDING':'LISTED'}</div></div>)}</div></div>}
+            {artworks.length>0&&<div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16}}><div style={{padding:'20px 20px 12px'}}><div style={SH}>Recent Works</div></div><div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(150px,1fr))',gap:1,borderTop:`1px solid ${C.goldL}`}}>{artworks.slice(0,6).map(art=><div key={art.id} onClick={()=>{setTab('works');}} style={{position:'relative',paddingBottom:'100%',background:art.imageUrl?'#e8e4dd':'rgba(182,139,46,0.04)',cursor:'pointer',overflow:'hidden'}} className="art-img-wrap">{art.imageUrl?<img src={art.imageUrl} alt="" style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}}/>:<div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}><div style={{fontSize:28,opacity:0.2}}>🖼</div></div>}<div className="img-overlay" style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',opacity:0,transition:'opacity 0.2s'}}><div style={{fontSize:12,fontWeight:600,color:'#fff',textAlign:'center',padding:'0 8px'}}>{art.title}</div><div style={{fontSize:10,color:'rgba(255,255,255,0.7)',marginTop:4}}>R {fmt(art.recommendedPrice)}</div></div><div style={{position:'absolute',top:6,right:6,padding:'2px 6px',borderRadius:10,fontSize:9,fontWeight:700,background:art.status==='Sold'?'rgba(100,140,200,0.9)':art.approvalStatus==='pending'?'rgba(230,190,50,0.9)':'rgba(74,158,107,0.9)',color:'#fff'}}>{art.status==='Sold'?'SOLD':art.approvalStatus==='pending'?'PENDING':'LISTED'}</div></div>)}</div></div>}
           </div>
         )}
 
@@ -296,31 +308,31 @@ function ArtistDashboard({session}){
         {tab==='works'&&(
           <div>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20,flexWrap:'wrap',gap:10}}>
-              <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:textPrimary}}>My Works</div>
+              <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:'#1a1714'}}>My Works</div>
               <button onClick={()=>setTab('upload')} style={{padding:'10px 22px',borderRadius:24,border:'none',background:`linear-gradient(135deg,${C.gold},${C.goldD})`,color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:SAN,boxShadow:'0 4px 12px rgba(182,139,46,0.28)'}}>+ Upload New</button>
             </div>
-            {artworks.length===0?<div style={{...CARD2,textAlign:'center',padding:56}}><div style={{fontSize:44,marginBottom:12,opacity:0.2}}>🖼</div><div style={{fontFamily:SER,fontSize:22,color:textPrimary,marginBottom:8}}>No works yet</div><div style={{fontSize:13,color:textSecondary,marginBottom:24}}>Upload your first artwork to get started.</div><button onClick={()=>setTab('upload')} style={{padding:'12px 28px',borderRadius:24,border:'none',background:`linear-gradient(135deg,${C.gold},${C.goldD})`,color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:SAN}}>Upload Artwork →</button></div>
+            {artworks.length===0?<div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16,textAlign:'center',padding:56}}><div style={{fontSize:44,marginBottom:12,opacity:0.2}}>🖼</div><div style={{fontFamily:SER,fontSize:22,color:'#1a1714',marginBottom:8}}>No works yet</div><div style={{fontSize:13,color:'#8a8070',marginBottom:24}}>Upload your first artwork to get started.</div><button onClick={()=>setTab('upload')} style={{padding:'12px 28px',borderRadius:24,border:'none',background:`linear-gradient(135deg,${C.gold},${C.goldD})`,color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:SAN}}>Upload Artwork →</button></div>
             :artworks.map(art=>(
-              <div key={art.id} style={CARD2}>
+              <div key={art.id} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16}}>
                 {art.imageUrl?<div className="art-img-wrap" style={{position:'relative',height:220,background:'#e8e4dd',cursor:'pointer'}} onClick={()=>document.getElementById('img-upd-'+art.id).click()}>
                   <img src={art.imageUrl} alt="" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/>
                   <div className="img-overlay" style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.4)',display:'flex',alignItems:'center',justifyContent:'center',opacity:0,transition:'opacity 0.2s'}}><span style={{color:'#fff',fontSize:13,fontWeight:600}}>📷 Change image</span></div>
-                </div>:<div style={{height:140,background:darkMode?'rgba(182,139,46,0.05)':'rgba(182,139,46,0.03)',border:`2px dashed ${C.goldB}`,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',gap:10}} onClick={()=>document.getElementById('img-upd-'+art.id).click()}><div style={{fontSize:28}}>🖼</div><div style={{fontSize:13,fontWeight:600,color:C.gold}}>Add artwork image</div></div>}
+                </div>:<div style={{height:140,background:'rgba(182,139,46,0.03)',border:`2px dashed ${C.goldB}`,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',gap:10}} onClick={()=>document.getElementById('img-upd-'+art.id).click()}><div style={{fontSize:28}}>🖼</div><div style={{fontSize:13,fontWeight:600,color:C.gold}}>Add artwork image</div></div>}
                 <input id={'img-upd-'+art.id} type="file" accept="image/*" style={{display:'none'}} onChange={async(e)=>{const file=e.target.files[0];if(!file)return;const ext=file.name.split('.').pop().toLowerCase();const path=`artworks/${artist.id}-${art.id}.${ext}`;await supabase.storage.from('artwork-images').upload(path,file,{upsert:true,contentType:file.type});const{data:u}=supabase.storage.from('artwork-images').getPublicUrl(path);await supabase.from('artworks').update({image_url:u?.publicUrl||''}).eq('id',art.id);await loadData();}}/>
                 <div style={{padding:'16px 20px'}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10,marginBottom:6}}>
-                    <div style={{fontFamily:SER,fontSize:22,color:textPrimary,fontWeight:400,lineHeight:1.2}}>{art.title}</div>
+                    <div style={{fontFamily:SER,fontSize:22,color:'#1a1714',fontWeight:400,lineHeight:1.2}}>{art.title}</div>
                     <div style={{display:'flex',gap:8,flexShrink:0,alignItems:'center'}}>
                       {art.status==='Available'&&art.approvalStatus==='approved'&&<button onClick={()=>generateCert(art,artist.name)} style={{padding:'4px 10px',borderRadius:20,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,cursor:'pointer',fontSize:10,fontWeight:600,fontFamily:SAN}}>📜 Cert</button>}
                       <span style={{fontSize:10,fontWeight:700,padding:'4px 10px',borderRadius:20,letterSpacing:'0.06em',background:art.status==='Sold'?'rgba(100,140,200,0.12)':art.approvalStatus==='pending'?'rgba(230,190,50,0.12)':'rgba(74,158,107,0.12)',color:art.status==='Sold'?C.blue:art.approvalStatus==='pending'?'#b8920a':C.greenD}}>{art.status==='Sold'?'SOLD':art.approvalStatus==='pending'?'⏳ PENDING':'✓ LISTED'}</span>
                     </div>
                   </div>
-                  <div style={{fontSize:12,color:textSecondary,marginBottom:10}}>{[art.medium,art.dimensions,art.year].filter(Boolean).join(' · ')||'—'}</div>
+                  <div style={{fontSize:12,color:'#8a8070',marginBottom:10}}>{[art.medium,art.dimensions,art.year].filter(Boolean).join(' · ')||'—'}</div>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                    <span style={{fontSize:13,color:textSecondary}}>Value</span>
+                    <span style={{fontSize:13,color:'#8a8070'}}>Value</span>
                     <span style={{fontFamily:SER,fontSize:20,color:C.gold,fontWeight:600}}>R {fmt(art.recommendedPrice)}</span>
                   </div>
-                  {art.description&&<div style={{fontSize:12,color:textSecondary,marginTop:10,lineHeight:1.7,fontStyle:'italic',borderTop:`1px solid ${C.goldL}`,paddingTop:10}}>{art.description}</div>}
+                  {art.description&&<div style={{fontSize:12,color:'#8a8070',marginTop:10,lineHeight:1.7,fontStyle:'italic',borderTop:`1px solid ${C.goldL}`,paddingTop:10}}>{art.description}</div>}
                 </div>
               </div>
             ))}
@@ -330,54 +342,54 @@ function ArtistDashboard({session}){
         {/* UPLOAD */}
         {tab==='upload'&&(
           <div>
-            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:textPrimary,marginBottom:4}}>Upload Artwork</div>
-            <div style={{fontSize:13,color:textSecondary,marginBottom:24}}>Submit for admin review. Appears in gallery once approved.</div>
+            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:'#1a1714',marginBottom:4}}>Upload Artwork</div>
+            <div style={{fontSize:13,color:'#8a8070',marginBottom:24}}>Submit for admin review. Appears in gallery once approved.</div>
             {uploadMsg&&<div style={{padding:'13px 16px',background:uploadMsg.startsWith('success:')?'rgba(74,158,107,0.08)':'rgba(196,92,74,0.08)',border:`1px solid ${uploadMsg.startsWith('success:')?'rgba(74,158,107,0.25)':'rgba(196,92,74,0.25)'}`,borderRadius:12,fontSize:13,color:uploadMsg.startsWith('success:')?C.greenD:C.red,marginBottom:20}}>{uploadMsg.replace('success:','').replace('error:','')}</div>}
-            <div style={CARD2}>
+            <div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16}}>
               <div style={CP}>
                 <div style={{marginBottom:24}}>
-                  <label style={{...lbl,color:textSecondary}}>Artwork Image</label>
-                  <div onClick={()=>document.getElementById('new-art-img').click()} style={{border:`2px dashed ${uploadImagePreview?'rgba(74,158,107,0.5)':C.goldB}`,borderRadius:14,cursor:'pointer',overflow:'hidden',background:uploadImagePreview?'rgba(74,158,107,0.04)':darkMode?'rgba(182,139,46,0.04)':C.cream,minHeight:180,display:'flex',alignItems:'center',justifyContent:'center',transition:'all 0.2s'}}>
-                    {uploadImagePreview?<div style={{width:'100%',position:'relative'}}><img src={uploadImagePreview} alt="preview" style={{width:'100%',maxHeight:280,objectFit:'cover',display:'block'}}/><div style={{position:'absolute',bottom:10,right:10,background:'rgba(74,158,107,0.9)',color:'#fff',padding:'5px 12px',borderRadius:20,fontSize:11,fontWeight:700}}>✓ Image ready</div></div>:<div style={{textAlign:'center',padding:28}}><div style={{fontSize:40,marginBottom:8}}>🖼</div><div style={{fontSize:14,fontWeight:600,color:textSecondary,marginBottom:4}}>Tap to upload artwork photo</div><div style={{fontSize:11,color:textSecondary,opacity:0.6}}>JPG, PNG or WEBP · Max 10MB</div></div>}
+                  <label style={{...lbl,color:'#8a8070'}}>Artwork Image</label>
+                  <div onClick={()=>document.getElementById('new-art-img').click()} style={{border:`2px dashed ${uploadImagePreview?'rgba(74,158,107,0.5)':C.goldB}`,borderRadius:14,cursor:'pointer',overflow:'hidden',background:uploadImagePreview?'rgba(74,158,107,0.04)':'#f7f5f1',minHeight:180,display:'flex',alignItems:'center',justifyContent:'center',transition:'all 0.2s'}}>
+                    {uploadImagePreview?<div style={{width:'100%',position:'relative'}}><img src={uploadImagePreview} alt="preview" style={{width:'100%',maxHeight:280,objectFit:'cover',display:'block'}}/><div style={{position:'absolute',bottom:10,right:10,background:'rgba(74,158,107,0.9)',color:'#fff',padding:'5px 12px',borderRadius:20,fontSize:11,fontWeight:700}}>✓ Image ready</div></div>:<div style={{textAlign:'center',padding:28}}><div style={{fontSize:40,marginBottom:8}}>🖼</div><div style={{fontSize:14,fontWeight:600,color:'#8a8070',marginBottom:4}}>Tap to upload artwork photo</div><div style={{fontSize:11,color:'#8a8070',opacity:0.6}}>JPG, PNG or WEBP · Max 10MB</div></div>}
                   </div>
                   <input id="new-art-img" type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const file=e.target.files[0];if(!file)return;setUploadImageFile(file);const r=new FileReader();r.onload=ev=>setUploadImagePreview(ev.target.result);r.readAsDataURL(file);}}/>
                   {uploadImagePreview&&<button onClick={()=>{setUploadImageFile(null);setUploadImagePreview(null);}} style={{marginTop:8,background:'none',border:'none',color:C.red,cursor:'pointer',fontSize:12,fontFamily:SAN}}>✕ Remove</button>}
                 </div>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
                   {[['title','Title *'],['medium','Medium'],['dimensions','Dimensions'],['year','Year']].map(([key,label])=>(
-                    <div key={key}><label style={{...lbl,color:textSecondary}}>{label}</label><input value={uploadForm[key]||''} onChange={e=>setUploadForm(p=>({...p,[key]:e.target.value}))} style={inp2}/></div>
+                    <div key={key}><label style={{...lbl,color:'#8a8070'}}>{label}</label><input value={uploadForm[key]||''} onChange={e=>setUploadForm(p=>({...p,[key]:e.target.value}))} style={{width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:'#1a1714',fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box'}}/></div>
                   ))}
-                  <div style={{gridColumn:'1/-1'}}><label style={{...lbl,color:textSecondary}}>Price (R) *</label><input type="number" value={uploadForm.price||''} onChange={e=>setUploadForm(p=>({...p,price:e.target.value}))} style={inp2} placeholder="e.g. 25000" inputMode="numeric"/></div>
-                  <div style={{gridColumn:'1/-1'}}><label style={{...lbl,color:textSecondary}}>Description</label><textarea value={uploadForm.description||''} onChange={e=>setUploadForm(p=>({...p,description:e.target.value}))} style={{...inp2,minHeight:100,resize:'vertical'}} placeholder="Describe the artwork, inspiration, technique…"/></div>
+                  <div style={{gridColumn:'1/-1'}}><label style={{...lbl,color:'#8a8070'}}>Price (R) *</label><input type="number" value={uploadForm.price||''} onChange={e=>setUploadForm(p=>({...p,price:e.target.value}))} style={{width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:'#1a1714',fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box'}} placeholder="e.g. 25000" inputMode="numeric"/></div>
+                  <div style={{gridColumn:'1/-1'}}><label style={{...lbl,color:'#8a8070'}}>Description</label><textarea value={uploadForm.description||''} onChange={e=>setUploadForm(p=>({...p,description:e.target.value}))} style={{width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:'#1a1714',fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box',minHeight:100,resize:'vertical'}} placeholder="Describe the artwork, inspiration, technique…"/></div>
                 </div>
-                <div style={{marginTop:16,padding:'12px 16px',background:darkMode?'rgba(182,139,46,0.08)':'rgba(182,139,46,0.05)',border:`1px solid ${C.goldL}`,borderRadius:10,fontSize:12,color:textSecondary,lineHeight:1.6,marginBottom:20}}>ℹ After submission, Vollard Black will review and approve your artwork before it appears in the gallery.</div>
+                <div style={{marginTop:16,padding:'12px 16px',background:'rgba(182,139,46,0.05)',border:`1px solid ${C.goldL}`,borderRadius:10,fontSize:12,color:'#8a8070',lineHeight:1.6,marginBottom:20}}>ℹ After submission, Vollard Black will review and approve your artwork before it appears in the gallery.</div>
                 <div style={{display:'flex',justifyContent:'flex-end'}}><button onClick={submitArtwork} disabled={uploading} style={{padding:'13px 36px',borderRadius:12,border:'none',background:`linear-gradient(135deg,${C.gold},${C.goldD})`,color:'#fff',fontSize:14,fontWeight:700,cursor:uploading?'not-allowed':'pointer',fontFamily:SAN,opacity:uploading?0.6:1,boxShadow:'0 6px 20px rgba(182,139,46,0.30)'}}>{uploading?'Submitting…':'Submit for Approval'}</button></div>
               </div>
             </div>
-            {pendingWorks.length>0&&<div style={{marginTop:8}}><div style={{fontSize:10,fontWeight:700,letterSpacing:'0.16em',textTransform:'uppercase',color:'#b8920a',marginBottom:12}}>Awaiting Approval ({pendingWorks.length})</div>{pendingWorks.map(art=><div key={art.id} style={{...CARD2,marginBottom:10}}><div style={{display:'flex',gap:14,alignItems:'center',...CP}}>{art.imageUrl&&<img src={art.imageUrl} alt="" style={{width:56,height:56,borderRadius:10,objectFit:'cover',flexShrink:0,border:`1px solid ${C.goldL}`}}/>}<div style={{flex:1}}><div style={{fontFamily:SER,fontSize:18,color:textPrimary}}>{art.title}</div><div style={{fontSize:12,color:textSecondary}}>{art.medium||'—'} · R {fmt(art.recommendedPrice)}</div></div><span style={{fontSize:10,fontWeight:700,color:'#b8920a',padding:'4px 10px',background:'rgba(230,190,50,0.12)',borderRadius:20,flexShrink:0}}>⏳ Pending</span></div></div>)}</div>}
+            {pendingWorks.length>0&&<div style={{marginTop:8}}><div style={{fontSize:10,fontWeight:700,letterSpacing:'0.16em',textTransform:'uppercase',color:'#b8920a',marginBottom:12}}>Awaiting Approval ({pendingWorks.length})</div>{pendingWorks.map(art=><div key={art.id} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16,marginBottom:10}}><div style={{display:'flex',gap:14,alignItems:'center',...CP}}>{art.imageUrl&&<img src={art.imageUrl} alt="" style={{width:56,height:56,borderRadius:10,objectFit:'cover',flexShrink:0,border:`1px solid ${C.goldL}`}}/>}<div style={{flex:1}}><div style={{fontFamily:SER,fontSize:18,color:'#1a1714'}}>{art.title}</div><div style={{fontSize:12,color:'#8a8070'}}>{art.medium||'—'} · R {fmt(art.recommendedPrice)}</div></div><span style={{fontSize:10,fontWeight:700,color:'#b8920a',padding:'4px 10px',background:'rgba(230,190,50,0.12)',borderRadius:20,flexShrink:0}}>⏳ Pending</span></div></div>)}</div>}
           </div>
         )}
 
         {/* SALES */}
         {tab==='sales'&&(
           <div>
-            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:textPrimary,marginBottom:20}}>Sales</div>
+            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:'#1a1714',marginBottom:20}}>Sales</div>
             <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:20}}>
               {[['Total Sales',sales.length,textPrimary],['Sales Value','R '+fmt(totalSalesValue),C.gold],['Your Share','R '+fmt(artistShare),C.green]].map(([l,v,color])=>(
-                <div key={l} style={{...CARD2,textAlign:'center',padding:'20px 12px',marginBottom:0}}><div style={{fontSize:9,letterSpacing:'0.16em',textTransform:'uppercase',color:textSecondary,marginBottom:8}}>{l}</div><div style={{fontFamily:SER,fontSize:28,fontWeight:300,color}}>{v}</div></div>
+                <div key={l} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16,textAlign:'center',padding:'20px 12px',marginBottom:0}}><div style={{fontSize:9,letterSpacing:'0.16em',textTransform:'uppercase',color:'#8a8070',marginBottom:8}}>{l}</div><div style={{fontFamily:SER,fontSize:28,fontWeight:300,color}}>{v}</div></div>
               ))}
             </div>
-            {sales.length===0?<div style={{...CARD2,textAlign:'center',padding:56}}><div style={{fontSize:44,opacity:0.2,marginBottom:12}}>💰</div><div style={{fontSize:13,color:textSecondary}}>No sales yet. Keep creating!</div></div>
-            :sales.map(sale=><div key={sale.id} style={CARD2}><div style={CP}><div style={{display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8,marginBottom:12}}><div><div style={{fontFamily:SER,fontSize:20,color:textPrimary,marginBottom:4}}>{sale.artworkTitle}</div><div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}><span style={{fontSize:11,color:textSecondary}}>{sale.date||sale.createdAt?.slice(0,10)||'—'}</span><span style={{fontSize:10,fontWeight:700,padding:'2px 8px',borderRadius:10,background:sale.source==='auction'?'rgba(74,158,107,0.12)':'rgba(182,139,46,0.12)',color:sale.source==='auction'?C.greenD:'#8a6a1e'}}>{sale.source==='auction'?'⚖ Auction':'Direct'}</span></div></div><div style={{textAlign:'right'}}><div style={{fontSize:10,color:textSecondary,marginBottom:2}}>Sale Price</div><div style={{fontFamily:SER,fontSize:22,color:C.gold,fontWeight:600}}>R {fmt(sale.salePrice)}</div></div></div>{(sale.artistShare||0)>0&&<div style={{padding:'12px 16px',background:darkMode?'rgba(74,158,107,0.08)':'rgba(74,158,107,0.06)',border:`1px solid rgba(74,158,107,0.15)`,borderRadius:10,display:'flex',justifyContent:'space-between',alignItems:'center'}}><span style={{fontSize:13,color:C.green,fontWeight:600}}>Your share (30%)</span><span style={{fontFamily:SER,fontSize:20,color:C.greenD,fontWeight:600}}>R {fmt(sale.artistShare)}</span></div>}</div></div>)}
+            {sales.length===0?<div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16,textAlign:'center',padding:56}}><div style={{fontSize:44,opacity:0.2,marginBottom:12}}>💰</div><div style={{fontSize:13,color:'#8a8070'}}>No sales yet. Keep creating!</div></div>
+            :sales.map(sale=><div key={sale.id} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16}}><div style={CP}><div style={{display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8,marginBottom:12}}><div><div style={{fontFamily:SER,fontSize:20,color:'#1a1714',marginBottom:4}}>{sale.artworkTitle}</div><div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}><span style={{fontSize:11,color:'#8a8070'}}>{sale.date||sale.createdAt?.slice(0,10)||'—'}</span><span style={{fontSize:10,fontWeight:700,padding:'2px 8px',borderRadius:10,background:sale.source==='auction'?'rgba(74,158,107,0.12)':'rgba(182,139,46,0.12)',color:sale.source==='auction'?C.greenD:'#8a6a1e'}}>{sale.source==='auction'?'⚖ Auction':'Direct'}</span></div></div><div style={{textAlign:'right'}}><div style={{fontSize:10,color:'#8a8070',marginBottom:2}}>Sale Price</div><div style={{fontFamily:SER,fontSize:22,color:C.gold,fontWeight:600}}>R {fmt(sale.salePrice)}</div></div></div>{(sale.artistShare||0)>0&&<div style={{padding:'12px 16px',background:'rgba(74,158,107,0.06)',border:`1px solid rgba(74,158,107,0.15)`,borderRadius:10,display:'flex',justifyContent:'space-between',alignItems:'center'}}><span style={{fontSize:13,color:C.green,fontWeight:600}}>Your share (30%)</span><span style={{fontFamily:SER,fontSize:20,color:C.greenD,fontWeight:600}}>R {fmt(sale.artistShare)}</span></div>}</div></div>)}
           </div>
         )}
 
         {/* AUCTIONS */}
         {tab==='auctions'&&(
           <div>
-            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:textPrimary,marginBottom:20}}>Auctions</div>
-            {auctions.length===0?<div style={{...CARD2,textAlign:'center',padding:56}}><div style={{fontSize:44,opacity:0.2,marginBottom:12}}>⚖</div><div style={{fontSize:13,color:textSecondary}}>No auctions yet.</div></div>
-            :auctions.map(auc=><div key={auc.id} style={CARD2}><div style={CP}><div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10,marginBottom:16}}><div style={{fontFamily:SER,fontSize:20,color:textPrimary}}>{auc.title}</div><span style={{fontSize:10,fontWeight:700,padding:'4px 12px',borderRadius:20,flexShrink:0,background:auc.status==='Sold'?'rgba(74,158,107,0.12)':auc.status==='Live'?'rgba(196,92,74,0.12)':'rgba(182,139,46,0.12)',color:auc.status==='Sold'?C.greenD:auc.status==='Live'?C.red:C.gold}}>{auc.status}</span></div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>{[['Reserve','R '+fmt(auc.reservePrice)],['Final Bid','R '+fmt(auc.currentBid||0)],['Bids',auc.bidsCount||0],['Closed',auc.closedAt?.slice(0,10)||'—']].map(([l,v])=><div key={l} style={{padding:'10px 12px',background:darkMode?'rgba(255,255,255,0.05)':'#f5f3ef',borderRadius:8}}><div style={{fontSize:9,color:textSecondary,letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:4}}>{l}</div><div style={{fontWeight:600,color:textPrimary}}>{v}</div></div>)}</div></div></div>)}
+            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:'#1a1714',marginBottom:20}}>Auctions</div>
+            {auctions.length===0?<div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16,textAlign:'center',padding:56}}><div style={{fontSize:44,opacity:0.2,marginBottom:12}}>⚖</div><div style={{fontSize:13,color:'#8a8070'}}>No auctions yet.</div></div>
+            :auctions.map(auc=><div key={auc.id} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16}}><div style={CP}><div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10,marginBottom:16}}><div style={{fontFamily:SER,fontSize:20,color:'#1a1714'}}>{auc.title}</div><span style={{fontSize:10,fontWeight:700,padding:'4px 12px',borderRadius:20,flexShrink:0,background:auc.status==='Sold'?'rgba(74,158,107,0.12)':auc.status==='Live'?'rgba(196,92,74,0.12)':'rgba(182,139,46,0.12)',color:auc.status==='Sold'?C.greenD:auc.status==='Live'?C.red:C.gold}}>{auc.status}</span></div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>{[['Reserve','R '+fmt(auc.reservePrice)],['Final Bid','R '+fmt(auc.currentBid||0)],['Bids',auc.bidsCount||0],['Closed',auc.closedAt?.slice(0,10)||'—']].map(([l,v])=><div key={l} style={{padding:'10px 12px',background:'#f7f5f1',borderRadius:8}}><div style={{fontSize:9,color:'#8a8070',letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:4}}>{l}</div><div style={{fontWeight:600,color:'#1a1714'}}>{v}</div></div>)}</div></div></div>)}
           </div>
         )}
 
@@ -385,25 +397,25 @@ function ArtistDashboard({session}){
         {tab==='profile'&&(
           <div>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24,flexWrap:'wrap',gap:10}}>
-              <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:textPrimary}}>My Profile</div>
+              <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:'#1a1714'}}>My Profile</div>
               {!profileEdit&&<button onClick={()=>setProfileEdit(true)} style={{padding:'10px 22px',borderRadius:24,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:SAN}}>Edit Profile</button>}
             </div>
             {saveMsg&&<div style={{padding:'12px 16px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.20)',borderRadius:12,fontSize:13,color:C.greenD,marginBottom:20}}>✓ {saveMsg}</div>}
             {!profileEdit?(
               <div>
                 {[{title:'Personal Information',rows:[['Full Name',artist?.name||'—'],['Email',artist?.email||session.user.email||'—'],['Mobile',artist?.mobile||'—'],['ID / Passport',artist?.idNumber||'—'],['Nationality',artist?.nationality||'—'],['City',artist?.city||'—'],['Country',artist?.country||'—'],['Address',artist?.address||'—']]},{title:'Artist Details',rows:[['Primary Medium',artist?.medium||'—'],['Style',artist?.style||'—'],['Instagram',artist?.instagram?('@'+artist.instagram.replace('@','')):'—'],['Website',artist?.website||'—']]},{title:'Biography',bio:true}].map(section=>(
-                  <div key={section.title} style={CARD2}><div style={CP}><div style={SH}>{section.title}</div>
-                  {section.bio?artist?.bio?<div style={{padding:'16px',background:darkMode?'rgba(182,139,46,0.08)':'rgba(182,139,46,0.04)',borderRadius:10,fontSize:14,color:textPrimary,lineHeight:1.8,fontStyle:'italic'}}>"{artist.bio}"</div>:<button onClick={()=>setProfileEdit(true)} style={{padding:'10px 0',background:'none',border:'none',color:C.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:SAN}}>+ Add biography →</button>
-                  :section.rows.map(([label,value])=><div key={label} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'10px 0',borderBottom:`1px solid ${C.goldL}`,fontSize:13,gap:12}}><span style={{color:textSecondary,flexShrink:0}}>{label}</span><span style={{fontWeight:500,textAlign:'right',color:textPrimary}}>{value}</span></div>)}</div></div>
+                  <div key={section.title} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16}}><div style={CP}><div style={SH}>{section.title}</div>
+                  {section.bio?artist?.bio?<div style={{padding:'16px',background:'rgba(182,139,46,0.06)',borderRadius:10,fontSize:14,color:'#1a1714',lineHeight:1.8,fontStyle:'italic'}}>"{artist.bio}"</div>:<button onClick={()=>setProfileEdit(true)} style={{padding:'10px 0',background:'none',border:'none',color:C.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:SAN}}>+ Add biography →</button>
+                  :section.rows.map(([label,value])=><div key={label} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'10px 0',borderBottom:`1px solid ${C.goldL}`,fontSize:13,gap:12}}><span style={{color:'#8a8070',flexShrink:0}}>{label}</span><span style={{fontWeight:500,textAlign:'right',color:'#1a1714'}}>{value}</span></div>)}</div></div>
                 ))}
-                <div style={CARD2}><div style={CP}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14,...{paddingBottom:10,borderBottom:`1px solid ${C.goldL}`}}}><div style={{fontSize:10,fontWeight:700,letterSpacing:'0.20em',textTransform:'uppercase',color:C.gold}}>Banking Details</div>{artist?.bankVerified?<span style={{fontSize:11,fontWeight:700,color:C.greenD,background:'rgba(74,158,107,0.10)',padding:'3px 10px',borderRadius:20}}>✓ Verified</span>:(artist?.bankName||artist?.accountNumber)?<span style={{fontSize:11,fontWeight:700,color:'#b8920a',background:'rgba(230,190,50,0.10)',padding:'3px 10px',borderRadius:20}}>⏳ Pending</span>:<span style={{fontSize:11,color:textSecondary}}>Not yet added</span>}</div>{(artist?.bankName||artist?.accountNumber)?[['Bank',artist?.bankName||'—'],['Account Holder',artist?.accountHolder||'—'],['Account Number',artist?.accountNumber||'—'],['Branch Code',artist?.branchCode||'—']].map(([label,value])=><div key={label} style={{display:'flex',justifyContent:'space-between',padding:'10px 0',borderBottom:`1px solid ${C.goldL}`,fontSize:13,gap:12}}><span style={{color:textSecondary,flexShrink:0}}>{label}</span><span style={{fontWeight:500}}>{value}</span></div>):<div style={{fontSize:13,color:textSecondary,padding:'8px 0',lineHeight:1.7}}>Add your banking details so Vollard Black can pay your share of sales.</div>}</div></div>
+                <div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16}}><div style={CP}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14,...{paddingBottom:10,borderBottom:`1px solid ${C.goldL}`}}}><div style={{fontSize:10,fontWeight:700,letterSpacing:'0.20em',textTransform:'uppercase',color:C.gold}}>Banking Details</div>{artist?.bankVerified?<span style={{fontSize:11,fontWeight:700,color:C.greenD,background:'rgba(74,158,107,0.10)',padding:'3px 10px',borderRadius:20}}>✓ Verified</span>:(artist?.bankName||artist?.accountNumber)?<span style={{fontSize:11,fontWeight:700,color:'#b8920a',background:'rgba(230,190,50,0.10)',padding:'3px 10px',borderRadius:20}}>⏳ Pending</span>:<span style={{fontSize:11,color:'#8a8070'}}>Not yet added</span>}</div>{(artist?.bankName||artist?.accountNumber)?[['Bank',artist?.bankName||'—'],['Account Holder',artist?.accountHolder||'—'],['Account Number',artist?.accountNumber||'—'],['Branch Code',artist?.branchCode||'—']].map(([label,value])=><div key={label} style={{display:'flex',justifyContent:'space-between',padding:'10px 0',borderBottom:`1px solid ${C.goldL}`,fontSize:13,gap:12}}><span style={{color:'#8a8070',flexShrink:0}}>{label}</span><span style={{fontWeight:500}}>{value}</span></div>):<div style={{fontSize:13,color:'#8a8070',padding:'8px 0',lineHeight:1.7}}>Add your banking details so Vollard Black can pay your share of sales.</div>}</div></div>
               </div>
             ):(
               <div>
                 {[{title:'Personal Information',fields:[['name','Full Name'],['mobile','Mobile'],['city','City'],['country','Country']],textarea:[['address','Address']]},{title:'Artist Details',fields:[['medium','Primary Medium'],['style','Style'],['instagram','Instagram'],['website','Website']],bioField:true},{title:'Banking Details',bankFields:true}].map(section=>(
-                  <div key={section.title} style={{...CARD2,marginBottom:16}}><div style={CP}><div style={SH}>{section.title}</div>
-                  {section.bankFields?<div><div style={{fontSize:12,color:textSecondary,marginBottom:16,lineHeight:1.7}}>Your payout account. Changes require re-verification.</div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>{[['bankName','Bank Name'],['accountHolder','Account Holder'],['accountNumber','Account Number'],['branchCode','Branch Code']].map(([key,label])=><div key={key}><label style={{...lbl,color:textSecondary}}>{label}</label><input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={inp2} inputMode={key==='accountNumber'||key==='branchCode'?'numeric':undefined}/></div>)}</div><div style={{marginTop:14,padding:'11px 14px',background:'rgba(230,190,50,0.05)',border:'1px solid rgba(230,190,50,0.18)',borderRadius:10,fontSize:12,color:textSecondary,lineHeight:1.6}}>⚠ Changes flag your account for verification before payouts resume.</div></div>
-                  :<div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>{(section.fields||[]).map(([key,label])=><div key={key}><label style={{...lbl,color:textSecondary}}>{label}</label><input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={inp2} placeholder={key==='instagram'?'@yourhandle':key==='website'?'https://...':''}/></div>)}{(section.textarea||[]).map(([key,label])=><div key={key} style={{gridColumn:'1/-1'}}><label style={{...lbl,color:textSecondary}}>{label}</label><textarea value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={{...inp2,minHeight:60,resize:'vertical'}}/></div>)}{section.bioField&&<div style={{gridColumn:'1/-1'}}><label style={{...lbl,color:textSecondary}}>Biography / Artist Statement</label><textarea value={profileForm.bio||''} onChange={e=>setProfileForm(p=>({...p,bio:e.target.value}))} style={{...inp2,minHeight:120,resize:'vertical'}} placeholder="Tell collectors about your practice, inspiration, style, and what drives your work…"/></div>}</div></div>}
+                  <div key={section.title} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16,marginBottom:16}}><div style={CP}><div style={SH}>{section.title}</div>
+                  {section.bankFields?<div><div style={{fontSize:12,color:'#8a8070',marginBottom:16,lineHeight:1.7}}>Your payout account. Changes require re-verification.</div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>{[['bankName','Bank Name'],['accountHolder','Account Holder'],['accountNumber','Account Number'],['branchCode','Branch Code']].map(([key,label])=><div key={key}><label style={{...lbl,color:'#8a8070'}}>{label}</label><input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={{width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:'#1a1714',fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box'}} inputMode={key==='accountNumber'||key==='branchCode'?'numeric':undefined}/></div>)}</div><div style={{marginTop:14,padding:'11px 14px',background:'rgba(230,190,50,0.05)',border:'1px solid rgba(230,190,50,0.18)',borderRadius:10,fontSize:12,color:'#8a8070',lineHeight:1.6}}>⚠ Changes flag your account for verification before payouts resume.</div></div>
+                  :<div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>{(section.fields||[]).map(([key,label])=><div key={key}><label style={{...lbl,color:'#8a8070'}}>{label}</label><input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={{width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:'#1a1714',fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box'}} placeholder={key==='instagram'?'@yourhandle':key==='website'?'https://...':''}/></div>)}{(section.textarea||[]).map(([key,label])=><div key={key} style={{gridColumn:'1/-1'}}><label style={{...lbl,color:'#8a8070'}}>{label}</label><textarea value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={{width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:'#1a1714',fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box',minHeight:60,resize:'vertical'}}/></div>)}{section.bioField&&<div style={{gridColumn:'1/-1'}}><label style={{...lbl,color:'#8a8070'}}>Biography / Artist Statement</label><textarea value={profileForm.bio||''} onChange={e=>setProfileForm(p=>({...p,bio:e.target.value}))} style={{width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:'#1a1714',fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box',minHeight:120,resize:'vertical'}} placeholder="Tell collectors about your practice, inspiration, style, and what drives your work…"/></div>}</div></div>}
                   </div></div>
                 ))}
                 <div style={{display:'flex',gap:10,justifyContent:'flex-end'}}><button onClick={()=>setProfileEdit(false)} style={{padding:'12px 22px',borderRadius:12,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:SAN}}>Cancel</button><button onClick={saveProfile} disabled={savingProfile} style={{padding:'12px 28px',borderRadius:12,border:'none',background:`linear-gradient(135deg,${C.gold},${C.goldD})`,color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:SAN,opacity:savingProfile?0.6:1,boxShadow:'0 4px 14px rgba(182,139,46,0.28)'}}>{savingProfile?'Saving…':'Save Changes'}</button></div>
@@ -415,14 +427,14 @@ function ArtistDashboard({session}){
         {/* TERMS */}
         {tab==='terms'&&(
           <div>
-            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:textPrimary,marginBottom:20}}>Artist Representation Agreement</div>
-            <div style={CARD2}><div style={CP}><div style={{fontSize:12,color:textSecondary,marginBottom:20}}>Vollard Black (Pty) Ltd · Hermanus, South Africa</div>{[['1. Representation','By registering, you authorise Vollard Black to display, market, and sell your artworks through its platform, gallery network, and auction services.'],['2. Commission','On each sale: Artist Share 30% · Gallery Partner Share 40% · Vollard Black Share 30%. Applied to the license fee (50% of sale price).'],['3. Submissions','All submissions are subject to approval. Approved works are listed in the gallery.'],['4. Intellectual Property','You retain full copyright. You grant Vollard Black a non-exclusive licence to use artwork images for marketing.'],['5. Authenticity','You warrant all submitted works are original and free from third-party claims.'],['6. Payment','Artist shares are paid within 14 business days of a confirmed sale to the bank account on file.']].map(([title,text])=><div key={title} style={{marginBottom:16,paddingBottom:16,borderBottom:`1px solid ${C.goldL}`}}><div style={{fontFamily:SER,fontSize:16,color:textPrimary,marginBottom:6,fontWeight:500}}>{title}</div><div style={{fontSize:13,color:textSecondary,lineHeight:1.8}}>{text}</div></div>)}<div style={{padding:'12px 16px',background:'rgba(182,139,46,0.06)',borderRadius:10,fontSize:12,color:'#8a6a1e'}}>Contact: <strong>concierge@vollardblack.com</strong></div></div></div>
+            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:'#1a1714',marginBottom:20}}>Artist Representation Agreement</div>
+            <div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16}}><div style={CP}><div style={{fontSize:12,color:'#8a8070',marginBottom:20}}>Vollard Black (Pty) Ltd · Hermanus, South Africa</div>{[['1. Representation','By registering, you authorise Vollard Black to display, market, and sell your artworks through its platform, gallery network, and auction services.'],['2. Commission','On each sale: Artist Share 30% · Gallery Partner Share 40% · Vollard Black Share 30%. Applied to the license fee (50% of sale price).'],['3. Submissions','All submissions are subject to approval. Approved works are listed in the gallery.'],['4. Intellectual Property','You retain full copyright. You grant Vollard Black a non-exclusive licence to use artwork images for marketing.'],['5. Authenticity','You warrant all submitted works are original and free from third-party claims.'],['6. Payment','Artist shares are paid within 14 business days of a confirmed sale to the bank account on file.']].map(([title,text])=><div key={title} style={{marginBottom:16,paddingBottom:16,borderBottom:`1px solid ${C.goldL}`}}><div style={{fontFamily:SER,fontSize:16,color:'#1a1714',marginBottom:6,fontWeight:500}}>{title}</div><div style={{fontSize:13,color:'#8a8070',lineHeight:1.8}}>{text}</div></div>)}<div style={{padding:'12px 16px',background:'rgba(182,139,46,0.06)',borderRadius:10,fontSize:12,color:'#8a6a1e'}}>Contact: <strong>concierge@vollardblack.com</strong></div></div></div>
           </div>
         )}
       </div>
 
       {/* Mobile bottom nav */}
-      <div style={{position:'fixed',bottom:0,left:0,right:0,background:darkMode?'#1a1714':'#fff',borderTop:`1px solid ${cardBorder}`,padding:'8px 0',display:'flex',justifyContent:'space-around',zIndex:50,boxShadow:'0 -4px 20px rgba(0,0,0,0.08)'}}>
+      <div style={{position:'fixed',bottom:0,left:0,right:0,background:'#fff',borderTop:'1px solid rgba(182,139,46,0.18)',padding:'8px 0',display:'flex',justifyContent:'space-around',zIndex:50,boxShadow:'0 -4px 20px rgba(0,0,0,0.08)'}}>
         {[['overview','🏠','Home'],['works','🖼','Works'],['upload','➕','Upload'],['sales','💰','Sales'],['profile','👤','Profile']].map(([id,icon,lbl])=>(
           <button key={id} onClick={()=>setTab(id)} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,padding:'4px 12px',background:'none',border:'none',cursor:'pointer',fontFamily:SAN}}>
             <span style={{fontSize:18,opacity:tab===id?1:0.45}}>{icon}</span>
