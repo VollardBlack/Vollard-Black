@@ -19,6 +19,11 @@ const CP={padding:'20px'};
 const SH={fontSize:10,fontWeight:700,letterSpacing:'0.20em',textTransform:'uppercase',color:G.gold,marginBottom:14,paddingBottom:10,borderBottom:'1px solid rgba(182,139,46,0.12)'};
 
 // ── Shared screens ──────────────────────────────────────────────────────
+const C={gold:'#b68b2e',goldD:'#8a6a1e',goldL:'rgba(182,139,46,0.12)',goldB:'rgba(182,139,46,0.22)',cream:'#f5f3ef',dark:'#1a1714',mid:'#6b635a',light:'#8a8070',red:'#c45c4a',green:'#4a9e6b',greenD:'#2d7a4a',blue:'#648cc8',white:'#ffffff'};
+const SER="'Cormorant Garamond',serif";
+const SAN="'DM Sans',sans-serif";
+
+
 function Logo(){return(<div style={{textAlign:'center',marginBottom:32}}><div style={{fontFamily:F.ser,fontSize:32,fontWeight:300,letterSpacing:10,color:G.dark}}>VOLLARD <span style={{color:G.gold}}>BLACK</span></div><div style={{fontSize:10,letterSpacing:4,textTransform:'uppercase',color:G.light,marginTop:6}}>ARTIST PORTAL</div><div style={{width:40,height:1,background:'rgba(182,139,46,0.4)',margin:'12px auto 0'}}/></div>);}
 
 function PendingScreen({email,onBack}){return(<div style={{minHeight:'100vh',background:G.cream,display:'flex',alignItems:'center',justifyContent:'center',padding:20,fontFamily:F.san}}><div style={{width:'100%',maxWidth:420,textAlign:'center'}}><Logo/><div style={{...CARD,padding:36}}><div style={{fontSize:48,marginBottom:12}}>⏳</div><div style={{fontFamily:F.ser,fontSize:22,color:G.dark,marginBottom:8}}>Application Submitted</div><div style={{fontSize:13,color:G.mid,lineHeight:1.8,marginBottom:20}}>Thank you. Vollard Black will review your application and contact you at <strong>{email}</strong> once approved.</div><button onClick={onBack} style={{padding:'11px 24px',borderRadius:24,border:'1px solid rgba(182,139,46,0.28)',background:'transparent',color:G.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:F.san}}>Back to Sign In</button></div></div></div>);}
@@ -214,6 +219,75 @@ function generateCert(art,artistName){
   const w=window.open('','_blank');
   const html=`<!DOCTYPE html><html><head><title>Certificate of Authenticity</title><style>@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@400;600&display=swap');body{margin:0;padding:48px;background:#f5f3ef;font-family:'DM Sans',sans-serif;}.cert{max-width:680px;margin:0 auto;background:#fff;border:1px solid rgba(182,139,46,0.3);padding:60px;text-align:center;}.logo{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;letter-spacing:0.3em;color:#1a1714;margin-bottom:4px;}.logo span{color:#b68b2e;}.sub{font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#8a8070;margin-bottom:40px;}.line{width:80px;height:1px;background:rgba(182,139,46,0.4);margin:24px auto;}.title{font-family:'Cormorant Garamond',serif;font-size:22px;color:#8a8070;font-weight:300;letter-spacing:0.1em;margin-bottom:32px;text-transform:uppercase;}.art-title{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:400;color:#1a1714;margin-bottom:8px;}.artist{font-size:16px;color:#b68b2e;font-weight:600;margin-bottom:32px;}.details{display:grid;grid-template-columns:1fr 1fr;gap:16px;text-align:left;margin-bottom:40px;background:#f5f3ef;padding:24px;border-radius:8px;}.detail-label{font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:#8a8070;margin-bottom:4px;}.detail-value{font-size:14px;color:#1a1714;font-weight:600;}.cert-no{font-size:11px;color:#8a8070;margin-top:32px;}.footer{margin-top:40px;font-size:11px;color:#8a8070;line-height:1.7;}@media print{body{background:#fff;}}</style></head><body><div class="cert"><div class="logo">VOLLARD <span>BLACK</span></div><div class="sub">Fine Art Acquisitions</div><div class="line"/><div class="title">Certificate of Authenticity</div><div class="art-title">${art.title}</div><div class="artist">by ${artistName}</div><div class="details"><div><div class="detail-label">Medium</div><div class="detail-value">${art.medium||'—'}</div></div><div><div class="detail-label">Year</div><div class="detail-value">${art.year||'—'}</div></div><div><div class="detail-label">Dimensions</div><div class="detail-value">${art.dimensions||'—'}</div></div><div><div class="detail-label">Value</div><div class="detail-value">R ${fmt(art.recommendedPrice)}</div></div></div><div class="line"/><div class="cert-no">Certificate No: VB-${art.id?.slice(-8)?.toUpperCase()||'N/A'} · Issued ${new Date().toLocaleDateString('en-ZA',{day:'numeric',month:'long',year:'numeric'})}</div><div class="footer">This certificate verifies the authenticity of the above artwork.<br/>Vollard Black (Pty) Ltd · Hermanus, Western Cape · concierge@vollardblack.com</div></div><script>window.print();</script></body></html>`;
   w.document.write(html);w.document.close();
+}
+
+function NotifCentre({notifs,onClear}){
+  const[open,setOpen]=useState(false);
+  if(!notifs||notifs.length===0)return null;
+  return(
+    <div style={{position:'relative'}}>
+      <button onClick={()=>setOpen(o=>!o)} style={{position:'relative',padding:'7px 10px',borderRadius:8,border:'1px solid rgba(182,139,46,0.25)',background:'transparent',color:'#b68b2e',cursor:'pointer',fontSize:13}}>
+        🔔<span style={{position:'absolute',top:-4,right:-4,background:'#c45c4a',color:'#fff',borderRadius:'50%',fontSize:9,width:16,height:16,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700}}>{notifs.length}</span>
+      </button>
+      {open&&<div style={{position:'absolute',right:0,top:'110%',width:280,background:'#fff',border:'1px solid rgba(182,139,46,0.22)',borderRadius:12,boxShadow:'0 8px 32px rgba(0,0,0,0.12)',zIndex:100,maxHeight:300,overflowY:'auto'}}>
+        <div style={{padding:'10px 14px',borderBottom:'1px solid rgba(182,139,46,0.12)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <span style={{fontSize:11,fontWeight:700,letterSpacing:'0.12em',textTransform:'uppercase',color:'#6b635a'}}>Notifications</span>
+          <button onClick={()=>{onClear();setOpen(false);}} style={{fontSize:11,color:'#c45c4a',background:'none',border:'none',cursor:'pointer'}}>Clear all</button>
+        </div>
+        {notifs.map((n,i)=><div key={i} style={{padding:'10px 14px',borderBottom:'1px solid rgba(182,139,46,0.08)',fontSize:13,color:'#1a1714'}}>{n.msg}<div style={{fontSize:10,color:'#8a8070',marginTop:2}}>{n.time}</div></div>)}
+      </div>}
+    </div>
+  );
+}
+
+
+function KycBanner({email}){
+  const[done,setDone]=useState(false);
+  const[open,setOpen]=useState(false);
+  const[idFile,setIdFile]=useState(null);
+  const[selfieFile,setSelfieFile]=useState(null);
+  const[uploading,setUploading]=useState(false);
+  const upload=async()=>{
+    if(!idFile&&!selfieFile)return;
+    setUploading(true);
+    try{
+      const now=Date.now();
+      const up=async(file,name)=>{
+        await sb.storage.from('kyc-documents').upload(`artist/${email}/${name}`,file,{upsert:true});
+        return sb.storage.from('kyc-documents').getPublicUrl(`artist/${email}/${name}`).data?.publicUrl||'';
+      };
+      const idUrl=idFile?await up(idFile,`id_${now}.${idFile.name.split('.').pop()}`):null;
+      const selfieUrl=selfieFile?await up(selfieFile,`selfie_${now}.${selfieFile.name.split('.').pop()}`):null;
+      const updates={};
+      if(idUrl)updates.id_document_url=idUrl;
+      if(selfieUrl)updates.selfie_url=selfieUrl;
+      if(Object.keys(updates).length)await sb.from('portal_requests').update(updates).eq('email',email).eq('role','artist');
+      setDone(true);
+    }catch(e){console.error(e);}
+    setUploading(false);
+  };
+  if(done)return null;
+  return(
+    <div style={{background:'rgba(230,190,50,0.10)',border:'1.5px solid rgba(182,139,46,0.30)',borderRadius:12,padding:'14px 18px',marginBottom:16}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+        <div style={{display:'flex',gap:10,alignItems:'center'}}>
+          <span style={{fontSize:18}}>⚠️</span>
+          <div>
+            <div style={{fontSize:13,fontWeight:700,color:'#7a5c00',marginBottom:2}}>KYC Documents Required</div>
+            <div style={{fontSize:12,color:'#8a7040'}}>Please upload your ID and selfie. Artworks released once verified.</div>
+          </div>
+        </div>
+        <button onClick={()=>setOpen(o=>!o)} style={{padding:'8px 16px',borderRadius:8,border:'1px solid rgba(182,139,46,0.30)',background:'transparent',color:C.gold,cursor:'pointer',fontSize:12,fontWeight:600,fontFamily:SAN}}>
+          {open?'Hide':'Upload Documents'}
+        </button>
+      </div>
+      {open&&<div style={{marginTop:14,display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+        <div><label style={{display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:C.mid,marginBottom:6}}>ID Document</label><input type="file" accept="image/*,.pdf" onChange={e=>setIdFile(e.target.files[0])} style={{width:'100%',fontSize:12}}/></div>
+        <div><label style={{display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:C.mid,marginBottom:6}}>Selfie with ID</label><input type="file" accept="image/*" onChange={e=>setSelfieFile(e.target.files[0])} style={{width:'100%',fontSize:12}}/></div>
+        <div style={{gridColumn:'1/-1'}}><button onClick={upload} disabled={uploading||(!idFile&&!selfieFile)} style={{width:'100%',padding:11,borderRadius:10,border:'none',background:`linear-gradient(135deg,${C.gold},${C.goldD})`,color:C.white,fontSize:13,fontWeight:700,cursor:'pointer',opacity:uploading||(!idFile&&!selfieFile)?0.5:1}}>{uploading?'Uploading…':'Submit Documents'}</button></div>
+      </div>}
+    </div>
+  );
 }
 
 function ArtistDashboard({session, kycComplete=true}){
