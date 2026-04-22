@@ -167,6 +167,198 @@ function PendingScreen({email,onSignIn}) {
   );
 }
 
+// ── Terms Agreement Modal ─────────────────────────────────
+// Paste this block into each portal BEFORE the LoginScreen function
+// Terms text is customised per portal via PORTAL_TERMS constant
+
+const TERMS_VERSION = '1.0'; // bump this to force re-sign after updates
+
+function TermsModal({role, email, onAccepted}) {
+  const[signed,setSigned]=useState(false);
+  const[agreed,setAgreed]=useState(false);
+  const[saving,setSaving]=useState(false);
+  const[err,setErr]=useState('');
+  const canvasRef=useRef(null);
+  const[drawing,setDrawing]=useState(false);
+  const[hasSig,setHasSig]=useState(false);
+  const lastPos=useRef({x:0,y:0});
+
+  const getPos=(e,canvas)=>{
+    const rect=canvas.getBoundingClientRect();
+    const scaleX=canvas.width/rect.width;
+    const scaleY=canvas.height/rect.height;
+    if(e.touches){
+      return{x:(e.touches[0].clientX-rect.left)*scaleX,y:(e.touches[0].clientY-rect.top)*scaleY};
+    }
+    return{x:(e.clientX-rect.left)*scaleX,y:(e.clientY-rect.top)*scaleY};
+  };
+
+  const startDraw=(e)=>{
+    e.preventDefault();
+    const canvas=canvasRef.current;if(!canvas)return;
+    const pos=getPos(e,canvas);
+    lastPos.current=pos;
+    setDrawing(true);setHasSig(true);
+    const ctx=canvas.getContext('2d');
+    ctx.beginPath();ctx.moveTo(pos.x,pos.y);
+  };
+
+  const draw=(e)=>{
+    e.preventDefault();
+    if(!drawing)return;
+    const canvas=canvasRef.current;if(!canvas)return;
+    const pos=getPos(e,canvas);
+    const ctx=canvas.getContext('2d');
+    ctx.lineWidth=2.5;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#1a1714';
+    ctx.lineTo(pos.x,pos.y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(pos.x,pos.y);
+    lastPos.current=pos;
+  };
+
+  const endDraw=(e)=>{if(e)e.preventDefault();setDrawing(false);};
+
+  const clearSig=()=>{
+    const canvas=canvasRef.current;if(!canvas)return;
+    const ctx=canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    setHasSig(false);
+  };
+
+  const handleSign=async()=>{
+    if(!hasSig)return setErr('Please draw your signature above.');
+    if(!agreed)return setErr('Please tick the agreement checkbox.');
+    setSaving(true);setErr('');
+    const canvas=canvasRef.current;
+    const sigData=canvas.toDataURL('image/png');
+    const now=new Date().toISOString();
+    let ip='unknown';
+    try{const r=await fetch('https://api.ipify.org?format=json');const d=await r.json();ip=d.ip||'unknown';}catch{}
+    const ua=typeof navigator!=='undefined'?navigator.userAgent:'unknown';
+    try{
+      await supabase.from('portal_agreements').upsert({
+        id:crypto.randomUUID(),
+        email,
+        role,
+        signed_at:now,
+        signature_data:sigData,
+        ip_address:ip,
+        user_agent:ua,
+        terms_version:TERMS_VERSION,
+      },{onConflict:'email,role'});
+    }catch(e){console.error('Agreement save error',e);}
+    // Also store in localStorage as backup
+    try{localStorage.setItem(`vb_agreed_${role}`,JSON.stringify({email,role,signed_at:now,terms_version:TERMS_VERSION}));}catch{}
+    setSaving(false);
+    onAccepted(sigData);
+  };
+
+  const terms = role==='artist'?[
+    ['Representation','By registering, you authorise Vollard Black (Pty) Ltd to display, market, and sell your artworks through its platform, gallery network, and auction services.'],
+    ['Commission','On each sale: Artist Share 30% · Gallery Partner 40% · Vollard Black 30%. Applied to the license fee (50% of declared sale price).'],
+    ['Submissions','All artwork submissions are subject to approval. Vollard Black may decline works that do not meet quality standards.'],
+    ['Intellectual Property','You retain full copyright. You grant Vollard Black a non-exclusive licence to use artwork images for marketing and promotional purposes.'],
+    ['Authenticity','You warrant all submitted works are original, created by you, and free from third-party claims.'],
+    ['Payment','Artist shares are paid within 14 business days of a confirmed sale to the verified bank account on file.'],
+    ['Termination','Either party may terminate with 30 days written notice to concierge@vollardblack.com.'],
+  ]:role==='renter'?[
+    ['Display License','You are granted the right to display the artwork(s) at your registered premises for the duration of the agreed term.'],
+    ['License Fee','The display fee is 50% of the declared artwork value, payable in monthly instalments. Fees are due on the 25th of each month.'],
+    ['On Sale','When the artwork sells: Vollard Black retains the outstanding license fee balance from proceeds. You receive the remainder. Any surplus above original value is split 50/50.'],
+    ['Care','You agree to display the artwork safely, not to move it without written consent, and to notify Vollard Black immediately of any damage or theft.'],
+    ['Ownership','Title remains with the artist/Vollard Black until the full license fee is paid and a sale is concluded.'],
+    ['Cancellation','Either party may cancel with 30 days written notice. The artwork must be returned at your cost. Payments are non-refundable.'],
+    ['Governing Law','This agreement is governed by the laws of the Republic of South Africa.'],
+  ]:[
+    ['Platform Access','By registering, you agree to use the Vollard Black platform solely for lawful art acquisition purposes.'],
+    ['Auction Participation','Auction bids are binding. A winning bid creates a legal obligation to purchase at the bid price. Vollard Black will contact you to complete payment.'],
+    ['KYC Compliance','You confirm that all identification and personal information submitted is accurate and current. Vollard Black may request additional verification.'],
+    ['Privacy','Your personal data is held in accordance with POPIA. It will not be shared with third parties except as required to complete transactions.'],
+    ['Payments','All payments are processed securely. Vollard Black does not store card details. iKhoka is our authorised payment processor.'],
+    ['Disputes','Any dispute arising from use of this platform shall be resolved by mediation before litigation, under South African law.'],
+    ['Governing Law','This agreement is governed by the laws of the Republic of South Africa.'],
+  ];
+
+  const roleLabel=role==='artist'?'Artist Representation Agreement':role==='renter'?'Display License Agreement':'Buyer Platform Agreement';
+
+  return(
+    <div style={{position:'fixed',inset:0,background:'rgba(26,23,20,0.75)',zIndex:500,display:'flex',alignItems:'flex-start',justifyContent:'center',padding:'16px',overflowY:'auto',fontFamily:SAN}}>
+      <div style={{background:'#fff',borderRadius:20,width:'100%',maxWidth:560,marginTop:20,marginBottom:20,overflow:'hidden',boxShadow:'0 24px 64px rgba(0,0,0,0.25)'}}>
+        {/* Header */}
+        <div style={{background:'linear-gradient(135deg,#1a1714,#2a2018)',padding:'24px 28px',textAlign:'center'}}>
+          <div style={{fontFamily:SER,fontSize:12,letterSpacing:'0.30em',color:'rgba(182,139,46,0.7)',textTransform:'uppercase',marginBottom:8}}>VOLLARD BLACK</div>
+          <div style={{fontFamily:SER,fontSize:22,fontWeight:400,color:'#f5f3ef',marginBottom:4}}>{roleLabel}</div>
+          <div style={{fontSize:11,color:'rgba(245,243,239,0.50)',letterSpacing:'0.1em'}}>Version {TERMS_VERSION} · {new Date().toLocaleDateString('en-ZA',{day:'numeric',month:'long',year:'numeric'})}</div>
+        </div>
+
+        <div style={{padding:'24px 28px'}}>
+          {/* Terms */}
+          <div style={{maxHeight:260,overflowY:'auto',marginBottom:20,paddingRight:4}}>
+            {terms.map(([title,text])=>(
+              <div key={title} style={{marginBottom:14,paddingBottom:14,borderBottom:'1px solid rgba(182,139,46,0.10)'}}>
+                <div style={{fontFamily:SER,fontSize:15,color:'#1a1714',marginBottom:4,fontWeight:500}}>{title}</div>
+                <div style={{fontSize:12,color:'#4a4440',lineHeight:1.8}}>{text}</div>
+              </div>
+            ))}
+            <div style={{padding:'10px 14px',background:'rgba(182,139,46,0.06)',borderRadius:8,fontSize:11,color:'#8a6a1e',marginTop:4}}>
+              Vollard Black (Pty) Ltd · Hermanus, Western Cape, South Africa · concierge@vollardblack.com
+            </div>
+          </div>
+
+          {/* Signature pad */}
+          <div style={{marginBottom:16}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+              <label style={{fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:'#6b635a'}}>Your Signature</label>
+              {hasSig&&<button onClick={clearSig} style={{fontSize:11,color:'#c45c4a',background:'none',border:'none',cursor:'pointer',fontFamily:SAN}}>✕ Clear</button>}
+            </div>
+            <div style={{border:'1.5px solid rgba(182,139,46,0.30)',borderRadius:12,background:'#fafaf8',overflow:'hidden',position:'relative'}}>
+              <canvas
+                ref={canvasRef}
+                width={504}
+                height={140}
+                style={{width:'100%',height:140,display:'block',touchAction:'none',cursor:'crosshair'}}
+                onMouseDown={startDraw} onMouseMove={draw} onMouseUp={endDraw} onMouseLeave={endDraw}
+                onTouchStart={startDraw} onTouchMove={draw} onTouchEnd={endDraw}
+              />
+              {!hasSig&&<div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',pointerEvents:'none'}}>
+                <span style={{fontSize:13,color:'rgba(182,139,46,0.35)',fontStyle:'italic'}}>Sign here with your finger or mouse</span>
+              </div>}
+            </div>
+            <div style={{fontSize:10,color:'#8a8070',marginTop:4}}>Signed by: {email}</div>
+          </div>
+
+          {/* Checkbox */}
+          <label style={{display:'flex',alignItems:'flex-start',gap:10,cursor:'pointer',marginBottom:16,padding:'12px 14px',background:'rgba(182,139,46,0.04)',borderRadius:10,border:`1px solid ${agreed?'rgba(182,139,46,0.30)':'rgba(182,139,46,0.15)'}`}}>
+            <input type="checkbox" checked={agreed} onChange={e=>setAgreed(e.target.checked)} style={{width:16,height:16,marginTop:1,accentColor:'#b68b2e',flexShrink:0}}/>
+            <span style={{fontSize:12,color:'#2a2622',lineHeight:1.6}}>I, <strong>{email}</strong>, have read and agree to the above terms. I understand this constitutes a legally binding digital signature.</span>
+          </label>
+
+          {err&&<div style={{padding:'10px 14px',background:'rgba(196,92,74,0.08)',border:'1px solid rgba(196,92,74,0.25)',borderRadius:8,fontSize:12,color:'#c45c4a',marginBottom:12}}>{err}</div>}
+
+          <button onClick={handleSign} disabled={saving||!hasSig||!agreed} style={{width:'100%',padding:14,borderRadius:12,border:'none',background:(hasSig&&agreed)?'linear-gradient(135deg,#b68b2e,#8a6a1e)':'rgba(182,139,46,0.25)',color:(hasSig&&agreed)?'#fff':'#b68b2e',fontSize:14,fontWeight:700,cursor:(hasSig&&agreed)?'pointer':'not-allowed',fontFamily:SAN,transition:'all 0.2s',boxShadow:(hasSig&&agreed)?'0 6px 20px rgba(182,139,46,0.28)':'none'}}>
+            {saving?'Saving agreement…':'✍ Sign & Continue'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Check if user has signed terms for this role ──────────
+async function checkTermsSigned(email,role){
+  // Check DB first
+  try{
+    const{data}=await supabase.from('portal_agreements').select('signed_at,terms_version').eq('email',email).eq('role',role).single();
+    if(data&&data.terms_version===TERMS_VERSION)return true;
+  }catch{}
+  // Fallback: check localStorage
+  try{
+    const stored=JSON.parse(localStorage.getItem(`vb_agreed_${role}`)||'null');
+    if(stored&&stored.email===email&&stored.terms_version===TERMS_VERSION)return true;
+  }catch{}
+  return false;
+}
+
+const PORTAL_ROLE='buyer';
 function LoginScreen({onLogin,onRegister,role,portalLabel}){
   const[email,setEmail]=useState('');
   const[pw,setPw]=useState('');
@@ -191,12 +383,20 @@ function LoginScreen({onLogin,onRegister,role,portalLabel}){
     if(pw.length<6)return setError('Password must be at least 6 characters.');
     if(pw!==pw2)return setError('Passwords do not match.');
     setLoading(true);setError('');
-    const{data,error:e}=await supabase.auth.signUp({email:email.trim().toLowerCase(),password:pw,options:{emailRedirectTo:typeof window!=='undefined'?window.location.href:''}});
-    if(e){setLoading(false);return setError(e.message);}
-    await supabase.from('portal_requests').upsert({id:crypto.randomUUID(),email:email.trim().toLowerCase(),role:'buyer',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'}).catch(()=>{});
+    const emailClean=email.trim().toLowerCase();
+    let sess=null;
+    const{data:upData,error:upErr}=await supabase.auth.signUp({email:emailClean,password:pw,options:{emailRedirectTo:typeof window!=='undefined'?window.location.href:''}});
+    if(upErr){
+      if(upErr.message.toLowerCase().includes('already')){
+        const{data:inData,error:inErr}=await supabase.auth.signInWithPassword({email:emailClean,password:pw});
+        if(inErr){setLoading(false);return setError('This email already has an account. Use your existing password to sign in, or click "Forgot password?" to reset it.');}
+        sess=inData?.session;
+      } else {setLoading(false);return setError(upErr.message);}
+    } else {sess=upData?.session;}
+    await supabase.from('portal_requests').upsert({id:crypto.randomUUID(),email:emailClean,role:PORTAL_ROLE,status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'}).catch(()=>{});
     setLoading(false);
-    if(data?.session){onLogin(data.session);}
-    else{setMsg('Account created! Check your email to confirm, then sign in.');setMode('login');}
+    if(sess){onLogin(sess);}
+    else{setMsg('Check your email to confirm your account, then sign in here.');setMode('login');}
   };
 
   const handleReset=async()=>{
@@ -572,6 +772,7 @@ function pushNotif(title, body, tag) {
 }
 
 function BuyerDashboard({session}) {
+  const [termsSigned,setTermsSigned]=useState(null);
   const [tab,setTab] = useState('gallery');
   const [buyer,setBuyer] = useState(null);
   const [artworks,setArtworks] = useState([]);
@@ -612,6 +813,11 @@ function BuyerDashboard({session}) {
   },[]);
 
   useEffect(()=>{ loadData(true); },[session]);
+
+  useEffect(()=>{
+    if(!session)return;
+    checkTermsSigned(session.user.email,PORTAL_ROLE).then(signed=>setTermsSigned(signed));
+  },[session]);
 
   useEffect(()=>{
     if(typeof window==='undefined') return;
@@ -818,6 +1024,9 @@ function BuyerDashboard({session}) {
       </div>
     </div>
   );
+
+  if(termsSigned===null)return<div style={{minHeight:'100vh',background:'#f5f3ef',display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,color:'#b68b2e',opacity:0.6}}>Loading…</div></div>;
+  if(termsSigned===false)return<TermsModal role={PORTAL_ROLE} email={session.user.email} onAccepted={sig=>{setTermsSigned(true);}}/>;
 
   return (
     <div style={S.page}>
