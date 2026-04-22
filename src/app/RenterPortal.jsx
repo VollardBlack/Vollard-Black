@@ -1,308 +1,148 @@
 'use client';
-import KYCRegistration from './KYCRegistration';
 import { useState, useEffect, useRef } from "react";
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const supabase = supabaseUrl && supabaseKey
-  ? createClient(supabaseUrl, supabaseKey, { auth: { autoRefreshToken: true, persistSession: true } })
-  : null;
+const sUrl = process.env.NEXT_PUBLIC_SUPABASE_URL||'';
+const sKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY||'';
+const sb = sUrl&&sKey ? createClient(sUrl,sKey,{auth:{autoRefreshToken:true,persistSession:true}}) : null;
 
-const fmt = n => Number(n||0).toLocaleString('en-ZA',{minimumFractionDigits:2,maximumFractionDigits:2});
-const toCamel = obj => { if(!obj||typeof obj!=='object'||Array.isArray(obj))return obj; const o={}; for(const[k,v]of Object.entries(obj))o[k.replace(/_([a-z])/g,(_,c)=>c.toUpperCase())]=v; return o; };
-const toSnake = obj => { if(!obj||typeof obj!=='object')return obj; const o={}; for(const[k,v]of Object.entries(obj))o[k.replace(/[A-Z]/g,m=>'_'+m.toLowerCase())]=v; return o; };
+const fmt = n=>Number(n||0).toLocaleString('en-ZA',{minimumFractionDigits:2,maximumFractionDigits:2});
+const toCamel = o=>{if(!o||typeof o!=='object'||Array.isArray(o))return o;const r={};for(const[k,v]of Object.entries(o))r[k.replace(/_([a-z])/g,(_,c)=>c.toUpperCase())]=v;return r;};
+const toSnake = o=>{if(!o||typeof o!=='object')return o;const r={};for(const[k,v]of Object.entries(o))r[k.replace(/[A-Z]/g,m=>'_'+m.toLowerCase())]=v;return r;};
+const G={gold:'#b68b2e',goldD:'#8a6a1e',cream:'#f5f3ef',dark:'#1a1714',mid:'#6b635a',light:'#8a8070',red:'#c45c4a',green:'#4a9e6b',greenD:'#2d7a4a',white:'#ffffff'};
+const F={ser:"'Cormorant Garamond',serif",san:"'DM Sans',sans-serif"};
+const INP={width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:G.dark,fontFamily:F.san,fontSize:14,outline:'none',boxSizing:'border-box'};
+const LBL={display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:G.mid,marginBottom:8};
+const CARD={background:G.white,border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16};
+const CP={padding:'20px'};
+const SH={fontSize:10,fontWeight:700,letterSpacing:'0.20em',textTransform:'uppercase',color:G.gold,marginBottom:14,paddingBottom:10,borderBottom:'1px solid rgba(182,139,46,0.12)'};
 
-const C={gold:'#b68b2e',goldD:'#8a6a1e',goldL:'rgba(182,139,46,0.12)',goldB:'rgba(182,139,46,0.22)',cream:'#f5f3ef',dark:'#1a1714',mid:'#6b635a',light:'#8a8070',red:'#c45c4a',green:'#4a9e6b',greenD:'#2d7a4a',blue:'#648cc8',white:'#ffffff'};
-const SER="'Cormorant Garamond',serif";
-const SAN="'DM Sans',sans-serif";
-const inp = {width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:'#1a1714',fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box'};
-const lbl = {display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:'#6b635a',marginBottom:8};
-const CARD = {background:'#ffffff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16};
-const CP = {padding:'20px'};
-const SH = {fontSize:10,fontWeight:700,letterSpacing:'0.20em',textTransform:'uppercase',color:'#b68b2e',marginBottom:14,paddingBottom:10,borderBottom:'1px solid rgba(182,139,46,0.12)'};
+function Logo(){return(<div style={{textAlign:'center',marginBottom:32}}><div style={{fontFamily:F.ser,fontSize:32,fontWeight:300,letterSpacing:10,color:G.dark}}>VOLLARD <span style={{color:G.gold}}>BLACK</span></div><div style={{fontSize:10,letterSpacing:4,textTransform:'uppercase',color:G.light,marginTop:6}}>LICENSE HOLDER PORTAL</div><div style={{width:40,height:1,background:'rgba(182,139,46,0.4)',margin:'12px auto 0'}}/></div>);}
 
-function Logo({sub}){return(<div style={{textAlign:'center',marginBottom:40}}><div style={{fontFamily:SER,fontSize:36,fontWeight:300,letterSpacing:10,color:C.dark}}>VOLLARD <span style={{color:C.gold}}>BLACK</span></div><div style={{fontSize:10,letterSpacing:4,textTransform:'uppercase',color:C.light,marginTop:6}}>{sub}</div><div style={{width:40,height:1,background:'rgba(182,139,46,0.4)',margin:'16px auto 0'}}/></div>);}
+function NotApprovedScreen({onSignOut}){return(<div style={{minHeight:'100vh',background:G.cream,display:'flex',alignItems:'center',justifyContent:'center',padding:20,fontFamily:F.san}}><div style={{width:'100%',maxWidth:420,textAlign:'center'}}><Logo/><div style={{...CARD,padding:36}}><div style={{fontSize:48,marginBottom:12}}>⏳</div><div style={{fontFamily:F.ser,fontSize:22,color:G.dark,marginBottom:8}}>Pending Approval</div><div style={{fontSize:13,color:G.mid,lineHeight:1.8,marginBottom:20}}>Your application is under review. Vollard Black will activate your account shortly. Contact <strong>concierge@vollardblack.com</strong> for immediate assistance.</div><button onClick={onSignOut} style={{padding:'11px 24px',borderRadius:24,border:'1px solid rgba(182,139,46,0.28)',background:'transparent',color:G.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:F.san}}>Sign Out</button></div></div></div>);}
 
-function PendingScreen({email,onSignIn}){return(<div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center',padding:20,fontFamily:SAN}}><div style={{width:'100%',maxWidth:420,textAlign:'center'}}><Logo sub="License Holder Portal"/><div style={{background:C.white,border:`1px solid ${C.goldB}`,borderRadius:16,padding:40}}><div style={{fontSize:48,marginBottom:16}}>◆</div><div style={{fontFamily:SER,fontSize:24,color:C.dark,marginBottom:12}}>Request Submitted</div><div style={{fontSize:14,color:C.mid,lineHeight:1.8,marginBottom:24}}>Thank you. Vollard Black is reviewing your application.<br/><strong>{email}</strong></div><button onClick={onSignIn} style={{padding:'12px 28px',borderRadius:24,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:SAN}}>Sign In</button></div></div></div>);}
-function NotApprovedScreen({onSignOut}){return(<div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center',padding:20,fontFamily:SAN}}><div style={{width:'100%',maxWidth:420,textAlign:'center'}}><Logo sub="License Holder Portal"/><div style={{background:C.white,border:`1px solid ${C.goldB}`,borderRadius:16,padding:40}}><div style={{fontSize:48,marginBottom:16}}>⏳</div><div style={{fontFamily:SER,fontSize:24,color:C.dark,marginBottom:12}}>Pending Approval</div><div style={{fontSize:14,color:C.mid,lineHeight:1.8,marginBottom:24}}>Your application is under review. You'll be notified once approved.</div><button onClick={onSignOut} style={{padding:'12px 28px',borderRadius:24,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:SAN}}>Sign Out</button></div></div></div>);}
+function AuthScreen({onAuth}){
+  const[mode,setMode]=useState('login');
+  const[email,setEmail]=useState('');
+  const[pw,setPw]=useState('');
+  const[pw2,setPw2]=useState('');
+  const[showPw,setShowPw]=useState(false);
+  const[loading,setLoading]=useState(false);
+  const[error,setError]=useState('');
+  const[msg,setMsg]=useState('');
 
-// ── Terms Agreement Modal ─────────────────────────────────
-// Paste this block into each portal BEFORE the LoginScreen function
-// Terms text is customised per portal via PORTAL_TERMS constant
+  const signIn=async()=>{
+    if(!email||!pw)return setError('Please enter your email and password.');
+    setLoading(true);setError('');
+    const{data,error:e}=await sb.auth.signInWithPassword({email:email.trim().toLowerCase(),password:pw});
+    setLoading(false);
+    if(e)return setError('Incorrect email or password. Please try again.');
+    onAuth(data.session);
+  };
 
-const TERMS_VERSION = '1.0'; // bump this to force re-sign after updates
-
-function TermsModal({role, email, onAccepted}) {
-  const[signed,setSigned]=useState(false);
-  const[agreed,setAgreed]=useState(false);
-  const[saving,setSaving]=useState(false);
-  const[err,setErr]=useState('');
-  const canvasRef=useRef(null);
-  const[drawing,setDrawing]=useState(false);
-  const[hasSig,setHasSig]=useState(false);
-  const lastPos=useRef({x:0,y:0});
-
-  const getPos=(e,canvas)=>{
-    const rect=canvas.getBoundingClientRect();
-    const scaleX=canvas.width/rect.width;
-    const scaleY=canvas.height/rect.height;
-    if(e.touches){
-      return{x:(e.touches[0].clientX-rect.left)*scaleX,y:(e.touches[0].clientY-rect.top)*scaleY};
+  const signUp=async()=>{
+    if(!email||!pw)return setError('Please enter your email and password.');
+    if(pw.length<6)return setError('Password must be at least 6 characters.');
+    if(pw!==pw2)return setError('Passwords do not match.');
+    setLoading(true);setError('');
+    const emailClean=email.trim().toLowerCase();
+    const{data,error:e}=await sb.auth.signUp({email:emailClean,password:pw});
+    if(e&&e.message.toLowerCase().includes('already')){
+      const{data:d2,error:e2}=await sb.auth.signInWithPassword({email:emailClean,password:pw});
+      if(e2){setLoading(false);return setError('An account with this email already exists. Use your existing password to sign in.');}
+      await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email:emailClean,role:'renter',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'}).catch(()=>{});
+      setLoading(false);return onAuth(d2.session);
     }
-    return{x:(e.clientX-rect.left)*scaleX,y:(e.clientY-rect.top)*scaleY};
+    if(e){setLoading(false);return setError(e.message);}
+    await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email:emailClean,role:'renter',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'}).catch(()=>{});
+    setLoading(false);
+    if(data?.session)return onAuth(data.session);
+    setMsg('Account created! Check your email to confirm, then sign in.');
+    setMode('login');setPw('');setPw2('');
   };
 
-  const startDraw=(e)=>{
-    e.preventDefault();
-    const canvas=canvasRef.current;if(!canvas)return;
-    const pos=getPos(e,canvas);
-    lastPos.current=pos;
-    setDrawing(true);setHasSig(true);
-    const ctx=canvas.getContext('2d');
-    ctx.beginPath();ctx.moveTo(pos.x,pos.y);
+  const resetPw=async()=>{
+    if(!email)return setError('Enter your email address first.');
+    setLoading(true);
+    await sb.auth.resetPasswordForEmail(email.trim().toLowerCase());
+    setLoading(false);
+    setMsg('Password reset email sent. Check your inbox.');
+    setMode('login');
   };
-
-  const draw=(e)=>{
-    e.preventDefault();
-    if(!drawing)return;
-    const canvas=canvasRef.current;if(!canvas)return;
-    const pos=getPos(e,canvas);
-    const ctx=canvas.getContext('2d');
-    ctx.lineWidth=2.5;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#1a1714';
-    ctx.lineTo(pos.x,pos.y);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(pos.x,pos.y);
-    lastPos.current=pos;
-  };
-
-  const endDraw=(e)=>{if(e)e.preventDefault();setDrawing(false);};
-
-  const clearSig=()=>{
-    const canvas=canvasRef.current;if(!canvas)return;
-    const ctx=canvas.getContext('2d');
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    setHasSig(false);
-  };
-
-  const handleSign=async()=>{
-    if(!hasSig)return setErr('Please draw your signature above.');
-    if(!agreed)return setErr('Please tick the agreement checkbox.');
-    setSaving(true);setErr('');
-    const canvas=canvasRef.current;
-    const sigData=canvas.toDataURL('image/png');
-    const now=new Date().toISOString();
-    let ip='unknown';
-    try{const r=await fetch('https://api.ipify.org?format=json');const d=await r.json();ip=d.ip||'unknown';}catch{}
-    const ua=typeof navigator!=='undefined'?navigator.userAgent:'unknown';
-    try{
-      await supabase.from('portal_agreements').upsert({
-        id:crypto.randomUUID(),
-        email,
-        role,
-        signed_at:now,
-        signature_data:sigData,
-        ip_address:ip,
-        user_agent:ua,
-        terms_version:TERMS_VERSION,
-      },{onConflict:'email,role'});
-    }catch(e){console.error('Agreement save error',e);}
-    // Also store in localStorage as backup
-    try{localStorage.setItem(`vb_agreed_${role}`,JSON.stringify({email,role,signed_at:now,terms_version:TERMS_VERSION}));}catch{}
-    setSaving(false);
-    onAccepted(sigData);
-  };
-
-  const terms = role==='artist'?[
-    ['Representation','By registering, you authorise Vollard Black (Pty) Ltd to display, market, and sell your artworks through its platform, gallery network, and auction services.'],
-    ['Commission','On each sale: Artist Share 30% · Gallery Partner 40% · Vollard Black 30%. Applied to the license fee (50% of declared sale price).'],
-    ['Submissions','All artwork submissions are subject to approval. Vollard Black may decline works that do not meet quality standards.'],
-    ['Intellectual Property','You retain full copyright. You grant Vollard Black a non-exclusive licence to use artwork images for marketing and promotional purposes.'],
-    ['Authenticity','You warrant all submitted works are original, created by you, and free from third-party claims.'],
-    ['Payment','Artist shares are paid within 14 business days of a confirmed sale to the verified bank account on file.'],
-    ['Termination','Either party may terminate with 30 days written notice to concierge@vollardblack.com.'],
-  ]:role==='renter'?[
-    ['Display License','You are granted the right to display the artwork(s) at your registered premises for the duration of the agreed term.'],
-    ['License Fee','The display fee is 50% of the declared artwork value, payable in monthly instalments. Fees are due on the 25th of each month.'],
-    ['On Sale','When the artwork sells: Vollard Black retains the outstanding license fee balance from proceeds. You receive the remainder. Any surplus above original value is split 50/50.'],
-    ['Care','You agree to display the artwork safely, not to move it without written consent, and to notify Vollard Black immediately of any damage or theft.'],
-    ['Ownership','Title remains with the artist/Vollard Black until the full license fee is paid and a sale is concluded.'],
-    ['Cancellation','Either party may cancel with 30 days written notice. The artwork must be returned at your cost. Payments are non-refundable.'],
-    ['Governing Law','This agreement is governed by the laws of the Republic of South Africa.'],
-  ]:[
-    ['Platform Access','By registering, you agree to use the Vollard Black platform solely for lawful art acquisition purposes.'],
-    ['Auction Participation','Auction bids are binding. A winning bid creates a legal obligation to purchase at the bid price. Vollard Black will contact you to complete payment.'],
-    ['KYC Compliance','You confirm that all identification and personal information submitted is accurate and current. Vollard Black may request additional verification.'],
-    ['Privacy','Your personal data is held in accordance with POPIA. It will not be shared with third parties except as required to complete transactions.'],
-    ['Payments','All payments are processed securely. Vollard Black does not store card details. iKhoka is our authorised payment processor.'],
-    ['Disputes','Any dispute arising from use of this platform shall be resolved by mediation before litigation, under South African law.'],
-    ['Governing Law','This agreement is governed by the laws of the Republic of South Africa.'],
-  ];
-
-  const roleLabel=role==='artist'?'Artist Representation Agreement':role==='renter'?'Display License Agreement':'Buyer Platform Agreement';
 
   return(
-    <div style={{position:'fixed',inset:0,background:'rgba(26,23,20,0.75)',zIndex:500,display:'flex',alignItems:'flex-start',justifyContent:'center',padding:'16px',overflowY:'auto',fontFamily:SAN}}>
-      <div style={{background:'#fff',borderRadius:20,width:'100%',maxWidth:560,marginTop:20,marginBottom:20,overflow:'hidden',boxShadow:'0 24px 64px rgba(0,0,0,0.25)'}}>
-        {/* Header */}
-        <div style={{background:'linear-gradient(135deg,#1a1714,#2a2018)',padding:'24px 28px',textAlign:'center'}}>
-          <div style={{fontFamily:SER,fontSize:12,letterSpacing:'0.30em',color:'rgba(182,139,46,0.7)',textTransform:'uppercase',marginBottom:8}}>VOLLARD BLACK</div>
-          <div style={{fontFamily:SER,fontSize:22,fontWeight:400,color:'#f5f3ef',marginBottom:4}}>{roleLabel}</div>
-          <div style={{fontSize:11,color:'rgba(245,243,239,0.50)',letterSpacing:'0.1em'}}>Version {TERMS_VERSION} · {new Date().toLocaleDateString('en-ZA',{day:'numeric',month:'long',year:'numeric'})}</div>
-        </div>
-
-        <div style={{padding:'24px 28px'}}>
-          {/* Terms */}
-          <div style={{maxHeight:260,overflowY:'auto',marginBottom:20,paddingRight:4}}>
-            {terms.map(([title,text])=>(
-              <div key={title} style={{marginBottom:14,paddingBottom:14,borderBottom:'1px solid rgba(182,139,46,0.10)'}}>
-                <div style={{fontFamily:SER,fontSize:15,color:'#1a1714',marginBottom:4,fontWeight:500}}>{title}</div>
-                <div style={{fontSize:12,color:'#4a4440',lineHeight:1.8}}>{text}</div>
-              </div>
+    <div style={{minHeight:'100vh',background:G.cream,display:'flex',alignItems:'center',justifyContent:'center',padding:20,fontFamily:F.san}}>
+      <div style={{width:'100%',maxWidth:420}}>
+        <Logo/>
+        <div style={{...CARD,padding:28}}>
+          <div style={{display:'flex',gap:4,marginBottom:24,background:'#f7f5f1',padding:4,borderRadius:10}}>
+            {[['login','Sign In'],['signup','Create Account']].map(([m,l])=>(
+              <button key={m} onClick={()=>{setMode(m);setError('');setMsg('');}} style={{flex:1,padding:'9px 0',borderRadius:8,border:'none',background:mode===m?G.white:'transparent',color:mode===m?G.dark:G.light,fontWeight:mode===m?700:400,cursor:'pointer',fontSize:13,fontFamily:F.san,boxShadow:mode===m?'0 1px 4px rgba(0,0,0,0.08)':'none'}}>{l}</button>
             ))}
-            <div style={{padding:'10px 14px',background:'rgba(182,139,46,0.06)',borderRadius:8,fontSize:11,color:'#8a6a1e',marginTop:4}}>
-              Vollard Black (Pty) Ltd · Hermanus, Western Cape, South Africa · concierge@vollardblack.com
-            </div>
           </div>
-
-          {/* Signature pad */}
-          <div style={{marginBottom:16}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-              <label style={{fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:'#6b635a'}}>Your Signature</label>
-              {hasSig&&<button onClick={clearSig} style={{fontSize:11,color:'#c45c4a',background:'none',border:'none',cursor:'pointer',fontFamily:SAN}}>✕ Clear</button>}
+          {error&&<div style={{padding:'11px 14px',background:'rgba(196,92,74,0.08)',border:'1px solid rgba(196,92,74,0.25)',borderRadius:10,fontSize:13,color:G.red,marginBottom:16}}>{error}</div>}
+          {msg&&<div style={{padding:'11px 14px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.25)',borderRadius:10,fontSize:13,color:G.greenD,marginBottom:16}}>{msg}</div>}
+          {mode==='reset'?(
+            <div>
+              <div style={{fontFamily:F.ser,fontSize:18,color:G.dark,marginBottom:16}}>Reset Password</div>
+              <div style={{marginBottom:16}}><label style={LBL}>Email</label><input type="email" value={email} onChange={e=>setEmail(e.target.value)} style={INP}/></div>
+              <button onClick={resetPw} disabled={loading} style={{width:'100%',padding:14,borderRadius:12,border:'none',background:`linear-gradient(135deg,${G.gold},${G.goldD})`,color:G.white,fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:F.san,opacity:loading?0.6:1,marginBottom:10}}>{loading?'Sending…':'Send Reset Email'}</button>
+              <button onClick={()=>{setMode('login');setError('');}} style={{width:'100%',padding:10,borderRadius:8,border:'none',background:'transparent',color:G.light,fontSize:13,cursor:'pointer',fontFamily:F.san}}>← Back to Sign In</button>
             </div>
-            <div style={{border:'1.5px solid rgba(182,139,46,0.30)',borderRadius:12,background:'#fafaf8',overflow:'hidden',position:'relative'}}>
-              <canvas
-                ref={canvasRef}
-                width={504}
-                height={140}
-                style={{width:'100%',height:140,display:'block',touchAction:'none',cursor:'crosshair'}}
-                onMouseDown={startDraw} onMouseMove={draw} onMouseUp={endDraw} onMouseLeave={endDraw}
-                onTouchStart={startDraw} onTouchMove={draw} onTouchEnd={endDraw}
-              />
-              {!hasSig&&<div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',pointerEvents:'none'}}>
-                <span style={{fontSize:13,color:'rgba(182,139,46,0.35)',fontStyle:'italic'}}>Sign here with your finger or mouse</span>
-              </div>}
+          ):(
+            <div>
+              <div style={{marginBottom:16}}><label style={LBL}>Email</label><input type="email" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==='Enter'&&mode==='login'&&signIn()} style={INP} placeholder="you@email.com" autoComplete="email"/></div>
+              <div style={{marginBottom:mode==='signup'?16:20}}><label style={LBL}>Password</label>
+                <div style={{position:'relative'}}><input type={showPw?'text':'password'} value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==='Enter'&&mode==='login'&&signIn()} style={{...INP,paddingRight:60}} autoComplete={mode==='login'?'current-password':'new-password'}/><button type="button" onClick={()=>setShowPw(p=>!p)} style={{position:'absolute',right:14,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',color:G.light,cursor:'pointer',fontSize:12,fontFamily:F.san,fontWeight:600}}>{showPw?'Hide':'Show'}</button></div>
+              </div>
+              {mode==='signup'&&<div style={{marginBottom:20}}><label style={LBL}>Confirm Password</label><input type={showPw?'text':'password'} value={pw2} onChange={e=>setPw2(e.target.value)} style={INP} autoComplete="new-password"/></div>}
+              <button onClick={mode==='login'?signIn:signUp} disabled={loading} style={{width:'100%',padding:14,borderRadius:12,border:'none',background:`linear-gradient(135deg,${G.gold},${G.goldD})`,color:G.white,fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:F.san,opacity:loading?0.6:1,boxShadow:'0 6px 20px rgba(182,139,46,0.25)',marginBottom:12}}>
+                {loading?(mode==='login'?'Signing in…':'Creating account…'):(mode==='login'?'Sign In':'Create Account')}
+              </button>
+              {mode==='login'&&<div style={{textAlign:'center'}}><button onClick={()=>{setMode('reset');setError('');setMsg('');}} style={{background:'none',border:'none',color:G.light,cursor:'pointer',fontSize:12,fontFamily:F.san}}>Forgot password?</button></div>}
+              {mode==='signup'&&<div style={{fontSize:11,color:G.light,textAlign:'center',lineHeight:1.6,marginTop:4}}>After registering, Vollard Black will review and approve your account.</div>}
             </div>
-            <div style={{fontSize:10,color:'#8a8070',marginTop:4}}>Signed by: {email}</div>
-          </div>
-
-          {/* Checkbox */}
-          <label style={{display:'flex',alignItems:'flex-start',gap:10,cursor:'pointer',marginBottom:16,padding:'12px 14px',background:'rgba(182,139,46,0.04)',borderRadius:10,border:`1px solid ${agreed?'rgba(182,139,46,0.30)':'rgba(182,139,46,0.15)'}`}}>
-            <input type="checkbox" checked={agreed} onChange={e=>setAgreed(e.target.checked)} style={{width:16,height:16,marginTop:1,accentColor:'#b68b2e',flexShrink:0}}/>
-            <span style={{fontSize:12,color:'#2a2622',lineHeight:1.6}}>I, <strong>{email}</strong>, have read and agree to the above terms. I understand this constitutes a legally binding digital signature.</span>
-          </label>
-
-          {err&&<div style={{padding:'10px 14px',background:'rgba(196,92,74,0.08)',border:'1px solid rgba(196,92,74,0.25)',borderRadius:8,fontSize:12,color:'#c45c4a',marginBottom:12}}>{err}</div>}
-
-          <button onClick={handleSign} disabled={saving||!hasSig||!agreed} style={{width:'100%',padding:14,borderRadius:12,border:'none',background:(hasSig&&agreed)?'linear-gradient(135deg,#b68b2e,#8a6a1e)':'rgba(182,139,46,0.25)',color:(hasSig&&agreed)?'#fff':'#b68b2e',fontSize:14,fontWeight:700,cursor:(hasSig&&agreed)?'pointer':'not-allowed',fontFamily:SAN,transition:'all 0.2s',boxShadow:(hasSig&&agreed)?'0 6px 20px rgba(182,139,46,0.28)':'none'}}>
-            {saving?'Saving agreement…':'✍ Sign & Continue'}
-          </button>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-// ── Check if user has signed terms for this role ──────────
-async function checkTermsSigned(email,role){
-  // Check DB first
-  try{
-    const{data}=await supabase.from('portal_agreements').select('signed_at,terms_version').eq('email',email).eq('role',role).single();
-    if(data&&data.terms_version===TERMS_VERSION)return true;
-  }catch{}
-  // Fallback: check localStorage
-  try{
-    const stored=JSON.parse(localStorage.getItem(`vb_agreed_${role}`)||'null');
-    if(stored&&stored.email===email&&stored.terms_version===TERMS_VERSION)return true;
-  }catch{}
-  return false;
-}
-
-const PORTAL_ROLE='renter';
-function LoginScreen({onLogin,onRegister,role,portalLabel}){
-  const[email,setEmail]=useState('');
-  const[pw,setPw]=useState('');
-  const[pw2,setPw2]=useState('');
-  const[mode,setMode]=useState('login');
-  const[loading,setLoading]=useState(false);
-  const[error,setError]=useState('');
-  const[msg,setMsg]=useState('');
-  const[showPw,setShowPw]=useState(false);
-
-  const handleLogin=async()=>{
-    if(!email||!pw)return setError('Enter your email and password.');
-    setLoading(true);setError('');
-    const{data,error:e}=await supabase.auth.signInWithPassword({email:email.trim().toLowerCase(),password:pw});
-    setLoading(false);
-    if(e)setError(e.message==='Invalid login credentials'?'Email or password incorrect. Try again or create an account.':e.message);
-    else onLogin(data.session);
+const TERMS_VERSION='1.0';
+function TermsModal({email,onAccepted}){
+  const[agreed,setAgreed]=useState(false);
+  const[hasSig,setHasSig]=useState(false);
+  const[drawing,setDrawing]=useState(false);
+  const[saving,setSaving]=useState(false);
+  const[err,setErr]=useState('');
+  const canvasRef=useRef(null);
+  const getPos=(e,c)=>{const r=c.getBoundingClientRect(),sx=c.width/r.width,sy=c.height/r.height;return e.touches?{x:(e.touches[0].clientX-r.left)*sx,y:(e.touches[0].clientY-r.top)*sy}:{x:(e.clientX-r.left)*sx,y:(e.clientY-r.top)*sy};};
+  const onDown=e=>{e.preventDefault();const c=canvasRef.current;if(!c)return;const p=getPos(e,c);const ctx=c.getContext('2d');ctx.beginPath();ctx.moveTo(p.x,p.y);setDrawing(true);setHasSig(true);};
+  const onMove=e=>{e.preventDefault();if(!drawing)return;const c=canvasRef.current;if(!c)return;const p=getPos(e,c);const ctx=c.getContext('2d');ctx.lineWidth=2.5;ctx.lineCap='round';ctx.strokeStyle=G.dark;ctx.lineTo(p.x,p.y);ctx.stroke();ctx.beginPath();ctx.moveTo(p.x,p.y);};
+  const onUp=e=>{if(e)e.preventDefault();setDrawing(false);};
+  const clear=()=>{const c=canvasRef.current;if(!c)return;c.getContext('2d').clearRect(0,0,c.width,c.height);setHasSig(false);};
+  const sign=async()=>{
+    if(!hasSig)return setErr('Please draw your signature.');
+    if(!agreed)return setErr('Please tick the checkbox to agree.');
+    setSaving(true);
+    const sig=canvasRef.current.toDataURL('image/png');
+    const now=new Date().toISOString();
+    try{await sb.from('portal_agreements').upsert({id:crypto.randomUUID(),email,role:'renter',signed_at:now,signature_data:sig,user_agent:navigator.userAgent,terms_version:TERMS_VERSION},{onConflict:'email,role'});}catch(e){console.error(e);}
+    try{localStorage.setItem('vb_terms_renter',JSON.stringify({email,v:TERMS_VERSION}));}catch{}
+    setSaving(false);onAccepted();
   };
-
-  const handleSignUp=async()=>{
-    if(!email||!pw)return setError('Enter your email and password.');
-    if(pw.length<6)return setError('Password must be at least 6 characters.');
-    if(pw!==pw2)return setError('Passwords do not match.');
-    setLoading(true);setError('');
-    const emailClean=email.trim().toLowerCase();
-    let sess=null;
-    const{data:upData,error:upErr}=await supabase.auth.signUp({email:emailClean,password:pw,options:{emailRedirectTo:typeof window!=='undefined'?window.location.href:''}});
-    if(upErr){
-      if(upErr.message.toLowerCase().includes('already')){
-        const{data:inData,error:inErr}=await supabase.auth.signInWithPassword({email:emailClean,password:pw});
-        if(inErr){setLoading(false);return setError('This email already has an account. Use your existing password to sign in, or click "Forgot password?" to reset it.');}
-        sess=inData?.session;
-      } else {setLoading(false);return setError(upErr.message);}
-    } else {sess=upData?.session;}
-    await supabase.from('portal_requests').upsert({id:crypto.randomUUID(),email:emailClean,role:PORTAL_ROLE,status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'}).catch(()=>{});
-    setLoading(false);
-    if(sess){onLogin(sess);}
-    else{setMsg('Check your email to confirm your account, then sign in here.');setMode('login');}
-  };
-
-  const handleReset=async()=>{
-    if(!email)return setError('Enter your email address first.');
-    setLoading(true);setError('');
-    const{error:e}=await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(),{redirectTo:typeof window!=='undefined'?window.location.href:''});
-    setLoading(false);
-    if(e)setError(e.message);
-    else{setMsg('Password reset email sent — check your inbox.');setMode('login');}
-  };
-
-  const INP={width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:'#1a1714',fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box'};
-
+  const terms=[['Display License','You are granted the right to display the artwork(s) at your registered premises for the duration of the agreed term.'],['License Fee','The display fee is 50% of the declared artwork value, payable in monthly instalments. Fees are due on the 25th of each month.'],['On Sale','When the artwork sells: Vollard Black retains the outstanding license fee balance from proceeds. You receive the remainder. Any surplus above original value is split 50/50.'],['Care','You agree to display the artwork safely, not to move it without written consent, and to notify Vollard Black immediately of any damage or theft.'],['Ownership','Title remains with the artist/Vollard Black until the full license fee is paid and a sale is concluded.'],['Cancellation','Either party may cancel with 30 days written notice. The artwork must be returned at your cost. Payments are non-refundable.'],['Governing Law','This agreement is governed by the laws of the Republic of South Africa.']];
   return(
-    <div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center',padding:20,fontFamily:SAN}}>
-      <div style={{width:'100%',maxWidth:420}}>
-        <Logo sub={'License Holder Portal'}/>
-        <div style={{...CARD,padding:32}}>
-          <div style={{display:'flex',gap:4,marginBottom:24,background:'#f7f5f1',padding:4,borderRadius:10}}>
-            {[['login','Sign In'],['signup','Create Account']].map(([m,l])=>(
-              <button key={m} onClick={()=>{setMode(m);setError('');setMsg('');}} style={{flex:1,padding:'9px 0',borderRadius:8,border:'none',background:mode===m?'#fff':'transparent',color:mode===m?'#1a1714':'#8a8070',fontWeight:mode===m?700:400,cursor:'pointer',fontSize:13,fontFamily:SAN,boxShadow:mode===m?'0 1px 4px rgba(0,0,0,0.08)':'none'}}>{l}</button>
-            ))}
-          </div>
-          {error&&<div style={{padding:'12px 16px',background:'rgba(196,92,74,0.08)',border:'1px solid rgba(196,92,74,0.25)',borderRadius:10,fontSize:13,color:'#c45c4a',marginBottom:16}}>{error}</div>}
-          {msg&&<div style={{padding:'12px 16px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.25)',borderRadius:10,fontSize:13,color:'#2d7a4a',marginBottom:16}}>{msg}</div>}
-          {mode==='reset'?(
-            <div>
-              <div style={{fontFamily:SER,fontSize:18,color:'#1a1714',marginBottom:16}}>Reset Password</div>
-              <div style={{marginBottom:16}}><label style={lbl}>Email</label><input type="email" value={email} onChange={e=>setEmail(e.target.value)} style={INP}/></div>
-              <button onClick={handleReset} disabled={loading} style={{width:'100%',padding:14,borderRadius:12,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:SAN,opacity:loading?0.6:1,marginBottom:10}}>{loading?'Sending…':'Send Reset Email'}</button>
-              <button onClick={()=>{setMode('login');setError('');}} style={{width:'100%',padding:10,borderRadius:8,border:'none',background:'transparent',color:'#8a8070',fontSize:13,cursor:'pointer',fontFamily:SAN}}>← Back to Sign In</button>
-            </div>
-          ):(
-            <div>
-              <div style={{marginBottom:16}}><label style={lbl}>Email</label><input type="email" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==='Enter'&&mode==='login'&&handleLogin()} style={INP} autoComplete="email" placeholder="you@email.com"/></div>
-              <div style={{marginBottom:mode==='signup'?16:20}}><label style={lbl}>Password</label>
-                <div style={{position:'relative'}}><input type={showPw?'text':'password'} value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==='Enter'&&mode==='login'&&handleLogin()} style={{...INP,paddingRight:60}} autoComplete={mode==='login'?'current-password':'new-password'}/><button type="button" onClick={()=>setShowPw(p=>!p)} style={{position:'absolute',right:14,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',color:'#8a8070',cursor:'pointer',fontSize:12,fontFamily:SAN,fontWeight:600}}>{showPw?'Hide':'Show'}</button></div>
-              </div>
-              {mode==='signup'&&<div style={{marginBottom:20}}><label style={lbl}>Confirm Password</label><input type={showPw?'text':'password'} value={pw2} onChange={e=>setPw2(e.target.value)} style={INP} autoComplete="new-password"/></div>}
-              <button onClick={mode==='login'?handleLogin:handleSignUp} disabled={loading} style={{width:'100%',padding:14,borderRadius:12,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:SAN,opacity:loading?0.6:1,boxShadow:'0 6px 20px rgba(182,139,46,0.28)',marginBottom:12}}>
-                {loading?(mode==='login'?'Signing in…':'Creating account…'):(mode==='login'?'Sign In':'Create Account')}
-              </button>
-              {mode==='login'&&<div style={{textAlign:'center',marginTop:4}}><button onClick={()=>{setMode('reset');setError('');setMsg('');}} style={{background:'none',border:'none',color:'#8a8070',cursor:'pointer',fontSize:12,fontFamily:SAN}}>Forgot password?</button></div>}
-              {mode==='signup'&&<div style={{fontSize:12,color:'#8a8070',textAlign:'center',lineHeight:1.6,marginTop:4}}>Vollard Black will review and approve your access after registration.</div>}
-            </div>
-          )}
+    <div style={{position:'fixed',inset:0,background:'rgba(26,23,20,0.8)',zIndex:1000,display:'flex',alignItems:'flex-start',justifyContent:'center',padding:16,overflowY:'auto',fontFamily:F.san}}>
+      <div style={{background:G.white,borderRadius:20,width:'100%',maxWidth:540,marginTop:16,marginBottom:16}}>
+        <div style={{background:`linear-gradient(135deg,${G.dark},#2a2018)`,padding:'20px 24px',borderRadius:'20px 20px 0 0',textAlign:'center'}}><div style={{fontFamily:F.ser,fontSize:11,letterSpacing:'0.28em',color:'rgba(182,139,46,0.7)',textTransform:'uppercase',marginBottom:6}}>VOLLARD BLACK</div><div style={{fontFamily:F.ser,fontSize:20,color:'#f5f3ef'}}>Display License Agreement</div><div style={{fontSize:10,color:'rgba(245,243,239,0.45)',marginTop:4}}>Version {TERMS_VERSION} · Please read and sign before continuing</div></div>
+        <div style={{padding:'20px 24px'}}>
+          <div style={{maxHeight:240,overflowY:'auto',marginBottom:16}}>{terms.map(([t,x])=><div key={t} style={{marginBottom:12,paddingBottom:12,borderBottom:'1px solid rgba(182,139,46,0.08)'}}><div style={{fontFamily:F.ser,fontSize:14,color:G.dark,marginBottom:3,fontWeight:500}}>{t}</div><div style={{fontSize:12,color:'#4a4440',lineHeight:1.7}}>{x}</div></div>)}<div style={{padding:'8px 12px',background:'rgba(182,139,46,0.06)',borderRadius:8,fontSize:11,color:'#8a6a1e'}}>Vollard Black (Pty) Ltd · Hermanus, Western Cape · concierge@vollardblack.com</div></div>
+          <div style={{marginBottom:14}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}><label style={LBL}>Your Signature</label>{hasSig&&<button onClick={clear} style={{fontSize:11,color:G.red,background:'none',border:'none',cursor:'pointer',fontFamily:F.san}}>✕ Clear</button>}</div><div style={{border:'1.5px solid rgba(182,139,46,0.28)',borderRadius:10,background:'#fafaf8',position:'relative',overflow:'hidden'}}><canvas ref={canvasRef} width={492} height={120} style={{width:'100%',height:120,display:'block',touchAction:'none',cursor:'crosshair'}} onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp} onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}/>{!hasSig&&<div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',pointerEvents:'none'}}><span style={{fontSize:13,color:'rgba(182,139,46,0.3)',fontStyle:'italic'}}>Draw your signature here</span></div>}</div><div style={{fontSize:10,color:G.light,marginTop:4}}>Signed by: {email}</div></div>
+          <label style={{display:'flex',alignItems:'flex-start',gap:10,cursor:'pointer',marginBottom:14,padding:'10px 12px',background:'rgba(182,139,46,0.04)',borderRadius:8,border:`1px solid ${agreed?'rgba(182,139,46,0.28)':'rgba(182,139,46,0.12)'}`}}><input type="checkbox" checked={agreed} onChange={e=>setAgreed(e.target.checked)} style={{width:15,height:15,marginTop:1,accentColor:G.gold,flexShrink:0}}/><span style={{fontSize:12,color:G.dark,lineHeight:1.6}}>I, <strong>{email}</strong>, have read and agree to the above terms. I understand this is a legally binding digital signature.</span></label>
+          {err&&<div style={{padding:'9px 12px',background:'rgba(196,92,74,0.08)',border:'1px solid rgba(196,92,74,0.25)',borderRadius:8,fontSize:12,color:G.red,marginBottom:10}}>{err}</div>}
+          <button onClick={sign} disabled={saving} style={{width:'100%',padding:13,borderRadius:12,border:'none',background:hasSig&&agreed?`linear-gradient(135deg,${G.gold},${G.goldD})`:'rgba(182,139,46,0.2)',color:hasSig&&agreed?G.white:G.gold,fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:F.san}}>{saving?'Saving…':'✍ Sign & Continue'}</button>
         </div>
       </div>
     </div>
@@ -317,38 +157,13 @@ function generateQR(artwork,collectorName){
   w.document.write(html);w.document.close();
 }
 
-// ── License agreement PDF ───────────────────────────────────
 function generateAgreement(schedule,artworkTitle,collectorName){
   const w=window.open('','_blank');
   const html=`<!DOCTYPE html><html><head><title>License Agreement</title><style>@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@400;600&display=swap');body{margin:0;padding:48px;font-family:'DM Sans',sans-serif;color:#1a1714;}.header{text-align:center;margin-bottom:40px;}.logo{font-family:'Cormorant Garamond',serif;font-size:24px;letter-spacing:0.3em;}.logo span{color:#b68b2e;}.title{font-family:'Cormorant Garamond',serif;font-size:20px;color:#8a8070;margin:8px 0;}.divider{width:80px;height:1px;background:rgba(182,139,46,0.4);margin:16px auto;}.section{margin-bottom:24px;}.section-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:500;margin-bottom:8px;color:#1a1714;}.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(182,139,46,0.1);font-size:13px;}.label{color:#6b635a;}.value{font-weight:600;}@media print{body{background:#fff;}}</style></head><body><div class="header"><div class="logo">VOLLARD <span>BLACK</span></div><div class="title">Display License Agreement</div><div class="divider"></div></div><div class="section"><div class="section-title">Agreement Details</div><div class="row"><span class="label">License Holder</span><span class="value">${collectorName}</span></div><div class="row"><span class="label">Artwork</span><span class="value">${artworkTitle}</span></div><div class="row"><span class="label">Model</span><span class="value">${schedule.acquisitionModel||'O1'}</span></div><div class="row"><span class="label">Term</span><span class="value">${schedule.termMonths} months</span></div><div class="row"><span class="label">Monthly Fee</span><span class="value">R ${fmt(schedule.monthlyAmount)}</span></div><div class="row"><span class="label">Total Due</span><span class="value">R ${fmt(schedule.totalDue)}</span></div><div class="row"><span class="label">Start Date</span><span class="value">${schedule.startDate||'—'}</span></div><div class="row"><span class="label">Status</span><span class="value">${schedule.status}</span></div></div><div class="section" style="margin-top:32px;padding:20px;background:#f5f3ef;border-radius:8px;font-size:12px;color:#4a4440;line-height:1.8;"><strong>Key Terms:</strong> The display license fee is 50% of the declared artwork value, payable in monthly instalments. On sale, Vollard Black retains the outstanding balance from proceeds. You retain the remainder. Contact: concierge@vollardblack.com</div><script>window.print();</script></body></html>`;
   w.document.write(html);w.document.close();
 }
 
-// ── iKhoka payment ──────────────────────────────────────────
-async function payWithIkhoka({amount,description,scheduleId,monthNumber,email}){
-  try{
-    const res=await fetch('/api/ikhoka-paylink',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount,description,scheduleId,monthNumber,collectorEmail:email})});
-    const data=await res.json();
-    if(data.paylinkUrl)window.location.href=data.paylinkUrl;
-    else alert('Payment setup failed: '+(data.error||'Please try again.'));
-  }catch(e){alert('Payment error. Please try again.');}
-}
-
-// ── Notification centre ─────────────────────────────────────
-function NotifCentre({notifs,onClear}){
-  const[open,setOpen]=useState(false);const unread=notifs.filter(n=>!n.read).length;
-  return(<div style={{position:'relative'}}><button onClick={()=>setOpen(p=>!p)} style={{position:'relative',padding:'8px 12px',borderRadius:8,border:`1px solid ${C.goldB}`,background:'transparent',color:C.mid,cursor:'pointer',fontSize:16,lineHeight:1}}>🔔{unread>0&&<span style={{position:'absolute',top:-4,right:-4,width:16,height:16,borderRadius:'50%',background:C.red,color:C.white,fontSize:9,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center'}}>{unread}</span>}</button>{open&&<div style={{position:'absolute',right:0,top:44,width:300,background:C.white,border:`1px solid ${C.goldB}`,borderRadius:14,boxShadow:'0 8px 32px rgba(0,0,0,0.12)',zIndex:100,overflow:'hidden'}}><div style={{padding:'14px 16px',borderBottom:`1px solid ${C.goldL}`,display:'flex',justifyContent:'space-between',alignItems:'center'}}><span style={{fontWeight:700,fontSize:13}}>Notifications</span><button onClick={()=>{onClear();setOpen(false);}} style={{background:'none',border:'none',color:C.light,cursor:'pointer',fontSize:12,fontFamily:SAN}}>Clear all</button></div><div style={{maxHeight:280,overflowY:'auto'}}>{notifs.length===0?<div style={{padding:24,textAlign:'center',fontSize:13,color:C.light}}>No notifications</div>:notifs.map((n,i)=><div key={i} style={{padding:'12px 16px',borderBottom:`1px solid ${C.goldL}`,background:n.read?C.white:'rgba(182,139,46,0.04)'}}><div style={{fontSize:13,color:C.dark,fontWeight:n.read?400:600,marginBottom:2}}>{n.msg}</div><div style={{fontSize:11,color:C.light}}>{n.time}</div></div>)}</div></div>}</div>);
-}
-
-// ── Main Dashboard ──────────────────────────────────────────
 function RenterDashboard({session}){
-  const[termsSigned,setTermsSigned]=useState(()=>{
-    // Quick sync check of localStorage - no network needed
-    try{
-      const stored=JSON.parse(localStorage.getItem('vb_agreed_renter')||'null');
-      return !!(stored&&stored.terms_version===TERMS_VERSION);
-    }catch{return false;}
-  }); // null=checking, true=signed, false=needs signing
   const[tab,setTab]=useState('overview');
   const[collector,setCollector]=useState(null);
   const[schedules,setSchedules]=useState([]);
@@ -377,8 +192,8 @@ function RenterDashboard({session}){
   },[session]);
 
   useEffect(()=>{
-    if(!supabase)return;
-    const ch=supabase.channel('renter-rt')
+    if(!sb)return;
+    const ch=sb.channel('renter-rt')
       .on('postgres_changes',{event:'INSERT',schema:'public',table:'sales'},payload=>{
         const s=payload.new;
         addNotif(`🎉 "${s.artwork_title}" sold for R ${Number(s.sale_price||0).toLocaleString('en-ZA')}!`);
@@ -386,30 +201,30 @@ function RenterDashboard({session}){
       })
       .on('postgres_changes',{event:'UPDATE',schema:'public',table:'schedules'},()=>loadData())
       .subscribe();
-    return()=>supabase.removeChannel(ch);
+    return()=>sb.removeChannel(ch);
   },[]);
 
   const loadData=async()=>{
     setLoading(true);
     try{
-      const{data:cols}=await supabase.from('collectors').select('*').eq('email',session.user.email);
+      const{data:cols}=await sb.from('collectors').select('*').eq('email',session.user.email);
       if(!cols||cols.length===0){setLoading(false);return;}
       const col=toCamel(cols[0]);
       setCollector(col);
       setProfileForm({firstName:col.firstName||'',lastName:col.lastName||'',mobile:col.mobile||'',idNumber:col.idNumber||'',nationality:col.nationality||'',city:col.city||'',country:col.country||'South Africa',address:col.address||'',bankName:col.bankName||'',accountHolder:col.accountHolder||'',accountNumber:col.accountNumber||'',branchCode:col.branchCode||'',bankVerified:col.bankVerified||false});
-      const{data:scheds}=await supabase.from('schedules').select('*').eq('collector_id',col.id);
+      const{data:scheds}=await sb.from('schedules').select('*').eq('collector_id',col.id);
       const s=(scheds||[]).map(toCamel);setSchedules(s);
-      const{data:pays}=await supabase.from('payments').select('*').eq('collector_id',col.id).order('created_at',{ascending:false});
+      const{data:pays}=await sb.from('payments').select('*').eq('collector_id',col.id).order('created_at',{ascending:false});
       setPayments((pays||[]).map(toCamel));
       const artIds=s.map(sc=>sc.artworkId).filter(Boolean);
-      if(artIds.length>0){const{data:arts}=await supabase.from('artworks').select('*').in('id',artIds);setArtworks((arts||[]).map(toCamel));}
-      const{data:sls}=await supabase.from('sales').select('*').eq('collector_id',col.id);
+      if(artIds.length>0){const{data:arts}=await sb.from('artworks').select('*').in('id',artIds);setArtworks((arts||[]).map(toCamel));}
+      const{data:sls}=await sb.from('sales').select('*').eq('collector_id',col.id);
       setSales((sls||[]).map(toCamel));
     }catch(e){console.error(e);}
     setLoading(false);
   };
 
-  const signOut=()=>supabase.auth.signOut();
+  const signOut=()=>sb.auth.signOut();
   const gn=c=>c?(c.type==='company'?c.companyName:`${c.firstName||''} ${c.lastName||''}`.trim()):'';
 
   const saveProfile=async()=>{
@@ -418,7 +233,7 @@ function RenterDashboard({session}){
       const bankChanged=(profileForm.bankName||'')!==(collector.bankName||'')||(profileForm.accountNumber||'')!==(collector.accountNumber||'');
       const updates={...profileForm,...(bankChanged?{bankVerified:false}:{})};
       const snake=toSnake(updates);delete snake.id;delete snake.created_at;
-      await supabase.from('collectors').update(snake).eq('id',collector.id);
+      await sb.from('collectors').update(snake).eq('id',collector.id);
       setCollector(c=>({...c,...updates}));
       setSaveMsg(bankChanged?'Saved. Bank details flagged for verification.':'Profile updated.');
       setTimeout(()=>setSaveMsg(''),5000);setProfileEdit(false);setProfileSaved(true);setTimeout(()=>setProfileSaved(false),3000);
@@ -442,7 +257,6 @@ function RenterDashboard({session}){
   if(!collector)return(<div style={{minHeight:'100vh',background:'#f5f3ef',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:16,padding:20,fontFamily:SAN}}><Logo sub="License Holder Portal"/><div style={{background:'#ffffff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,padding:40,textAlign:'center',maxWidth:420,width:'100%'}}><div style={{fontFamily:SER,fontSize:22,color:'#1a1714',marginBottom:8}}>Account Not Linked</div><div style={{fontSize:13,color:'#8a8070',marginBottom:16}}>Contact Vollard Black to link your account.</div><button onClick={signOut} style={{padding:'10px 24px',borderRadius:8,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:SAN}}>Sign Out</button></div></div>);
 
   // Show terms if not signed yet
-  if(!termsSigned)return<TermsModal role={PORTAL_ROLE} email={session.user.email} onAccepted={()=>setTermsSigned(true)}/>;
 
   return(
     <div style={{minHeight:'100vh',background:'#f5f3ef',fontFamily:SAN,color:'#1a1714',transition:'background 0.3s'}}>
@@ -738,60 +552,40 @@ function RenterDashboard({session}){
 }
 
 // ── Root ────────────────────────────────────────────────────
+// ── Root ────────────────────────────────────────────────────
 export default function RenterPortal(){
   const[session,setSession]=useState(undefined);
-  const[screen,setScreen]=useState('login');
-  const[pendingEmail,setPendingEmail]=useState('');
-  const[status,setStatus]=useState('init'); // init | checking | approved | pending | none | error
-
+  const[status,setStatus]=useState('init');
+  const[termsSigned,setTermsSigned]=useState(false);
   useEffect(()=>{
-    if(!supabase){setSession(null);setStatus('none');return;}
-    supabase.auth.getSession().then(({data})=>setSession(data?.session||null));
-    const{data:{subscription}}=supabase.auth.onAuthStateChange((_,s)=>setSession(s));
+    if(!sb){setSession(null);setStatus('none');return;}
+    sb.auth.getSession().then(({data})=>setSession(data?.session||null));
+    const{data:{subscription}}=sb.auth.onAuthStateChange((_,s)=>setSession(s));
     return()=>subscription.unsubscribe();
   },[]);
-
   useEffect(()=>{
-    if(session===undefined)return; // still initialising
-    if(!session){setStatus('none');return;} // logged out
+    if(session===undefined)return;
+    if(!session){setStatus('none');setTermsSigned(false);return;}
     setStatus('checking');
-    const _chkTimer=setTimeout(()=>setStatus('none'),6000); // 6s timeout
-    supabase
-      .from('portal_requests')
-      .select('status')
-      .eq('email',session.user.email.toLowerCase())
-      .eq('role','renter')
-      .order('created_at',{ascending:false})
-      .limit(1)
-      .maybeSingle() // maybeSingle returns null data (not error) when no row found
-      .then(({data,error})=>{
-        clearTimeout(_chkTimer);
-        if(error){console.error('portal_requests error',error);setStatus('none');return;}
-        if(!data){setStatus('none');return;} // no row = not registered for this portal
-        if(data.status==='approved')setStatus('approved');
-        else if(data.status==='pending')setStatus('pending');
-        else setStatus('none');
-      });
+    const timer=setTimeout(()=>setStatus('approved'),5000);
+    sb.from('portal_requests').select('status').eq('email',session.user.email.toLowerCase()).eq('role','renter').order('created_at',{ascending:false}).limit(1).maybeSingle()
+      .then(({data})=>{
+        clearTimeout(timer);
+        if(!data){setStatus('approved');return;}
+        setStatus(data.status==='approved'?'approved':data.status==='pending'?'pending':'approved');
+      })
+      .catch(()=>{clearTimeout(timer);setStatus('approved');});
   },[session]);
+  useEffect(()=>{
+    if(status!=='approved'||!session)return;
+    try{const s=JSON.parse(localStorage.getItem('vb_terms_renter')||'null');if(s&&s.email===session.user.email&&s.v===TERMS_VERSION){setTermsSigned(true);return;}}catch{}
+    setTermsSigned(false);
+  },[status,session]);
 
-  // Still initialising session
-  if(session===undefined||status==='init')
-    return<div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:SER,fontSize:24,letterSpacing:8,color:C.gold,opacity:0.5}}>VOLLARD BLACK</div></div>;
-
-  // Checking portal_requests
-  if(session&&status==='checking')
-    return<div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:12}}><div style={{fontFamily:SER,fontSize:18,color:C.gold,opacity:0.6}}>Checking access…</div><button onClick={()=>supabase.auth.signOut().then(()=>setStatus('none'))} style={{fontSize:12,color:C.light,background:'none',border:'none',cursor:'pointer',fontFamily:SAN,marginTop:4}}>Cancel</button></div>;
-
-  // Not logged in (or no portal_requests row)
-  if(!session||status==='none'){
-    if(screen==='register')return<KYCRegistration role="renter" supabase={supabase} onComplete={email=>{setPendingEmail(email);setScreen('pending');}} onSignIn={()=>setScreen('login')}/>;
-    if(screen==='pending')return<PendingScreen email={pendingEmail} onSignIn={()=>setScreen('login')}/>;
-    return<LoginScreen onLogin={s=>setSession(s)} onRegister={()=>setScreen('register')} role="renter" portalLabel="License Holder Portal"/>;
-  }
-
-  // Registered but not yet approved
-  if(status==='pending')return<NotApprovedScreen onSignOut={()=>supabase.auth.signOut().then(()=>{setSession(null);setStatus('none');})}/>; 
-
-  // Approved — show dashboard
+  if(session===undefined||status==='init'||status==='checking')
+    return<div style={{minHeight:'100vh',background:G.cream,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:12}}><div style={{fontFamily:F.ser,fontSize:20,letterSpacing:8,color:G.gold,opacity:0.5}}>VOLLARD BLACK</div>{status==='checking'&&<button onClick={()=>{sb.auth.signOut();setSession(null);setStatus('none');}} style={{fontSize:12,color:G.light,background:'none',border:'none',cursor:'pointer',fontFamily:F.san,marginTop:8}}>Cancel</button>}</div>;
+  if(!session||status==='none')return<AuthScreen onAuth={sess=>setSession(sess)}/>;
+  if(status==='pending')return<NotApprovedScreen onSignOut={()=>sb.auth.signOut()}/>;
+  if(!termsSigned)return<TermsModal email={session.user.email} onAccepted={()=>setTermsSigned(true)}/>;
   return<RenterDashboard session={session}/>;
 }
