@@ -18,6 +18,11 @@ const CARD={background:G.white,border:'1px solid rgba(182,139,46,0.18)',borderRa
 const CP={padding:'20px'};
 const SH={fontSize:10,fontWeight:700,letterSpacing:'0.20em',textTransform:'uppercase',color:G.gold,marginBottom:14,paddingBottom:10,borderBottom:'1px solid rgba(182,139,46,0.12)'};
 
+const C={gold:'#b68b2e',goldD:'#8a6a1e',goldL:'rgba(182,139,46,0.12)',goldB:'rgba(182,139,46,0.22)',cream:'#f5f3ef',dark:'#1a1714',mid:'#6b635a',light:'#8a8070',red:'#c45c4a',green:'#4a9e6b',greenD:'#2d7a4a',blue:'#648cc8',white:'#ffffff'};
+const SER="'Cormorant Garamond',serif";
+const SAN="'DM Sans',sans-serif";
+
+
 function Logo(){return(<div style={{textAlign:'center',marginBottom:32}}><div style={{fontFamily:F.ser,fontSize:32,fontWeight:300,letterSpacing:10,color:G.dark}}>VOLLARD <span style={{color:G.gold}}>BLACK</span></div><div style={{fontSize:10,letterSpacing:4,textTransform:'uppercase',color:G.light,marginTop:6}}>LICENSE HOLDER PORTAL</div><div style={{width:40,height:1,background:'rgba(182,139,46,0.4)',margin:'12px auto 0'}}/></div>);}
 
 function NotApprovedScreen({onSignOut}){return(<div style={{minHeight:'100vh',background:G.cream,display:'flex',alignItems:'center',justifyContent:'center',padding:20,fontFamily:F.san}}><div style={{width:'100%',maxWidth:420,textAlign:'center'}}><Logo/><div style={{...CARD,padding:36}}><div style={{fontSize:48,marginBottom:12}}>⏳</div><div style={{fontFamily:F.ser,fontSize:22,color:G.dark,marginBottom:8}}>Pending Approval</div><div style={{fontSize:13,color:G.mid,lineHeight:1.8,marginBottom:20}}>Your application is under review. Vollard Black will activate your account shortly. Contact <strong>concierge@vollardblack.com</strong> for immediate assistance.</div><button onClick={onSignOut} style={{padding:'11px 24px',borderRadius:24,border:'1px solid rgba(182,139,46,0.28)',background:'transparent',color:G.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:F.san}}>Sign Out</button></div></div></div>);}
@@ -164,8 +169,78 @@ function generateAgreement(schedule,artworkTitle,collectorName){
   w.document.write(html);w.document.close();
 }
 
+function NotifCentre({notifs,onClear}){
+  const[open,setOpen]=useState(false);
+  if(!notifs||notifs.length===0)return null;
+  return(
+    <div style={{position:'relative'}}>
+      <button onClick={()=>setOpen(o=>!o)} style={{position:'relative',padding:'7px 10px',borderRadius:8,border:'1px solid rgba(182,139,46,0.25)',background:'transparent',color:'#b68b2e',cursor:'pointer',fontSize:13}}>
+        🔔<span style={{position:'absolute',top:-4,right:-4,background:'#c45c4a',color:'#fff',borderRadius:'50%',fontSize:9,width:16,height:16,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700}}>{notifs.length}</span>
+      </button>
+      {open&&<div style={{position:'absolute',right:0,top:'110%',width:280,background:'#fff',border:'1px solid rgba(182,139,46,0.22)',borderRadius:12,boxShadow:'0 8px 32px rgba(0,0,0,0.12)',zIndex:100,maxHeight:300,overflowY:'auto'}}>
+        <div style={{padding:'10px 14px',borderBottom:'1px solid rgba(182,139,46,0.12)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <span style={{fontSize:11,fontWeight:700,letterSpacing:'0.12em',textTransform:'uppercase',color:'#6b635a'}}>Notifications</span>
+          <button onClick={()=>{onClear();setOpen(false);}} style={{fontSize:11,color:'#c45c4a',background:'none',border:'none',cursor:'pointer'}}>Clear all</button>
+        </div>
+        {notifs.map((n,i)=><div key={i} style={{padding:'10px 14px',borderBottom:'1px solid rgba(182,139,46,0.08)',fontSize:13,color:'#1a1714'}}>{n.msg}<div style={{fontSize:10,color:'#8a8070',marginTop:2}}>{n.time}</div></div>)}
+      </div>}
+    </div>
+  );
+}
+
+function KycBanner({email}){
+  const[done,setDone]=useState(false);
+  const[open,setOpen]=useState(false);
+  const[idFile,setIdFile]=useState(null);
+  const[selfieFile,setSelfieFile]=useState(null);
+  const[uploading,setUploading]=useState(false);
+  const upload=async()=>{
+    if(!idFile&&!selfieFile)return;
+    setUploading(true);
+    try{
+      const now=Date.now();
+      const uploadFile=async(file,name)=>{
+        const{error}=await sb.storage.from('kyc-documents').upload(`renter/${email}/${name}`,file,{upsert:true});
+        if(error)throw error;
+        return sb.storage.from('kyc-documents').getPublicUrl(`renter/${email}/${name}`).data?.publicUrl||'';
+      };
+      const idUrl=idFile?await uploadFile(idFile,`id_${now}.${idFile.name.split('.').pop()}`):null;
+      const selfieUrl=selfieFile?await uploadFile(selfieFile,`selfie_${now}.${selfieFile.name.split('.').pop()}`):null;
+      const updates={};
+      if(idUrl)updates.id_document_url=idUrl;
+      if(selfieUrl)updates.selfie_url=selfieUrl;
+      if(Object.keys(updates).length)await sb.from('portal_requests').update(updates).eq('email',email).eq('role','renter');
+      setDone(true);
+    }catch(e){console.error(e);}
+    setUploading(false);
+  };
+  if(done)return null;
+  return(
+    <div style={{background:'rgba(230,190,50,0.10)',border:'1.5px solid rgba(182,139,46,0.30)',borderRadius:12,padding:'14px 18px',marginBottom:16}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+        <div style={{display:'flex',gap:10,alignItems:'center'}}>
+          <span style={{fontSize:18}}>⚠️</span>
+          <div>
+            <div style={{fontSize:13,fontWeight:700,color:'#7a5c00',marginBottom:2}}>KYC Documents Required</div>
+            <div style={{fontSize:12,color:'#8a7040'}}>Please upload your ID and selfie. Artworks released once verified.</div>
+          </div>
+        </div>
+        <button onClick={()=>setOpen(o=>!o)} style={{padding:'8px 16px',borderRadius:8,border:'1px solid rgba(182,139,46,0.30)',background:'transparent',color:'#b68b2e',cursor:'pointer',fontSize:12,fontWeight:600}}>
+          {open?'Hide':'Upload Documents'}
+        </button>
+      </div>
+      {open&&<div style={{marginTop:14,display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+        <div><label style={{display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:'#6b635a',marginBottom:6}}>ID Document</label><input type="file" accept="image/*,.pdf" onChange={e=>setIdFile(e.target.files[0])} style={{width:'100%',fontSize:12}}/></div>
+        <div><label style={{display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:'#6b635a',marginBottom:6}}>Selfie with ID</label><input type="file" accept="image/*" onChange={e=>setSelfieFile(e.target.files[0])} style={{width:'100%',fontSize:12}}/></div>
+        <div style={{gridColumn:'1/-1'}}><button onClick={upload} disabled={uploading||(!idFile&&!selfieFile)} style={{width:'100%',padding:11,borderRadius:10,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',opacity:uploading||(!idFile&&!selfieFile)?0.5:1}}>{uploading?'Uploading…':'Submit Documents'}</button></div>
+      </div>}
+    </div>
+  );
+}
+
 function RenterDashboard({session, kycComplete=true}){
   const[tab,setTab]=useState('overview');
+  const[darkMode,setDarkMode]=useState(false);
   const[collector,setCollector]=useState(null);
   const[schedules,setSchedules]=useState([]);
   const[payments,setPayments]=useState([]);
@@ -226,6 +301,17 @@ function RenterDashboard({session, kycComplete=true}){
   };
 
   const signOut=()=>sb.auth.signOut();
+  const payWithIkhoka=({amount,description,email,name,onSuccess})=>{
+    // iKhoka payment - open payment URL or redirect
+    const ref='VB-'+Date.now();
+    const url=`https://pay.ikhoka.com/pay?amount=${amount}&description=${encodeURIComponent(description||'Vollard Black Payment')}&reference=${ref}&email=${encodeURIComponent(email||session.user.email)}`;
+    const win=window.open(url,'_blank');
+    if(!win){
+      // Fallback: show payment details
+      alert(`Payment Reference: ${ref}\nAmount: R${Number(amount||0).toFixed(2)}\nPlease complete payment via your iKhoka portal.`);
+    }
+    if(onSuccess)setTimeout(onSuccess,2000);
+  };
   const gn=c=>c?(c.type==='company'?c.companyName:`${c.firstName||''} ${c.lastName||''}`.trim()):'';
 
   const saveProfile=async()=>{
