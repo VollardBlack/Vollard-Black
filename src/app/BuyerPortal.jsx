@@ -13,18 +13,6 @@ const toSnake = o=>{if(!o||typeof o!=='object')return o;const r={};for(const[k,v
 const G={gold:'#b68b2e',goldD:'#8a6a1e',cream:'#f5f3ef',dark:'#1a1714',mid:'#6b635a',light:'#8a8070',red:'#c45c4a',green:'#4a9e6b',greenD:'#2d7a4a',white:'#ffffff'};
 const F={ser:"'Cormorant Garamond',serif",san:"'DM Sans',sans-serif"};
 
-// Keep the original S object for BuyerDashboard compatibility
-const S = {
-  page: { minHeight:'100vh', background:'#f5f3ef', fontFamily:"'DM Sans',sans-serif", color:'#2a2622' },
-  card: { background:'#fff', border:'1px solid rgba(182,139,46,0.18)', borderRadius:12, padding:20, marginBottom:16 },
-  input: { width:'100%', padding:'12px 14px', background:'#f5f3ef', border:'1px solid rgba(182,139,46,0.25)', borderRadius:8, color:'#1a1714', fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:'none', boxSizing:'border-box' },
-  label: { display:'block', fontSize:10, fontWeight:500, letterSpacing:2, textTransform:'uppercase', color:'#6b635a', marginBottom:6 },
-  btn: (gold) => ({ padding:'12px 24px', borderRadius:8, border: gold?'none':'1px solid rgba(182,139,46,0.30)', background: gold?'linear-gradient(135deg,#b68b2e,#8a6a1e)':'transparent', color: gold?'#fff':'#b68b2e', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:"'DM Sans',sans-serif" }),
-  tab: (a) => ({ padding:'9px 18px', border: a?'none':'1px solid rgba(182,139,46,0.25)', borderRadius:24, background: a?'linear-gradient(135deg,#b68b2e,#8a6a1e)':'transparent', color: a?'#fff':'#6b635a', fontSize:13, fontWeight:a?600:400, cursor:'pointer', fontFamily:"'DM Sans',sans-serif", whiteSpace:'nowrap', transition:'all 0.2s' }),
-  gold: { color:'#b68b2e', fontWeight:600 },
-  green: { color:'#4a9e6b', fontWeight:600 },
-};
-
 const INP={width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:G.dark,fontFamily:F.san,fontSize:14,outline:'none',boxSizing:'border-box'};
 const LBL={display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:G.mid,marginBottom:8};
 const CARD={background:G.white,border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16};
