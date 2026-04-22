@@ -148,35 +148,35 @@ function RenterDashboard({session}){
   const bg='#f5f3ef';
   const cardBg='#ffffff';
   const cardBorder='rgba(182,139,46,0.18)';
-  const tp='#1a1714';
+  const '#1a1714'='#1a1714';
   const ts='#8a8070';
   const ib='#ffffff';
-  const CARD={background:'#ffffff',border:`1px solid ${cardBorder}`,borderRadius:16,overflow:'hidden',marginBottom:16};
+  const CARD={background:'#ffffff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16};
   const CP={padding:'20px'};
   const SH={fontSize:10,fontWeight:700,letterSpacing:'0.20em',textTransform:'uppercase',color:C.gold,marginBottom:14,paddingBottom:10,borderBottom:`1px solid ${C.goldL}`};
-  const inp={width:'100%',padding:'13px 16px',background:ib,border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:tp,fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box'};
-  const lbl={display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:ts,marginBottom:8};
+  const inp={width:'100%',padding:'13px 16px',background:ib,border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:'#1a1714',fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box'};
+  const lbl={display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:'#8a8070',marginBottom:8};
 
-  if(loading)return<div style={{minHeight:'100vh',background:bg,display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:SER,fontSize:24,color:C.gold,letterSpacing:6,opacity:0.6}}>Loading…</div></div>;
-  if(!collector)return(<div style={{minHeight:'100vh',background:bg,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:16,padding:20,fontFamily:SAN}}><Logo sub="License Holder Portal"/><div style={{background:'#ffffff',border:`1px solid ${cardBorder}`,borderRadius:16,padding:40,textAlign:'center',maxWidth:420,width:'100%'}}><div style={{fontFamily:SER,fontSize:22,color:tp,marginBottom:8}}>Account Not Linked</div><div style={{fontSize:13,color:ts,marginBottom:16}}>Contact Vollard Black to link your account.</div><button onClick={signOut} style={{padding:'10px 24px',borderRadius:8,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:SAN}}>Sign Out</button></div></div>);
+  if(loading)return<div style={{minHeight:'100vh',background:'#f5f3ef',display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:SER,fontSize:24,color:C.gold,letterSpacing:6,opacity:0.6}}>Loading…</div></div>;
+  if(!collector)return(<div style={{minHeight:'100vh',background:'#f5f3ef',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:16,padding:20,fontFamily:SAN}}><Logo sub="License Holder Portal"/><div style={{background:'#ffffff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,padding:40,textAlign:'center',maxWidth:420,width:'100%'}}><div style={{fontFamily:SER,fontSize:22,color:'#1a1714',marginBottom:8}}>Account Not Linked</div><div style={{fontSize:13,color:'#8a8070',marginBottom:16}}>Contact Vollard Black to link your account.</div><button onClick={signOut} style={{padding:'10px 24px',borderRadius:8,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:SAN}}>Sign Out</button></div></div>);
 
   return(
-    <div style={{minHeight:'100vh',background:bg,fontFamily:SAN,color:tp,transition:'background 0.3s'}}>
+    <div style={{minHeight:'100vh',background:'#f5f3ef',fontFamily:SAN,color:'#1a1714',transition:'background 0.3s'}}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap');*{box-sizing:border-box;}input:focus,select:focus,textarea:focus{border-color:${C.gold}!important;box-shadow:0 0 0 3px rgba(182,139,46,0.12)!important;outline:none;}`}</style>
 
       {/* Top bar */}
-      <div style={{background:'#fff',borderBottom:`1px solid ${cardBorder}`,padding:'0 20px',height:56,display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:50,boxShadow:'0 1px 12px rgba(0,0,0,0.06)'}}>
+      <div style={{background:'#fff',borderBottom:'1px solid rgba(182,139,46,0.18)',padding:'0 20px',height:56,display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:50,boxShadow:'0 1px 12px rgba(0,0,0,0.06)'}}>
         <a href="/" style={{textDecoration:'none',display:'flex',alignItems:'center',gap:10}}>
-          <div style={{fontFamily:SER,fontSize:18,fontWeight:300,letterSpacing:'0.20em',color:tp}}>VOLLARD <span style={{color:C.gold}}>BLACK</span></div>
+          <div style={{fontFamily:SER,fontSize:18,fontWeight:300,letterSpacing:'0.20em',color:'#1a1714'}}>VOLLARD <span style={{color:C.gold}}>BLACK</span></div>
           <div style={{width:1,height:14,background:C.goldB}}/>
           <span style={{fontSize:9,letterSpacing:'0.18em',textTransform:'uppercase',color:C.gold,fontWeight:700}}>License Holder</span>
         </a>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
-          <button onClick={()=>setDarkMode(d=>!d)} style={{padding:'7px 12px',borderRadius:8,border:`1px solid ${cardBorder}`,background:'transparent',color:ts,cursor:'pointer',fontSize:14,lineHeight:1}}>{'🌙'}</button>
+          <button onClick={()=>setDarkMode(d=>!d)} style={{padding:'7px 12px',borderRadius:8,border:'1px solid rgba(182,139,46,0.18)',background:'transparent',color:'#8a8070',cursor:'pointer',fontSize:14,lineHeight:1}}>{'🌙'}</button>
           <NotifCentre notifs={notifs} onClear={()=>setNotifs([])}/>
           <button onClick={()=>window.open('https://wa.me/27826503393?text='+encodeURIComponent('Hi Vollard Black, I need assistance.'),'_blank')} style={{padding:'7px 12px',borderRadius:8,border:'1px solid rgba(37,211,102,0.30)',background:'rgba(37,211,102,0.08)',color:'#25d366',cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:SAN}}>Chat</button>
-          <span style={{fontSize:13,color:ts,fontWeight:500}}>{gn(collector)}</span>
-          <button onClick={signOut} style={{padding:'7px 14px',borderRadius:8,border:`1px solid ${cardBorder}`,background:'transparent',color:ts,cursor:'pointer',fontSize:11,fontFamily:SAN}}>Sign Out</button>
+          <span style={{fontSize:13,color:'#8a8070',fontWeight:500}}>{gn(collector)}</span>
+          <button onClick={signOut} style={{padding:'7px 14px',borderRadius:8,border:'1px solid rgba(182,139,46,0.18)',background:'transparent',color:'#8a8070',cursor:'pointer',fontSize:11,fontFamily:SAN}}>Sign Out</button>
         </div>
       </div>
 
@@ -206,7 +206,7 @@ function RenterDashboard({session}){
         {/* Tabs */}
         <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:28}}>
           {[['overview','Overview'],['artworks','My Artworks'],['payments','Payments'],['calendar','Calendar'],['statements','Statements'],['profile','Profile'],['terms','Terms']].map(([id,lbl])=>(
-            <button key={id} onClick={()=>setTab(id)} style={{padding:'9px 20px',borderRadius:24,border:tab===id?'none':`1px solid ${cardBorder}`,background:tab===id?`linear-gradient(135deg,${C.gold},${C.goldD})`:cardBg,color:tab===id?'#fff':ts,fontSize:13,fontWeight:tab===id?600:400,cursor:'pointer',fontFamily:SAN,whiteSpace:'nowrap',transition:'all 0.2s',boxShadow:tab===id?'0 4px 12px rgba(182,139,46,0.28)':'none'}}>
+            <button key={id} onClick={()=>setTab(id)} style={{padding:'9px 20px',borderRadius:24,border:tab===id?'none':'1px solid rgba(182,139,46,0.18)',background:tab===id?`linear-gradient(135deg,${C.gold},${C.goldD})`:'#fff',color:tab===id?'#fff':ts,fontSize:13,fontWeight:tab===id?600:400,cursor:'pointer',fontFamily:SAN,whiteSpace:'nowrap',transition:'all 0.2s',boxShadow:tab===id?'0 4px 12px rgba(182,139,46,0.28)':'none'}}>
               {lbl}
             </button>
           ))}
@@ -216,7 +216,7 @@ function RenterDashboard({session}){
         {tab==='overview'&&(
           <div>
             {/* Outstanding alert */}
-            {balance>0&&<div style={{...CARD,border:`1.5px solid rgba(230,190,50,0.35)`,background:'rgba(230,190,50,0.04)',marginBottom:16}}><div style={CP}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:12}}><div><div style={{fontSize:14,fontWeight:700,color:'#b8920a',marginBottom:2}}>Payment Due</div><div style={{fontSize:13,color:ts}}>Outstanding balance: <strong style={{color:'#b8920a'}}>R {fmt(balance)}</strong></div></div><button onClick={()=>setTab('payments')} style={{padding:'10px 20px',borderRadius:24,border:'none',background:`linear-gradient(135deg,${C.gold},${C.goldD})`,color:'#fff',cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:SAN}}>Pay Now →</button></div></div></div>}
+            {balance>0&&<div style={{...CARD,border:`1.5px solid rgba(230,190,50,0.35)`,background:'rgba(230,190,50,0.04)',marginBottom:16}}><div style={CP}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:12}}><div><div style={{fontSize:14,fontWeight:700,color:'#b8920a',marginBottom:2}}>Payment Due</div><div style={{fontSize:13,color:'#8a8070'}}>Outstanding balance: <strong style={{color:'#b8920a'}}>R {fmt(balance)}</strong></div></div><button onClick={()=>setTab('payments')} style={{padding:'10px 20px',borderRadius:24,border:'none',background:`linear-gradient(135deg,${C.gold},${C.goldD})`,color:'#fff',cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:SAN}}>Pay Now →</button></div></div></div>}
 
             {/* Artwork visual cards */}
             {schedules.map(sc=>{
@@ -235,13 +235,13 @@ function RenterDashboard({session}){
                     </div>
                   </div>}
                   <div style={CP}>
-                    {!art?.imageUrl&&<div style={{fontFamily:SER,fontSize:20,color:tp,marginBottom:4}}>{sc.artworkTitle}</div>}
+                    {!art?.imageUrl&&<div style={{fontFamily:SER,fontSize:20,color:'#1a1714',marginBottom:4}}>{sc.artworkTitle}</div>}
                     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
-                      <div style={{padding:'10px 12px',background:'#f7f5f1',borderRadius:8}}><div style={{fontSize:9,color:ts,letterSpacing:'0.14em',textTransform:'uppercase',marginBottom:4}}>Monthly Fee</div><div style={{fontFamily:SER,fontSize:18,color:C.gold,fontWeight:600}}>R {fmt(sc.monthlyAmount)}</div></div>
-                      <div style={{padding:'10px 12px',background:'#f7f5f1',borderRadius:8}}><div style={{fontSize:9,color:ts,letterSpacing:'0.14em',textTransform:'uppercase',marginBottom:4}}>Progress</div><div style={{fontFamily:SER,fontSize:18,color:tp,fontWeight:600}}>{sc.monthsPaid||0}/{sc.termMonths} mo</div></div>
+                      <div style={{padding:'10px 12px',background:'#f7f5f1',borderRadius:8}}><div style={{fontSize:9,color:'#8a8070',letterSpacing:'0.14em',textTransform:'uppercase',marginBottom:4}}>Monthly Fee</div><div style={{fontFamily:SER,fontSize:18,color:C.gold,fontWeight:600}}>R {fmt(sc.monthlyAmount)}</div></div>
+                      <div style={{padding:'10px 12px',background:'#f7f5f1',borderRadius:8}}><div style={{fontSize:9,color:'#8a8070',letterSpacing:'0.14em',textTransform:'uppercase',marginBottom:4}}>Progress</div><div style={{fontFamily:SER,fontSize:18,color:'#1a1714',fontWeight:600}}>{sc.monthsPaid||0}/{sc.termMonths} mo</div></div>
                     </div>
                     <div style={{marginBottom:14}}>
-                      <div style={{display:'flex',justifyContent:'space-between',fontSize:11,color:ts,marginBottom:6}}><span>Paid: R {fmt(paid)}</span><span>{pct}%</span></div>
+                      <div style={{display:'flex',justifyContent:'space-between',fontSize:11,color:'#8a8070',marginBottom:6}}><span>Paid: R {fmt(paid)}</span><span>{pct}%</span></div>
                       <div style={{height:6,background:'rgba(182,139,46,0.12)',borderRadius:3,overflow:'hidden'}}><div style={{height:'100%',width:pct.toString()+'%',background:`linear-gradient(90deg,${C.gold},${C.goldD})`,borderRadius:3,transition:'width 1s ease'}}/></div>
                     </div>
                     <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
@@ -253,14 +253,14 @@ function RenterDashboard({session}){
                 </div>
               );
             })}
-            {schedules.length===0&&<div style={{...CARD,textAlign:'center',padding:56}}><div style={{fontSize:44,opacity:0.2,marginBottom:12}}>🖼</div><div style={{fontFamily:SER,fontSize:22,color:tp,marginBottom:8}}>No artworks yet</div><div style={{fontSize:13,color:ts}}>Contact Vollard Black to set up your first license agreement.</div></div>}
+            {schedules.length===0&&<div style={{...CARD,textAlign:'center',padding:56}}><div style={{fontSize:44,opacity:0.2,marginBottom:12}}>🖼</div><div style={{fontFamily:SER,fontSize:22,color:'#1a1714',marginBottom:8}}>No artworks yet</div><div style={{fontSize:13,color:'#8a8070'}}>Contact Vollard Black to set up your first license agreement.</div></div>}
           </div>
         )}
 
         {/* MY ARTWORKS */}
         {tab==='artworks'&&(
           <div>
-            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:tp,marginBottom:20}}>My Artworks</div>
+            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:'#1a1714',marginBottom:20}}>My Artworks</div>
             {schedules.map(sc=>{
               const art=artworks.find(a=>a.id===sc.artworkId);
               const sale=sales.find(s=>s.artworkId===sc.artworkId);
@@ -269,12 +269,12 @@ function RenterDashboard({session}){
                   {art?.imageUrl&&<img src={art.imageUrl} alt="" style={{width:'100%',height:220,objectFit:'cover',display:'block'}}/>}
                   <div style={CP}>
                     <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10,marginBottom:8}}>
-                      <div style={{fontFamily:SER,fontSize:22,color:tp,fontWeight:400}}>{sc.artworkTitle||art?.title}</div>
+                      <div style={{fontFamily:SER,fontSize:22,color:'#1a1714',fontWeight:400}}>{sc.artworkTitle||art?.title}</div>
                       <span style={{fontSize:10,fontWeight:700,padding:'4px 10px',borderRadius:20,flexShrink:0,background:sale?'rgba(100,140,200,0.12)':sc.status==='Active'?'rgba(74,158,107,0.12)':'rgba(182,139,46,0.12)',color:sale?C.blue:sc.status==='Active'?C.greenD:C.gold}}>{sale?'SOLD':sc.status}</span>
                     </div>
                     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
                       {[['Artist',art?.artistName||art?.artist||'—'],['Medium',art?.medium||'—'],['Year',art?.year||'—'],['Value','R '+fmt(art?.recommendedPrice||sc.artworkValue)]].map(([l,v])=>(
-                        <div key={l} style={{padding:'8px 10px',background:'#f7f5f1',borderRadius:8}}><div style={{fontSize:9,color:ts,letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:2}}>{l}</div><div style={{fontSize:13,fontWeight:600,color:tp}}>{v}</div></div>
+                        <div key={l} style={{padding:'8px 10px',background:'#f7f5f1',borderRadius:8}}><div style={{fontSize:9,color:'#8a8070',letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:2}}>{l}</div><div style={{fontSize:13,fontWeight:600,color:'#1a1714'}}>{v}</div></div>
                       ))}
                     </div>
                     <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
@@ -290,10 +290,10 @@ function RenterDashboard({session}){
         {/* PAYMENTS */}
         {tab==='payments'&&(
           <div>
-            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:tp,marginBottom:20}}>Payments</div>
+            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:'#1a1714',marginBottom:20}}>Payments</div>
             <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:20}}>
-              {[['Total Paid','R '+fmt(totalPaid),C.green],['Outstanding','R '+fmt(Math.max(0,balance)),balance>0?'#b8920a':C.green],['Total Due','R '+fmt(totalOwed),tp]].map(([l,v,color])=>(
-                <div key={l} style={{...CARD,textAlign:'center',padding:'18px 12px',marginBottom:0}}><div style={{fontSize:9,letterSpacing:'0.16em',textTransform:'uppercase',color:ts,marginBottom:8}}>{l}</div><div style={{fontFamily:SER,fontSize:24,fontWeight:300,color}}>{v}</div></div>
+              {[['Total Paid','R '+fmt(totalPaid),C.green],['Outstanding','R '+fmt(Math.max(0,balance)),balance>0?'#b8920a':C.green],['Total Due','R '+fmt(totalOwed),'#1a1714']].map(([l,v,color])=>(
+                <div key={l} style={{...CARD,textAlign:'center',padding:'18px 12px',marginBottom:0}}><div style={{fontSize:9,letterSpacing:'0.16em',textTransform:'uppercase',color:'#8a8070',marginBottom:8}}>{l}</div><div style={{fontFamily:SER,fontSize:24,fontWeight:300,color}}>{v}</div></div>
               ))}
             </div>
             {schedules.filter(sc=>sc.status==='Active').map(sc=>{
@@ -302,8 +302,8 @@ function RenterDashboard({session}){
               return(
                 <div key={sc.id} style={{...CARD,border:`1.5px solid ${C.goldB}`}}>
                   <div style={CP}>
-                    <div style={{fontFamily:SER,fontSize:18,color:tp,marginBottom:4}}>{sc.artworkTitle}</div>
-                    <div style={{fontSize:12,color:ts,marginBottom:16}}>Month {nextMonth} of {sc.termMonths} · Due on the 25th</div>
+                    <div style={{fontFamily:SER,fontSize:18,color:'#1a1714',marginBottom:4}}>{sc.artworkTitle}</div>
+                    <div style={{fontSize:12,color:'#8a8070',marginBottom:16}}>Month {nextMonth} of {sc.termMonths} · Due on the 25th</div>
                     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:12}}>
                       <div style={{fontFamily:SER,fontSize:28,color:C.gold,fontWeight:600}}>R {fmt(sc.monthlyAmount)}</div>
                       <button onClick={()=>payWithIkhoka({amount:sc.monthlyAmount,description:`VB License: ${sc.artworkTitle} Mo ${nextMonth}`,scheduleId:sc.id,monthNumber:nextMonth,email:session.user.email})} style={{padding:'12px 28px',borderRadius:24,border:'none',background:`linear-gradient(135deg,${C.gold},${C.goldD})`,color:'#fff',cursor:'pointer',fontSize:13,fontWeight:700,fontFamily:SAN,boxShadow:'0 4px 14px rgba(182,139,46,0.30)'}}>💳 Pay via iKhoka</button>
@@ -313,12 +313,12 @@ function RenterDashboard({session}){
               );
             })}
             <div style={{marginTop:8}}>
-              <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.16em',textTransform:'uppercase',color:ts,marginBottom:12}}>Payment History</div>
-              {payments.length===0?<div style={{...CARD,textAlign:'center',padding:40}}><div style={{fontSize:13,color:ts}}>No payments recorded yet.</div></div>
+              <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.16em',textTransform:'uppercase',color:'#8a8070',marginBottom:12}}>Payment History</div>
+              {payments.length===0?<div style={{...CARD,textAlign:'center',padding:40}}><div style={{fontSize:13,color:'#8a8070'}}>No payments recorded yet.</div></div>
               :payments.map(p=>(
                 <div key={p.id} style={{...CARD,marginBottom:8}}>
                   <div style={{...CP,padding:'14px 20px',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:10}}>
-                    <div><div style={{fontSize:13,fontWeight:600,color:tp}}>{p.artworkTitle||'Payment'}</div><div style={{fontSize:11,color:ts}}>{p.date||p.createdAt?.slice(0,10)||'—'} · {p.method||'—'} · Mo {p.monthNumber||'—'}</div></div>
+                    <div><div style={{fontSize:13,fontWeight:600,color:'#1a1714'}}>{p.artworkTitle||'Payment'}</div><div style={{fontSize:11,color:'#8a8070'}}>{p.date||p.createdAt?.slice(0,10)||'—'} · {p.method||'—'} · Mo {p.monthNumber||'—'}</div></div>
                     <div style={{textAlign:'right'}}><div style={{fontFamily:SER,fontSize:18,color:C.green,fontWeight:600}}>R {fmt(p.amount)}</div><div style={{fontSize:10,color:C.green,fontWeight:700}}>✓ Paid</div></div>
                   </div>
                 </div>
@@ -330,29 +330,29 @@ function RenterDashboard({session}){
         {/* PAYMENT CALENDAR */}
         {tab==='calendar'&&(
           <div>
-            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:tp,marginBottom:20}}>Payment Calendar</div>
+            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:'#1a1714',marginBottom:20}}>Payment Calendar</div>
             {schedules.map(sc=>{
               const paid=new Set(payments.filter(p=>p.scheduleId===sc.id||p.artworkId===sc.artworkId).map(p=>p.monthNumber));
               const months=Array.from({length:sc.termMonths},(_, i)=>i+1);
               return(
                 <div key={sc.id} style={{...CARD,marginBottom:20}}>
                   <div style={CP}>
-                    <div style={{fontFamily:SER,fontSize:18,color:tp,marginBottom:4}}>{sc.artworkTitle}</div>
-                    <div style={{fontSize:12,color:ts,marginBottom:16}}>R {fmt(sc.monthlyAmount)}/mo · {sc.termMonths} months · Started {sc.startDate||'—'}</div>
+                    <div style={{fontFamily:SER,fontSize:18,color:'#1a1714',marginBottom:4}}>{sc.artworkTitle}</div>
+                    <div style={{fontSize:12,color:'#8a8070',marginBottom:16}}>R {fmt(sc.monthlyAmount)}/mo · {sc.termMonths} months · Started {sc.startDate||'—'}</div>
                     <div style={{display:'grid',gridTemplateColumns:'repeat(6,1fr)',gap:6}}>
                       {months.map(m=>{
                         const isPaid=paid.has(m);
                         const isCurrent=m===(sc.monthsPaid||0)+1&&sc.status==='Active';
                         return(
                           <div key={m} style={{padding:'10px 4px',borderRadius:10,textAlign:'center',background:isPaid?'rgba(74,158,107,0.12)':isCurrent?`rgba(182,139,46,0.15)`:'#f7f5f1',border:`1px solid ${isPaid?'rgba(74,158,107,0.30)':isCurrent?C.goldB:'transparent'}`,transition:'all 0.2s'}}>
-                            <div style={{fontSize:8,color:isPaid?C.greenD:isCurrent?C.gold:ts,letterSpacing:'0.1em',textTransform:'uppercase',marginBottom:4}}>Mo {m}</div>
+                            <div style={{fontSize:8,color:isPaid?C.greenD:isCurrent?C.gold:'#8a8070',letterSpacing:'0.1em',textTransform:'uppercase',marginBottom:4}}>Mo {m}</div>
                             <div style={{fontSize:16,lineHeight:1}}>{isPaid?'✓':isCurrent?'●':'○'}</div>
-                            <div style={{fontSize:9,color:isPaid?C.greenD:isCurrent?C.gold:ts,marginTop:2,fontWeight:isPaid||isCurrent?700:400}}>{isPaid?'Paid':isCurrent?'Due':'—'}</div>
+                            <div style={{fontSize:9,color:isPaid?C.greenD:isCurrent?C.gold:'#8a8070',marginTop:2,fontWeight:isPaid||isCurrent?700:400}}>{isPaid?'Paid':isCurrent?'Due':'—'}</div>
                           </div>
                         );
                       })}
                     </div>
-                    <div style={{display:'flex',gap:16,marginTop:14,fontSize:11,color:ts}}>
+                    <div style={{display:'flex',gap:16,marginTop:14,fontSize:11,color:'#8a8070'}}>
                       <span style={{color:C.greenD,fontWeight:600}}>✓ Paid: {paid.size}</span>
                       <span style={{color:C.gold,fontWeight:600}}>● Current: {Math.max(0,(sc.termMonths)-paid.size-(sc.termMonths-(sc.monthsPaid||0)-1))||0}</span>
                       <span>○ Remaining: {sc.termMonths-paid.size}</span>
@@ -361,14 +361,14 @@ function RenterDashboard({session}){
                 </div>
               );
             })}
-            {schedules.length===0&&<div style={{...CARD,textAlign:'center',padding:56}}><div style={{fontSize:13,color:ts}}>No payment schedules yet.</div></div>}
+            {schedules.length===0&&<div style={{...CARD,textAlign:'center',padding:56}}><div style={{fontSize:13,color:'#8a8070'}}>No payment schedules yet.</div></div>}
           </div>
         )}
 
         {/* STATEMENTS */}
         {tab==='statements'&&(
           <div>
-            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:tp,marginBottom:20}}>Statements</div>
+            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:'#1a1714',marginBottom:20}}>Statements</div>
             {schedules.map(sc=>{
               const art=artworks.find(a=>a.id===sc.artworkId);
               const scPays=payments.filter(p=>p.scheduleId===sc.id||p.artworkId===sc.artworkId);
@@ -378,23 +378,23 @@ function RenterDashboard({session}){
                 <div key={sc.id} style={CARD}>
                   <div style={CP}>
                     <div style={{display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8,marginBottom:16}}>
-                      <div style={{fontFamily:SER,fontSize:20,color:tp}}>{sc.artworkTitle||art?.title}</div>
+                      <div style={{fontFamily:SER,fontSize:20,color:'#1a1714'}}>{sc.artworkTitle||art?.title}</div>
                       <span style={{padding:'4px 12px',borderRadius:20,fontSize:10,fontWeight:700,background:sc.status==='Active'?'rgba(74,158,107,0.12)':'rgba(182,139,46,0.12)',color:sc.status==='Active'?C.greenD:C.gold}}>{sc.status}</span>
                     </div>
                     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:16}}>
                       {[['Artwork value','R '+fmt(art?.recommendedPrice||sc.artworkValue)],['Monthly fee','R '+fmt(sc.monthlyAmount)],['Term',sc.termMonths+' months'],['Months paid',(sc.monthsPaid||0)+' of '+sc.termMonths],['Total paid','R '+fmt(paid)],['Outstanding','R '+fmt(Math.max(0,(sc.totalDue||0)-paid))]].map(([l,v])=>(
-                        <div key={l} style={{padding:'8px 10px',background:'#f7f5f1',borderRadius:8}}><div style={{fontSize:9,color:ts,letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:2}}>{l}</div><div style={{fontSize:13,fontWeight:600,color:tp}}>{v}</div></div>
+                        <div key={l} style={{padding:'8px 10px',background:'#f7f5f1',borderRadius:8}}><div style={{fontSize:9,color:'#8a8070',letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:2}}>{l}</div><div style={{fontSize:13,fontWeight:600,color:'#1a1714'}}>{v}</div></div>
                       ))}
                     </div>
                     <div style={{display:'flex',gap:8}}>
                       <button onClick={()=>generateAgreement(sc,sc.artworkTitle||'',gn(collector))} style={{padding:'8px 16px',borderRadius:24,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,cursor:'pointer',fontSize:11,fontWeight:600,fontFamily:SAN}}>📄 Download Agreement</button>
                     </div>
-                    {sale&&<div style={{marginTop:16,padding:'14px',background:'rgba(74,158,107,0.06)',border:'1px solid rgba(74,158,107,0.20)',borderRadius:12}}><div style={{fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:C.greenD,marginBottom:10}}>{sale.source==='auction'?'⚖ Auction Sale':'Sale Settlement'}</div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,fontSize:13}}><div style={{color:ts}}>Sale date</div><div style={{fontWeight:600,color:tp}}>{sale.date||'—'}</div><div style={{color:ts}}>Sale price</div><div style={{fontWeight:600,color:tp}}>R {fmt(sale.salePrice)}</div><div style={{color:C.greenD,fontWeight:700}}>You receive</div><div style={{fontFamily:SER,fontSize:18,color:C.greenD,fontWeight:600}}>R {fmt(sale.colNet||sale.collectorShare)}</div></div></div>}
+                    {sale&&<div style={{marginTop:16,padding:'14px',background:'rgba(74,158,107,0.06)',border:'1px solid rgba(74,158,107,0.20)',borderRadius:12}}><div style={{fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:C.greenD,marginBottom:10}}>{sale.source==='auction'?'⚖ Auction Sale':'Sale Settlement'}</div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,fontSize:13}}><div style={{color:'#8a8070'}}>Sale date</div><div style={{fontWeight:600,color:'#1a1714'}}>{sale.date||'—'}</div><div style={{color:'#8a8070'}}>Sale price</div><div style={{fontWeight:600,color:'#1a1714'}}>R {fmt(sale.salePrice)}</div><div style={{color:C.greenD,fontWeight:700}}>You receive</div><div style={{fontFamily:SER,fontSize:18,color:C.greenD,fontWeight:600}}>R {fmt(sale.colNet||sale.collectorShare)}</div></div></div>}
                   </div>
                 </div>
               );
             })}
-            {schedules.length===0&&<div style={{...CARD,textAlign:'center',padding:56}}><div style={{fontSize:13,color:ts}}>No agreements yet.</div></div>}
+            {schedules.length===0&&<div style={{...CARD,textAlign:'center',padding:56}}><div style={{fontSize:13,color:'#8a8070'}}>No agreements yet.</div></div>}
           </div>
         )}
 
@@ -402,7 +402,7 @@ function RenterDashboard({session}){
         {tab==='profile'&&(
           <div>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24,flexWrap:'wrap',gap:10}}>
-              <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:tp}}>My Profile</div>
+              <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:'#1a1714'}}>My Profile</div>
               {!profileEdit&&<button onClick={()=>setProfileEdit(true)} style={{padding:'10px 22px',borderRadius:24,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:SAN}}>Edit Profile</button>}
             </div>
             {saveMsg&&<div style={{padding:'12px 16px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.20)',borderRadius:12,fontSize:13,color:C.greenD,marginBottom:20}}>✓ {saveMsg}</div>}
@@ -413,18 +413,18 @@ function RenterDashboard({session}){
                   {section.bank?(
                     <div>
                       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-                        <span style={{fontSize:12,color:ts}}>Payout account for sale proceeds</span>
-                        {collector?.bankVerified?<span style={{fontSize:11,fontWeight:700,color:C.greenD,background:'rgba(74,158,107,0.10)',padding:'3px 10px',borderRadius:20}}>✓ Verified</span>:(collector?.bankName||collector?.accountNumber)?<span style={{fontSize:11,fontWeight:700,color:'#b8920a',background:'rgba(230,190,50,0.10)',padding:'3px 10px',borderRadius:20}}>⏳ Pending</span>:<span style={{fontSize:11,color:ts}}>Not yet added</span>}
+                        <span style={{fontSize:12,color:'#8a8070'}}>Payout account for sale proceeds</span>
+                        {collector?.bankVerified?<span style={{fontSize:11,fontWeight:700,color:C.greenD,background:'rgba(74,158,107,0.10)',padding:'3px 10px',borderRadius:20}}>✓ Verified</span>:(collector?.bankName||collector?.accountNumber)?<span style={{fontSize:11,fontWeight:700,color:'#b8920a',background:'rgba(230,190,50,0.10)',padding:'3px 10px',borderRadius:20}}>⏳ Pending</span>:<span style={{fontSize:11,color:'#8a8070'}}>Not yet added</span>}
                       </div>
-                      {(collector?.bankName||collector?.accountNumber)?[['Bank',collector?.bankName||'—'],['Account Holder',collector?.accountHolder||'—'],['Account Number',collector?.accountNumber||'—'],['Branch Code',collector?.branchCode||'—']].map(([l,v])=><div key={l} style={{display:'flex',justifyContent:'space-between',padding:'9px 0',borderBottom:`1px solid ${C.goldL}`,fontSize:13,gap:12}}><span style={{color:ts,flexShrink:0}}>{l}</span><span style={{fontWeight:500}}>{v}</span></div>):<div style={{fontSize:13,color:ts,padding:'8px 0',lineHeight:1.7}}>Add your banking details so Vollard Black can pay sale proceeds directly to your account.</div>}
+                      {(collector?.bankName||collector?.accountNumber)?[['Bank',collector?.bankName||'—'],['Account Holder',collector?.accountHolder||'—'],['Account Number',collector?.accountNumber||'—'],['Branch Code',collector?.branchCode||'—']].map(([l,v])=><div key={l} style={{display:'flex',justifyContent:'space-between',padding:'9px 0',borderBottom:`1px solid ${C.goldL}`,fontSize:13,gap:12}}><span style={{color:'#8a8070',flexShrink:0}}>{l}</span><span style={{fontWeight:500}}>{v}</span></div>):<div style={{fontSize:13,color:'#8a8070',padding:'8px 0',lineHeight:1.7}}>Add your banking details so Vollard Black can pay sale proceeds directly to your account.</div>}
                     </div>
-                  ):section.rows.map(([l,v])=><div key={l} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'10px 0',borderBottom:`1px solid ${C.goldL}`,fontSize:13,gap:12}}><span style={{color:ts,flexShrink:0}}>{l}</span><span style={{fontWeight:500,textAlign:'right',color:tp}}>{v}</span></div>)}</div></div>
+                  ):section.rows.map(([l,v])=><div key={l} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'10px 0',borderBottom:`1px solid ${C.goldL}`,fontSize:13,gap:12}}><span style={{color:'#8a8070',flexShrink:0}}>{l}</span><span style={{fontWeight:500,textAlign:'right',color:'#1a1714'}}>{v}</span></div>)}</div></div>
                 ))}
               </div>
             ):(
               <div>
                 <div style={{...CARD,marginBottom:16}}><div style={CP}><div style={SH}>Personal Information</div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>{[['firstName','First Name'],['lastName','Last Name'],['mobile','Mobile'],['idNumber','ID / Passport'],['nationality','Nationality'],['city','City'],['country','Country']].map(([key,label])=><div key={key}><label style={lbl}>{label}</label><input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={inp}/></div>)}<div style={{gridColumn:'1/-1'}}><label style={lbl}>Address</label><textarea value={profileForm.address||''} onChange={e=>setProfileForm(p=>({...p,address:e.target.value}))} style={{...inp,minHeight:60,resize:'vertical'}}/></div></div></div></div>
-                <div style={{...CARD,marginBottom:16}}><div style={CP}><div style={SH}>Banking Details</div><div style={{fontSize:12,color:ts,marginBottom:16,lineHeight:1.7}}>Your payout account. Changes require re-verification by Vollard Black.</div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>{[['bankName','Bank Name'],['accountHolder','Account Holder'],['accountNumber','Account Number'],['branchCode','Branch Code']].map(([key,label])=><div key={key}><label style={lbl}>{label}</label><input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={inp} inputMode={key==='accountNumber'||key==='branchCode'?'numeric':undefined}/></div>)}</div><div style={{marginTop:14,padding:'11px 14px',background:'rgba(230,190,50,0.05)',border:'1px solid rgba(230,190,50,0.18)',borderRadius:10,fontSize:12,color:ts,lineHeight:1.6}}>⚠ Changes flag your account for verification before payouts resume.</div></div></div>
+                <div style={{...CARD,marginBottom:16}}><div style={CP}><div style={SH}>Banking Details</div><div style={{fontSize:12,color:'#8a8070',marginBottom:16,lineHeight:1.7}}>Your payout account. Changes require re-verification by Vollard Black.</div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>{[['bankName','Bank Name'],['accountHolder','Account Holder'],['accountNumber','Account Number'],['branchCode','Branch Code']].map(([key,label])=><div key={key}><label style={lbl}>{label}</label><input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={inp} inputMode={key==='accountNumber'||key==='branchCode'?'numeric':undefined}/></div>)}</div><div style={{marginTop:14,padding:'11px 14px',background:'rgba(230,190,50,0.05)',border:'1px solid rgba(230,190,50,0.18)',borderRadius:10,fontSize:12,color:'#8a8070',lineHeight:1.6}}>⚠ Changes flag your account for verification before payouts resume.</div></div></div>
                 <div style={{display:'flex',gap:10,justifyContent:'flex-end'}}><button onClick={()=>setProfileEdit(false)} style={{padding:'12px 22px',borderRadius:12,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:SAN}}>Cancel</button><button onClick={saveProfile} disabled={savingProfile} style={{padding:'12px 28px',borderRadius:12,border:'none',background:`linear-gradient(135deg,${C.gold},${C.goldD})`,color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:SAN,opacity:savingProfile?0.6:1,boxShadow:'0 4px 14px rgba(182,139,46,0.28)'}}>{savingProfile?'Saving…':'Save Changes'}</button></div>
               </div>
             )}
@@ -434,14 +434,14 @@ function RenterDashboard({session}){
         {/* TERMS */}
         {tab==='terms'&&(
           <div>
-            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:tp,marginBottom:20}}>Display License Agreement</div>
-            <div style={CARD}><div style={CP}><div style={{fontSize:12,color:ts,marginBottom:20}}>Vollard Black (Pty) Ltd · Hermanus, South Africa</div>{[['1. License Fee','The display license fee is 50% of the declared artwork value, payable in monthly instalments over your agreed term.'],['2. On Sale','When your artwork sells: Vollard Black retains the outstanding license fee balance from the proceeds. You receive the remainder. Any surplus above the original value is split 50/50.'],['3. Care of Artwork','You agree to display the artwork safely, not move it without consent, and notify Vollard Black immediately of any damage or theft.'],['4. Ownership','Title remains with the artist/Vollard Black until the full license fee is paid and a sale is concluded.'],['5. Cancellation','Either party may cancel with 30 days written notice.'],['6. Governing Law','This agreement is governed by the laws of South Africa.']].map(([title,text])=><div key={title} style={{marginBottom:16,paddingBottom:16,borderBottom:`1px solid ${C.goldL}`}}><div style={{fontFamily:SER,fontSize:16,color:tp,marginBottom:6,fontWeight:500}}>{title}</div><div style={{fontSize:13,color:ts,lineHeight:1.8}}>{text}</div></div>)}<div style={{padding:'12px 16px',background:'rgba(182,139,46,0.06)',borderRadius:10,fontSize:12,color:'#8a6a1e'}}>Contact: <strong>concierge@vollardblack.com</strong></div></div></div>
+            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:'#1a1714',marginBottom:20}}>Display License Agreement</div>
+            <div style={CARD}><div style={CP}><div style={{fontSize:12,color:'#8a8070',marginBottom:20}}>Vollard Black (Pty) Ltd · Hermanus, South Africa</div>{[['1. License Fee','The display license fee is 50% of the declared artwork value, payable in monthly instalments over your agreed term.'],['2. On Sale','When your artwork sells: Vollard Black retains the outstanding license fee balance from the proceeds. You receive the remainder. Any surplus above the original value is split 50/50.'],['3. Care of Artwork','You agree to display the artwork safely, not move it without consent, and notify Vollard Black immediately of any damage or theft.'],['4. Ownership','Title remains with the artist/Vollard Black until the full license fee is paid and a sale is concluded.'],['5. Cancellation','Either party may cancel with 30 days written notice.'],['6. Governing Law','This agreement is governed by the laws of South Africa.']].map(([title,text])=><div key={title} style={{marginBottom:16,paddingBottom:16,borderBottom:`1px solid ${C.goldL}`}}><div style={{fontFamily:SER,fontSize:16,color:'#1a1714',marginBottom:6,fontWeight:500}}>{title}</div><div style={{fontSize:13,color:'#8a8070',lineHeight:1.8}}>{text}</div></div>)}<div style={{padding:'12px 16px',background:'rgba(182,139,46,0.06)',borderRadius:10,fontSize:12,color:'#8a6a1e'}}>Contact: <strong>concierge@vollardblack.com</strong></div></div></div>
           </div>
         )}
       </div>
 
       {/* Mobile bottom nav */}
-      <div style={{position:'fixed',bottom:0,left:0,right:0,background:'#fff',borderTop:`1px solid ${cardBorder}`,padding:'8px 0',display:'flex',justifyContent:'space-around',zIndex:50,boxShadow:'0 -4px 20px rgba(0,0,0,0.08)'}}>
+      <div style={{position:'fixed',bottom:0,left:0,right:0,background:'#fff',borderTop:'1px solid rgba(182,139,46,0.18)',padding:'8px 0',display:'flex',justifyContent:'space-around',zIndex:50,boxShadow:'0 -4px 20px rgba(0,0,0,0.08)'}}>
         {[['overview','🏠','Home'],['artworks','🖼','Works'],['payments','💳','Pay'],['calendar','📅','Calendar'],['profile','👤','Profile']].map(([id,icon,l])=>(
           <button key={id} onClick={()=>setTab(id)} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,padding:'4px 8px',background:'none',border:'none',cursor:'pointer',fontFamily:SAN}}>
             <span style={{fontSize:18,opacity:tab===id?1:0.4}}>{icon}</span>
