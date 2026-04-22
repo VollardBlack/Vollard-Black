@@ -1,4 +1,5 @@
 'use client';
+import KYCRegistration from './KYCRegistration';
 import { useState, useEffect, useRef } from "react";
 import { createClient } from '@supabase/supabase-js';
 
@@ -163,7 +164,7 @@ function generateAgreement(schedule,artworkTitle,collectorName){
   w.document.write(html);w.document.close();
 }
 
-function RenterDashboard({session}){
+function RenterDashboard({session, kycComplete=true}){
   const[tab,setTab]=useState('overview');
   const[collector,setCollector]=useState(null);
   const[schedules,setSchedules]=useState([]);
@@ -551,41 +552,143 @@ function RenterDashboard({session}){
   );
 }
 
+// ── KYC Docs Banner ─────────────────────────────────────────
+function KycBanner({email}){
+  const[uploading,setUploading]=useState(false);
+  const[done,setDone]=useState(false);
+  const[idFile,setIdFile]=useState(null);
+  const[selfieFile,setSelfieFile]=useState(null);
+  const[open,setOpen]=useState(false);
+
+  const upload=async()=>{
+    if(!idFile&&!selfieFile)return;
+    setUploading(true);
+    try{
+      const now=Date.now();
+      let idUrl='',selfieUrl='';
+      if(idFile){
+        const path=`kyc/${email}/id_${now}.${idFile.name.split('.').pop()}`;
+        await sb.storage.from('kyc-documents').upload(path,idFile,{upsert:true});
+        idUrl=sb.storage.from('kyc-documents').getPublicUrl(path).data?.publicUrl||'';
+      }
+      if(selfieFile){
+        const path=`kyc/${email}/selfie_${now}.${selfieFile.name.split('.').pop()}`;
+        await sb.storage.from('kyc-documents').upload(path,selfieFile,{upsert:true});
+        selfieUrl=sb.storage.from('kyc-documents').getPublicUrl(path).data?.publicUrl||'';
+      }
+      // Update portal_requests with doc URLs
+      const updates={};
+      if(idUrl)updates.id_document_url=idUrl;
+      if(selfieUrl)updates.selfie_url=selfieUrl;
+      if(Object.keys(updates).length)
+        await sb.from('portal_requests').update(updates).eq('email',email);
+      setDone(true);
+    }catch(e){console.error(e);}
+    setUploading(false);
+  };
+
+  if(done)return null;
+
+  return(
+    <div style={{background:'rgba(230,190,50,0.10)',border:'1.5px solid rgba(182,139,46,0.30)',borderRadius:12,padding:'14px 18px',marginBottom:16,fontFamily:F.san}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:10}}>
+        <div style={{display:'flex',gap:10,alignItems:'center'}}>
+          <span style={{fontSize:18}}>⚠️</span>
+          <div>
+            <div style={{fontSize:13,fontWeight:700,color:'#7a5c00',marginBottom:2}}>KYC Documents Required</div>
+            <div style={{fontSize:12,color:'#8a7040',lineHeight:1.5}}>Please upload your ID document and a selfie. Artworks will only be released once verified.</div>
+          </div>
+        </div>
+        <button onClick={()=>setOpen(o=>!o)} style={{padding:'8px 16px',borderRadius:8,border:'1px solid rgba(182,139,46,0.30)',background:'transparent',color:G.gold,cursor:'pointer',fontSize:12,fontWeight:600,fontFamily:F.san,flexShrink:0}}>
+          {open?'Hide':'Upload Documents'}
+        </button>
+      </div>
+      {open&&(
+        <div style={{marginTop:14,display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+          <div>
+            <label style={{display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:G.mid,marginBottom:6}}>ID Document</label>
+            <input type="file" accept="image/*,.pdf" onChange={e=>setIdFile(e.target.files[0])} style={{width:'100%',fontSize:12,fontFamily:F.san}}/>
+            {idFile&&<div style={{fontSize:11,color:G.greenD,marginTop:4}}>✓ {idFile.name}</div>}
+          </div>
+          <div>
+            <label style={{display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:G.mid,marginBottom:6}}>Selfie with ID</label>
+            <input type="file" accept="image/*" capture="user" onChange={e=>setSelfieFile(e.target.files[0])} style={{width:'100%',fontSize:12,fontFamily:F.san}}/>
+            {selfieFile&&<div style={{fontSize:11,color:G.greenD,marginTop:4}}>✓ {selfieFile.name}</div>}
+          </div>
+          <div style={{gridColumn:'1/-1'}}>
+            <button onClick={upload} disabled={uploading||(!idFile&&!selfieFile)} style={{width:'100%',padding:'11px',borderRadius:10,border:'none',background:`linear-gradient(135deg,${G.gold},${G.goldD})`,color:G.white,fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:F.san,opacity:uploading||(!idFile&&!selfieFile)?0.5:1}}>
+              {uploading?'Uploading…':'Submit Documents'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Root ────────────────────────────────────────────────────
 // ── Root ────────────────────────────────────────────────────
 export default function RenterPortal(){
   const[session,setSession]=useState(undefined);
-  const[status,setStatus]=useState('init');
-  const[termsSigned,setTermsSigned]=useState(false);
+  const[screen,setScreen]=useState('loading'); // loading|auth|kyc|pending|terms|dashboard
+  const[hasKycDocs,setHasKycDocs]=useState(true);
+
   useEffect(()=>{
-    if(!sb){setSession(null);setStatus('none');return;}
+    if(!sb){setSession(null);setScreen('auth');return;}
     sb.auth.getSession().then(({data})=>setSession(data?.session||null));
     const{data:{subscription}}=sb.auth.onAuthStateChange((_,s)=>setSession(s));
     return()=>subscription.unsubscribe();
   },[]);
+
   useEffect(()=>{
     if(session===undefined)return;
-    if(!session){setStatus('none');setTermsSigned(false);return;}
-    setStatus('checking');
-    const timer=setTimeout(()=>setStatus('approved'),5000);
-    sb.from('portal_requests').select('status').eq('email',session.user.email.toLowerCase()).eq('role','renter').order('created_at',{ascending:false}).limit(1).maybeSingle()
-      .then(({data})=>{
-        clearTimeout(timer);
-        if(!data){setStatus('approved');return;}
-        setStatus(data.status==='approved'?'approved':data.status==='pending'?'pending':'approved');
-      })
-      .catch(()=>{clearTimeout(timer);setStatus('approved');});
+    if(!session){setScreen('auth');return;}
+    checkAccess(session.user.email.toLowerCase());
   },[session]);
-  useEffect(()=>{
-    if(status!=='approved'||!session)return;
-    try{const s=JSON.parse(localStorage.getItem('vb_terms_renter')||'null');if(s&&s.email===session.user.email&&s.v===TERMS_VERSION){setTermsSigned(true);return;}}catch{}
-    setTermsSigned(false);
-  },[status,session]);
 
-  if(session===undefined||status==='init'||status==='checking')
-    return<div style={{minHeight:'100vh',background:G.cream,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:12}}><div style={{fontFamily:F.ser,fontSize:20,letterSpacing:8,color:G.gold,opacity:0.5}}>VOLLARD BLACK</div>{status==='checking'&&<button onClick={()=>{sb.auth.signOut();setSession(null);setStatus('none');}} style={{fontSize:12,color:G.light,background:'none',border:'none',cursor:'pointer',fontFamily:F.san,marginTop:8}}>Cancel</button>}</div>;
-  if(!session||status==='none')return<AuthScreen onAuth={sess=>setSession(sess)}/>;
-  if(status==='pending')return<NotApprovedScreen onSignOut={()=>sb.auth.signOut()}/>;
-  if(!termsSigned)return<TermsModal email={session.user.email} onAccepted={()=>setTermsSigned(true)}/>;
-  return<RenterDashboard session={session}/>;
+  const checkTermsLocal=(email)=>{try{const s=JSON.parse(localStorage.getItem('vb_terms_renter')||'null');return !!(s&&s.email===email&&s.v===TERMS_VERSION);}catch{return false;}};
+
+  const checkAccess=async(email)=>{
+    setScreen('loading');
+    try{
+      // Check this role's portal_requests row
+      const{data:myRow}=await sb.from('portal_requests').select('status,id_document_url,selfie_url').eq('email',email).eq('role','renter').order('created_at',{ascending:false}).limit(1).maybeSingle();
+      if(myRow){
+        if(myRow.status==='approved'){
+          setHasKycDocs(!!(myRow.id_document_url||myRow.selfie_url));
+          setScreen(checkTermsLocal(email)?'dashboard':'terms');
+        }else{setScreen('pending');}
+        return;
+      }
+      // No row for this role — check if KYC done on any portal
+      const{data:anyRow}=await sb.from('portal_requests').select('id').eq('email',email).limit(1).maybeSingle();
+      if(anyRow){
+        // KYC exists — register for this role and show pending
+        await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email,role:'renter',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'}).catch(()=>{});
+        setScreen('pending');
+      }else{
+        // No KYC anywhere — full registration needed
+        setScreen('kyc');
+      }
+    }catch(e){console.error(e);setScreen('auth');}
+  };
+
+  if(session===undefined||screen==='loading')
+    return<div style={{minHeight:'100vh',background:G.cream,display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <div style={{fontFamily:F.ser,fontSize:20,letterSpacing:8,color:G.gold,opacity:0.5}}>VOLLARD BLACK</div>
+    </div>;
+
+  if(screen==='auth'||!session)
+    return<AuthScreen onAuth={s=>setSession(s)}/>;
+
+  if(screen==='kyc')
+    return<KYCRegistration role="renter" supabase={sb} onComplete={()=>{if(session)checkAccess(session.user.email.toLowerCase());else setScreen('pending');}} onSignIn={()=>setScreen('auth')}/>;
+
+  if(screen==='pending')
+    return<NotApprovedScreen onSignOut={()=>sb.auth.signOut()}/>;
+
+  if(screen==='terms')
+    return<TermsModal email={session.user.email} onAccepted={()=>setScreen('dashboard')}/>;
+
+  return<RenterDashboard session={session} kycComplete={hasKycDocs}/>;
 }
