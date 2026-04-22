@@ -290,7 +290,7 @@ export default function KYCRegistration({ role, supabase, onComplete, onSignIn }
               </Grid>
               <F label="ID Type" required>
                 <select value={f.idType} onChange={e=>s('idType',e.target.value)} style={inp}>
-                  <option>RSA ID</option><option>Passport</option><option>Foreign National ID</option>
+                  <option>RSA ID</option><option>Passport</option><option>Driver's Licence</option><option>Foreign National ID</option>
                 </select>
               </F>
               <F label={f.idType==='Passport'?'Passport Number':'ID Number'} required>
@@ -354,7 +354,7 @@ export default function KYCRegistration({ role, supabase, onComplete, onSignIn }
               <div style={{height:1,background:C.goldB,margin:'8px 0 24px'}}/>
               <Sect title="Identity Documents"/>
               <UpBox label={`${f.idType} — Front`} required value={idFront} onChange={setIdFront} hint="All four corners clearly visible"/>
-              <UpBox label={f.idType==='RSA ID'?'RSA ID — Back':'Passport Photo Page'} value={idBack} onChange={setIdBack} hint={f.idType==='RSA ID'?'Back of your ID card':'Page showing your photo and details'}/>
+              <UpBox label={f.idType==='RSA ID'||f.idType==="Driver's Licence"?`${f.idType} — Back`:'Passport Photo Page'} value={idBack} onChange={setIdBack} hint={f.idType==='RSA ID'||f.idType==="Driver's Licence"?'Back of your card':'Page showing your photo and details'}/>
               <UpBox label="Selfie Photo" required value={selfie} onChange={setSelfie} hint="Camera opens directly. Hold your ID next to your face." camera={true}/>
             </div>}
 
