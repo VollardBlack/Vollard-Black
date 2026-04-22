@@ -538,6 +538,10 @@ function BuyerDashboard({session}) {
   const [bids,setBids] = useState([]);
   const [purchases,setPurchases] = useState([]);
   const [initialLoading,setInitialLoading] = useState(true);
+  const [darkMode,setDarkMode] = useState(false);
+  const [watchlist,setWatchlist] = useState(()=>{try{return JSON.parse(localStorage.getItem('vb_watchlist')||'[]');}catch{return[];}});
+  const [artDetail,setArtDetail] = useState(null);
+  const [notifs,setNotifs] = useState([]);
   const [enquiry,setEnquiry] = useState(null);
   const [profileEdit,setProfileEdit] = useState(false);
   const [profileForm,setProfileForm] = useState({});
@@ -552,6 +556,8 @@ function BuyerDashboard({session}) {
   const [soundReady,setSoundReady] = useState(false);
   const buyerRef = useRef(null);
 
+  const addNotif=msg=>setNotifs(p=>[{msg,time:new Date().toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'}),read:false},...p.slice(0,19)]);
+  const toggleWatchlist=(id)=>{const w=watchlist.includes(id)?watchlist.filter(x=>x!==id):[...watchlist,id];setWatchlist(w);try{localStorage.setItem('vb_watchlist',JSON.stringify(w));}catch{}};
   const unlockSound = () => { const ctx = _getAudioCtxBuyer(); if(ctx) setSoundReady(true); };
   const auctionsRef = useRef([]);
   const toastTimer = useRef(null);
@@ -724,6 +730,13 @@ function BuyerDashboard({session}) {
 
   const signOut = ()=>supabase.auth.signOut();
 
+  const generatePurchaseCert = (purchase) => {
+    const w = window.open('','_blank');
+    const bName = buyer?(`${buyer.firstName||''} ${buyer.lastName||''}`.trim()||buyer.companyName||''):session.user.email;
+    const html = `<!DOCTYPE html><html><head><title>Purchase Certificate</title><style>@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@400;600&display=swap');body{margin:0;padding:60px;background:#fff;font-family:'DM Sans',sans-serif;color:#1a1714;max-width:680px;}@page{size:A4;margin:20mm;}@media print{body{padding:0;}}.logo{font-family:'Cormorant Garamond',serif;font-size:22px;letter-spacing:0.3em;margin-bottom:4px;}.logo span{color:#b68b2e;}.title{font-family:'Cormorant Garamond',serif;font-size:32px;margin:32px 0 24px;}.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:24px;background:#f5f3ef;border-radius:8px;margin-bottom:32px;}.label{font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:#8a8070;margin-bottom:4px;}.value{font-size:15px;font-weight:600;}</style></head><body><div class="logo">VOLLARD <span>BLACK</span></div><div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#8a8070;margin-bottom:32px;">Certificate of Purchase</div><div class="title">${purchase.artworkTitle||'Artwork'}</div><div class="grid"><div><div class="label">Purchaser</div><div class="value">${bName}</div></div><div><div class="label">Purchase Date</div><div class="value">${purchase.date||new Date().toLocaleDateString('en-ZA')}</div></div><div><div class="label">Sale Price</div><div class="value">R ${fmt(purchase.salePrice)}</div></div><div><div class="label">Certificate No</div><div class="value">VB-${purchase.id?.slice(-8)?.toUpperCase()||'N/A'}</div></div></div><div style="font-size:12px;color:#4a4440;line-height:1.9;">This certificate confirms the purchase of the above artwork through Vollard Black (Pty) Ltd. This document serves as proof of purchase and is issued on the date shown above.</div><div style="margin-top:48px;display:grid;grid-template-columns:1fr 1fr;gap:40px;"><div style="border-top:1px solid #ccc;padding-top:8px;font-size:11px;color:#8a8070;">Purchaser signature</div><div style="border-top:1px solid #ccc;padding-top:8px;font-size:11px;color:#8a8070;">Vollard Black authorised signature</div></div></body></html>`;
+    w.document.write(html); w.document.close();
+  };
+
   const payWithIkhoka = async({amount, description, referenceId, type}) => {
     try {
       const res = await fetch('/api/ikhoka-paylink', {
@@ -762,14 +775,22 @@ function BuyerDashboard({session}) {
 
   return (
     <div style={S.page}>
-      <div style={{background:'#fff',borderBottom:'1px solid rgba(182,139,46,0.20)',padding:'14px 20px',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:10,position:'sticky',top:0,zIndex:50}}>
-        <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,fontWeight:300,letterSpacing:5,color:'#1a1714'}}>VOLLARD <span style={{color:'#b68b2e'}}>BLACK</span></div>
-          <div style={{fontSize:9,letterSpacing:3,textTransform:'uppercase',color:'#8a8070'}}>Buyer Portal</div>
-        </div>
-        <div style={{display:'flex',alignItems:'center',gap:12}}>
-          <span style={{fontSize:13,color:'#1a1714',fontWeight:500}}>{displayName}</span>
-          <button onClick={signOut} style={{padding:'8px 16px',borderRadius:6,border:'1px solid rgba(182,139,46,0.25)',background:'transparent',color:'#8a8070',cursor:'pointer',fontSize:11,fontFamily:"'DM Sans',sans-serif"}}>Sign Out</button>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap');*{box-sizing:border-box;}input:focus,select:focus,textarea:focus{border-color:#b68b2e!important;box-shadow:0 0 0 3px rgba(182,139,46,0.12)!important;outline:none;}`}</style>
+      <div style={{background:darkMode?'#1a1714':'#fff',borderBottom:`1px solid ${darkMode?'rgba(182,139,46,0.20)':'rgba(182,139,46,0.15)'}`,padding:'0 20px',height:56,display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:50,boxShadow:'0 1px 12px rgba(0,0,0,0.06)'}}>
+        <a href="/" style={{textDecoration:'none',display:'flex',alignItems:'center',gap:10}}>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,fontWeight:300,letterSpacing:'0.20em',color:darkMode?'#f5f3ef':'#1a1714'}}>VOLLARD <span style={{color:'#b68b2e'}}>BLACK</span></div>
+          <div style={{width:1,height:14,background:'rgba(182,139,46,0.25)'}}/>
+          <span style={{fontSize:9,letterSpacing:'0.18em',textTransform:'uppercase',color:'#c45c4a',fontWeight:700}}>Buyer</span>
+        </a>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <button onClick={()=>setDarkMode(d=>!d)} style={{padding:'7px 12px',borderRadius:8,border:`1px solid ${darkMode?'rgba(182,139,46,0.20)':'rgba(182,139,46,0.15)'}`,background:'transparent',color:darkMode?'rgba(245,243,239,0.55)':'#8a8070',cursor:'pointer',fontSize:14,lineHeight:1}}>{darkMode?'☀':'🌙'}</button>
+          {/* Notification bell */}
+          <div style={{position:'relative'}}>
+            <button onClick={()=>setNotifs(p=>p.map(n=>({...n,read:true})))} style={{position:'relative',padding:'7px 12px',borderRadius:8,border:`1px solid ${darkMode?'rgba(182,139,46,0.20)':'rgba(182,139,46,0.15)'}`,background:'transparent',color:darkMode?'rgba(245,243,239,0.55)':'#8a8070',cursor:'pointer',fontSize:14,lineHeight:1}}>🔔{notifs.filter(n=>!n.read).length>0&&<span style={{position:'absolute',top:-4,right:-4,width:16,height:16,borderRadius:'50%',background:'#c45c4a',color:'#fff',fontSize:9,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center'}}>{notifs.filter(n=>!n.read).length}</span>}</button>
+          </div>
+          <button onClick={()=>window.open('https://wa.me/27826503393?text='+encodeURIComponent('Hi Vollard Black, I need assistance with my buyer portal.'),'_blank')} style={{padding:'7px 12px',borderRadius:8,border:'1px solid rgba(37,211,102,0.30)',background:'rgba(37,211,102,0.08)',color:'#25d366',cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>Chat</button>
+          <span style={{fontSize:13,color:darkMode?'rgba(245,243,239,0.55)':'#6b635a',fontWeight:500}}>{displayName}</span>
+          <button onClick={signOut} style={{padding:'7px 14px',borderRadius:8,border:`1px solid ${darkMode?'rgba(182,139,46,0.20)':'rgba(182,139,46,0.15)'}`,background:'transparent',color:darkMode?'rgba(245,243,239,0.55)':'#8a8070',cursor:'pointer',fontSize:11,fontFamily:"'DM Sans',sans-serif"}}>Sign Out</button>
         </div>
       </div>
 
@@ -777,7 +798,30 @@ function BuyerDashboard({session}) {
       <style>{`@keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}`}</style>
       {toast&&<div onClick={()=>setToast(null)} style={{position:'fixed',top:72,left:'50%',transform:'translateX(-50%)',zIndex:400,maxWidth:380,width:'calc(100% - 32px)',padding:'14px 18px',borderRadius:12,boxShadow:'0 8px 32px rgba(0,0,0,0.22)',background:toast.type==='outbid'?'#c45c4a':toast.type==='sold'?'#2d7a4a':'#1a1714',color:'#fff',fontSize:13,fontWeight:600,display:'flex',alignItems:'center',gap:10,cursor:'pointer',animation:'slideDown 0.25s ease'}}><span style={{flex:1}}>{toast.msg}</span><span style={{opacity:0.5,fontSize:18,flexShrink:0}}>x</span></div>}
 
-      <div style={{maxWidth:960,margin:'0 auto',padding:'16px 16px 80px'}}>
+      {/* Hero */}
+      <div style={{background:'linear-gradient(135deg,#1a1714 0%,#2a2018 60%,#1e1a10 100%)',padding:'28px 20px 24px',position:'relative',overflow:'hidden'}}>
+        <div style={{position:'absolute',inset:0,backgroundImage:'radial-gradient(ellipse at 80% 50%, rgba(196,92,74,0.10) 0%, transparent 60%)',pointerEvents:'none'}}/>
+        <div style={{position:'absolute',bottom:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent,rgba(182,139,46,0.5),transparent)'}}/>
+        <div style={{maxWidth:960,margin:'0 auto',position:'relative'}}>
+          <div style={{display:'flex',gap:16,alignItems:'center',marginBottom:20}}>
+            <div style={{width:52,height:52,borderRadius:'50%',background:'linear-gradient(135deg,rgba(196,92,74,0.3),rgba(196,92,74,0.08))',border:'2px solid rgba(196,92,74,0.4)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:20,color:'rgba(196,92,74,0.8)',fontFamily:"'Cormorant Garamond',serif"}}>{displayName?displayName[0].toUpperCase():'B'}</div>
+            <div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,fontWeight:300,color:'#f5f3ef',letterSpacing:'0.02em'}}>{displayName}</div>
+              <div style={{fontSize:12,color:'rgba(245,243,239,0.50)',marginTop:2}}>Art Collector · {buyer?.auctionApproved?'✓ Auction Approved':'Gallery Access'}</div>
+            </div>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10}}>
+            {[['Gallery',artworks.length+' works'],['Watchlist',watchlist.length+' saved'],['Bids',bids.length],['Purchases',purchases.length]].map(([l,v])=>(
+              <div key={l} style={{background:'rgba(255,255,255,0.05)',border:'1px solid rgba(182,139,46,0.18)',borderRadius:12,padding:'12px 10px',textAlign:'center'}}>
+                <div style={{fontSize:9,letterSpacing:'0.18em',textTransform:'uppercase',color:'rgba(182,139,46,0.65)',marginBottom:4}}>{l}</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,fontWeight:300,color:'#f5f3ef'}}>{v}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{maxWidth:960,margin:'0 auto',padding:'16px 16px 100px'}}>
         {/* Sound unlock — one tap needed for browser audio policy */}
         {!soundReady&&(
           <div onClick={()=>unlockSound()} style={{padding:'10px 16px',background:'rgba(26,23,20,0.04)',border:'1px solid rgba(26,23,20,0.12)',borderRadius:10,marginBottom:10,display:'flex',alignItems:'center',gap:10,flexWrap:'wrap',cursor:'pointer'}}>
@@ -797,8 +841,8 @@ function BuyerDashboard({session}) {
         {enquiryMsg&&<div style={{padding:'12px 16px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:8,marginBottom:10,fontSize:13,color:'#4a9e6b'}}>{enquiryMsg}</div>}
 
         <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:24,padding:'4px 0'}}>
-          {[['gallery',`Gallery${artworks.length>0?' ('+artworks.length+')':''}`],['auctions',`Auctions${liveAuctions.length>0?' 🔴':''}${isOutbid?' ⚠':''}`],['mybids',`My Bids${bids.length>0?' ('+bids.length+')':''}`],['purchases','Purchases'],['profile','My Profile']].map(([id,lbl])=>(
-            <button key={id} onClick={()=>setTab(id)} style={S.tab(tab===id)}>{lbl}</button>
+          {[['gallery',`Gallery`],['watchlist',`Saved ${watchlist.length>0?'('+watchlist.length+')':''}`],['auctions',`Auctions${liveAuctions.length>0?' 🔴':''}${isOutbid?' ⚠':''}`],['mybids',`My Bids`],['purchases','Purchases'],['profile','Profile']].map(([id,lbl])=>(
+            <button key={id} onClick={()=>setTab(id)} style={{padding:'9px 20px',borderRadius:24,border:tab===id?'none':'1px solid rgba(182,139,46,0.22)',background:tab===id?'linear-gradient(135deg,#b68b2e,#8a6a1e)':darkMode?'#1a1714':'#fff',color:tab===id?'#fff':darkMode?'rgba(245,243,239,0.55)':'#6b635a',fontSize:13,fontWeight:tab===id?600:400,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",whiteSpace:'nowrap',transition:'all 0.2s',boxShadow:tab===id?'0 4px 12px rgba(182,139,46,0.28)':'none'}}>{lbl}</button>
           ))}
         </div>
 
@@ -815,8 +859,9 @@ function BuyerDashboard({session}) {
               <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))',gap:16}}>
                 {artworks.filter(a=>(a.title+' '+(a.artist||'')).toLowerCase().includes(search.toLowerCase())).map(art=>(
                   <div key={art.id} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:12,overflow:'hidden'}}>
-                    <div style={{height:200,background:'#f0ede8',overflow:'hidden',cursor:art.imageUrl?'zoom-in':'default'}} onClick={()=>art.imageUrl&&setZoomImg(art.imageUrl)}>
+                    <div style={{height:200,background:'#f0ede8',overflow:'hidden',cursor:art.imageUrl?'zoom-in':'default',position:'relative'}} onClick={()=>art.imageUrl&&setZoomImg(art.imageUrl)}>
                       {art.imageUrl?<img src={art.imageUrl} alt={art.title} style={{width:'100%',height:'100%',objectFit:'cover'}}/>:<div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',color:'#b68b2e',fontSize:32}}>◆</div>}
+                      <button onClick={e=>{e.stopPropagation();toggleWatchlist(art.id);}} style={{position:'absolute',top:8,right:8,width:34,height:34,borderRadius:'50%',background:'rgba(255,255,255,0.92)',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,boxShadow:'0 2px 8px rgba(0,0,0,0.15)'}}>{watchlist.includes(art.id)?'❤️':'🤍'}</button>
                     </div>
                     <div style={{padding:16}}>
                       <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:17,color:'#1a1714',marginBottom:2}}>{art.title}</div>
@@ -969,10 +1014,41 @@ function BuyerDashboard({session}) {
                     <div style={{fontSize:9,color:'#8a8070',letterSpacing:1,textTransform:'uppercase'}}>Sale Price</div>
                     <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,...S.gold}}>R {fmt(p.salePrice)}</div>
                     <div style={{fontSize:11,color:'#4a9e6b',marginTop:2,fontWeight:600}}>✓ Payment Complete</div>
+                    <button onClick={()=>generatePurchaseCert(p)} style={{marginTop:6,padding:'5px 12px',borderRadius:8,border:'1px solid rgba(182,139,46,0.25)',background:'transparent',color:'#b68b2e',cursor:'pointer',fontSize:10,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>📜 Certificate</button>
                   </div>
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* WATCHLIST */}
+        {tab==='watchlist'&&(
+          <div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,fontWeight:300,color:darkMode?'#f5f3ef':'#1a1714',marginBottom:8}}>Saved Artworks</div>
+            <div style={{fontSize:13,color:darkMode?'rgba(245,243,239,0.55)':'#8a8070',marginBottom:20}}>Artworks you've saved for later.</div>
+            {watchlist.length===0?<div style={{background:darkMode?'#1a1714':'#fff',border:`1px solid ${darkMode?'rgba(182,139,46,0.20)':'rgba(182,139,46,0.15)'}`,borderRadius:16,padding:56,textAlign:'center'}}><div style={{fontSize:44,marginBottom:12,opacity:0.2}}>🤍</div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,color:darkMode?'#f5f3ef':'#1a1714',marginBottom:8}}>No saved artworks</div><div style={{fontSize:13,color:darkMode?'rgba(245,243,239,0.55)':'#8a8070',marginBottom:20}}>Tap the heart on any artwork to save it here.</div><button onClick={()=>setTab('gallery')} style={{padding:'11px 28px',borderRadius:24,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Browse Gallery →</button></div>
+            :<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))',gap:16}}>
+              {artworks.filter(a=>watchlist.includes(a.id)).map(art=>(
+                <div key={art.id} style={{background:darkMode?'#1a1714':'#fff',border:`1px solid ${darkMode?'rgba(182,139,46,0.20)':'rgba(182,139,46,0.18)'}`,borderRadius:12,overflow:'hidden'}}>
+                  <div style={{height:200,background:'#f0ede8',overflow:'hidden',position:'relative',cursor:art.imageUrl?'zoom-in':'default'}} onClick={()=>art.imageUrl&&setZoomImg(art.imageUrl)}>
+                    {art.imageUrl?<img src={art.imageUrl} alt={art.title} style={{width:'100%',height:'100%',objectFit:'cover'}}/>:<div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',color:'#b68b2e',fontSize:32}}>◆</div>}
+                    <button onClick={e=>{e.stopPropagation();toggleWatchlist(art.id);}} style={{position:'absolute',top:8,right:8,width:34,height:34,borderRadius:'50%',background:'rgba(255,255,255,0.92)',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,boxShadow:'0 2px 8px rgba(0,0,0,0.15)'}}>❤️</button>
+                  </div>
+                  <div style={{padding:'14px 16px'}}>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:darkMode?'#f5f3ef':'#1a1714',marginBottom:4}}>{art.title}</div>
+                    <div style={{fontSize:12,color:darkMode?'rgba(245,243,239,0.55)':'#8a8070',marginBottom:10}}>{art.artist||'—'} · {art.medium||'—'}</div>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+                      <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:'#b68b2e',fontWeight:600}}>R {fmt(art.recommendedPrice)}</span>
+                    </div>
+                    <div style={{display:'flex',gap:8}}>
+                      <button onClick={()=>setEnquiry(art)} style={{flex:1,padding:'9px',borderRadius:10,border:'1px solid rgba(182,139,46,0.28)',background:'transparent',color:'#b68b2e',cursor:'pointer',fontSize:11,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>Enquire</button>
+                      <button onClick={()=>payWithIkhoka({amount:art.recommendedPrice,description:`Vollard Black: ${art.title}`,referenceId:art.id.slice(-8),type:'gallery'})} style={{flex:1,padding:'9px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',cursor:'pointer',fontSize:11,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>💳 Buy Now</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>}
           </div>
         )}
 
@@ -1078,6 +1154,16 @@ function BuyerDashboard({session}) {
 
       {/* Bid Modal */}
       {bidTarget&&buyer&&<BidModal auction={bidTarget} buyer={buyer} myBids={bids} onClose={()=>setBidTarget(null)} onBidPlaced={()=>{setBidTarget(null);loadData(false);}}/>}
+
+      {/* Mobile bottom nav */}
+      <div style={{position:'fixed',bottom:0,left:0,right:0,background:darkMode?'#1a1714':'#fff',borderTop:`1px solid ${darkMode?'rgba(182,139,46,0.20)':'rgba(182,139,46,0.15)'}`,padding:'8px 0',display:'flex',justifyContent:'space-around',zIndex:50,boxShadow:'0 -4px 20px rgba(0,0,0,0.08)'}}>
+        {[['gallery','🖼','Gallery'],['watchlist','❤','Saved'],['auctions','⚖','Auctions'],['purchases','🏆','Purchases'],['profile','👤','Profile']].map(([id,icon,l])=>(
+          <button key={id} onClick={()=>setTab(id)} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,padding:'4px 8px',background:'none',border:'none',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
+            <span style={{fontSize:18,opacity:tab===id?1:0.4}}>{icon}</span>
+            <span style={{fontSize:9,letterSpacing:'0.06em',textTransform:'uppercase',color:tab===id?'#b68b2e':darkMode?'rgba(245,243,239,0.55)':'#8a8070',fontWeight:tab===id?700:400}}>{l}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
