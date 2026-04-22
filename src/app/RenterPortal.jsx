@@ -643,6 +643,7 @@ export default function RenterPortal(){
   useEffect(()=>{
     if(session===undefined)return;
     if(!session){setScreen('auth');return;}
+    if(screen==='pending')return; // already showing pending — don't re-check
     checkAccess(session.user.email.toLowerCase());
   },[session]);
 
@@ -682,7 +683,7 @@ export default function RenterPortal(){
     return<AuthScreen onAuth={s=>setSession(s)}/>;
 
   if(screen==='kyc')
-    return<KYCRegistration role="renter" supabase={sb} onComplete={()=>{if(session)checkAccess(session.user.email.toLowerCase());else setScreen('pending');}} onSignIn={()=>setScreen('auth')}/>;
+    return<KYCRegistration role="renter" supabase={sb} onComplete={()=>setScreen('pending')} onSignIn={()=>setScreen('auth')}/>;
 
   if(screen==='pending')
     return<NotApprovedScreen onSignOut={()=>sb.auth.signOut()}/>;
