@@ -28,36 +28,57 @@ function Sect({ title }) {
   return <div style={{fontSize:11,fontWeight:700,letterSpacing:'0.22em',textTransform:'uppercase',color:C.gold,paddingBottom:12,marginBottom:20,marginTop:8,borderBottom:`1.5px solid ${C.goldB}`}}>{title}</div>;
 }
 
-function UpBox({ label:lb, required, value, onChange, hint, camera=false }) {
+function UpBox({ label:lb, required, value, onChange, hint, camera=false, selfie=false }) {
   const [preview, setPreview] = useState(null);
-  const ref = useRef();
+  const fileRef = useRef();
+  const camRef = useRef();
+
   const handle = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    // Reset input so same file can be re-selected
+    e.target.value = '';
     const reader = new FileReader();
     reader.onload = ev => setPreview(ev.target.result);
     reader.readAsDataURL(file);
     const base64 = await new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(file); });
     onChange({ file, base64, name: file.name, type: file.type });
   };
+
+  const clear = (e) => {
+    e.stopPropagation();
+    setPreview(null);
+    onChange(null);
+  };
+
   return (
     <div style={{marginBottom:20}}>
       <label style={lbl}>{lb}{required&&<span style={{color:C.red,marginLeft:3}}>*</span>}</label>
-      <div onClick={()=>ref.current?.click()} style={{border:`2px dashed ${value?'rgba(74,158,107,0.5)':C.goldB}`,borderRadius:14,cursor:'pointer',overflow:'hidden',background:value?'rgba(74,158,107,0.04)':C.cream,transition:'all 0.2s',minHeight:110,display:'flex',alignItems:'center',justifyContent:'center'}}>
-        {preview ? (
-          <div style={{width:'100%',position:'relative'}}>
-            <img src={preview} alt="" style={{width:'100%',maxHeight:180,objectFit:'cover',display:'block'}}/>
-            <div style={{position:'absolute',bottom:8,right:8,background:'rgba(74,158,107,0.9)',color:'#fff',padding:'4px 10px',borderRadius:20,fontSize:11,fontWeight:700}}>✓ Captured</div>
-          </div>
-        ) : (
-          <div style={{textAlign:'center',padding:'24px 16px'}}>
-            <div style={{fontSize:32,marginBottom:8}}>{camera?'📸':'📎'}</div>
-            <div style={{fontSize:14,fontWeight:600,color:C.mid,marginBottom:4}}>{camera?'Tap to open camera':'Tap to upload'}</div>
-            {hint&&<div style={{fontSize:12,color:C.light,marginTop:4,lineHeight:1.5}}>{hint}</div>}
-          </div>
-        )}
+      {/* Preview area */}
+      {preview ? (
+        <div style={{border:`2px solid rgba(74,158,107,0.5)`,borderRadius:14,overflow:'hidden',background:'rgba(74,158,107,0.04)',marginBottom:8,position:'relative'}}>
+          <img src={preview} alt="" style={{width:'100%',maxHeight:200,objectFit:'cover',display:'block'}}/>
+          <button onClick={clear} style={{position:'absolute',top:8,right:8,background:'rgba(196,92,74,0.85)',border:'none',borderRadius:20,color:'#fff',padding:'4px 12px',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>✕ Remove</button>
+        </div>
+      ) : (
+        <div style={{border:`2px dashed ${C.goldB}`,borderRadius:14,background:C.cream,padding:'20px 16px',textAlign:'center',marginBottom:8}}>
+          <div style={{fontSize:28,marginBottom:8}}>📎</div>
+          <div style={{fontSize:13,color:C.mid,marginBottom:4}}>Tap a button below to add your document</div>
+          {hint&&<div style={{fontSize:12,color:C.light,lineHeight:1.5}}>{hint}</div>}
+        </div>
+      )}
+      {/* Action buttons — always visible, no collapse risk */}
+      <div style={{display:'flex',gap:8}}>
+        <button type="button" onClick={()=>camRef.current?.click()} style={{flex:1,padding:'11px 8px',borderRadius:10,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,cursor:'pointer',fontSize:12,fontWeight:600,fontFamily:"'DM Sans',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
+          📸 Camera
+        </button>
+        <button type="button" onClick={()=>fileRef.current?.click()} style={{flex:1,padding:'11px 8px',borderRadius:10,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,cursor:'pointer',fontSize:12,fontWeight:600,fontFamily:"'DM Sans',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
+          📁 Upload File
+        </button>
       </div>
-      <input ref={ref} type="file" accept="image/*" capture={camera?'user':undefined} onChange={handle} style={{display:'none'}}/>
+      {/* Hidden inputs - file refs stay stable, no unmount */}
+      <input ref={camRef} type="file" accept="image/*" capture={selfie?"user":"environment"} onChange={handle} style={{display:'none'}}/>
+      <input ref={fileRef} type="file" accept="image/*,.pdf" onChange={handle} style={{display:'none'}}/>
     </div>
   );
 }
@@ -355,7 +376,7 @@ export default function KYCRegistration({ role, supabase, onComplete, onSignIn }
               <Sect title="Identity Documents"/>
               <UpBox label={`${f.idType} — Front`} required value={idFront} onChange={setIdFront} hint="All four corners clearly visible"/>
               <UpBox label={f.idType==='RSA ID'||f.idType==="Driver's Licence"?`${f.idType} — Back`:'Passport Photo Page'} value={idBack} onChange={setIdBack} hint={f.idType==='RSA ID'||f.idType==="Driver's Licence"?'Back of your card':'Page showing your photo and details'}/>
-              <UpBox label="Selfie Photo" required value={selfie} onChange={setSelfie} hint="Camera opens directly. Hold your ID next to your face." camera={true}/>
+              <UpBox label="Selfie Photo" required value={selfie} onChange={setSelfie} hint="Use the Camera button to take your selfie. Hold your ID next to your face." camera={true} selfie={true}/>
             </div>}
 
             {/* STEP 3 */}
