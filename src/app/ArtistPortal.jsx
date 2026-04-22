@@ -394,6 +394,8 @@ function ArtistDashboard({session, kycComplete=true}){
   };
 
   const totalSalesValue=sales.reduce((s,x)=>s+(x.salePrice||0),0);
+  // Style constants needed in this dashboard
+  const lbl={display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:'#8a8070',marginBottom:8};
   const artistShare=sales.reduce((s,x)=>s+(x.artistShare||0),0);
   const listedWorks=artworks.filter(a=>a.approvalStatus==='approved'||a.status==='Available'||a.status==='Reserved');
   const pendingWorks=artworks.filter(a=>a.status==='Pending Approval');
