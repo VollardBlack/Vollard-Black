@@ -1043,7 +1043,7 @@ export default function BuyerPortal() {
 
   useEffect(()=>{
     if(!session||!supabase){setRequestStatus(null);return;}
-    supabase.from('portal_requests').select('status').eq('email',session.user.email).single()
+    supabase.from('portal_requests').select('status').eq('email',session.user.email).eq('role','buyer').order('created_at',{ascending:false}).limit(1).single()
       .then(({data,error})=>{
         if(error||!data) {
           // No portal_request row = admin-created buyer, allow through
