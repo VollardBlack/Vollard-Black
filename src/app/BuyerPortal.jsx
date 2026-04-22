@@ -136,7 +136,7 @@ const S = {
   input: { width:'100%', padding:'12px 14px', background:'#f5f3ef', border:'1px solid rgba(182,139,46,0.25)', borderRadius:8, color:'#1a1714', fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:'none', boxSizing:'border-box' },
   label: { display:'block', fontSize:10, fontWeight:500, letterSpacing:2, textTransform:'uppercase', color:'#6b635a', marginBottom:6 },
   btn: (gold) => ({ padding:'12px 24px', borderRadius:8, border: gold?'none':'1px solid rgba(182,139,46,0.30)', background: gold?'linear-gradient(135deg,#b68b2e,#8a6a1e)':'transparent', color: gold?'#fff':'#b68b2e', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:"'DM Sans',sans-serif" }),
-  tab: (a) => ({ padding:'10px 16px', border:'none', borderBottom: a?'2px solid #b68b2e':'2px solid transparent', background:'transparent', color: a?'#b68b2e':'#6b635a', fontSize:13, fontWeight:a?600:400, cursor:'pointer', fontFamily:"'DM Sans',sans-serif", whiteSpace:'nowrap' }),
+  tab: (a) => ({ padding:'9px 18px', border: a?'none':'1px solid rgba(182,139,46,0.25)', borderRadius:24, background: a?'linear-gradient(135deg,#b68b2e,#8a6a1e)':'transparent', color: a?'#fff':'#6b635a', fontSize:13, fontWeight:a?600:400, cursor:'pointer', fontFamily:"'DM Sans',sans-serif", whiteSpace:'nowrap', transition:'all 0.2s' }),
   gold: { color:'#b68b2e', fontWeight:600 },
   green: { color:'#4a9e6b', fontWeight:600 },
 };
@@ -694,11 +694,18 @@ function BuyerDashboard({session}) {
   const saveProfile = async() => {
     if(!buyer) return;
     setSaving(true);
-    const snake = toSnake({...profileForm});
+    const bankChanged = (
+      (profileForm.bankName||'') !== (buyer.bankName||'') ||
+      (profileForm.accountNumber||'') !== (buyer.accountNumber||'') ||
+      (profileForm.branchCode||'') !== (buyer.branchCode||'') ||
+      (profileForm.accountHolder||'') !== (buyer.accountHolder||'')
+    );
+    const updates = {...profileForm, ...(bankChanged ? {bankVerified:false} : {})};
+    const snake = toSnake(updates);
     delete snake.id; delete snake.created_at;
     await supabase.from('buyers').update(snake).eq('id',buyer.id);
-    setBuyer(b=>({...b,...profileForm}));
-    setSaveMsg('Saved.'); setTimeout(()=>setSaveMsg(''),3000);
+    setBuyer(b=>({...b,...updates}));
+    setSaveMsg(bankChanged?'Saved. Bank details flagged for verification.':'Saved.'); setTimeout(()=>setSaveMsg(''),3000);
     setSaving(false); setProfileEdit(false);
   };
 
@@ -789,7 +796,7 @@ function BuyerDashboard({session}) {
         {isOutbid&&<div onClick={()=>setTab('auctions')} style={{padding:'12px 18px',background:'rgba(196,92,74,0.06)',border:'1px solid rgba(196,92,74,0.25)',borderRadius:10,marginBottom:10,cursor:'pointer',display:'flex',alignItems:'center',gap:10}}><span style={{color:'#c45c4a'}}>⚠</span><span style={{fontSize:13,fontWeight:600,color:'#c45c4a'}}>You've been outbid — act now</span><span style={{fontSize:11,color:'#c45c4a',marginLeft:'auto'}}>Bid →</span></div>}
         {enquiryMsg&&<div style={{padding:'12px 16px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:8,marginBottom:10,fontSize:13,color:'#4a9e6b'}}>{enquiryMsg}</div>}
 
-        <div style={{display:'flex',borderBottom:'1px solid rgba(182,139,46,0.15)',marginBottom:20,overflowX:'auto'}}>
+        <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:24,padding:'4px 0'}}>
           {[['gallery',`Gallery${artworks.length>0?' ('+artworks.length+')':''}`],['auctions',`Auctions${liveAuctions.length>0?' 🔴':''}${isOutbid?' ⚠':''}`],['mybids',`My Bids${bids.length>0?' ('+bids.length+')':''}`],['purchases','Purchases'],['profile','My Profile']].map(([id,lbl])=>(
             <button key={id} onClick={()=>setTab(id)} style={S.tab(tab===id)}>{lbl}</button>
           ))}
@@ -974,31 +981,78 @@ function BuyerDashboard({session}) {
           <div>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,flexWrap:'wrap',gap:10}}>
               <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,fontWeight:300,color:'#1a1714'}}>My Profile</div>
-              {!profileEdit&&<button onClick={()=>setProfileEdit(true)} style={S.btn(false)}>Edit</button>}
+              {!profileEdit&&buyer&&<button onClick={()=>setProfileEdit(true)} style={S.btn(false)}>Edit</button>}
             </div>
             {saveMsg&&<div style={{padding:'10px 14px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:8,fontSize:13,color:'#4a9e6b',marginBottom:14}}>✓ {saveMsg}</div>}
             {!buyer?(
-              <div style={{...S.card,textAlign:'center',padding:40}}><div style={{fontSize:14,color:'#8a8070',marginBottom:8}}>Profile not linked yet.</div><div style={{fontSize:12,color:'#8a8070'}}>Contact Vollard Black to link your account.</div></div>
+              <div style={{...S.card,textAlign:'center',padding:40}}><div style={{fontSize:14,color:'#8a8070'}}>Profile not linked yet. Contact Vollard Black.</div></div>
             ):!profileEdit?(
-              <div style={S.card}>
-                {[['Name',`${buyer.firstName||''} ${buyer.lastName||''}`.trim()||buyer.companyName||'—'],['Email',buyer.email||session.user.email||'—'],['Mobile',buyer.mobile||'—'],['ID / Passport',buyer.idNumber||'—'],['Nationality',buyer.nationality||'—'],['Country',buyer.country||'—'],['KYC Status',buyer.kycStatus==='approved'?'✓ Approved':'⚠ Pending'],['Auction Access',buyer.auctionApproved?'✓ Approved — you can bid on live auctions':buyer.auctionRequested?'⏳ Requested — pending approval':'Not yet requested']].map(([label,value])=>(
-                  <div key={label} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:'1px solid rgba(182,139,46,0.08)',fontSize:13,gap:12}}>
-                    <span style={{color:'#8a8070',flexShrink:0}}>{label}</span>
-                    <span style={{fontWeight:500,textAlign:'right',color:String(value).includes('✓')?'#4a9e6b':String(value).includes('⚠')?'#e6be32':String(value).includes('⏳')?'#dc7828':'#1a1714'}}>{value}</span>
+              <div>
+                <div style={S.card}>
+                  <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.16em',textTransform:'uppercase',color:'#b68b2e',marginBottom:14}}>Personal Information</div>
+                  {[
+                    ['Name',`${buyer.firstName||''} ${buyer.lastName||''}`.trim()||buyer.companyName||'—'],
+                    ['Email',buyer.email||session.user.email||'—'],
+                    ['Mobile',buyer.mobile||'—'],
+                    ['ID / Passport',buyer.idNumber||'—'],
+                    ['Nationality',buyer.nationality||'—'],
+                    ['City',buyer.city||'—'],
+                    ['Country',buyer.country||'—'],
+                    ['KYC Status',buyer.kycStatus==='approved'?'✓ Approved':'⚠ Pending'],
+                    ['Auction Access',buyer.auctionApproved?'✓ Approved':buyer.auctionRequested?'⏳ Requested':'Not requested'],
+                  ].map(([label,value])=>(
+                    <div key={label} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'9px 0',borderBottom:'1px solid rgba(182,139,46,0.08)',fontSize:13,gap:12}}>
+                      <span style={{color:'#8a8070',flexShrink:0}}>{label}</span>
+                      <span style={{fontWeight:500,textAlign:'right',color:String(value).includes('✓')?'#4a9e6b':String(value).includes('⚠')||String(value).includes('⏳')?'#e6be32':'#1a1714'}}>{value}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={S.card}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+                    <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.16em',textTransform:'uppercase',color:'#b68b2e'}}>Banking Details</div>
+                    {buyer.bankVerified
+                      ?<span style={{fontSize:11,fontWeight:700,color:'#4a9e6b',background:'rgba(74,158,107,0.10)',padding:'3px 10px',borderRadius:20}}>✓ Verified</span>
+                      :(buyer.bankName||buyer.accountNumber)
+                        ?<span style={{fontSize:11,fontWeight:700,color:'#e6be32',background:'rgba(230,190,50,0.10)',padding:'3px 10px',borderRadius:20}}>⏳ Pending Verification</span>
+                        :<span style={{fontSize:11,color:'#8a8070'}}>Not yet added — tap Edit to add</span>
+                    }
                   </div>
-                ))}
+                  {(buyer.bankName||buyer.accountNumber)?[
+                    ['Bank',buyer.bankName||'—'],['Account Holder',buyer.accountHolder||'—'],
+                    ['Account Number',buyer.accountNumber||'—'],['Branch Code',buyer.branchCode||'—'],
+                  ].map(([label,value])=>(
+                    <div key={label} style={{display:'flex',justifyContent:'space-between',padding:'9px 0',borderBottom:'1px solid rgba(182,139,46,0.08)',fontSize:13,gap:12}}>
+                      <span style={{color:'#8a8070',flexShrink:0}}>{label}</span><span style={{fontWeight:500}}>{value}</span>
+                    </div>
+                  )):<div style={{fontSize:13,color:'#8a8070',padding:'8px 0'}}>Add your banking details so proceeds can be paid to you.</div>}
+                </div>
               </div>
             ):(
-              <div style={S.card}>
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
-                  {[['firstName','First Name'],['lastName','Last Name'],['mobile','Mobile'],['idNumber','ID / Passport'],['nationality','Nationality'],['city','City'],['country','Country']].map(([key,label])=>(
-                    <div key={key}><label style={S.label}>{label}</label><input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={S.input}/></div>
-                  ))}
-                  <div style={{gridColumn:'1/-1'}}><label style={S.label}>Address</label><textarea value={profileForm.address||''} onChange={e=>setProfileForm(p=>({...p,address:e.target.value}))} style={{...S.input,minHeight:70,resize:'vertical'}}/></div>
+              <div>
+                <div style={{...S.card,marginBottom:12}}>
+                  <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.16em',textTransform:'uppercase',color:'#b68b2e',marginBottom:16}}>Personal Information</div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+                    {[['firstName','First Name'],['lastName','Last Name'],['mobile','Mobile'],['idNumber','ID / Passport'],['nationality','Nationality'],['city','City'],['country','Country']].map(([key,label])=>(
+                      <div key={key}><label style={S.label}>{label}</label><input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={S.input}/></div>
+                    ))}
+                    <div style={{gridColumn:'1/-1'}}><label style={S.label}>Address</label><textarea value={profileForm.address||''} onChange={e=>setProfileForm(p=>({...p,address:e.target.value}))} style={{...S.input,minHeight:60,resize:'vertical'}}/></div>
+                  </div>
                 </div>
-                <div style={{display:'flex',gap:10,marginTop:16,justifyContent:'flex-end'}}>
+                <div style={{...S.card,marginBottom:12}}>
+                  <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.16em',textTransform:'uppercase',color:'#b68b2e',marginBottom:4}}>Banking Details</div>
+                  <div style={{fontSize:12,color:'#8a8070',marginBottom:16,lineHeight:1.6}}>Your payout account for any proceeds. Changes require verification by Vollard Black.</div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+                    {[['bankName','Bank Name'],['accountHolder','Account Holder'],['accountNumber','Account Number'],['branchCode','Branch Code']].map(([key,label])=>(
+                      <div key={key}><label style={S.label}>{label}</label><input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={S.input} placeholder={key==='bankName'?'e.g. FNB':key==='branchCode'?'e.g. 250655':''} inputMode={key==='accountNumber'||key==='branchCode'?'numeric':undefined}/></div>
+                    ))}
+                  </div>
+                  <div style={{marginTop:12,padding:'10px 14px',background:'rgba(230,190,50,0.06)',border:'1px solid rgba(230,190,50,0.20)',borderRadius:8,fontSize:12,color:'#6b635a',lineHeight:1.6}}>
+                    ⚠ Saving new bank details will flag your account for verification before payouts are processed.
+                  </div>
+                </div>
+                <div style={{display:'flex',gap:10,justifyContent:'flex-end'}}>
                   <button onClick={()=>setProfileEdit(false)} style={S.btn(false)}>Cancel</button>
-                  <button onClick={saveProfile} disabled={saving} style={{...S.btn(true),opacity:saving?0.6:1}}>{saving?'Saving…':'Save'}</button>
+                  <button onClick={saveProfile} disabled={saving} style={{...S.btn(true),opacity:saving?0.6:1}}>{saving?'Saving…':'Save Changes'}</button>
                 </div>
               </div>
             )}
