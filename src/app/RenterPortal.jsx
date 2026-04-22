@@ -27,13 +27,88 @@ function Logo({sub}){return(<div style={{textAlign:'center',marginBottom:40}}><d
 function PendingScreen({email,onSignIn}){return(<div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center',padding:20,fontFamily:SAN}}><div style={{width:'100%',maxWidth:420,textAlign:'center'}}><Logo sub="License Holder Portal"/><div style={{background:C.white,border:`1px solid ${C.goldB}`,borderRadius:16,padding:40}}><div style={{fontSize:48,marginBottom:16}}>◆</div><div style={{fontFamily:SER,fontSize:24,color:C.dark,marginBottom:12}}>Request Submitted</div><div style={{fontSize:14,color:C.mid,lineHeight:1.8,marginBottom:24}}>Thank you. Vollard Black is reviewing your application.<br/><strong>{email}</strong></div><button onClick={onSignIn} style={{padding:'12px 28px',borderRadius:24,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:SAN}}>Sign In</button></div></div></div>);}
 function NotApprovedScreen({onSignOut}){return(<div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center',padding:20,fontFamily:SAN}}><div style={{width:'100%',maxWidth:420,textAlign:'center'}}><Logo sub="License Holder Portal"/><div style={{background:C.white,border:`1px solid ${C.goldB}`,borderRadius:16,padding:40}}><div style={{fontSize:48,marginBottom:16}}>⏳</div><div style={{fontFamily:SER,fontSize:24,color:C.dark,marginBottom:12}}>Pending Approval</div><div style={{fontSize:14,color:C.mid,lineHeight:1.8,marginBottom:24}}>Your application is under review. You'll be notified once approved.</div><button onClick={onSignOut} style={{padding:'12px 28px',borderRadius:24,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:SAN}}>Sign Out</button></div></div></div>);}
 
-function LoginScreen({onLogin,onRegister}){
-  const[email,setEmail]=useState('');const[pw,setPw]=useState('');const[loading,setLoading]=useState(false);const[error,setError]=useState('');const[showPw,setShowPw]=useState(false);
-  const handle=async()=>{if(!email||!pw)return setError('Enter your email and password.');setLoading(true);setError('');const{data,error:e}=await supabase.auth.signInWithPassword({email,password:pw});setLoading(false);if(e)setError(e.message);else onLogin(data.session);};
-  return(<div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center',padding:20,fontFamily:SAN}}><div style={{width:'100%',maxWidth:400}}><Logo sub="License Holder Portal"/><div style={{background:C.white,border:`1px solid ${C.goldB}`,borderRadius:16,padding:32}}>{error&&<div style={{padding:'12px 16px',background:'rgba(196,92,74,0.08)',border:'1px solid rgba(196,92,74,0.25)',borderRadius:10,fontSize:13,color:C.red,marginBottom:20}}>{error}</div>}<div style={{marginBottom:18}}><label style={{display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:C.mid,marginBottom:8}}>Email</label><input type="email" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handle()} style={{width:'100%',padding:'13px 16px',background:C.white,border:`1.5px solid ${C.goldB}`,borderRadius:12,color:C.dark,fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box'}} autoComplete="email"/></div><div style={{marginBottom:24}}><label style={{display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:C.mid,marginBottom:8}}>Password</label><div style={{position:'relative'}}><input type={showPw?'text':'password'} value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handle()} style={{width:'100%',padding:'13px 60px 13px 16px',background:C.white,border:`1.5px solid ${C.goldB}`,borderRadius:12,color:C.dark,fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box'}} autoComplete="current-password"/><button type="button" onClick={()=>setShowPw(p=>!p)} style={{position:'absolute',right:14,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',color:C.light,cursor:'pointer',fontSize:12,fontFamily:SAN,fontWeight:600}}>{showPw?'Hide':'Show'}</button></div></div><button onClick={handle} disabled={loading} style={{width:'100%',padding:14,borderRadius:12,border:'none',background:`linear-gradient(135deg,${C.gold},${C.goldD})`,color:C.white,fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:SAN,opacity:loading?0.6:1,boxShadow:'0 6px 20px rgba(182,139,46,0.28)'}}>{loading?'Signing in…':'Sign In'}</button><div style={{textAlign:'center',marginTop:20,fontSize:13,color:C.light}}>New? <button onClick={onRegister} style={{background:'none',border:'none',color:C.gold,cursor:'pointer',fontWeight:600,fontFamily:SAN,fontSize:13}}>Register here →</button></div></div></div></div>);
+function LoginScreen({onLogin,onRegister,role,portalLabel}){
+  const[email,setEmail]=useState('');
+  const[pw,setPw]=useState('');
+  const[pw2,setPw2]=useState('');
+  const[mode,setMode]=useState('login');
+  const[loading,setLoading]=useState(false);
+  const[error,setError]=useState('');
+  const[msg,setMsg]=useState('');
+  const[showPw,setShowPw]=useState(false);
+
+  const handleLogin=async()=>{
+    if(!email||!pw)return setError('Enter your email and password.');
+    setLoading(true);setError('');
+    const{data,error:e}=await supabase.auth.signInWithPassword({email:email.trim().toLowerCase(),password:pw});
+    setLoading(false);
+    if(e)setError(e.message==='Invalid login credentials'?'Email or password incorrect. Try again or create an account.':e.message);
+    else onLogin(data.session);
+  };
+
+  const handleSignUp=async()=>{
+    if(!email||!pw)return setError('Enter your email and password.');
+    if(pw.length<6)return setError('Password must be at least 6 characters.');
+    if(pw!==pw2)return setError('Passwords do not match.');
+    setLoading(true);setError('');
+    const{data,error:e}=await supabase.auth.signUp({email:email.trim().toLowerCase(),password:pw,options:{emailRedirectTo:typeof window!=='undefined'?window.location.href:''}});
+    if(e){setLoading(false);return setError(e.message);}
+    await supabase.from('portal_requests').upsert({id:crypto.randomUUID(),email:email.trim().toLowerCase(),role:'renter',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'}).catch(()=>{});
+    setLoading(false);
+    if(data?.session){onLogin(data.session);}
+    else{setMsg('Account created! Check your email to confirm, then sign in.');setMode('login');}
+  };
+
+  const handleReset=async()=>{
+    if(!email)return setError('Enter your email address first.');
+    setLoading(true);setError('');
+    const{error:e}=await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(),{redirectTo:typeof window!=='undefined'?window.location.href:''});
+    setLoading(false);
+    if(e)setError(e.message);
+    else{setMsg('Password reset email sent — check your inbox.');setMode('login');}
+  };
+
+  const INP={width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:'#1a1714',fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box'};
+
+  return(
+    <div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center',padding:20,fontFamily:SAN}}>
+      <div style={{width:'100%',maxWidth:420}}>
+        <Logo sub={'License Holder Portal'}/>
+        <div style={{...CARD,padding:32}}>
+          <div style={{display:'flex',gap:4,marginBottom:24,background:'#f7f5f1',padding:4,borderRadius:10}}>
+            {[['login','Sign In'],['signup','Create Account']].map(([m,l])=>(
+              <button key={m} onClick={()=>{setMode(m);setError('');setMsg('');}} style={{flex:1,padding:'9px 0',borderRadius:8,border:'none',background:mode===m?'#fff':'transparent',color:mode===m?'#1a1714':'#8a8070',fontWeight:mode===m?700:400,cursor:'pointer',fontSize:13,fontFamily:SAN,boxShadow:mode===m?'0 1px 4px rgba(0,0,0,0.08)':'none'}}>{l}</button>
+            ))}
+          </div>
+          {error&&<div style={{padding:'12px 16px',background:'rgba(196,92,74,0.08)',border:'1px solid rgba(196,92,74,0.25)',borderRadius:10,fontSize:13,color:'#c45c4a',marginBottom:16}}>{error}</div>}
+          {msg&&<div style={{padding:'12px 16px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.25)',borderRadius:10,fontSize:13,color:'#2d7a4a',marginBottom:16}}>{msg}</div>}
+          {mode==='reset'?(
+            <div>
+              <div style={{fontFamily:SER,fontSize:18,color:'#1a1714',marginBottom:16}}>Reset Password</div>
+              <div style={{marginBottom:16}}><label style={lbl}>Email</label><input type="email" value={email} onChange={e=>setEmail(e.target.value)} style={INP}/></div>
+              <button onClick={handleReset} disabled={loading} style={{width:'100%',padding:14,borderRadius:12,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:SAN,opacity:loading?0.6:1,marginBottom:10}}>{loading?'Sending…':'Send Reset Email'}</button>
+              <button onClick={()=>{setMode('login');setError('');}} style={{width:'100%',padding:10,borderRadius:8,border:'none',background:'transparent',color:'#8a8070',fontSize:13,cursor:'pointer',fontFamily:SAN}}>← Back to Sign In</button>
+            </div>
+          ):(
+            <div>
+              <div style={{marginBottom:16}}><label style={lbl}>Email</label><input type="email" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==='Enter'&&mode==='login'&&handleLogin()} style={INP} autoComplete="email" placeholder="you@email.com"/></div>
+              <div style={{marginBottom:mode==='signup'?16:20}}><label style={lbl}>Password</label>
+                <div style={{position:'relative'}}><input type={showPw?'text':'password'} value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==='Enter'&&mode==='login'&&handleLogin()} style={{...INP,paddingRight:60}} autoComplete={mode==='login'?'current-password':'new-password'}/><button type="button" onClick={()=>setShowPw(p=>!p)} style={{position:'absolute',right:14,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',color:'#8a8070',cursor:'pointer',fontSize:12,fontFamily:SAN,fontWeight:600}}>{showPw?'Hide':'Show'}</button></div>
+              </div>
+              {mode==='signup'&&<div style={{marginBottom:20}}><label style={lbl}>Confirm Password</label><input type={showPw?'text':'password'} value={pw2} onChange={e=>setPw2(e.target.value)} style={INP} autoComplete="new-password"/></div>}
+              <button onClick={mode==='login'?handleLogin:handleSignUp} disabled={loading} style={{width:'100%',padding:14,borderRadius:12,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:SAN,opacity:loading?0.6:1,boxShadow:'0 6px 20px rgba(182,139,46,0.28)',marginBottom:12}}>
+                {loading?(mode==='login'?'Signing in…':'Creating account…'):(mode==='login'?'Sign In':'Create Account')}
+              </button>
+              {mode==='login'&&<div style={{textAlign:'center',marginTop:4}}><button onClick={()=>{setMode('reset');setError('');setMsg('');}} style={{background:'none',border:'none',color:'#8a8070',cursor:'pointer',fontSize:12,fontFamily:SAN}}>Forgot password?</button></div>}
+              {mode==='signup'&&<div style={{fontSize:12,color:'#8a8070',textAlign:'center',lineHeight:1.6,marginTop:4}}>Vollard Black will review and approve your access after registration.</div>}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
-// ── QR Code generator ───────────────────────────────────────
 function generateQR(artwork,collectorName){
   const url=`${typeof window!=='undefined'?window.location.origin:''}/gallery/${artwork.id}`;
   const w=window.open('','_blank');
@@ -476,7 +551,7 @@ export default function RenterPortal(){
   if(!session){
     if(screen==='register')return<KYCRegistration role="renter" supabase={supabase} onComplete={email=>{setPendingEmail(email);setScreen('pending');}} onSignIn={()=>setScreen('login')}/>;
     if(screen==='pending')return<PendingScreen email={pendingEmail} onSignIn={()=>setScreen('login')}/>;
-    return<LoginScreen onLogin={s=>setSession(s)} onRegister={()=>setScreen('register')}/>;
+    return<LoginScreen onLogin={s=>setSession(s)} onRegister={()=>setScreen('register')} role="renter" portalLabel="License Holder Portal"/>;
   }
   if(approved===null)return<div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:16}}><div style={{fontFamily:SER,fontSize:18,color:C.gold,opacity:0.5}}>Checking access…</div><button onClick={()=>supabase.auth.signOut()} style={{fontSize:12,color:C.light,background:'none',border:'none',cursor:'pointer',fontFamily:SAN}}>Cancel</button></div>;
   // 'pending' or false = registered but not yet approved / rejected
