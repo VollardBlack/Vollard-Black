@@ -12,30 +12,26 @@ const toCamel = o=>{if(!o||typeof o!=='object'||Array.isArray(o))return o;const 
 const toSnake = o=>{if(!o||typeof o!=='object')return o;const r={};for(const[k,v]of Object.entries(o))r[k.replace(/[A-Z]/g,m=>'_'+m.toLowerCase())]=v;return r;};
 const G={gold:'#b68b2e',goldD:'#8a6a1e',cream:'#f5f3ef',dark:'#1a1714',mid:'#6b635a',light:'#8a8070',red:'#c45c4a',green:'#4a9e6b',greenD:'#2d7a4a',white:'#ffffff'};
 const F={ser:"'Cormorant Garamond',serif",san:"'DM Sans',sans-serif"};
-
 const INP={width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:G.dark,fontFamily:F.san,fontSize:14,outline:'none',boxSizing:'border-box'};
 const LBL={display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:G.mid,marginBottom:8};
 const CARD={background:G.white,border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16};
+const CP={padding:'20px'};
+const SH={fontSize:10,fontWeight:700,letterSpacing:'0.20em',textTransform:'uppercase',color:G.gold,marginBottom:14,paddingBottom:10,borderBottom:'1px solid rgba(182,139,46,0.12)'};
 
-function Logo(){return(<div style={{textAlign:'center',marginBottom:32}}><div style={{fontFamily:F.ser,fontSize:32,fontWeight:300,letterSpacing:10,color:G.dark}}>VOLLARD <span style={{color:G.gold}}>BLACK</span></div><div style={{fontSize:10,letterSpacing:4,textTransform:'uppercase',color:G.light,marginTop:6}}>BUYER PORTAL</div><div style={{width:40,height:1,background:'rgba(182,139,46,0.4)',margin:'12px auto 0'}}/></div>);}
+// ── Shared screens ──────────────────────────────────────────────────────
+const C={gold:'#b68b2e',goldD:'#8a6a1e',goldL:'rgba(182,139,46,0.12)',goldB:'rgba(182,139,46,0.22)',cream:'#f5f3ef',dark:'#1a1714',mid:'#6b635a',light:'#8a8070',red:'#c45c4a',green:'#4a9e6b',greenD:'#2d7a4a',blue:'#648cc8',white:'#ffffff'};
+const SER="'Cormorant Garamond',serif";
+const SAN="'DM Sans',sans-serif";
 
-function NotApprovedScreen({onSignOut}){
-  return(
-    <div style={{minHeight:'100vh',background:G.cream,display:'flex',alignItems:'center',justifyContent:'center',padding:20,fontFamily:F.san}}>
-      <div style={{width:'100%',maxWidth:420,textAlign:'center'}}>
-        <Logo/>
-        <div style={{...CARD,padding:36}}>
-          <div style={{fontSize:48,marginBottom:12}}>⏳</div>
-          <div style={{fontFamily:F.ser,fontSize:22,color:G.dark,marginBottom:8}}>Pending Approval</div>
-          <div style={{fontSize:13,color:G.mid,lineHeight:1.8,marginBottom:20}}>Your application is under review. Contact <strong>concierge@vollardblack.com</strong> for immediate access.</div>
-          <button onClick={onSignOut} style={{padding:'11px 24px',borderRadius:24,border:'1px solid rgba(182,139,46,0.28)',background:'transparent',color:G.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:F.san}}>Sign Out</button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
-function AuthScreen({onAuth}){
+function Logo(){return(<div style={{textAlign:'center',marginBottom:32}}><div style={{fontFamily:F.ser,fontSize:32,fontWeight:300,letterSpacing:10,color:G.dark}}>VOLLARD <span style={{color:G.gold}}>BLACK</span></div><div style={{fontSize:10,letterSpacing:4,textTransform:'uppercase',color:G.light,marginTop:6}}>ARTIST PORTAL</div><div style={{width:40,height:1,background:'rgba(182,139,46,0.4)',margin:'12px auto 0'}}/></div>);}
+
+function PendingScreen({email,onBack}){return(<div style={{minHeight:'100vh',background:G.cream,display:'flex',alignItems:'center',justifyContent:'center',padding:20,fontFamily:F.san}}><div style={{width:'100%',maxWidth:420,textAlign:'center'}}><Logo/><div style={{...CARD,padding:36}}><div style={{fontSize:48,marginBottom:12}}>⏳</div><div style={{fontFamily:F.ser,fontSize:22,color:G.dark,marginBottom:8}}>Application Submitted</div><div style={{fontSize:13,color:G.mid,lineHeight:1.8,marginBottom:20}}>Thank you. Vollard Black will review your application and contact you at <strong>{email}</strong> once approved.</div><button onClick={onBack} style={{padding:'11px 24px',borderRadius:24,border:'1px solid rgba(182,139,46,0.28)',background:'transparent',color:G.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:F.san}}>Back to Sign In</button></div></div></div>);}
+
+function NotApprovedScreen({onSignOut}){return(<div style={{minHeight:'100vh',background:G.cream,display:'flex',alignItems:'center',justifyContent:'center',padding:20,fontFamily:F.san}}><div style={{width:'100%',maxWidth:420,textAlign:'center'}}><Logo/><div style={{...CARD,padding:36}}><div style={{fontSize:48,marginBottom:12}}>⏳</div><div style={{fontFamily:F.ser,fontSize:22,color:G.dark,marginBottom:8}}>Pending Approval</div><div style={{fontSize:13,color:G.mid,lineHeight:1.8,marginBottom:20}}>Your application is under review. Vollard Black will activate your account shortly. Contact <strong>concierge@vollardblack.com</strong> if you need immediate access.</div><button onClick={onSignOut} style={{padding:'11px 24px',borderRadius:24,border:'1px solid rgba(182,139,46,0.28)',background:'transparent',color:G.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:F.san}}>Sign Out</button></div></div></div>);}
+
+// ── Auth Screen ─────────────────────────────────────────────────────────
+function AuthScreen({onAuth, accessError}){
   const[mode,setMode]=useState('login');
   const[email,setEmail]=useState('');
   const[pw,setPw]=useState('');
@@ -50,8 +46,14 @@ function AuthScreen({onAuth}){
     setLoading(true);setError('');
     const{data,error:e}=await sb.auth.signInWithPassword({email:email.trim().toLowerCase(),password:pw});
     setLoading(false);
-    if(e)return setError('Incorrect email or password. Please try again.');
-    onAuth(data.session);
+    if(e){
+      if(e.message.includes('Email not confirmed'))
+        return setError('Please confirm your email address first. Check your inbox for a confirmation email.');
+      if(e.message.includes('Invalid login credentials'))
+        return setError('Incorrect email or password. Please try again or create an account.');
+      return setError(e.message);
+    }
+    onAuth(data.session,'login');
   };
 
   const signUp=async()=>{
@@ -60,24 +62,29 @@ function AuthScreen({onAuth}){
     if(pw!==pw2)return setError('Passwords do not match.');
     setLoading(true);setError('');
     const emailClean=email.trim().toLowerCase();
+    // Try sign up
     const{data,error:e}=await sb.auth.signUp({email:emailClean,password:pw});
     if(e&&e.message.toLowerCase().includes('already')){
+      // Account exists — sign in instead
       const{data:d2,error:e2}=await sb.auth.signInWithPassword({email:emailClean,password:pw});
       if(e2){setLoading(false);return setError('An account with this email already exists. Use your existing password to sign in.');}
-      await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email:emailClean,role:'buyer',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'}).catch(()=>{});
-      setLoading(false);return onAuth(d2.session);
+      // Add artist role request
+      await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email:emailClean,role:'artist',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'}).catch(()=>{});
+      setLoading(false);
+      return onAuth(d2.session,'signup');
     }
     if(e){setLoading(false);return setError(e.message);}
-    await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email:emailClean,role:'buyer',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'}).catch(()=>{});
+    // New account created
+    await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email:emailClean,role:'artist',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'}).catch(()=>{});
     setLoading(false);
-    if(data?.session)return onAuth(data.session);
-    setMsg('Account created! Check your email to confirm, then sign in.');
+    if(data?.session)return onAuth(data.session,'signup');
+    setMsg('Account created! Check your email to confirm your address, then sign in.');
     setMode('login');setPw('');setPw2('');
   };
 
   const resetPw=async()=>{
     if(!email)return setError('Enter your email address first.');
-    setLoading(true);
+    setLoading(true);setError('');
     await sb.auth.resetPasswordForEmail(email.trim().toLowerCase());
     setLoading(false);
     setMsg('Password reset email sent. Check your inbox.');
@@ -89,6 +96,8 @@ function AuthScreen({onAuth}){
       <div style={{width:'100%',maxWidth:420}}>
         <Logo/>
         <div style={{...CARD,padding:28}}>
+          {/* Tab toggle */}
+          {accessError&&<div style={{padding:'11px 14px',background:'rgba(196,92,74,0.08)',border:'1px solid rgba(196,92,74,0.25)',borderRadius:10,fontSize:12,color:'#c45c4a',marginBottom:16}}>⚠ {accessError}</div>}
           <div style={{display:'flex',gap:4,marginBottom:24,background:'#f7f5f1',padding:4,borderRadius:10}}>
             {[['login','Sign In'],['signup','Create Account']].map(([m,l])=>(
               <button key={m} onClick={()=>{setMode(m);setError('');setMsg('');}} style={{flex:1,padding:'9px 0',borderRadius:8,border:'none',background:mode===m?G.white:'transparent',color:mode===m?G.dark:G.light,fontWeight:mode===m?700:400,cursor:'pointer',fontSize:13,fontFamily:F.san,boxShadow:mode===m?'0 1px 4px rgba(0,0,0,0.08)':'none'}}>{l}</button>
@@ -123,6 +132,7 @@ function AuthScreen({onAuth}){
   );
 }
 
+// ── Terms Modal ─────────────────────────────────────────────────────────
 const TERMS_VERSION='1.0';
 function TermsModal({email,onAccepted}){
   const[agreed,setAgreed]=useState(false);
@@ -131,880 +141,505 @@ function TermsModal({email,onAccepted}){
   const[saving,setSaving]=useState(false);
   const[err,setErr]=useState('');
   const canvasRef=useRef(null);
+
   const getPos=(e,c)=>{const r=c.getBoundingClientRect(),sx=c.width/r.width,sy=c.height/r.height;return e.touches?{x:(e.touches[0].clientX-r.left)*sx,y:(e.touches[0].clientY-r.top)*sy}:{x:(e.clientX-r.left)*sx,y:(e.clientY-r.top)*sy};};
   const onDown=e=>{e.preventDefault();const c=canvasRef.current;if(!c)return;const p=getPos(e,c);const ctx=c.getContext('2d');ctx.beginPath();ctx.moveTo(p.x,p.y);setDrawing(true);setHasSig(true);};
   const onMove=e=>{e.preventDefault();if(!drawing)return;const c=canvasRef.current;if(!c)return;const p=getPos(e,c);const ctx=c.getContext('2d');ctx.lineWidth=2.5;ctx.lineCap='round';ctx.strokeStyle=G.dark;ctx.lineTo(p.x,p.y);ctx.stroke();ctx.beginPath();ctx.moveTo(p.x,p.y);};
   const onUp=e=>{if(e)e.preventDefault();setDrawing(false);};
   const clear=()=>{const c=canvasRef.current;if(!c)return;c.getContext('2d').clearRect(0,0,c.width,c.height);setHasSig(false);};
+
   const sign=async()=>{
     if(!hasSig)return setErr('Please draw your signature.');
     if(!agreed)return setErr('Please tick the checkbox to agree.');
     setSaving(true);
     const sig=canvasRef.current.toDataURL('image/png');
     const now=new Date().toISOString();
-    try{await sb.from('portal_agreements').upsert({id:crypto.randomUUID(),email,role:'buyer',signed_at:now,signature_data:sig,user_agent:navigator.userAgent,terms_version:TERMS_VERSION},{onConflict:'email,role'});}catch(e){console.error(e);}
-    try{localStorage.setItem('vb_terms_buyer',JSON.stringify({email,v:TERMS_VERSION}));}catch{}
-    setSaving(false);onAccepted();
+    try{await sb.from('portal_agreements').upsert({id:crypto.randomUUID(),email,role:'artist',signed_at:now,signature_data:sig,user_agent:navigator.userAgent,terms_version:TERMS_VERSION},{onConflict:'email,role'});}catch(e){console.error(e);}
+    try{localStorage.setItem('vb_terms_artist',JSON.stringify({email,v:TERMS_VERSION}));}catch{}
+    setSaving(false);
+    onAccepted();
   };
-  const terms=[['Platform Access','By registering, you agree to use the Vollard Black platform solely for lawful art acquisition purposes.'],['Auction Participation','Auction bids are binding. A winning bid creates a legal obligation to purchase at the bid price.'],['KYC Compliance','You confirm all identification and personal information submitted is accurate and current.'],['Privacy','Your personal data is held in accordance with POPIA and will not be shared with third parties except to complete transactions.'],['Payments','All payments are processed securely via iKhoka. Vollard Black does not store card details.'],['Governing Law','This agreement is governed by the laws of the Republic of South Africa.']];
+
+  const terms=[['Representation','You authorise Vollard Black (Pty) Ltd to display, market, and sell your artworks through its platform, gallery network, and auction services.'],['Commission','On each sale: Artist 30% · Gallery Partner 40% · Vollard Black 30% — applied to the license fee (50% of sale price).'],['Submissions','All submissions are subject to approval. Vollard Black may decline works that do not meet quality standards.'],['Intellectual Property','You retain full copyright. You grant Vollard Black a non-exclusive licence to use artwork images for marketing.'],['Authenticity','You warrant all submitted works are original, created by you, and free from third-party claims.'],['Payment','Artist shares are paid within 14 business days of a confirmed sale to the verified bank account on file.'],['Termination','Either party may terminate with 30 days written notice to concierge@vollardblack.com.']];
+
   return(
     <div style={{position:'fixed',inset:0,background:'rgba(26,23,20,0.8)',zIndex:1000,display:'flex',alignItems:'flex-start',justifyContent:'center',padding:16,overflowY:'auto',fontFamily:F.san}}>
       <div style={{background:G.white,borderRadius:20,width:'100%',maxWidth:540,marginTop:16,marginBottom:16}}>
-        <div style={{background:`linear-gradient(135deg,${G.dark},#2a2018)`,padding:'20px 24px',borderRadius:'20px 20px 0 0',textAlign:'center'}}><div style={{fontFamily:F.ser,fontSize:11,letterSpacing:'0.28em',color:'rgba(182,139,46,0.7)',textTransform:'uppercase',marginBottom:6}}>VOLLARD BLACK</div><div style={{fontFamily:F.ser,fontSize:20,color:'#f5f3ef'}}>Buyer Platform Agreement</div><div style={{fontSize:10,color:'rgba(245,243,239,0.45)',marginTop:4}}>Version {TERMS_VERSION} · Please read and sign before continuing</div></div>
+        <div style={{background:`linear-gradient(135deg,${G.dark},#2a2018)`,padding:'20px 24px',borderRadius:'20px 20px 0 0',textAlign:'center'}}>
+          <div style={{fontFamily:F.ser,fontSize:11,letterSpacing:'0.28em',color:'rgba(182,139,46,0.7)',textTransform:'uppercase',marginBottom:6}}>VOLLARD BLACK</div>
+          <div style={{fontFamily:F.ser,fontSize:20,color:'#f5f3ef'}}>Artist Representation Agreement</div>
+          <div style={{fontSize:10,color:'rgba(245,243,239,0.45)',marginTop:4}}>Version {TERMS_VERSION} · Please read and sign before continuing</div>
+        </div>
         <div style={{padding:'20px 24px'}}>
-          <div style={{maxHeight:220,overflowY:'auto',marginBottom:16}}>{terms.map(([t,x])=><div key={t} style={{marginBottom:12,paddingBottom:12,borderBottom:'1px solid rgba(182,139,46,0.08)'}}><div style={{fontFamily:F.ser,fontSize:14,color:G.dark,marginBottom:3,fontWeight:500}}>{t}</div><div style={{fontSize:12,color:'#4a4440',lineHeight:1.7}}>{x}</div></div>)}<div style={{padding:'8px 12px',background:'rgba(182,139,46,0.06)',borderRadius:8,fontSize:11,color:'#8a6a1e'}}>Vollard Black (Pty) Ltd · Hermanus, Western Cape · concierge@vollardblack.com</div></div>
-          <div style={{marginBottom:14}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}><label style={LBL}>Your Signature</label>{hasSig&&<button onClick={clear} style={{fontSize:11,color:G.red,background:'none',border:'none',cursor:'pointer',fontFamily:F.san}}>✕ Clear</button>}</div><div style={{border:'1.5px solid rgba(182,139,46,0.28)',borderRadius:10,background:'#fafaf8',position:'relative',overflow:'hidden'}}><canvas ref={canvasRef} width={492} height={120} style={{width:'100%',height:120,display:'block',touchAction:'none',cursor:'crosshair'}} onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp} onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}/>{!hasSig&&<div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',pointerEvents:'none'}}><span style={{fontSize:13,color:'rgba(182,139,46,0.3)',fontStyle:'italic'}}>Draw your signature here</span></div>}</div><div style={{fontSize:10,color:G.light,marginTop:4}}>Signed by: {email}</div></div>
-          <label style={{display:'flex',alignItems:'flex-start',gap:10,cursor:'pointer',marginBottom:14,padding:'10px 12px',background:'rgba(182,139,46,0.04)',borderRadius:8,border:`1px solid ${agreed?'rgba(182,139,46,0.28)':'rgba(182,139,46,0.12)'}`}}><input type="checkbox" checked={agreed} onChange={e=>setAgreed(e.target.checked)} style={{width:15,height:15,marginTop:1,accentColor:G.gold,flexShrink:0}}/><span style={{fontSize:12,color:G.dark,lineHeight:1.6}}>I, <strong>{email}</strong>, have read and agree to the above terms. I understand this is a legally binding digital signature.</span></label>
+          <div style={{maxHeight:240,overflowY:'auto',marginBottom:16}}>
+            {terms.map(([t,x])=><div key={t} style={{marginBottom:12,paddingBottom:12,borderBottom:'1px solid rgba(182,139,46,0.08)'}}><div style={{fontFamily:F.ser,fontSize:14,color:G.dark,marginBottom:3,fontWeight:500}}>{t}</div><div style={{fontSize:12,color:'#4a4440',lineHeight:1.7}}>{x}</div></div>)}
+            <div style={{padding:'8px 12px',background:'rgba(182,139,46,0.06)',borderRadius:8,fontSize:11,color:'#8a6a1e'}}>Vollard Black (Pty) Ltd · Hermanus, Western Cape · concierge@vollardblack.com</div>
+          </div>
+          <div style={{marginBottom:14}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}><label style={LBL}>Your Signature</label>{hasSig&&<button onClick={clear} style={{fontSize:11,color:G.red,background:'none',border:'none',cursor:'pointer',fontFamily:F.san}}>✕ Clear</button>}</div>
+            <div style={{border:'1.5px solid rgba(182,139,46,0.28)',borderRadius:10,background:'#fafaf8',position:'relative',overflow:'hidden'}}>
+              <canvas ref={canvasRef} width={492} height={120} style={{width:'100%',height:120,display:'block',touchAction:'none',cursor:'crosshair'}} onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp} onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}/>
+              {!hasSig&&<div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',pointerEvents:'none'}}><span style={{fontSize:13,color:'rgba(182,139,46,0.3)',fontStyle:'italic'}}>Draw your signature here</span></div>}
+            </div>
+            <div style={{fontSize:10,color:G.light,marginTop:4}}>Signed by: {email}</div>
+          </div>
+          <label style={{display:'flex',alignItems:'flex-start',gap:10,cursor:'pointer',marginBottom:14,padding:'10px 12px',background:'rgba(182,139,46,0.04)',borderRadius:8,border:`1px solid ${agreed?'rgba(182,139,46,0.28)':'rgba(182,139,46,0.12)'}`}}>
+            <input type="checkbox" checked={agreed} onChange={e=>setAgreed(e.target.checked)} style={{width:15,height:15,marginTop:1,accentColor:G.gold,flexShrink:0}}/>
+            <span style={{fontSize:12,color:G.dark,lineHeight:1.6}}>I, <strong>{email}</strong>, have read and agree to the above terms. I understand this is a legally binding digital signature.</span>
+          </label>
           {err&&<div style={{padding:'9px 12px',background:'rgba(196,92,74,0.08)',border:'1px solid rgba(196,92,74,0.25)',borderRadius:8,fontSize:12,color:G.red,marginBottom:10}}>{err}</div>}
-          <button onClick={sign} disabled={saving} style={{width:'100%',padding:13,borderRadius:12,border:'none',background:hasSig&&agreed?`linear-gradient(135deg,${G.gold},${G.goldD})`:'rgba(182,139,46,0.2)',color:hasSig&&agreed?G.white:G.gold,fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:F.san}}>{saving?'Saving…':'✍ Sign & Continue'}</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-
-
-// ─── Sound Engine (Web Audio API — no external files needed) ─────────────────
-const _AudioCtxClass = typeof window !== 'undefined' ? (window.AudioContext || window.webkitAudioContext) : null;
-let _buyerAudioCtx = null;
-const _getAudioCtxBuyer = () => {
-  if(!_AudioCtxClass) return null;
-  if(!_buyerAudioCtx) _buyerAudioCtx = new _AudioCtxClass();
-  if(_buyerAudioCtx.state === 'suspended') _buyerAudioCtx.resume();
-  return _buyerAudioCtx;
-};
-
-const playTone = (frequency, duration, type='sine', volume=0.3, delay=0) => {
-  const ctx = _getAudioCtxBuyer(); if(!ctx) return;
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.connect(gain); gain.connect(ctx.destination);
-  osc.type = type;
-  osc.frequency.setValueAtTime(frequency, ctx.currentTime + delay);
-  gain.gain.setValueAtTime(0, ctx.currentTime + delay);
-  gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + delay + 0.01);
-  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
-  osc.start(ctx.currentTime + delay);
-  osc.stop(ctx.currentTime + delay + duration + 0.05);
-};
-
-// Bid placed (buyer) — ascending chime: punchy & satisfying
-const soundBidPlaced = () => {
-  playTone(440, 0.12, 'sine', 0.25, 0);
-  playTone(554, 0.12, 'sine', 0.25, 0.08);
-  playTone(659, 0.20, 'sine', 0.30, 0.16);
-  playTone(880, 0.35, 'sine', 0.20, 0.30);
-};
-
-// Outbid alert — tense descending tone
-const soundOutbid = () => {
-  playTone(660, 0.10, 'sawtooth', 0.15, 0);
-  playTone(550, 0.10, 'sawtooth', 0.15, 0.12);
-  playTone(440, 0.25, 'sawtooth', 0.20, 0.24);
-};
-
-// New bid received (admin) — cash register / auction house feel
-const soundNewBid = () => {
-  playTone(800, 0.06, 'square', 0.12, 0);
-  playTone(1000, 0.06, 'square', 0.12, 0.07);
-  playTone(1200, 0.15, 'sine', 0.20, 0.14);
-};
-
-// Auction sold — triumphant fanfare
-const soundSold = () => {
-  [[523,0.15,0],[659,0.15,0.12],[784,0.15,0.24],[1047,0.50,0.36]].forEach(([f,d,t]) => playTone(f, d, 'sine', 0.25, t));
-};
-
-// Auction launched — gavel strike simulation
-const soundGavel = () => {
-  const ctx = _getAudioCtxBuyer(); if(!ctx) return;
-  // Low thump
-  const buf = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
-  const data = buf.getChannelData(0);
-  for(let i = 0; i < data.length; i++) {
-    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.04));
-  }
-  const src = ctx.createBufferSource();
-  const gain = ctx.createGain();
-  const filter = ctx.createBiquadFilter();
-  filter.type = 'lowpass'; filter.frequency.value = 200;
-  src.buffer = buf;
-  src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
-  gain.gain.setValueAtTime(0.8, ctx.currentTime);
-  src.start();
-  // Follow with a short tone
-  playTone(180, 0.25, 'sine', 0.3, 0.05);
-};
-
-const calcMinBid = (currentBid, increment) => {
-  if (!increment || (!increment.type && !increment.value)) return (currentBid || 0) + 1;
-  const base = currentBid || 0;
-  if (increment.type === 'pct') return Math.ceil(base + base * (increment.value || 0.025));
-  return base + (increment.value || 500);
-};
-
-function useCountdown(endTime, status) {
-  const [remaining, setRemaining] = useState(null);
-  useEffect(() => {
-    if (status !== 'Live' || !endTime) { setRemaining(null); return; }
-    const tick = () => { const diff = new Date(endTime) - new Date(); setRemaining(diff > 0 ? diff : 0); };
-    tick();
-    const t = setInterval(tick, 1000);
-    return () => clearInterval(t);
-  }, [endTime, status]);
-  return remaining;
-}
-
-function formatCountdown(ms) {
-  if (ms === null) return null;
-  if (ms <= 0) return 'ENDED';
-  const s = Math.floor(ms / 1000);
-  const d = Math.floor(s / 86400);
-  const h = Math.floor((s % 86400) / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  if (d > 0) return `${d}d ${h}h ${m}m`;
-  if (h > 0) return `${h}h ${m}m ${sec}s`;
-  return `${m}m ${sec}s`;
-}
-
-const S = {
-  page: { minHeight:'100vh', background:'#f5f3ef', fontFamily:"'DM Sans',sans-serif", color:'#2a2622' },
-  card: { background:'#fff', border:'1px solid rgba(182,139,46,0.18)', borderRadius:12, padding:20, marginBottom:16 },
-  input: { width:'100%', padding:'12px 14px', background:'#f5f3ef', border:'1px solid rgba(182,139,46,0.25)', borderRadius:8, color:'#1a1714', fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:'none', boxSizing:'border-box' },
-  label: { display:'block', fontSize:10, fontWeight:500, letterSpacing:2, textTransform:'uppercase', color:'#6b635a', marginBottom:6 },
-  btn: (gold) => ({ padding:'12px 24px', borderRadius:8, border: gold?'none':'1px solid rgba(182,139,46,0.30)', background: gold?'linear-gradient(135deg,#b68b2e,#8a6a1e)':'transparent', color: gold?'#fff':'#b68b2e', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:"'DM Sans',sans-serif" }),
-  tab: (a) => ({ padding:'9px 18px', border: a?'none':'1px solid rgba(182,139,46,0.25)', borderRadius:24, background: a?'linear-gradient(135deg,#b68b2e,#8a6a1e)':'transparent', color: a?'#fff':'#6b635a', fontSize:13, fontWeight:a?600:400, cursor:'pointer', fontFamily:"'DM Sans',sans-serif", whiteSpace:'nowrap', transition:'all 0.2s' }),
-  gold: { color:'#b68b2e', fontWeight:600 },
-  green: { color:'#4a9e6b', fontWeight:600 },
-};
-
-
-const PORTAL_ROLE='buyer';
-
-
-function AuctionAccessButton({buyer, onRefresh}) {
-  const [sent,setSent] = useState(false);
-  const [sending,setSending] = useState(false);
-  const [error,setError] = useState('');
-  const handleRequest = async() => {
-    if(sent) return;
-    setSending(true); setError('');
-    try {
-      if(buyer?.id) {
-        const {error:e} = await sb.from('buyers').update({auction_requested:true,auction_requested_at:new Date().toISOString()}).eq('id',buyer.id);
-        if(e) throw e;
-      }
-      setSent(true);
-      setTimeout(()=>onRefresh&&onRefresh(),800);
-    } catch(e) { setError('Request failed. Please contact Vollard Black directly.'); }
-    setSending(false);
-  };
-  if(sent||buyer?.auctionRequested) return (
-    <div style={{padding:'12px 16px',background:'rgba(74,158,107,0.06)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:8,fontSize:13,color:'#4a9e6b',fontWeight:600}}>
-      ✓ Request submitted — Vollard Black will review and activate your access shortly.
-    </div>
-  );
-  return (
-    <div>
-      <button onClick={handleRequest} disabled={sending} style={{padding:'12px 28px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",opacity:sending?0.6:1,width:'100%'}}>
-        {sending?'Submitting…':'Request Auction Access'}
-      </button>
-      {error&&<div style={{marginTop:8,fontSize:12,color:'#c45c4a'}}>{error}</div>}
-    </div>
-  );
-}
-
-// ─── BID MODAL — bottom sheet ─────────────────────────────────────────────────
-function BidModal({auction, buyer, myBids, onClose, onBidPlaced}) {
-  const increment = { type: auction.incrementType||'flat', value: Number(auction.incrementValue)||500 };
-  const baseBid = auction.currentBid > 0
-    ? calcMinBid(auction.currentBid, increment)
-    : Math.max(Number(auction.reservePrice)||0, 1);
-
-  const [amount,setAmount] = useState(String(baseBid));
-  const [stage,setStage] = useState('entry'); // 'entry' | 'confirm'
-  const [submitting,setSubmitting] = useState(false);
-  const [error,setError] = useState('');
-  const [success,setSuccess] = useState(false);
-  const remaining = useCountdown(auction.endTime, auction.status);
-  const numAmount = Number(amount)||0;
-  const reserveMet = numAmount >= (Number(auction.reservePrice)||0);
-  const aboveMin = numAmount >= baseBid;
-  const auctionEnded = remaining !== null && remaining <= 0;
-
-  const displayName = buyer.type==='company'
-    ? (buyer.companyName||buyer.email)
-    : (`${buyer.firstName||''} ${buyer.lastName||''}`.trim()||buyer.email);
-
-  const quickOpts = [
-    {label:'Min bid', val:baseBid},
-    increment.type==='flat'
-      ? {label:`+R ${fmt(increment.value)}`, val:baseBid+increment.value}
-      : {label:'+1 step', val:Math.ceil(baseBid*(1+increment.value))},
-    increment.type==='flat'
-      ? {label:`+R ${fmt(increment.value*2)}`, val:baseBid+increment.value*2}
-      : {label:'+2 steps', val:Math.ceil(baseBid*Math.pow(1+increment.value,2))},
-  ];
-
-  const handleBid = async() => {
-    if(!aboveMin) return setError(`Minimum bid is R ${fmt(baseBid)}`);
-    if(auctionEnded) return setError('This auction has ended.');
-    if(!buyer?.id) return setError('Your buyer profile is not linked. Please contact Vollard Black.');
-    setSubmitting(true); setError('');
-    try {
-      const bidId = 'VB'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-      const now = new Date().toISOString();
-      const {error:bidErr} = await sb.from('bids').insert({
-        id:bidId, auction_id:auction.id, buyer_id:buyer.id, buyer_name:displayName,
-        amount:numAmount, timestamp:now, created_at:now,
-      });
-      if(bidErr) throw bidErr;
-      const {error:aucErr} = await sb.from('auctions').update({
-        current_bid:numAmount, lead_bidder_id:buyer.id, lead_bidder_name:displayName,
-        bids_count:(auction.bidsCount||0)+1,
-      }).eq('id',auction.id);
-      if(aucErr) throw aucErr;
-      soundBidPlaced();
-      setSuccess(true);
-      setTimeout(()=>{ onBidPlaced(); onClose(); },1200);
-    } catch(e) {
-      console.error('Bid error:',e);
-      setError(e.message||'Failed to place bid. Please try again.');
-    }
-    setSubmitting(false);
-  };
-
-  return (
-    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.65)',zIndex:200,display:'flex',alignItems:'flex-end',justifyContent:'center'}}
-      onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
-      <div style={{background:'#fff',borderRadius:'16px 16px 0 0',padding:24,width:'100%',maxWidth:520,maxHeight:'92vh',overflowY:'auto'}}>
-        <div style={{width:40,height:4,background:'rgba(182,139,46,0.3)',borderRadius:2,margin:'0 auto 20px'}}/>
-
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:14}}>
-          <div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,color:'#1a1714'}}>{auction.title}</div>
-            <div style={{fontSize:12,color:'#8a8070',marginTop:2}}>{auction.artist||'—'} · {auction.galleryName||'—'}</div>
-          </div>
-          <button onClick={onClose} style={{background:'none',border:'none',color:'#8a8070',cursor:'pointer',fontSize:28,lineHeight:1,padding:'0 0 0 16px',flexShrink:0}}>×</button>
-        </div>
-
-        {remaining!==null&&(
-          <div style={{padding:'8px 14px',background:remaining<300000?'rgba(196,92,74,0.08)':'rgba(74,158,107,0.06)',border:`1px solid ${remaining<300000?'rgba(196,92,74,0.25)':'rgba(74,158,107,0.2)'}`,borderRadius:8,marginBottom:14,display:'flex',justifyContent:'space-between'}}>
-            <span style={{fontSize:13,color:remaining<300000?'#c45c4a':'#4a9e6b',fontWeight:700}}>⏱ {formatCountdown(remaining)}</span>
-            <span style={{fontSize:12,color:'#8a8070'}}>{auction.bidsCount||0} bids</span>
-          </div>
-        )}
-
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:18}}>
-          {[['Current Bid','R '+fmt(auction.currentBid||0),'#b68b2e'],['Reserve','R '+fmt(auction.reservePrice||0),reserveMet?'#4a9e6b':'#c45c4a'],['Min Bid','R '+fmt(baseBid),'#1a1714']].map(([l,v,c])=>(
-            <div key={l} style={{background:'#f5f3ef',borderRadius:8,padding:'10px 8px',textAlign:'center'}}>
-              <div style={{fontSize:9,letterSpacing:1,textTransform:'uppercase',color:'#8a8070',marginBottom:4}}>{l}</div>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:14,fontWeight:700,color:c}}>{v}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Quick options */}
-        <div style={{display:'flex',gap:8,marginBottom:14}}>
-          {quickOpts.map(({label,val})=>(
-            <button key={label} onClick={()=>{setAmount(String(val));setError('');setStage('entry');}}
-              style={{flex:1,padding:'10px 4px',borderRadius:8,border:`2px solid ${numAmount===val?'#b68b2e':'rgba(182,139,46,0.2)'}`,background:numAmount===val?'rgba(182,139,46,0.12)':'#f5f3ef',color:numAmount===val?'#b68b2e':'#6b635a',fontSize:10,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",fontWeight:numAmount===val?700:400,textAlign:'center'}}>
-              <div>{label}</div>
-              <div style={{fontWeight:700,fontSize:12,marginTop:2,fontFamily:"'Cormorant Garamond',serif"}}>R {fmt(val)}</div>
-            </button>
-          ))}
-        </div>
-
-        {/* Custom input */}
-        <div style={{marginBottom:12}}>
-          <label style={S.label}>Custom amount (R)</label>
-          <div style={{display:'flex',alignItems:'center',background:'#f5f3ef',border:`2px solid ${aboveMin||!numAmount?'rgba(182,139,46,0.4)':'rgba(196,92,74,0.5)'}`,borderRadius:10,overflow:'hidden'}}>
-            <span style={{padding:'0 14px',fontSize:14,color:'#8a8070',borderRight:'1px solid rgba(182,139,46,0.18)',height:52,display:'flex',alignItems:'center',flexShrink:0}}>R</span>
-            <input type="number" inputMode="numeric" value={amount}
-              onChange={e=>{setAmount(e.target.value);setError('');setStage('entry');}}
-              min={baseBid}
-              style={{flex:1,padding:'0 16px',height:52,background:'transparent',border:'none',color:'#1a1714',fontFamily:"'DM Sans',sans-serif",fontSize:20,fontWeight:700,outline:'none',minWidth:0}}/>
-          </div>
-          {!aboveMin&&numAmount>0&&<div style={{fontSize:11,color:'#c45c4a',marginTop:4}}>⚠ Must be at least R {fmt(baseBid)}</div>}
-        </div>
-
-        {numAmount>0&&(
-          <div style={{padding:'8px 12px',background:reserveMet?'rgba(74,158,107,0.06)':'rgba(182,139,46,0.06)',border:`1px solid ${reserveMet?'rgba(74,158,107,0.2)':'rgba(182,139,46,0.2)'}`,borderRadius:8,marginBottom:12,fontSize:12,color:reserveMet?'#4a9e6b':'#8a8070'}}>
-            {reserveMet?'✓ Meets reserve price':'⚠ Below reserve — artwork may not sell at this price'}
-          </div>
-        )}
-
-        {error&&<div style={{padding:'10px 14px',background:'rgba(196,92,74,0.08)',border:'1px solid rgba(196,92,74,0.2)',borderRadius:8,fontSize:13,color:'#c45c4a',marginBottom:12}}>{error}</div>}
-        {success&&<div style={{padding:'12px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.25)',borderRadius:8,fontSize:14,color:'#4a9e6b',fontWeight:600,textAlign:'center',marginBottom:12}}>✓ Bid placed successfully!</div>}
-
-        {stage==='entry'&&(
-          <button
-            onClick={()=>{ if(!aboveMin) return setError(`Minimum bid is R ${fmt(baseBid)}`); if(auctionEnded) return setError('This auction has ended.'); setError(''); setStage('confirm'); }}
-            disabled={!aboveMin||auctionEnded}
-            style={{width:'100%',padding:'14px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:15,fontWeight:700,cursor:!aboveMin||auctionEnded?'not-allowed':'pointer',fontFamily:"'DM Sans',sans-serif",opacity:!aboveMin&&numAmount>0?0.6:1}}>
-            Review Bid — R {fmt(numAmount)}
+          <button onClick={sign} disabled={saving} style={{width:'100%',padding:13,borderRadius:12,border:'none',background:hasSig&&agreed?`linear-gradient(135deg,${G.gold},${G.goldD})`:'rgba(182,139,46,0.2)',color:hasSig&&agreed?G.white:G.gold,fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:F.san,transition:'all 0.2s'}}>
+            {saving?'Saving…':'✍ Sign & Continue'}
           </button>
-        )}
-
-        {stage==='confirm'&&(
-          <div style={{background:'rgba(182,139,46,0.06)',border:'2px solid #b68b2e',borderRadius:12,padding:18,marginBottom:0}}>
-            <div style={{fontSize:12,letterSpacing:2,textTransform:'uppercase',color:'#8a8070',marginBottom:10}}>Confirm Your Bid</div>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
-              <span style={{fontSize:14,color:'#6b635a'}}>Artwork</span>
-              <span style={{fontSize:14,fontWeight:600,color:'#1a1714'}}>{auction.title}</span>
-            </div>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-              <span style={{fontSize:14,color:'#6b635a'}}>Your bid</span>
-              <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:700,color:'#b68b2e'}}>R {fmt(numAmount)}</span>
-            </div>
-            <div style={{fontSize:11,color:'#8a8070',marginBottom:14,lineHeight:1.6}}>
-              By confirming you agree to purchase this artwork at this price if you are the winning bidder when the auction closes.
-            </div>
-            {error&&<div style={{padding:'10px 14px',background:'rgba(196,92,74,0.08)',border:'1px solid rgba(196,92,74,0.2)',borderRadius:8,fontSize:13,color:'#c45c4a',marginBottom:12}}>{error}</div>}
-            {success&&<div style={{padding:'12px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.25)',borderRadius:8,fontSize:14,color:'#4a9e6b',fontWeight:600,textAlign:'center',marginBottom:12}}>✓ Bid placed!</div>}
-            <div style={{display:'flex',gap:10}}>
-              <button onClick={()=>{setStage('entry');setError('');}} disabled={submitting||success}
-                style={{flex:1,padding:'13px',borderRadius:10,border:'1px solid rgba(182,139,46,0.3)',background:'transparent',color:'#b68b2e',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
-                ← Change
-              </button>
-              <button onClick={handleBid} disabled={submitting||success}
-                style={{flex:2,padding:'13px',borderRadius:10,border:'none',background:success?'#4a9e6b':'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:15,fontWeight:700,cursor:submitting||success?'not-allowed':'pointer',fontFamily:"'DM Sans',sans-serif",opacity:submitting?0.7:1}}>
-                {success?'✓ Bid Placed!':submitting?'Placing…':'Confirm Bid'}
-              </button>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );
 }
 
-function AuctionCard({auc, buyer, myBids, onBid}) {
-  const remaining = useCountdown(auc.endTime, auc.status);
-  const isLive = auc.status==='Live';
-  const isLeading = auc.leadBidderId===buyer?.id;
-  const myTopBid = myBids.filter(b=>b.auctionId===auc.id).sort((a,b)=>b.amount-a.amount)[0];
-  const urgent = remaining!==null&&remaining<300000;
-  const auctionEnded = remaining!==null&&remaining<=0;
-  // KEY FIX: canBid = live + approved + (no timer OR timer not yet expired)
-  const canBid = isLive && buyer?.auctionApproved && !auctionEnded;
 
-  return (
-    <div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:12,overflow:'hidden',marginBottom:16}}>
-      <div style={{height:3,background:isLeading?'#4a9e6b':isLive?'#c45c4a':'rgba(182,139,46,0.3)'}}/>
-      {auc.imageUrl&&(
-        <div style={{position:'relative',height:200,overflow:'hidden',background:'#f0ede8'}}>
-          <img src={auc.imageUrl} alt={auc.title} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
-          {isLive&&<div style={{position:'absolute',top:10,left:10,background:'rgba(196,92,74,0.9)',borderRadius:6,padding:'4px 10px',fontSize:10,fontWeight:700,color:'#fff',letterSpacing:1}}>● LIVE</div>}
-          {isLeading&&<div style={{position:'absolute',top:10,right:10,background:'rgba(74,158,107,0.9)',borderRadius:6,padding:'4px 10px',fontSize:10,fontWeight:700,color:'#fff'}}>● LEADING</div>}
-        </div>
-      )}
-      {!auc.imageUrl&&isLive&&<div style={{background:'rgba(196,92,74,0.08)',padding:'8px 16px'}}><span style={{fontSize:10,fontWeight:700,color:'#c45c4a'}}>● LIVE AUCTION</span></div>}
-
-      <div style={{padding:16}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:12,marginBottom:12}}>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:'#1a1714',marginBottom:4}}>{auc.title}</div>
-            <div style={{fontSize:12,color:'#8a8070'}}>{auc.artist||'—'} · {auc.galleryName||'—'}</div>
-          </div>
-          <div style={{textAlign:'right',flexShrink:0}}>
-            <div style={{fontSize:9,color:'#8a8070',letterSpacing:1,textTransform:'uppercase'}}>Current Bid</div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,fontWeight:600,color:'#b68b2e'}}>R {fmt(auc.currentBid||0)}</div>
-            <div style={{fontSize:11,color:'#8a8070'}}>Reserve: R {fmt(auc.reservePrice||0)}</div>
-          </div>
-        </div>
-
-        {isLive&&(
-          <div style={{padding:'8px 12px',background:urgent?'rgba(196,92,74,0.06)':'rgba(182,139,46,0.04)',border:`1px solid ${urgent?'rgba(196,92,74,0.2)':'rgba(182,139,46,0.15)'}`,borderRadius:8,marginBottom:12,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-            <span style={{fontSize:12,color:urgent?'#c45c4a':'#b68b2e',fontWeight:700}}>
-              {remaining===null?'● Open':auctionEnded?'Ended':`⏱ ${formatCountdown(remaining)}`}
-            </span>
-            <span style={{fontSize:11,color:'#8a8070'}}>{auc.bidsCount||0} bids · {auc.incrementLabel||'—'}</span>
-          </div>
-        )}
-
-        {isLeading&&<div style={{fontSize:12,fontWeight:600,color:'#4a9e6b',marginBottom:8}}>● Leading — R {fmt(myTopBid?.amount||0)}</div>}
-        {myTopBid&&!isLeading&&isLive&&<div style={{fontSize:12,color:'#c45c4a',marginBottom:8}}>⚠ Outbid (your bid: R {fmt(myTopBid.amount)})</div>}
-
-        {canBid&&(
-          <button onClick={onBid} style={{width:'100%',padding:'13px',borderRadius:8,border:'none',background:isLeading?'linear-gradient(135deg,#4a9e6b,#2d7a4a)':'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
-            {isLeading?'↑ Raise Your Bid':myTopBid?'⚠ Place Higher Bid':'Place Bid'}
-          </button>
-        )}
-        {isLive&&!buyer?.auctionApproved&&!buyer?.auctionRequested&&(
-          <div style={{padding:'10px 14px',background:'rgba(182,139,46,0.06)',border:'1px solid rgba(182,139,46,0.2)',borderRadius:8,fontSize:12,color:'#8a6a1e',textAlign:'center'}}>KYC verification required — <strong>request access above</strong></div>
-        )}
-        {isLive&&!buyer?.auctionApproved&&buyer?.auctionRequested&&(
-          <div style={{padding:'10px 14px',background:'rgba(74,158,107,0.06)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:8,fontSize:12,color:'#4a9e6b',textAlign:'center'}}>✓ Access requested — Vollard Black will approve shortly</div>
-        )}
-        {auc.status==='Sold'&&(
-          <div style={{padding:'10px',background:isLeading?'rgba(74,158,107,0.08)':'rgba(182,139,46,0.06)',border:`1px solid ${isLeading?'rgba(74,158,107,0.25)':'rgba(182,139,46,0.2)'}`,borderRadius:8,textAlign:'center',fontSize:12,fontWeight:600,color:isLeading?'#4a9e6b':'#8a8070'}}>
-            {isLeading?'🏆 You won — Vollard Black will contact you shortly.':'Auction closed'}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── Push notification helper ─────────────────────────────────────────────────
-async function requestNotifPermission() {
-  if(typeof window === 'undefined' || !('Notification' in window)) return false;
-  if(Notification.permission === 'denied') return false;
-  let granted = Notification.permission === 'granted';
-  if(!granted) {
-    const p = await Notification.requestPermission();
-    granted = p === 'granted';
-  }
-  // Register service worker for proper mobile push (shows even when tab is backgrounded)
-  if(granted && 'serviceWorker' in navigator) {
-    try {
-      await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-    } catch(e) { console.warn('SW registration failed:', e); }
-  }
-  return granted;
-}
-function pushNotif(title, body, tag) {
-  if(!('Notification' in window)||Notification.permission!=='granted') return;
-  try {
-    // Use ServiceWorker registration if available (works on mobile when tab backgrounded)
-    if(navigator.serviceWorker && navigator.serviceWorker.ready) {
-      navigator.serviceWorker.ready.then(reg => {
-        reg.showNotification(title, {
-          body,
-          tag,
-          icon: '/favicon.ico',
-          badge: '/favicon.ico',
-          vibrate: [200, 100, 200],
-          requireInteraction: tag && tag.startsWith('outbid'),
-        }).catch(()=>{
-          // Fallback to basic notification
-          try { new Notification(title,{body,tag}); } catch(e){}
-        });
-      }).catch(()=>{
-        try { new Notification(title,{body,tag}); } catch(e){}
-      });
+function sharePortfolio(artworks,artistName,bio,medium){
+  // Generate portfolio HTML and offer share/download
+  const w=window.open('','_blank');
+  const works=artworks.filter(a=>a.status!=='Pending Approval');
+  const html=`<!DOCTYPE html><html><head><title>${artistName} — Portfolio</title><style>@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@400;600&display=swap');body{margin:0;padding:0;background:#fff;font-family:'DM Sans',sans-serif;color:#1a1714;}@page{size:A4;margin:20mm;}.cover{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:48px;page-break-after:always;background:linear-gradient(135deg,#1a1714 0%,#2a2018 100%);}.cover-logo{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;letter-spacing:0.4em;color:rgba(245,243,239,0.6);margin-bottom:48px;}.cover-logo span{color:#b68b2e;}.cover-name{font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:300;color:#f5f3ef;margin-bottom:8px;}.cover-medium{font-size:13px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(182,139,46,0.7);margin-bottom:40px;}.cover-bio{max-width:440px;font-size:14px;color:rgba(245,243,239,0.65);line-height:1.8;font-style:italic;}.page{padding:40px;page-break-after:always;display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start;}.art-img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;background:#f0ede8;}.art-info{padding-top:8px;}.art-title{font-family:'Cormorant Garamond',serif;font-size:28px;color:#1a1714;margin-bottom:6px;}.art-artist{font-size:13px;color:#b68b2e;font-weight:600;margin-bottom:20px;}.dl{margin-bottom:10px;}.dl-label{font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:#8a8070;margin-bottom:2px;}.dl-value{font-size:13px;font-weight:600;}.price-box{margin-top:20px;padding:14px;background:#f5f3ef;border-radius:6px;}.price-label{font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:#8a8070;margin-bottom:2px;}.price-value{font-family:'Cormorant Garamond',serif;font-size:26px;color:#b68b2e;font-weight:600;}</style></head><body><div class="cover"><div class="cover-logo">VOLLARD <span>BLACK</span></div><div class="cover-name">${artistName}</div><div class="cover-medium">${medium||'Fine Art'}</div>${bio?'<div class="cover-bio">"'+bio+'"</div>':''}</div>${works.map(art=>'<div class="page">'+(art.imageUrl?'<img src="'+art.imageUrl+'" class="art-img" alt="'+art.title+'"/>':(art.imageUrl===''?'':'<div class="art-img" style="display:flex;align-items:center;justify-content:center;font-size:48px;color:rgba(182,139,46,0.3)">🖼</div>'))+'<div class="art-info"><div class="art-title">'+art.title+'</div><div class="art-artist">'+artistName+'</div>'+(art.medium?'<div class="dl"><div class="dl-label">Medium</div><div class="dl-value">'+art.medium+'</div></div>':'')+(art.year?'<div class="dl"><div class="dl-label">Year</div><div class="dl-value">'+art.year+'</div></div>':'')+(art.dimensions?'<div class="dl"><div class="dl-label">Dimensions</div><div class="dl-value">'+art.dimensions+'</div></div>':'')+'<div class="price-box"><div class="price-label">Asking Price</div><div class="price-value">R '+Number(art.recommendedPrice||0).toLocaleString('en-ZA',{minimumFractionDigits:2})+'</div></div>'+(art.description?'<div style="margin-top:16px;font-size:12px;color:#4a4440;line-height:1.8;font-style:italic;">'+art.description+'</div>':'')+'</div></div>').join('')}</body></html>`;
+  w.document.write(html);
+  w.document.close();
+  // After render, offer share
+  setTimeout(()=>{
+    if(navigator.share){
+      navigator.share({title:artistName+' — Portfolio',text:'View my art portfolio on Vollard Black',url:window.location.origin+'/artist'}).catch(()=>{});
     } else {
-      new Notification(title,{body,tag,icon:'/favicon.ico'});
+      w.print();
     }
-  } catch(e){}
+  },800);
 }
 
-function BuyerDashboard({session, kycComplete=true}) {
-  const [tab,setTab] = useState('gallery');
-  const [buyer,setBuyer] = useState(null);
-  const [artworks,setArtworks] = useState([]);
-  const [auctions,setAuctions] = useState([]);
-  const [bids,setBids] = useState([]);
-  const [purchases,setPurchases] = useState([]);
-  const [initialLoading,setInitialLoading] = useState(true);
-  const [notifs,setNotifs] = useState([]);
-  const [enquiry,setEnquiry] = useState(null);
-  const [profileEdit,setProfileEdit] = useState(false);
-  const [profileForm,setProfileForm] = useState({});
-  const [saving,setSaving] = useState(false);
-  const [saveMsg,setSaveMsg] = useState('');
-  const [enquiryMsg,setEnquiryMsg] = useState('');
-  const [zoomImg,setZoomImg] = useState(null);
-  const [search,setSearch] = useState('');
-  const [bidTarget,setBidTarget] = useState(null);
-  const [toast,setToast] = useState(null); // {msg, type: 'bid'|'outbid'|'sold'|'info'}
-  const [watchlist,setWatchlist] = useState(() => { try{return JSON.parse(localStorage.getItem('vb_watchlist')||'[]');}catch{return[];} });
-  const [artDetail,setArtDetail] = useState(null); // artwork detail modal
-  const [notifEnabled,setNotifEnabled] = useState(false);
-  const [soundReady,setSoundReady] = useState(false);
-  const buyerRef = useRef(null);
+function generatePortfolio(artworks,artistName,bio,medium){
+  const w=window.open('','_blank');
+  const works=artworks.filter(a=>a.status!=='Pending Approval');
+  const html=`<!DOCTYPE html><html><head><title>${artistName} — Portfolio</title><style>@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@400;600&display=swap');body{margin:0;padding:0;background:#fff;font-family:'DM Sans',sans-serif;color:#1a1714;}@page{size:A4;margin:20mm;}@media print{body{background:#fff;}}.cover{min-height:297mm;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:48px;page-break-after:always;background:linear-gradient(135deg,#1a1714 0%,#2a2018 100%);}.cover-logo{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;letter-spacing:0.4em;color:rgba(245,243,239,0.6);margin-bottom:60px;}.cover-logo span{color:#b68b2e;}.cover-name{font-family:'Cormorant Garamond',serif;font-size:56px;font-weight:300;color:#f5f3ef;letter-spacing:0.05em;margin-bottom:12px;}.cover-medium{font-size:14px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(182,139,46,0.7);margin-bottom:48px;}.cover-bio{max-width:480px;font-size:15px;color:rgba(245,243,239,0.65);line-height:1.8;font-style:italic;}.artwork-page{padding:32px;page-break-after:always;display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start;}.artwork-img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;background:#f0ede8;}.artwork-img-placeholder{width:100%;aspect-ratio:1;background:#f0ede8;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:48px;color:rgba(182,139,46,0.3);}.artwork-info{padding-top:16px;}.artwork-title{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:400;color:#1a1714;margin-bottom:8px;}.artwork-artist{font-size:14px;color:#b68b2e;font-weight:600;margin-bottom:24px;}.artwork-detail{margin-bottom:12px;}.artwork-detail-label{font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#8a8070;margin-bottom:2px;}.artwork-detail-value{font-size:14px;font-weight:600;color:#1a1714;}.artwork-desc{margin-top:24px;font-size:13px;color:#4a4440;line-height:1.8;font-style:italic;}.price-box{margin-top:24px;padding:16px;background:#f5f3ef;border-radius:8px;border:1px solid rgba(182,139,46,0.2);}.price-label{font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#8a8070;margin-bottom:4px;}.price-value{font-family:'Cormorant Garamond',serif;font-size:28px;color:#b68b2e;font-weight:600;}</style></head><body><div class="cover"><div class="cover-logo">VOLLARD <span>BLACK</span></div><div class="cover-name">${artistName}</div><div class="cover-medium">${medium||'Fine Art'}</div>${bio?`<div class="cover-bio">"${bio}"</div>`:''}</div>${works.map(art=>`<div class="artwork-page">${art.imageUrl?`<img src="${art.imageUrl}" class="artwork-img" alt="${art.title}"/>`:`<div class="artwork-img-placeholder">🖼</div>`}<div class="artwork-info"><div class="artwork-title">${art.title}</div><div class="artwork-artist">${artistName}</div>${art.medium?`<div class="artwork-detail"><div class="artwork-detail-label">Medium</div><div class="artwork-detail-value">${art.medium}</div></div>`:''}${art.year?`<div class="artwork-detail"><div class="artwork-detail-label">Year</div><div class="artwork-detail-value">${art.year}</div></div>`:''}${art.dimensions?`<div class="artwork-detail"><div class="artwork-detail-label">Dimensions</div><div class="artwork-detail-value">${art.dimensions}</div></div>`:''}<div class="price-box"><div class="price-label">Asking Price</div><div class="price-value">R ${fmt(art.recommendedPrice)}</div></div>${art.description?`<div class="artwork-desc">${art.description}</div>`:''}</div></div>`).join('')}</body></html>`;
+  w.document.write(html);w.document.close();
+}
 
-  const unlockSound = () => { const ctx = _getAudioCtxBuyer(); if(ctx) setSoundReady(true); };
-  const auctionsRef = useRef([]);
-  const toastTimer = useRef(null);
+function generateCert(art,artistName){
+  const w=window.open('','_blank');
+  const html=`<!DOCTYPE html><html><head><title>Certificate of Authenticity</title><style>@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@400;600&display=swap');body{margin:0;padding:48px;background:#f5f3ef;font-family:'DM Sans',sans-serif;}.cert{max-width:680px;margin:0 auto;background:#fff;border:1px solid rgba(182,139,46,0.3);padding:60px;text-align:center;}.logo{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;letter-spacing:0.3em;color:#1a1714;margin-bottom:4px;}.logo span{color:#b68b2e;}.sub{font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#8a8070;margin-bottom:40px;}.line{width:80px;height:1px;background:rgba(182,139,46,0.4);margin:24px auto;}.title{font-family:'Cormorant Garamond',serif;font-size:22px;color:#8a8070;font-weight:300;letter-spacing:0.1em;margin-bottom:32px;text-transform:uppercase;}.art-title{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:400;color:#1a1714;margin-bottom:8px;}.artist{font-size:16px;color:#b68b2e;font-weight:600;margin-bottom:32px;}.details{display:grid;grid-template-columns:1fr 1fr;gap:16px;text-align:left;margin-bottom:40px;background:#f5f3ef;padding:24px;border-radius:8px;}.detail-label{font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:#8a8070;margin-bottom:4px;}.detail-value{font-size:14px;color:#1a1714;font-weight:600;}.cert-no{font-size:11px;color:#8a8070;margin-top:32px;}.footer{margin-top:40px;font-size:11px;color:#8a8070;line-height:1.7;}@media print{body{background:#fff;}}</style></head><body><div class="cert"><div class="logo">VOLLARD <span>BLACK</span></div><div class="sub">Fine Art Acquisitions</div><div class="line"/><div class="title">Certificate of Authenticity</div><div class="art-title">${art.title}</div><div class="artist">by ${artistName}</div><div class="details"><div><div class="detail-label">Medium</div><div class="detail-value">${art.medium||'—'}</div></div><div><div class="detail-label">Year</div><div class="detail-value">${art.year||'—'}</div></div><div><div class="detail-label">Dimensions</div><div class="detail-value">${art.dimensions||'—'}</div></div><div><div class="detail-label">Value</div><div class="detail-value">R ${fmt(art.recommendedPrice)}</div></div></div><div class="line"/><div class="cert-no">Certificate No: VB-${art.id?.slice(-8)?.toUpperCase()||'N/A'} · Issued ${new Date().toLocaleDateString('en-ZA',{day:'numeric',month:'long',year:'numeric'})}</div><div class="footer">This certificate verifies the authenticity of the above artwork.<br/>Vollard Black (Pty) Ltd · Hermanus, Western Cape · concierge@vollardblack.com</div></div><script>window.print();</script></body></html>`;
+  w.document.write(html);w.document.close();
+}
 
-  const showToast = (msg, type='info') => {
-    setToast({msg,type});
-    if(toastTimer.current) clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(()=>setToast(null), 5000);
-  };
-
-  // Request notification permission on mount
-  useEffect(()=>{
-    requestNotifPermission().then(granted=>setNotifEnabled(granted));
-  },[]);
-
-  useEffect(()=>{ loadData(true); },[session]);
-
-  useEffect(()=>{
-    if(typeof window==='undefined') return;
-    const params=new URLSearchParams(window.location.search);
-    const pay=params.get('payment');
-    if(pay==='success'){
-      setEnquiryMsg('✓ Payment submitted! Vollard Black will confirm and update your account shortly.');
-      window.history.replaceState({},'',window.location.pathname);
-      setTab('purchases');
-    } else if(pay==='failed'){
-      setEnquiryMsg('⚠ Payment failed. Please try again or contact Vollard Black.');
-      window.history.replaceState({},'',window.location.pathname);
-    } else if(pay==='cancelled'){
-      setEnquiryMsg('Payment cancelled — no charge was made.');
-      window.history.replaceState({},'',window.location.pathname);
-    }
-  },[]);
-
-  // Keep refs in sync for use inside realtime callbacks
-  useEffect(()=>{ buyerRef.current = buyer; },[buyer]);
-  useEffect(()=>{ auctionsRef.current = auctions; },[auctions]);
-
-  useEffect(()=>{
-    if(!session||!sb) return;
-    const ch = sb.channel('buyer-rt')
-      // ── Auction changes: apply payload directly to state ──
-      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'auctions'},(payload)=>{
-        const updated = toCamel(payload.new);
-        const prev = auctionsRef.current.find(a=>a.id===updated.id);
-        const me = buyerRef.current;
-
-        // Update auction in state immediately — no re-fetch
-        setAuctions(prev=>prev.map(a=>a.id===updated.id?{...a,...updated,imageUrl:a.imageUrl}:a));
-
-        if(!me||!prev) return;
-
-        // Was I just outbid?
-        if(prev.leadBidderId===me.id && updated.leadBidderId!==me.id && updated.status==='Live') {
-          soundOutbid();
-          showToast(`⚠ You've been outbid on "${updated.title}" — R ${fmt(updated.currentBid)}`, 'outbid');
-          pushNotif('⚠ Outbid — Vollard Black', `${updated.title}: new bid R ${fmt(updated.currentBid)}. Bid now!`, 'outbid-'+updated.id);
-        }
-        // Auction just closed and I won
-        if(updated.status==='Sold' && updated.leadBidderId===me.id) {
-          soundSold();
-          showToast(`🏆 You won "${updated.title}" at R ${fmt(updated.currentBid)}!`, 'sold');
-          pushNotif('🏆 You Won! — Vollard Black', `Congratulations! You won "${updated.title}" at R ${fmt(updated.currentBid)}.`, 'won-'+updated.id);
-        }
-        // New bid on an auction I'm watching (not by me)
-        if(updated.leadBidderId!==me.id && updated.bidsCount>(prev.bidsCount||0) && updated.status==='Live') {
-          showToast(`New bid on "${updated.title}" — R ${fmt(updated.currentBid)}`, 'bid');
-        }
-      })
-      // ── New auction goes live ──
-      .on('postgres_changes',{event:'INSERT',schema:'public',table:'auctions'},(payload)=>{
-        const a = toCamel(payload.new);
-        if(a.status==='Live') {
-          setAuctions(prev=>[a,...prev]);
-          showToast(`🔴 New auction live: "${a.title}"`, 'bid');
-          pushNotif('🔴 Live Auction — Vollard Black', `"${a.title}" is now live. Place your bid!`, 'live-'+a.id);
-        }
-      })
-      // ── New bid inserted: add to bids state immediately ──
-      .on('postgres_changes',{event:'INSERT',schema:'public',table:'bids'},(payload)=>{
-        const newBid = toCamel(payload.new);
-        const me = buyerRef.current;
-        // Add to bids list if it's mine
-        if(me && newBid.buyerId===me.id) {
-          setBids(prev=>[newBid,...prev.filter(b=>b.id!==newBid.id)]);
-        }
-      })
-      // ── Buyer record updated (e.g. auction approved) ──
-      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'buyers'},(payload)=>{
-        const updated = toCamel(payload.new);
-        const me = buyerRef.current;
-        if(me && updated.id===me.id) {
-          setBuyer(b=>({...b,...updated}));
-          if(updated.auctionApproved && !me.auctionApproved) {
-            showToast('✓ Auction access approved — you can now place bids!', 'sold');
-            pushNotif('✓ Auction Access Approved', 'Vollard Black has approved your auction access. You can now place bids.', 'approved');
-          }
-        }
-      })
-      .subscribe((status)=>{
-        if(status==='SUBSCRIBED') console.log('Realtime connected');
-      });
-    return ()=>sb.removeChannel(ch);
-  },[session]);
-
-  const loadData = async(isInitial=false) => {
-    if(isInitial) setInitialLoading(true);
-    try {
-      // ilike for case-insensitive email match
-      const {data:buyerRows} = await sb.from('buyers').select('*').ilike('email',session.user.email);
-      if(buyerRows&&buyerRows.length>0) {
-        const b = toCamel(buyerRows[0]);
-        setBuyer(b);
-        setProfileForm(p=>({...p,...b}));
-      }
-
-      const {data:arts} = await sb.from('artworks').select('*').in('status',['Available','Reserved','In Gallery']).order('created_at',{ascending:false});
-      setArtworks((arts||[]).map(toCamel));
-
-      const {data:aucs} = await sb.from('auctions').select('*').in('status',['Live','Frozen','Sold','No Sale']).order('created_at',{ascending:false});
-      const aucsWithImages = await Promise.all((aucs||[]).map(async(auc)=>{
-        if(auc.artwork_id){
-          const {data:art} = await sb.from('artworks').select('image_url').eq('id',auc.artwork_id).single();
-          return {...toCamel(auc),imageUrl:art?.image_url||null};
-        }
-        return toCamel(auc);
-      }));
-      setAuctions(aucsWithImages);
-
-      if(buyerRows&&buyerRows.length>0) {
-        const {data:myBids} = await sb.from('bids').select('*').eq('buyer_id',buyerRows[0].id).order('timestamp',{ascending:false});
-        setBids((myBids||[]).map(toCamel));
-        const {data:sales} = await sb.from('sales').select('*').eq('buyer_id',buyerRows[0].id);
-        setPurchases((sales||[]).map(toCamel));
-      }
-    } catch(e){ console.error('loadData:',e); }
-    if(isInitial) setInitialLoading(false);
-  };
-
-  const saveProfile = async() => {
-    if(!buyer) return;
-    setSaving(true);
-    const bankChanged = (
-      (profileForm.bankName||'') !== (buyer.bankName||'') ||
-      (profileForm.accountNumber||'') !== (buyer.accountNumber||'') ||
-      (profileForm.branchCode||'') !== (buyer.branchCode||'') ||
-      (profileForm.accountHolder||'') !== (buyer.accountHolder||'')
-    );
-    const updates = {...profileForm, ...(bankChanged ? {bankVerified:false} : {})};
-    const snake = toSnake(updates);
-    delete snake.id; delete snake.created_at;
-    await sb.from('buyers').update(snake).eq('id',buyer.id);
-    setBuyer(b=>({...b,...updates}));
-    setSaveMsg(bankChanged?'Saved. Bank details flagged for verification.':'Saved.'); setTimeout(()=>setSaveMsg(''),3000);
-    setSaving(false); setProfileEdit(false);
-  };
-
-  const sendEnquiry = async() => {
-    const art = enquiry;
-    const bName = buyer?(`${buyer.firstName||''} ${buyer.lastName||''}`.trim()||buyer.companyName||''):session.user.email.split('@')[0];
-    const bMobile = buyer?.mobile||'';
-    try {
-      await sb.from('enquiries').insert({id:crypto.randomUUID(),artwork_id:art.id,artwork_title:art.title,buyer_id:buyer?.id||null,buyer_name:bName,buyer_email:session.user.email,buyer_mobile:bMobile,message:`Interested in "${art.title}" — R ${fmt(art.recommendedPrice)}`,read:false,created_at:new Date().toISOString()});
-    } catch(e){ console.error(e); }
-    const waMsg = encodeURIComponent(`Hi Vollard Black,\n\nI am interested in purchasing:\n\n*${art.title}*\nArtist: ${art.artist||'—'}\nValue: R ${fmt(art.recommendedPrice)}\n\nKind regards,\n${bName}${bMobile?' — '+bMobile:''}`);
-    window.open(`https://wa.me/27826503393?text=${waMsg}`,'_blank');
-    setEnquiryMsg('Enquiry sent!'); setTimeout(()=>setEnquiryMsg(''),5000);
-    setEnquiry(null);
-  };
-
-  const signOut = ()=>sb.auth.signOut();
-
-  const toggleWatchlist = (artId) => {
-    setWatchlist(prev => {
-      const next = prev.includes(artId) ? prev.filter(id=>id!==artId) : [...prev,artId];
-      try{localStorage.setItem('vb_watchlist',JSON.stringify(next));}catch{}
-      return next;
-    });
-  };
-
-  const generatePurchaseCert = (purchase) => {
-    const w = window.open('','_blank');
-    const bName = buyer?(`${buyer.firstName||''} ${buyer.lastName||''}`.trim()||buyer.companyName||''):session.user.email;
-    const html = `<!DOCTYPE html><html><head><title>Purchase Certificate</title><style>@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@400;600&display=swap');body{margin:0;padding:60px;background:#fff;font-family:'DM Sans',sans-serif;color:#1a1714;max-width:680px;}@page{size:A4;margin:20mm;}@media print{body{padding:0;}}.logo{font-family:'Cormorant Garamond',serif;font-size:22px;letter-spacing:0.3em;margin-bottom:4px;}.logo span{color:#b68b2e;}.title{font-family:'Cormorant Garamond',serif;font-size:32px;margin:32px 0 24px;}.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:24px;background:#f5f3ef;border-radius:8px;margin-bottom:32px;}.label{font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:#8a8070;margin-bottom:4px;}.value{font-size:15px;font-weight:600;}</style></head><body><div class="logo">VOLLARD <span>BLACK</span></div><div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#8a8070;margin-bottom:32px;">Certificate of Purchase</div><div class="title">${purchase.artworkTitle||'Artwork'}</div><div class="grid"><div><div class="label">Purchaser</div><div class="value">${bName}</div></div><div><div class="label">Purchase Date</div><div class="value">${purchase.date||new Date().toLocaleDateString('en-ZA')}</div></div><div><div class="label">Sale Price</div><div class="value">R ${fmt(purchase.salePrice)}</div></div><div><div class="label">Certificate No</div><div class="value">VB-${purchase.id?.slice(-8)?.toUpperCase()||'N/A'}</div></div></div><div style="font-size:12px;color:#4a4440;line-height:1.9;">This certificate confirms the purchase of the above artwork through Vollard Black (Pty) Ltd. This document serves as proof of purchase and is issued on the date shown above.</div><div style="margin-top:48px;display:grid;grid-template-columns:1fr 1fr;gap:40px;"><div style="border-top:1px solid #ccc;padding-top:8px;font-size:11px;color:#8a8070;">Purchaser signature</div><div style="border-top:1px solid #ccc;padding-top:8px;font-size:11px;color:#8a8070;">Vollard Black authorised signature</div></div></body></html>`;
-    w.document.write(html); w.document.close();
-  };
-
-  const payWithIkhoka = async({amount, description, referenceId, type}) => {
-    try {
-      const res = await fetch('/api/ikhoka-paylink', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({
-          amount,
-          description,
-          scheduleId: referenceId,
-          monthNumber: 1,
-          collectorEmail: session.user.email,
-        }),
-      });
-      const data = await res.json();
-      if (data.paylinkUrl) {
-        window.location.href = data.paylinkUrl;
-      } else {
-        alert('Payment setup failed: ' + (data.error || 'Please try again.'));
-      }
-    } catch(e) {
-      alert('Payment error. Please try again.');
-    }
-  };
-  const displayName = buyer?(`${buyer.firstName||''} ${buyer.lastName||''}`.trim()||buyer.companyName||''):session.user.email.split('@')[0];
-  const liveAuctions = auctions.filter(a=>a.status==='Live');
-  const isOutbid = bids.some(b=>{ const a=auctions.find(x=>x.id===b.auctionId); return a?.status==='Live'&&a?.leadBidderId!==buyer?.id; });
-
-  if(initialLoading) return (
-    <div style={{...S.page,display:'flex',alignItems:'center',justifyContent:'center'}}>
-      <div style={{textAlign:'center'}}>
-        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,fontWeight:300,letterSpacing:8,color:'#1a1714',marginBottom:8}}>VOLLARD <span style={{color:'#b68b2e'}}>BLACK</span></div>
-        <div style={{fontSize:11,color:'#8a8070',letterSpacing:3,textTransform:'uppercase'}}>Loading…</div>
-      </div>
+function NotifCentre({notifs,onClear}){
+  const[open,setOpen]=useState(false);
+  if(!notifs||notifs.length===0)return null;
+  return(
+    <div style={{position:'relative'}}>
+      <button onClick={()=>setOpen(o=>!o)} style={{position:'relative',padding:'7px 10px',borderRadius:8,border:'1px solid rgba(182,139,46,0.25)',background:'transparent',color:'#b68b2e',cursor:'pointer',fontSize:13}}>
+        🔔<span style={{position:'absolute',top:-4,right:-4,background:'#c45c4a',color:'#fff',borderRadius:'50%',fontSize:9,width:16,height:16,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700}}>{notifs.length}</span>
+      </button>
+      {open&&<div style={{position:'absolute',right:0,top:'110%',width:280,background:'#fff',border:'1px solid rgba(182,139,46,0.22)',borderRadius:12,boxShadow:'0 8px 32px rgba(0,0,0,0.12)',zIndex:100,maxHeight:300,overflowY:'auto'}}>
+        <div style={{padding:'10px 14px',borderBottom:'1px solid rgba(182,139,46,0.12)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <span style={{fontSize:11,fontWeight:700,letterSpacing:'0.12em',textTransform:'uppercase',color:'#6b635a'}}>Notifications</span>
+          <button onClick={()=>{onClear();setOpen(false);}} style={{fontSize:11,color:'#c45c4a',background:'none',border:'none',cursor:'pointer'}}>Clear all</button>
+        </div>
+        {notifs.map((n,i)=><div key={i} style={{padding:'10px 14px',borderBottom:'1px solid rgba(182,139,46,0.08)',fontSize:13,color:'#1a1714'}}>{n.msg}<div style={{fontSize:10,color:'#8a8070',marginTop:2}}>{n.time}</div></div>)}
+      </div>}
     </div>
   );
+}
 
 
-  return (
-    <div style={S.page}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap');*{box-sizing:border-box;}input:focus,select:focus,textarea:focus{border-color:#b68b2e!important;box-shadow:0 0 0 3px rgba(182,139,46,0.12)!important;outline:none;}`}</style>
-      <div style={{background:'#fff',borderBottom:`1px solid ${'rgba(182,139,46,0.18)'}`,padding:'0 20px',height:56,display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:50,boxShadow:'0 1px 12px rgba(0,0,0,0.06)'}}>
-        <a href="/" style={{textDecoration:'none',display:'flex',alignItems:'center',gap:10}}>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,fontWeight:300,letterSpacing:'0.20em',color:'#1a1714'}}>VOLLARD <span style={{color:'#b68b2e'}}>BLACK</span></div>
-          <div style={{width:1,height:14,background:'rgba(182,139,46,0.25)'}}/>
-          <span style={{fontSize:9,letterSpacing:'0.18em',textTransform:'uppercase',color:'#c45c4a',fontWeight:700}}>Buyer</span>
-        </a>
-        <div style={{display:'flex',alignItems:'center',gap:8}}>
-{/* Notification bell */}
-          <div style={{position:'relative'}}>
-            <button onClick={()=>setNotifs(p=>p.map(n=>({...n,read:true})))} style={{position:'relative',padding:'7px 12px',borderRadius:8,border:`1px solid ${'rgba(182,139,46,0.18)'}`,background:'transparent',color:'#8a8070',cursor:'pointer',fontSize:14,lineHeight:1}}>🔔{notifs.filter(n=>!n.read).length>0&&<span style={{position:'absolute',top:-4,right:-4,width:16,height:16,borderRadius:'50%',background:'#c45c4a',color:'#fff',fontSize:9,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center'}}>{notifs.filter(n=>!n.read).length}</span>}</button>
+function KycBanner({email}){
+  const[done,setDone]=useState(false);
+  const[open,setOpen]=useState(false);
+  const[idFile,setIdFile]=useState(null);
+  const[selfieFile,setSelfieFile]=useState(null);
+  const[uploading,setUploading]=useState(false);
+  const upload=async()=>{
+    if(!idFile&&!selfieFile)return;
+    setUploading(true);
+    try{
+      const now=Date.now();
+      const up=async(file,name)=>{
+        await sb.storage.from('kyc-documents').upload(`artist/${email}/${name}`,file,{upsert:true});
+        return sb.storage.from('kyc-documents').getPublicUrl(`artist/${email}/${name}`).data?.publicUrl||'';
+      };
+      const idUrl=idFile?await up(idFile,`id_${now}.${idFile.name.split('.').pop()}`):null;
+      const selfieUrl=selfieFile?await up(selfieFile,`selfie_${now}.${selfieFile.name.split('.').pop()}`):null;
+      const updates={};
+      if(idUrl)updates.id_document_url=idUrl;
+      if(selfieUrl)updates.selfie_url=selfieUrl;
+      if(Object.keys(updates).length)await sb.from('portal_requests').update(updates).eq('email',email).eq('role','artist');
+      setDone(true);
+    }catch(e){console.error(e);}
+    setUploading(false);
+  };
+  if(done)return null;
+  return(
+    <div style={{background:'rgba(230,190,50,0.10)',border:'1.5px solid rgba(182,139,46,0.30)',borderRadius:12,padding:'14px 18px',marginBottom:16}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+        <div style={{display:'flex',gap:10,alignItems:'center'}}>
+          <span style={{fontSize:18}}>⚠️</span>
+          <div>
+            <div style={{fontSize:13,fontWeight:700,color:'#7a5c00',marginBottom:2}}>KYC Documents Required</div>
+            <div style={{fontSize:12,color:'#8a7040'}}>Please upload your ID and selfie. Artworks released once verified.</div>
           </div>
-          <button onClick={()=>window.open('https://wa.me/27826503393?text='+encodeURIComponent('Hi Vollard Black, I need assistance with my buyer portal.'),'_blank')} style={{padding:'7px 12px',borderRadius:8,border:'1px solid rgba(37,211,102,0.30)',background:'rgba(37,211,102,0.08)',color:'#25d366',cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>Chat</button>
-          <span style={{fontSize:13,color:'#6b635a',fontWeight:500}}>{displayName}</span>
-          <button onClick={signOut} style={{padding:'7px 14px',borderRadius:8,border:`1px solid ${'rgba(182,139,46,0.18)'}`,background:'transparent',color:'#8a8070',cursor:'pointer',fontSize:11,fontFamily:"'DM Sans',sans-serif"}}>Sign Out</button>
+        </div>
+        <button onClick={()=>setOpen(o=>!o)} style={{padding:'8px 16px',borderRadius:8,border:'1px solid rgba(182,139,46,0.30)',background:'transparent',color:C.gold,cursor:'pointer',fontSize:12,fontWeight:600,fontFamily:SAN}}>
+          {open?'Hide':'Upload Documents'}
+        </button>
+      </div>
+      {open&&<div style={{marginTop:14,display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+        <div><label style={{display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:C.mid,marginBottom:6}}>ID Document</label><input type="file" accept="image/*,.pdf" onChange={e=>setIdFile(e.target.files[0])} style={{width:'100%',fontSize:12}}/></div>
+        <div><label style={{display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:C.mid,marginBottom:6}}>Selfie with ID</label><input type="file" accept="image/*" onChange={e=>setSelfieFile(e.target.files[0])} style={{width:'100%',fontSize:12}}/></div>
+        <div style={{gridColumn:'1/-1'}}><button onClick={upload} disabled={uploading||(!idFile&&!selfieFile)} style={{width:'100%',padding:11,borderRadius:10,border:'none',background:`linear-gradient(135deg,${C.gold},${C.goldD})`,color:C.white,fontSize:13,fontWeight:700,cursor:'pointer',opacity:uploading||(!idFile&&!selfieFile)?0.5:1}}>{uploading?'Uploading…':'Submit Documents'}</button></div>
+      </div>}
+    </div>
+  );
+}
+
+function ArtistDashboard({session, kycComplete=true}){
+ // null=checking, true=signed, false=needs signing
+  const[tab,setTab]=useState('overview');
+  const[artist,setArtist]=useState(null);
+  const[artworks,setArtworks]=useState([]);
+  const[sales,setSales]=useState([]);
+  const[auctions,setAuctions]=useState([]);
+  const[loading,setLoading]=useState(true);
+  const[notifs,setNotifs]=useState([]);
+  const[uploadForm,setUploadForm]=useState({title:'',medium:'',dimensions:'',year:'',description:'',price:''});
+  const[uploadImageFile,setUploadImageFile]=useState(null);
+  const[uploadImagePreview,setUploadImagePreview]=useState(null);
+  const[uploading,setUploading]=useState(false);
+  const[uploadMsg,setUploadMsg]=useState('');
+  const[profileForm,setProfileForm]=useState(null);
+  const[profileEdit,setProfileEdit]=useState(false);
+  const[savingProfile,setSavingProfile]=useState(false);
+  const[saveMsg,setSaveMsg]=useState('');
+  const[selectedArt,setSelectedArt]=useState(null);
+  const[saving,setSaving]=useState(false);
+
+  const addNotif=(msg)=>setNotifs(p=>[{msg,time:new Date().toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'}),read:false},...p.slice(0,19)]);
+
+  useEffect(()=>{loadData();},[session]);
+
+  useEffect(()=>{
+    if(!sb)return;
+    const ch=sb.channel('artist-portal').on('postgres_changes',{event:'INSERT',schema:'public',table:'sales'},payload=>{
+      const s=payload.new;
+      addNotif(`🎉 "${s.artwork_title}" sold for R ${Number(s.sale_price||0).toLocaleString('en-ZA')}!`);
+      loadData();
+    }).on('postgres_changes',{event:'UPDATE',schema:'public',table:'artworks'},payload=>{
+      const a=toCamel(payload.new);
+      if(a.approvalStatus==='approved')addNotif(`✓ Your artwork "${a.title}" has been approved and is now listed in the gallery.`);
+      loadData();
+    }).subscribe();
+    return()=>sb.removeChannel(ch);
+  },[]);
+
+  const loadData=async()=>{
+    setLoading(true);
+    try{
+      const{data:arts}=await sb.from('artists').select('*').eq('email',session.user.email);
+      if(!arts||arts.length===0){setLoading(false);return;}
+      const a=toCamel(arts[0]);
+      setArtist(a);
+      setProfileForm({name:a.name||'',mobile:a.mobile||'',medium:a.medium||'',style:a.style||'',website:a.website||'',instagram:a.instagram||'',bio:a.bio||'',city:a.city||'',country:a.country||'South Africa',idNumber:a.idNumber||'',nationality:a.nationality||'',address:a.address||'',bankName:a.bankName||'',accountHolder:a.accountHolder||'',accountNumber:a.accountNumber||'',branchCode:a.branchCode||'',bankVerified:a.bankVerified||false});
+      const{data:works}=await sb.from('artworks').select('*').eq('artist_id',a.id);
+      const w=(works||[]).map(toCamel);setArtworks(w);
+      if(w.length>0){
+        const ids=w.map(x=>x.id);
+        const{data:sls}=await sb.from('sales').select('*').in('artwork_id',ids);
+        setSales((sls||[]).map(toCamel));
+        const{data:aucs}=await sb.from('auctions').select('*').in('artwork_id',ids);
+        setAuctions((aucs||[]).map(toCamel));
+      }
+    }catch(e){console.error(e);}
+    setLoading(false);
+  };
+
+  const signOut=()=>sb.auth.signOut();
+
+  const saveProfile=async()=>{
+    if(!artist)return;setSavingProfile(true);
+    try{
+      const bankChanged=(profileForm.bankName||'')!==(artist.bankName||'')||(profileForm.accountNumber||'')!==(artist.accountNumber||'');
+      const updates={...profileForm,...(bankChanged?{bankVerified:false}:{})};
+      const snake=toSnake(updates);delete snake.id;delete snake.created_at;
+      await sb.from('artists').update(snake).eq('id',artist.id);
+      setArtist(a=>({...a,...updates}));
+      setSaveMsg(bankChanged?'Saved. Bank details pending verification.':'Profile updated.');
+      setTimeout(()=>setSaveMsg(''),5000);setProfileEdit(false);
+    }catch(e){console.error(e);}
+    setSavingProfile(false);
+  };
+
+  const submitArtwork=async()=>{
+    if(!uploadForm.title||!uploadForm.price)return setUploadMsg('error:Title and price are required.');
+    setUploading(true);
+    try{
+      let imageUrl='';
+      if(uploadImageFile){
+        const ext=uploadImageFile.name.split('.').pop().toLowerCase();
+        const path=`artworks/${artist.id}-${Date.now()}.${ext}`;
+        const{error:upErr}=await sb.storage.from('artwork-images').upload(path,uploadImageFile,{upsert:true,contentType:uploadImageFile.type});
+        if(!upErr){const{data:u}=sb.storage.from('artwork-images').getPublicUrl(path);imageUrl=u?.publicUrl||'';}
+      }
+      await sb.from('artworks').insert({id:crypto.randomUUID(),title:uploadForm.title,artist_name:artist.name,artist_id:artist.id,medium:uploadForm.medium,dimensions:uploadForm.dimensions,year:uploadForm.year,recommended_price:parseFloat(uploadForm.price)||0,description:uploadForm.description,image_url:imageUrl,status:'Pending Approval',approval_status:'pending',created_at:new Date().toISOString()});
+      setUploadMsg('success:Submitted! Vollard Black will review and approve your artwork.');
+      setUploadForm({title:'',medium:'',dimensions:'',year:'',description:'',price:''});
+      setUploadImageFile(null);setUploadImagePreview(null);
+      await loadData();
+    }catch(e){setUploadMsg('error:'+e.message);}
+    setUploading(false);
+  };
+
+  const totalSalesValue=sales.reduce((s,x)=>s+(x.salePrice||0),0);
+  const artistShare=sales.reduce((s,x)=>s+(x.artistShare||0),0);
+  const listedWorks=artworks.filter(a=>a.approvalStatus==='approved'||a.status==='Available'||a.status==='Reserved');
+  const pendingWorks=artworks.filter(a=>a.status==='Pending Approval');
+
+  // Dark mode colors
+  
+  
+  
+  
+  if(loading)return<div style={{minHeight:'100vh',background:'#f5f3ef',display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:SER,fontSize:24,color:C.gold,letterSpacing:6,opacity:0.6}}>Loading…</div></div>;
+
+  if(!artist)return(<div style={{minHeight:'100vh',background:'#f5f3ef',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:16,padding:20,fontFamily:SAN}}><Logo sub="Artist Portal"/><div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16,padding:40,textAlign:'center',maxWidth:420,width:'100%'}}><div style={{fontFamily:SER,fontSize:22,color:'#1a1714',marginBottom:8}}>Account Not Linked</div><div style={{fontSize:13,color:'#8a8070',marginBottom:16}}>Contact Vollard Black to link your artist account.</div><button onClick={signOut} style={{padding:'10px 24px',borderRadius:8,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:SAN}}>Sign Out</button></div></div>);
+
+  // Show terms if not signed yet
+
+
+  return(
+    <div style={{minHeight:'100vh',background:'#f5f3ef',fontFamily:SAN,color:'#1a1714',transition:'background 0.3s'}}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap');*{box-sizing:border-box;}input:focus,select:focus,textarea:focus{border-color:${C.gold}!important;box-shadow:0 0 0 3px rgba(182,139,46,0.12)!important;outline:none;}.art-img-wrap:hover .img-overlay{opacity:1!important;}`}</style>
+
+      {/* Top bar */}
+      <div style={{background:'#fff',borderBottom:'1px solid rgba(182,139,46,0.18)',padding:'0 20px',height:56,display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:50,boxShadow:'0 1px 12px rgba(0,0,0,0.06)'}}>
+        <a href="/" style={{textDecoration:'none',display:'flex',alignItems:'center',gap:10}}>
+          <div style={{fontFamily:SER,fontSize:18,fontWeight:300,letterSpacing:'0.20em',color:'#1a1714'}}>VOLLARD <span style={{color:C.gold}}>BLACK</span></div>
+          <div style={{width:1,height:14,background:C.goldB}}/>
+          <span style={{fontSize:9,letterSpacing:'0.18em',textTransform:'uppercase',color:C.blue,fontWeight:700}}>Artist</span>
+        </a>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+
+          <NotifCentre notifs={notifs} onClear={()=>setNotifs([])}/>
+          <button onClick={()=>window.open('https://wa.me/27826503393?text='+encodeURIComponent('Hi Vollard Black, I need assistance with my artist portal.'),'_blank')} style={{padding:'7px 12px',borderRadius:8,border:'1px solid rgba(37,211,102,0.30)',background:'rgba(37,211,102,0.08)',color:'#25d366',cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:SAN}}>Chat</button>
+          <span style={{fontSize:13,color:'#8a8070',fontWeight:500}}>{artist.name}</span>
+          <button onClick={signOut} style={{padding:'7px 14px',borderRadius:8,border:'1px solid rgba(182,139,46,0.18)',background:'transparent',color:'#8a8070',cursor:'pointer',fontSize:11,fontFamily:SAN}}>Sign Out</button>
         </div>
       </div>
-
-      {/* Toast */}
-      <style>{`@keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}`}</style>
-      {toast&&<div onClick={()=>setToast(null)} style={{position:'fixed',top:72,left:'50%',transform:'translateX(-50%)',zIndex:400,maxWidth:380,width:'calc(100% - 32px)',padding:'14px 18px',borderRadius:12,boxShadow:'0 8px 32px rgba(0,0,0,0.22)',background:toast.type==='outbid'?'#c45c4a':toast.type==='sold'?'#2d7a4a':'#1a1714',color:'#fff',fontSize:13,fontWeight:600,display:'flex',alignItems:'center',gap:10,cursor:'pointer',animation:'slideDown 0.25s ease'}}><span style={{flex:1}}>{toast.msg}</span><span style={{opacity:0.5,fontSize:18,flexShrink:0}}>x</span></div>}
 
       {/* Header */}
-      <div style={{background:'#ffffff',borderBottom:'1px solid rgba(182,139,46,0.18)',padding:'24px 20px 20px'}}>
+      <div style={{background:'#fff',borderBottom:'1px solid rgba(182,139,46,0.18)',padding:'24px 20px 20px'}}>
         <div style={{maxWidth:960,margin:'0 auto'}}>
-          <div style={{display:'flex',gap:16,alignItems:'center',marginBottom:20,flexWrap:'wrap'}}>
-            <div style={{width:56,height:56,borderRadius:'50%',background:'rgba(196,92,74,0.08)',border:'2px solid rgba(196,92,74,0.22)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:22,color:'#c45c4a',fontFamily:"'Cormorant Garamond',serif"}}>
-              {displayName?displayName[0].toUpperCase():'B'}
+          <div style={{display:'flex',gap:16,alignItems:'flex-start',flexWrap:'wrap',marginBottom:20}}>
+            <div style={{width:64,height:64,borderRadius:'50%',background:'rgba(182,139,46,0.10)',border:'2px solid rgba(182,139,46,0.25)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:26,color:'#b68b2e',fontFamily:SER,fontWeight:300}}>
+              {artist.name?artist.name[0].toUpperCase():'A'}
             </div>
-            <div>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,fontWeight:300,color:'#1a1714'}}>{displayName}</div>
-              <div style={{fontSize:12,color:'#8a8070',marginTop:2}}>Art Collector · {buyer?.auctionApproved?'✓ Auction Approved':'Gallery Access'}</div>
+            <div style={{flex:1}}>
+              <div style={{fontFamily:SER,fontSize:32,fontWeight:300,color:'#1a1714',letterSpacing:'0.02em',lineHeight:1.1,marginBottom:4}}>{artist.name}</div>
+              <div style={{fontSize:13,color:'#8a8070',marginBottom:artist.bio?8:0}}>{[artist.medium,artist.style].filter(Boolean).join(' · ')||'Artist'}</div>
+              {artist.bio&&<div style={{fontSize:13,color:'#6b635a',lineHeight:1.7,maxWidth:560,fontStyle:'italic'}}>"{artist.bio}"</div>}
             </div>
+            <button onClick={()=>sharePortfolio(artworks,artist.name,artist.bio,artist.medium)} style={{padding:'9px 18px',borderRadius:24,border:'1px solid rgba(182,139,46,0.28)',background:'transparent',color:'#b68b2e',cursor:'pointer',fontSize:12,fontWeight:600,fontFamily:SAN,flexShrink:0}}>📄 Share Portfolio</button>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10}}>
-            {[['Gallery',artworks.length+' works'],['Saved',watchlist.length+' items'],['Bids',bids.length],['Purchases',purchases.length]].map(([l,v])=>(
+            {[['Works Listed',listedWorks.length],['Pending',pendingWorks.length],['Sold',artworks.filter(a=>a.status==='Sold').length],['Total Sales','R '+fmt(totalSalesValue)]].map(([l,v])=>(
               <div key={l} style={{background:'#f7f5f1',border:'1px solid rgba(182,139,46,0.18)',borderRadius:10,padding:'12px 10px',textAlign:'center'}}>
-                <div style={{fontSize:9,letterSpacing:'0.16em',textTransform:'uppercase',color:'#8a8070',marginBottom:4}}>{l}</div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,fontWeight:300,color:'#1a1714'}}>{v}</div>
+                <div style={{fontSize:9,letterSpacing:'0.16em',textTransform:'uppercase',color:'#8a8070',marginBottom:6}}>{l}</div>
+                <div style={{fontFamily:SER,fontSize:20,fontWeight:300,color:'#1a1714'}}>{v}</div>
               </div>
             ))}
           </div>
         </div>
       </div>
-      <div style={{maxWidth:960,margin:'0 auto',padding:'16px 16px 100px'}}>
-        {/* Sound unlock — one tap needed for browser audio policy */}
-        {!soundReady&&(
-          <div onClick={()=>unlockSound()} style={{padding:'10px 16px',background:'rgba(26,23,20,0.04)',border:'1px solid rgba(26,23,20,0.12)',borderRadius:10,marginBottom:10,display:'flex',alignItems:'center',gap:10,flexWrap:'wrap',cursor:'pointer'}}>
-            <span style={{fontSize:16}}>🔊</span>
-            <span style={{fontSize:12,color:'#2a2622',flex:1}}>Tap to enable auction sounds</span>
-            <span style={{fontSize:11,color:'#8a8070'}}>Tap →</span>
-          </div>
-        )}
-        {!notifEnabled&&typeof window!=='undefined'&&'Notification' in window&&Notification.permission!=='denied'&&(
-          <div style={{padding:'10px 16px',background:'rgba(182,139,46,0.06)',border:'1px solid rgba(182,139,46,0.2)',borderRadius:10,marginBottom:10,display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
-            <span style={{fontSize:12,color:'#8a6a1e',flex:1}}>Enable push notifications for instant outbid alerts</span>
-            <button onClick={()=>requestNotifPermission().then(g=>setNotifEnabled(g))} style={{padding:'6px 14px',borderRadius:6,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:11,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>Enable</button>
-          </div>
-        )}
-        {liveAuctions.length>0&&<div onClick={()=>{setTab('auctions');setTimeout(()=>window.scrollTo({top:0,behavior:'smooth'}),50);}} style={{padding:'12px 18px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.25)',borderRadius:10,marginBottom:10,cursor:'pointer',display:'flex',alignItems:'center',gap:10}}><span style={{color:'#4a9e6b'}}>●</span><span style={{fontSize:13,fontWeight:600,color:'#4a9e6b'}}>{liveAuctions.length} live auction{liveAuctions.length>1?'s':''} happening now</span><span style={{fontSize:11,color:'#4a9e6b',marginLeft:'auto'}}>Bid now →</span></div>}
-        {isOutbid&&<div onClick={()=>setTab('auctions')} style={{padding:'12px 18px',background:'rgba(196,92,74,0.06)',border:'1px solid rgba(196,92,74,0.25)',borderRadius:10,marginBottom:10,cursor:'pointer',display:'flex',alignItems:'center',gap:10}}><span style={{color:'#c45c4a'}}>⚠</span><span style={{fontSize:13,fontWeight:600,color:'#c45c4a'}}>You've been outbid — act now</span><span style={{fontSize:11,color:'#c45c4a',marginLeft:'auto'}}>Bid →</span></div>}
-        {enquiryMsg&&<div style={{padding:'12px 16px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:8,marginBottom:10,fontSize:13,color:'#4a9e6b'}}>{enquiryMsg}</div>}
 
-        <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:24,padding:'4px 0'}}>
-          {[['gallery',`Gallery${artworks.length>0?' ('+artworks.length+')':''}`],['watchlist',`Saved${watchlist.length>0?' ('+watchlist.length+')':''}`],['auctions',`Auctions${liveAuctions.length>0?' 🔴':''}${isOutbid?' ⚠':''}`],['mybids',`My Bids${bids.length>0?' ('+bids.length+')':''}`],['purchases','Purchases'],['profile','Profile']].map(([id,lbl])=>(
-            <button key={id} onClick={()=>setTab(id)} style={{padding:'9px 20px',borderRadius:24,border:tab===id?'none':'1px solid rgba(182,139,46,0.22)',background:tab===id?'linear-gradient(135deg,#b68b2e,#8a6a1e)':'#fff',color:tab===id?'#fff':'#6b635a',fontSize:13,fontWeight:tab===id?600:400,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",whiteSpace:'nowrap',transition:'all 0.2s',boxShadow:tab===id?'0 4px 12px rgba(182,139,46,0.28)':'none'}}>{lbl}</button>
+      {/* Content */}
+      <div style={{maxWidth:960,margin:'0 auto',padding:'24px 16px 100px'}}>
+        {/* Tabs */}
+        <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:28}}>
+          {[['overview','Overview'],['works','My Works'],['upload','Upload'],['sales','Sales'],['auctions','Auctions'],['profile','Profile'],['terms','Terms']].map(([id,lbl])=>(
+            <button key={id} onClick={()=>setTab(id)} style={{padding:'9px 20px',borderRadius:24,border:tab===id?'none':'1px solid rgba(182,139,46,0.18)',background:tab===id?`linear-gradient(135deg,${C.gold},${C.goldD})`:'#fff',color:tab===id?'#fff':'#6b635a',fontSize:13,fontWeight:tab===id?600:400,cursor:'pointer',fontFamily:SAN,whiteSpace:'nowrap',transition:'all 0.2s',boxShadow:tab===id?'0 4px 12px rgba(182,139,46,0.28)':'none'}}>
+              {lbl}
+            </button>
           ))}
         </div>
 
-        {/* GALLERY */}
-        {tab==='gallery'&&(
+        {/* OVERVIEW */}
+        {tab==='overview'&&(
           <div>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:10,marginBottom:16}}>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,fontWeight:300,color:'#1a1714'}}>Available Artworks</div>
-              <input placeholder="Search..." value={search} onChange={e=>setSearch(e.target.value)} style={{...S.input,maxWidth:220,padding:'9px 12px'}}/>
+            {!artist.bio&&<div onClick={()=>{setTab('profile');setProfileEdit(true);}} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16,cursor:'pointer',border:`1.5px dashed ${C.goldB}`,background:'rgba(182,139,46,0.03)',marginBottom:20}}><div style={{padding:'16px 20px',display:'flex',alignItems:'center',gap:16}}><div style={{width:44,height:44,borderRadius:'50%',background:`rgba(182,139,46,0.12)`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0}}>✍</div><div><div style={{fontWeight:700,fontSize:14,color:C.gold,marginBottom:2}}>Add your artist biography</div><div style={{fontSize:12,color:'#8a8070'}}>Tell collectors about your practice and inspiration. Tap to add.</div></div><div style={{marginLeft:'auto',fontSize:20,color:`rgba(182,139,46,0.4)`}}>→</div></div></div>}
+
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:16}}>
+              <button onClick={()=>setTab('upload')} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16,marginBottom:0,padding:'20px',cursor:'pointer',border:'none',textAlign:'left',display:'block',background:`linear-gradient(135deg,${C.gold},${C.goldD})`,boxShadow:'0 8px 24px rgba(182,139,46,0.30)'}}>
+                <div style={{fontSize:28,marginBottom:8}}>🖼</div>
+                <div style={{fontFamily:SER,fontSize:20,color:'#fff',marginBottom:2}}>Upload Artwork</div>
+                <div style={{fontSize:11,color:'rgba(255,255,255,0.6)'}}>Submit for gallery listing</div>
+              </button>
+              <button onClick={()=>setTab('works')} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16,marginBottom:0,padding:'20px',cursor:'pointer',textAlign:'left',display:'block'}}>
+                <div style={{fontSize:28,marginBottom:8}}>📦</div>
+                <div style={{fontFamily:SER,fontSize:20,color:'#1a1714',marginBottom:2}}>My Works</div>
+                <div style={{fontSize:11,color:'#8a8070'}}>{artworks.length} artwork{artworks.length!==1?'s':''} total</div>
+              </button>
             </div>
-            {artworks.filter(a=>(a.title+' '+(a.artist||'')).toLowerCase().includes(search.toLowerCase())).length===0?(
-              <div style={{...S.card,textAlign:'center',padding:48}}><div style={{fontSize:32,marginBottom:12,color:'#b68b2e'}}>◆</div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:'#1a1714',marginBottom:8}}>No Artworks Available</div><div style={{fontSize:13,color:'#8a8070'}}>Check back soon.</div></div>
-            ):(
-              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))',gap:16}}>
-                {artworks.filter(a=>(a.title+' '+(a.artist||'')).toLowerCase().includes(search.toLowerCase())).map(art=>(
-                  <div key={art.id} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:12,overflow:'hidden'}}>
-                    <div style={{height:200,background:'#f0ede8',overflow:'hidden',cursor:art.imageUrl?'zoom-in':'default',position:'relative'}} onClick={()=>art.imageUrl&&setZoomImg(art.imageUrl)}>
-                      {art.imageUrl?<img src={art.imageUrl} alt={art.title} style={{width:'100%',height:'100%',objectFit:'cover'}}/>:<div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',color:'#b68b2e',fontSize:32}}>◆</div>}
-                      <button onClick={e=>{e.stopPropagation();toggleWatchlist(art.id);}} style={{position:'absolute',top:8,right:8,width:34,height:34,borderRadius:'50%',background:'rgba(255,255,255,0.92)',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,boxShadow:'0 2px 8px rgba(0,0,0,0.15)'}}>{watchlist.includes(art.id)?'❤️':'🤍'}</button>
-                    </div>
-                    <div style={{padding:16}}>
-                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:17,color:'#1a1714',marginBottom:2}}>{art.title}</div>
-                      <div style={{fontSize:11,color:'#8a8070',marginBottom:8}}>{art.artist||'—'} · {art.medium||'—'}{art.year?' · '+art.year:''}</div>
-                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-                        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,...S.gold}}>R {fmt(art.recommendedPrice)}</div>
-                        {art.galleryName&&<div style={{fontSize:11,color:'#8a8070'}}>{art.galleryName}</div>}
-                      </div>
-                      {art.description&&<div style={{fontSize:12,color:'#6b635a',marginBottom:10,fontStyle:'italic',lineHeight:1.5}}>{art.description}</div>}
-                      {art.status==='Reserved'
-                        ?<div style={{padding:'9px',background:'rgba(182,139,46,0.08)',border:'1px solid rgba(182,139,46,0.20)',borderRadius:8,textAlign:'center',fontSize:12,color:'#b68b2e',fontWeight:600}}>⚖ In Auction</div>
-                        :<div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-                          <button onClick={()=>toggleWatchlist(art.id)} style={{padding:'9px 12px',borderRadius:8,border:'1px solid rgba(182,139,46,0.25)',background:watchlist.includes(art.id)?'rgba(196,92,74,0.08)':'transparent',color:watchlist.includes(art.id)?'#c45c4a':'#8a8070',cursor:'pointer',fontSize:14,flexShrink:0}}>{watchlist.includes(art.id)?'❤':'🤍'}</button>
-                          <button onClick={()=>setArtDetail(art)} style={{padding:'9px 12px',borderRadius:8,border:'1px solid rgba(182,139,46,0.25)',background:'transparent',color:'#6b635a',cursor:'pointer',fontSize:11,fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>View</button>
-                          <button onClick={()=>setEnquiry(art)} style={{...S.btn(false),flex:1,padding:'9px',fontSize:11}}>Enquire</button>
-                          <button onClick={()=>payWithIkhoka({amount:art.recommendedPrice,description:`Vollard Black: ${art.title}`,referenceId:art.id.slice(-8),type:'gallery'})} style={{...S.btn(true),flex:1,padding:'9px',fontSize:11}}>💳 Pay Now</button>
+
+            {/* Price history chart */}
+            {sales.length>0&&(
+              <div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16}}>
+                <div style={{...CP}}>
+                  <div style={SH}>Price History</div>
+                  {sales.map((s,i)=>{
+                    const art=artworks.find(a=>a.id===s.artworkId);
+                    const sold=s.salePrice||0;
+                    const reserve=art?.recommendedPrice||0;
+                    const pct=reserve>0?Math.round((sold/reserve)*100):100;
+                    const barW=Math.min(pct,150).toString()+'%';
+                    const pctLabel=pct.toString()+'% of value';
+                    const barBg=pct>=100
+                      ?'linear-gradient(90deg,'+C.green+',#2d9e5a)'
+                      :'linear-gradient(90deg,'+C.gold+','+C.goldD+')';
+                    return(
+                      <div key={i} style={{marginBottom:14}}>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                          <span style={{fontSize:13,color:'#1a1714',fontWeight:500}}>{s.artworkTitle}</span>
+                          <span style={{fontSize:13,color:pct>=100?C.green:C.gold,fontWeight:700}}>
+                            R {fmt(sold)}
+                            <span style={{fontSize:10,opacity:0.7,marginLeft:4}}>{pctLabel}</span>
+                          </span>
                         </div>
-                      }
-                    </div>
-                  </div>
-                ))}
+                        <div style={{height:6,background:'rgba(182,139,46,0.10)',borderRadius:3,overflow:'hidden'}}>
+                          <div style={{height:'100%',width:barW,background:barBg,borderRadius:3,transition:'width 1s ease'}}/>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
+
+            {(artist.instagram||artist.website)&&<div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16}}><div style={{...CP}}><div style={SH}>Connect</div><div style={{display:'flex',gap:10,flexWrap:'wrap'}}>{artist.instagram&&<a href={'https://instagram.com/'+artist.instagram.replace('@','')} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:8,padding:'10px 18px',borderRadius:24,background:`rgba(182,139,46,0.08)`,border:`1px solid ${C.goldB}`,color:C.gold,textDecoration:'none',fontSize:13,fontWeight:600}}>📸 @{artist.instagram.replace('@','')}</a>}{artist.website&&<a href={artist.website} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:8,padding:'10px 18px',borderRadius:24,background:'rgba(100,140,200,0.08)',border:'1px solid rgba(100,140,200,0.20)',color:C.blue,textDecoration:'none',fontSize:13,fontWeight:600}}>🌐 Website</a>}</div></div></div>}
+
+            {artworks.length>0&&<div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16}}><div style={{padding:'20px 20px 12px'}}><div style={SH}>Recent Works</div></div><div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(150px,1fr))',gap:1,borderTop:`1px solid ${C.goldL}`}}>{artworks.slice(0,6).map(art=><div key={art.id} onClick={()=>{setTab('works');}} style={{position:'relative',paddingBottom:'100%',background:art.imageUrl?'#e8e4dd':'rgba(182,139,46,0.04)',cursor:'pointer',overflow:'hidden'}} className="art-img-wrap">{art.imageUrl?<img src={art.imageUrl} alt="" style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}}/>:<div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}><div style={{fontSize:28,opacity:0.2}}>🖼</div></div>}<div className="img-overlay" style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',opacity:0,transition:'opacity 0.2s'}}><div style={{fontSize:12,fontWeight:600,color:'#fff',textAlign:'center',padding:'0 8px'}}>{art.title}</div><div style={{fontSize:10,color:'rgba(255,255,255,0.7)',marginTop:4}}>R {fmt(art.recommendedPrice)}</div></div><div style={{position:'absolute',top:6,right:6,padding:'2px 6px',borderRadius:10,fontSize:9,fontWeight:700,background:art.status==='Sold'?'rgba(100,140,200,0.9)':art.approvalStatus==='pending'?'rgba(230,190,50,0.9)':'rgba(74,158,107,0.9)',color:'#fff'}}>{art.status==='Sold'?'SOLD':art.approvalStatus==='pending'?'PENDING':'LISTED'}</div></div>)}</div></div>}
+          </div>
+        )}
+
+        {/* MY WORKS */}
+        {tab==='works'&&(
+          <div>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20,flexWrap:'wrap',gap:10}}>
+              <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:'#1a1714'}}>My Works</div>
+              <button onClick={()=>setTab('upload')} style={{padding:'10px 22px',borderRadius:24,border:'none',background:`linear-gradient(135deg,${C.gold},${C.goldD})`,color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:SAN,boxShadow:'0 4px 12px rgba(182,139,46,0.28)'}}>+ Upload New</button>
+            </div>
+            {artworks.length===0?<div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16,textAlign:'center',padding:56}}><div style={{fontSize:44,marginBottom:12,opacity:0.2}}>🖼</div><div style={{fontFamily:SER,fontSize:22,color:'#1a1714',marginBottom:8}}>No works yet</div><div style={{fontSize:13,color:'#8a8070',marginBottom:24}}>Upload your first artwork to get started.</div><button onClick={()=>setTab('upload')} style={{padding:'12px 28px',borderRadius:24,border:'none',background:`linear-gradient(135deg,${C.gold},${C.goldD})`,color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:SAN}}>Upload Artwork →</button></div>
+            :artworks.map(art=>(
+              <div key={art.id} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16}}>
+                {art.imageUrl?<div className="art-img-wrap" style={{position:'relative',height:220,background:'#e8e4dd',cursor:'pointer'}} onClick={()=>document.getElementById('img-upd-'+art.id).click()}>
+                  <img src={art.imageUrl} alt="" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/>
+                  <div className="img-overlay" style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.4)',display:'flex',alignItems:'center',justifyContent:'center',opacity:0,transition:'opacity 0.2s'}}><span style={{color:'#fff',fontSize:13,fontWeight:600}}>📷 Change image</span></div>
+                </div>:<div style={{height:140,background:'rgba(182,139,46,0.03)',border:`2px dashed ${C.goldB}`,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',gap:10}} onClick={()=>document.getElementById('img-upd-'+art.id).click()}><div style={{fontSize:28}}>🖼</div><div style={{fontSize:13,fontWeight:600,color:C.gold}}>Add artwork image</div></div>}
+                <input id={'img-upd-'+art.id} type="file" accept="image/*" style={{display:'none'}} onChange={async(e)=>{const file=e.target.files[0];if(!file)return;const ext=file.name.split('.').pop().toLowerCase();const path=`artworks/${artist.id}-${art.id}.${ext}`;await sb.storage.from('artwork-images').upload(path,file,{upsert:true,contentType:file.type});const{data:u}=sb.storage.from('artwork-images').getPublicUrl(path);await sb.from('artworks').update({image_url:u?.publicUrl||''}).eq('id',art.id);await loadData();}}/>
+                <div style={{padding:'16px 20px'}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10,marginBottom:6}}>
+                    <div style={{fontFamily:SER,fontSize:22,color:'#1a1714',fontWeight:400,lineHeight:1.2}}>{art.title}</div>
+                    <div style={{display:'flex',gap:8,flexShrink:0,alignItems:'center'}}>
+                      {art.status==='Available'&&art.approvalStatus==='approved'&&<button onClick={()=>generateCert(art,artist.name)} style={{padding:'4px 10px',borderRadius:20,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,cursor:'pointer',fontSize:10,fontWeight:600,fontFamily:SAN}}>📜 Cert</button>}
+                      <span style={{fontSize:10,fontWeight:700,padding:'4px 10px',borderRadius:20,letterSpacing:'0.06em',background:art.status==='Sold'?'rgba(100,140,200,0.12)':art.approvalStatus==='pending'?'rgba(230,190,50,0.12)':'rgba(74,158,107,0.12)',color:art.status==='Sold'?C.blue:art.approvalStatus==='pending'?'#b8920a':C.greenD}}>{art.status==='Sold'?'SOLD':art.approvalStatus==='pending'?'⏳ PENDING':'✓ LISTED'}</span>
+                    </div>
+                  </div>
+                  <div style={{fontSize:12,color:'#8a8070',marginBottom:10}}>{[art.medium,art.dimensions,art.year].filter(Boolean).join(' · ')||'—'}</div>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                    <span style={{fontSize:13,color:'#8a8070'}}>Value</span>
+                    <span style={{fontFamily:SER,fontSize:20,color:C.gold,fontWeight:600}}>R {fmt(art.recommendedPrice)}</span>
+                  </div>
+                  {art.description&&<div style={{fontSize:12,color:'#8a8070',marginTop:10,lineHeight:1.7,fontStyle:'italic',borderTop:`1px solid ${C.goldL}`,paddingTop:10}}>{art.description}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* UPLOAD */}
+        {tab==='upload'&&(
+          <div>
+            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:'#1a1714',marginBottom:4}}>Upload Artwork</div>
+            <div style={{fontSize:13,color:'#8a8070',marginBottom:24}}>Submit for admin review. Appears in gallery once approved.</div>
+            {uploadMsg&&<div style={{padding:'13px 16px',background:uploadMsg.startsWith('success:')?'rgba(74,158,107,0.08)':'rgba(196,92,74,0.08)',border:`1px solid ${uploadMsg.startsWith('success:')?'rgba(74,158,107,0.25)':'rgba(196,92,74,0.25)'}`,borderRadius:12,fontSize:13,color:uploadMsg.startsWith('success:')?C.greenD:C.red,marginBottom:20}}>{uploadMsg.replace('success:','').replace('error:','')}</div>}
+            <div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16}}>
+              <div style={CP}>
+                <div style={{marginBottom:24}}>
+                  <label style={{...lbl,color:'#8a8070'}}>Artwork Image</label>
+                  <div onClick={()=>document.getElementById('new-art-img').click()} style={{border:`2px dashed ${uploadImagePreview?'rgba(74,158,107,0.5)':C.goldB}`,borderRadius:14,cursor:'pointer',overflow:'hidden',background:uploadImagePreview?'rgba(74,158,107,0.04)':'#f7f5f1',minHeight:180,display:'flex',alignItems:'center',justifyContent:'center',transition:'all 0.2s'}}>
+                    {uploadImagePreview?<div style={{width:'100%',position:'relative'}}><img src={uploadImagePreview} alt="preview" style={{width:'100%',maxHeight:280,objectFit:'cover',display:'block'}}/><div style={{position:'absolute',bottom:10,right:10,background:'rgba(74,158,107,0.9)',color:'#fff',padding:'5px 12px',borderRadius:20,fontSize:11,fontWeight:700}}>✓ Image ready</div></div>:<div style={{textAlign:'center',padding:28}}><div style={{fontSize:40,marginBottom:8}}>🖼</div><div style={{fontSize:14,fontWeight:600,color:'#8a8070',marginBottom:4}}>Tap to upload artwork photo</div><div style={{fontSize:11,color:'#8a8070',opacity:0.6}}>JPG, PNG or WEBP · Max 10MB</div></div>}
+                  </div>
+                  <input id="new-art-img" type="file" accept="image/*" style={{display:'none'}} onChange={e=>{const file=e.target.files[0];if(!file)return;setUploadImageFile(file);const r=new FileReader();r.onload=ev=>setUploadImagePreview(ev.target.result);r.readAsDataURL(file);}}/>
+                  {uploadImagePreview&&<button onClick={()=>{setUploadImageFile(null);setUploadImagePreview(null);}} style={{marginTop:8,background:'none',border:'none',color:C.red,cursor:'pointer',fontSize:12,fontFamily:SAN}}>✕ Remove</button>}
+                </div>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
+                  {[['title','Title *'],['medium','Medium'],['dimensions','Dimensions'],['year','Year']].map(([key,label])=>(
+                    <div key={key}><label style={{...lbl,color:'#8a8070'}}>{label}</label><input value={uploadForm[key]||''} onChange={e=>setUploadForm(p=>({...p,[key]:e.target.value}))} style={{width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:'#1a1714',fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box'}}/></div>
+                  ))}
+                  <div style={{gridColumn:'1/-1'}}><label style={{...lbl,color:'#8a8070'}}>Price (R) *</label><input type="number" value={uploadForm.price||''} onChange={e=>setUploadForm(p=>({...p,price:e.target.value}))} style={{width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:'#1a1714',fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box'}} placeholder="e.g. 25000" inputMode="numeric"/></div>
+                  <div style={{gridColumn:'1/-1'}}><label style={{...lbl,color:'#8a8070'}}>Description</label><textarea value={uploadForm.description||''} onChange={e=>setUploadForm(p=>({...p,description:e.target.value}))} style={{width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:'#1a1714',fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box',minHeight:100,resize:'vertical'}} placeholder="Describe the artwork, inspiration, technique…"/></div>
+                </div>
+                <div style={{marginTop:16,padding:'12px 16px',background:'rgba(182,139,46,0.05)',border:`1px solid ${C.goldL}`,borderRadius:10,fontSize:12,color:'#8a8070',lineHeight:1.6,marginBottom:20}}>ℹ After submission, Vollard Black will review and approve your artwork before it appears in the gallery.</div>
+                <div style={{display:'flex',justifyContent:'flex-end'}}><button onClick={submitArtwork} disabled={uploading} style={{padding:'13px 36px',borderRadius:12,border:'none',background:`linear-gradient(135deg,${C.gold},${C.goldD})`,color:'#fff',fontSize:14,fontWeight:700,cursor:uploading?'not-allowed':'pointer',fontFamily:SAN,opacity:uploading?0.6:1,boxShadow:'0 6px 20px rgba(182,139,46,0.30)'}}>{uploading?'Submitting…':'Submit for Approval'}</button></div>
+              </div>
+            </div>
+            {pendingWorks.length>0&&<div style={{marginTop:8}}><div style={{fontSize:10,fontWeight:700,letterSpacing:'0.16em',textTransform:'uppercase',color:'#b8920a',marginBottom:12}}>Awaiting Approval ({pendingWorks.length})</div>{pendingWorks.map(art=><div key={art.id} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16,marginBottom:10}}><div style={{display:'flex',gap:14,alignItems:'center',...CP}}>{art.imageUrl&&<img src={art.imageUrl} alt="" style={{width:56,height:56,borderRadius:10,objectFit:'cover',flexShrink:0,border:`1px solid ${C.goldL}`}}/>}<div style={{flex:1}}><div style={{fontFamily:SER,fontSize:18,color:'#1a1714'}}>{art.title}</div><div style={{fontSize:12,color:'#8a8070'}}>{art.medium||'—'} · R {fmt(art.recommendedPrice)}</div></div><span style={{fontSize:10,fontWeight:700,color:'#b8920a',padding:'4px 10px',background:'rgba(230,190,50,0.12)',borderRadius:20,flexShrink:0}}>⏳ Pending</span></div></div>)}</div>}
+          </div>
+        )}
+
+        {/* SALES */}
+        {tab==='sales'&&(
+          <div>
+            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:'#1a1714',marginBottom:20}}>Sales</div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:20}}>
+              {[['Total Sales',sales.length,'#1a1714'],['Sales Value','R '+fmt(totalSalesValue),C.gold],['Your Share','R '+fmt(artistShare),C.green]].map(([l,v,color])=>(
+                <div key={l} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16,textAlign:'center',padding:'20px 12px',marginBottom:0}}><div style={{fontSize:9,letterSpacing:'0.16em',textTransform:'uppercase',color:'#8a8070',marginBottom:8}}>{l}</div><div style={{fontFamily:SER,fontSize:28,fontWeight:300,color}}>{v}</div></div>
+              ))}
+            </div>
+            {sales.length===0?<div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16,textAlign:'center',padding:56}}><div style={{fontSize:44,opacity:0.2,marginBottom:12}}>💰</div><div style={{fontSize:13,color:'#8a8070'}}>No sales yet. Keep creating!</div></div>
+            :sales.map(sale=><div key={sale.id} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16}}><div style={CP}><div style={{display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8,marginBottom:12}}><div><div style={{fontFamily:SER,fontSize:20,color:'#1a1714',marginBottom:4}}>{sale.artworkTitle}</div><div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}><span style={{fontSize:11,color:'#8a8070'}}>{sale.date||sale.createdAt?.slice(0,10)||'—'}</span><span style={{fontSize:10,fontWeight:700,padding:'2px 8px',borderRadius:10,background:sale.source==='auction'?'rgba(74,158,107,0.12)':'rgba(182,139,46,0.12)',color:sale.source==='auction'?C.greenD:'#8a6a1e'}}>{sale.source==='auction'?'⚖ Auction':'Direct'}</span></div></div><div style={{textAlign:'right'}}><div style={{fontSize:10,color:'#8a8070',marginBottom:2}}>Sale Price</div><div style={{fontFamily:SER,fontSize:22,color:C.gold,fontWeight:600}}>R {fmt(sale.salePrice)}</div></div></div>{(sale.artistShare||0)>0&&<div style={{padding:'12px 16px',background:'rgba(74,158,107,0.06)',border:`1px solid rgba(74,158,107,0.15)`,borderRadius:10,display:'flex',justifyContent:'space-between',alignItems:'center'}}><span style={{fontSize:13,color:C.green,fontWeight:600}}>Your share (30%)</span><span style={{fontFamily:SER,fontSize:20,color:C.greenD,fontWeight:600}}>R {fmt(sale.artistShare)}</span></div>}</div></div>)}
           </div>
         )}
 
         {/* AUCTIONS */}
         {tab==='auctions'&&(
           <div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,fontWeight:300,color:'#1a1714',marginBottom:14}}>Auctions</div>
-            {buyer?.auctionApproved&&<div style={{padding:'10px 16px',background:'rgba(74,158,107,0.06)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:10,marginBottom:14,display:'flex',alignItems:'center',gap:8}}><span style={{color:'#4a9e6b'}}>✓</span><span style={{fontSize:13,fontWeight:600,color:'#4a9e6b'}}>Auction access approved — tap Place Bid on any live auction below</span></div>}
-            {buyer&&!buyer.auctionApproved&&(
-              <div style={{padding:'16px 18px',background:'rgba(182,139,46,0.06)',border:'1px solid rgba(182,139,46,0.25)',borderRadius:12,marginBottom:16}}>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:'#1a1714',marginBottom:6}}>Request Bidding Access</div>
-                <div style={{fontSize:13,color:'#6b635a',marginBottom:14,lineHeight:1.6}}>To place bids you need to be KYC verified. Click below — Vollard Black will be notified and activate your access.</div>
-                <AuctionAccessButton buyer={buyer} onRefresh={()=>loadData(false)}/>
-              </div>
-            )}
-            {auctions.length===0?(
-              <div style={{...S.card,textAlign:'center',padding:48}}><div style={{fontSize:32,marginBottom:12,color:'#b68b2e'}}>◆</div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:'#1a1714',marginBottom:8}}>No Auctions</div><div style={{fontSize:13,color:'#8a8070'}}>Check back soon.</div></div>
-            ):auctions.filter(auc=>{
-                if(auc.status==='Live'||auc.status==='Frozen') return true;
-                // Show closed auctions only if buyer placed a bid on them
-                return bids.some(b=>b.auctionId===auc.id);
-              }).map(auc=>(
-              <AuctionCard key={auc.id} auc={auc} buyer={buyer} myBids={bids} onBid={()=>setBidTarget(auc)}/>
-            ))}
+            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:'#1a1714',marginBottom:20}}>Auctions</div>
+            {auctions.length===0?<div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16,textAlign:'center',padding:56}}><div style={{fontSize:44,opacity:0.2,marginBottom:12}}>⚖</div><div style={{fontSize:13,color:'#8a8070'}}>No auctions yet.</div></div>
+            :auctions.map(auc=><div key={auc.id} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16}}><div style={CP}><div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10,marginBottom:16}}><div style={{fontFamily:SER,fontSize:20,color:'#1a1714'}}>{auc.title}</div><span style={{fontSize:10,fontWeight:700,padding:'4px 12px',borderRadius:20,flexShrink:0,background:auc.status==='Sold'?'rgba(74,158,107,0.12)':auc.status==='Live'?'rgba(196,92,74,0.12)':'rgba(182,139,46,0.12)',color:auc.status==='Sold'?C.greenD:auc.status==='Live'?C.red:C.gold}}>{auc.status}</span></div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>{[['Reserve','R '+fmt(auc.reservePrice)],['Final Bid','R '+fmt(auc.currentBid||0)],['Bids',auc.bidsCount||0],['Closed',auc.closedAt?.slice(0,10)||'—']].map(([l,v])=><div key={l} style={{padding:'10px 12px',background:'#f7f5f1',borderRadius:8}}><div style={{fontSize:9,color:'#8a8070',letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:4}}>{l}</div><div style={{fontWeight:600,color:'#1a1714'}}>{v}</div></div>)}</div></div></div>)}
           </div>
         )}
 
-        {/* MY BIDS */}
-        {tab==='mybids'&&(
+        {/* PROFILE */}
+        {tab==='profile'&&(
           <div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,fontWeight:300,color:'#1a1714',marginBottom:16}}>My Bids</div>
-            {bids.length===0?<div style={{...S.card,textAlign:'center',padding:40}}><div style={{fontSize:14,color:'#8a8070'}}>No bids placed yet.</div></div>:(
-              <div style={S.card}><div style={{overflowX:'auto'}}>
-                <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
-                  <thead><tr style={{borderBottom:'1px solid rgba(182,139,46,0.2)'}}>{['Artwork','Your Bid','Date','Status'].map(h=><th key={h} style={{padding:'8px 10px',textAlign:h==='Your Bid'?'right':'left',fontSize:10,letterSpacing:1,textTransform:'uppercase',color:'#8a8070',fontWeight:500,whiteSpace:'nowrap'}}>{h}</th>)}</tr></thead>
-                  <tbody>{bids.map(b=>{
-                    const auc=auctions.find(a=>a.id===b.auctionId);
-                    const won=auc?.status==='Sold'&&auc?.leadBidderId===buyer?.id;
-                    const leading=auc?.status==='Live'&&auc?.leadBidderId===buyer?.id;
-                    const outbid=auc?.status==='Live'&&auc?.leadBidderId!==buyer?.id;
-                    return(<tr key={b.id} style={{borderBottom:'1px solid rgba(182,139,46,0.08)'}}>
-                      <td style={{padding:'10px',fontWeight:500}}>{auc?.title||'—'}</td>
-                      <td style={{padding:'10px',textAlign:'right',...S.gold,fontFamily:"'Cormorant Garamond',serif",fontSize:15}}>R {fmt(b.amount)}</td>
-                      <td style={{padding:'10px',color:'#8a8070',fontSize:12}}>{b.timestamp?.slice(0,10)||'—'}</td>
-                      <td style={{padding:'10px'}}>
-                        {won&&<span style={{fontSize:11,fontWeight:700,color:'#4a9e6b',background:'rgba(74,158,107,0.1)',padding:'3px 8px',borderRadius:4}}>🏆 Won</span>}
-                        {leading&&<span style={{fontSize:11,fontWeight:700,color:'#4a9e6b',background:'rgba(74,158,107,0.1)',padding:'3px 8px',borderRadius:4}}>● Leading</span>}
-                        {outbid&&<span onClick={()=>setTab('auctions')} style={{fontSize:11,fontWeight:600,color:'#c45c4a',background:'rgba(196,92,74,0.08)',padding:'3px 8px',borderRadius:4,cursor:'pointer'}}>⚠ Outbid</span>}
-                        {!won&&!leading&&!outbid&&<span style={{fontSize:11,color:'#8a8070'}}>{auc?.status||'—'}</span>}
-                      </td>
-                    </tr>);
-                  })}</tbody>
-                </table>
-              </div></div>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24,flexWrap:'wrap',gap:10}}>
+              <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:'#1a1714'}}>My Profile</div>
+              {!profileEdit&&<button onClick={()=>setProfileEdit(true)} style={{padding:'10px 22px',borderRadius:24,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:SAN}}>Edit Profile</button>}
+            </div>
+            {saveMsg&&<div style={{padding:'12px 16px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.20)',borderRadius:12,fontSize:13,color:C.greenD,marginBottom:20}}>✓ {saveMsg}</div>}
+            {!profileEdit?(
+              <div>
+                {[{title:'Personal Information',rows:[['Full Name',artist?.name||'—'],['Email',artist?.email||session.user.email||'—'],['Mobile',artist?.mobile||'—'],['ID / Passport',artist?.idNumber||'—'],['Nationality',artist?.nationality||'—'],['City',artist?.city||'—'],['Country',artist?.country||'—'],['Address',artist?.address||'—']]},{title:'Artist Details',rows:[['Primary Medium',artist?.medium||'—'],['Style',artist?.style||'—'],['Instagram',artist?.instagram?('@'+artist.instagram.replace('@','')):'—'],['Website',artist?.website||'—']]},{title:'Biography',bio:true}].map(section=>(
+                  <div key={section.title} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16}}><div style={CP}><div style={SH}>{section.title}</div>
+                  {section.bio?artist?.bio?<div style={{padding:'16px',background:'rgba(182,139,46,0.06)',borderRadius:10,fontSize:14,color:'#1a1714',lineHeight:1.8,fontStyle:'italic'}}>"{artist.bio}"</div>:<button onClick={()=>setProfileEdit(true)} style={{padding:'10px 0',background:'none',border:'none',color:C.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:SAN}}>+ Add biography →</button>
+                  :section.rows.map(([label,value])=><div key={label} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'10px 0',borderBottom:`1px solid ${C.goldL}`,fontSize:13,gap:12}}><span style={{color:'#8a8070',flexShrink:0}}>{label}</span><span style={{fontWeight:500,textAlign:'right',color:'#1a1714'}}>{value}</span></div>)}</div></div>
+                ))}
+                <div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16}}><div style={CP}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14,...{paddingBottom:10,borderBottom:`1px solid ${C.goldL}`}}}><div style={{fontSize:10,fontWeight:700,letterSpacing:'0.20em',textTransform:'uppercase',color:C.gold}}>Banking Details</div>{artist?.bankVerified?<span style={{fontSize:11,fontWeight:700,color:C.greenD,background:'rgba(74,158,107,0.10)',padding:'3px 10px',borderRadius:20}}>✓ Verified</span>:(artist?.bankName||artist?.accountNumber)?<span style={{fontSize:11,fontWeight:700,color:'#b8920a',background:'rgba(230,190,50,0.10)',padding:'3px 10px',borderRadius:20}}>⏳ Pending</span>:<span style={{fontSize:11,color:'#8a8070'}}>Not yet added</span>}</div>{(artist?.bankName||artist?.accountNumber)?[['Bank',artist?.bankName||'—'],['Account Holder',artist?.accountHolder||'—'],['Account Number',artist?.accountNumber||'—'],['Branch Code',artist?.branchCode||'—']].map(([label,value])=><div key={label} style={{display:'flex',justifyContent:'space-between',padding:'10px 0',borderBottom:`1px solid ${C.goldL}`,fontSize:13,gap:12}}><span style={{color:'#8a8070',flexShrink:0}}>{label}</span><span style={{fontWeight:500}}>{value}</span></div>):<div style={{fontSize:13,color:'#8a8070',padding:'8px 0',lineHeight:1.7}}>Add your banking details so Vollard Black can pay your share of sales.</div>}</div></div>
+              </div>
+            ):(
+              <div>
+                {[{title:'Personal Information',fields:[['name','Full Name'],['mobile','Mobile'],['city','City'],['country','Country']],textarea:[['address','Address']]},{title:'Artist Details',fields:[['medium','Primary Medium'],['style','Style'],['instagram','Instagram'],['website','Website']],bioField:true},{title:'Banking Details',bankFields:true}].map(section=>(
+                  <div key={section.title} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16,marginBottom:16}}><div style={CP}><div style={SH}>{section.title}</div>
+                  {section.bankFields?<div><div style={{fontSize:12,color:'#8a8070',marginBottom:16,lineHeight:1.7}}>Your payout account. Changes require re-verification.</div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>{[['bankName','Bank Name'],['accountHolder','Account Holder'],['accountNumber','Account Number'],['branchCode','Branch Code']].map(([key,label])=><div key={key}><label style={{...lbl,color:'#8a8070'}}>{label}</label><input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={{width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:'#1a1714',fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box'}} inputMode={key==='accountNumber'||key==='branchCode'?'numeric':undefined}/></div>)}</div><div style={{marginTop:14,padding:'11px 14px',background:'rgba(230,190,50,0.05)',border:'1px solid rgba(230,190,50,0.18)',borderRadius:10,fontSize:12,color:'#8a8070',lineHeight:1.6}}>⚠ Changes flag your account for verification before payouts resume.</div></div>
+                  :<div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>{(section.fields||[]).map(([key,label])=><div key={key}><label style={{...lbl,color:'#8a8070'}}>{label}</label><input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={{width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:'#1a1714',fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box'}} placeholder={key==='instagram'?'@yourhandle':key==='website'?'https://...':''}/></div>)}{(section.textarea||[]).map(([key,label])=><div key={key} style={{gridColumn:'1/-1'}}><label style={{...lbl,color:'#8a8070'}}>{label}</label><textarea value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={{width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:'#1a1714',fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box',minHeight:60,resize:'vertical'}}/></div>)}{section.bioField&&<div style={{gridColumn:'1/-1'}}><label style={{...lbl,color:'#8a8070'}}>Biography / Artist Statement</label><textarea value={profileForm.bio||''} onChange={e=>setProfileForm(p=>({...p,bio:e.target.value}))} style={{width:'100%',padding:'13px 16px',background:'#f7f5f1',border:'1.5px solid rgba(182,139,46,0.22)',borderRadius:12,color:'#1a1714',fontFamily:SAN,fontSize:14,outline:'none',boxSizing:'border-box',minHeight:120,resize:'vertical'}} placeholder="Tell collectors about your practice, inspiration, style, and what drives your work…"/></div>}</div></div>}
+                  </div></div>
+                ))}
+                <div style={{display:'flex',gap:10,justifyContent:'flex-end'}}><button onClick={()=>setProfileEdit(false)} style={{padding:'12px 22px',borderRadius:12,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:SAN}}>Cancel</button><button onClick={saveProfile} disabled={savingProfile} style={{padding:'12px 28px',borderRadius:12,border:'none',background:`linear-gradient(135deg,${C.gold},${C.goldD})`,color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:SAN,opacity:savingProfile?0.6:1,boxShadow:'0 4px 14px rgba(182,139,46,0.28)'}}>{savingProfile?'Saving…':'Save Changes'}</button></div>
+              </div>
             )}
           </div>
         )}
@@ -1012,301 +647,18 @@ function BuyerDashboard({session, kycComplete=true}) {
         {/* TERMS */}
         {tab==='terms'&&(
           <div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,fontWeight:300,color:'#1a1714',marginBottom:16}}>Buyer Terms & Conditions</div>
-            <div style={S.card}>
-              <div style={{fontSize:12,color:'#8a8070',marginBottom:16}}>Vollard Black (Pty) Ltd · Hermanus, South Africa</div>
-              {[
-                ['1. Registration & KYC','All buyers must complete KYC verification before purchasing or bidding, including a valid government-issued ID.'],
-                ['2. Auction Participation','All bids are binding. The winning bidder is obligated to complete the purchase at the winning bid price. Payment is made directly to the License Holder per the auction settlement report.'],
-                ['3. Direct Purchases','Gallery enquiries are expressions of interest only. A sale is concluded only upon written confirmation from Vollard Black and receipt of full payment.'],
-                ['4. Artwork Condition','Vollard Black accurately represents artworks. Buyers are encouraged to view in person. Minor variations between photos and physical works are not grounds for return.'],
-                ['5. Refunds','All sales are final. Refunds are not available unless an artwork is materially misrepresented. Title passes to the buyer on full payment only.'],
-                ['6. Governing Law','These terms are governed by South African law. Disputes are resolved in the Western Cape High Court.'],
-              ].map(([title,text])=>(
-                <div key={title} style={{marginBottom:14,paddingBottom:14,borderBottom:'1px solid rgba(182,139,46,0.10)'}}>
-                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,color:'#1a1714',marginBottom:6}}>{title}</div>
-                  <div style={{fontSize:13,color:'#4a4440',lineHeight:1.8}}>{text}</div>
-                </div>
-              ))}
-              <div style={{padding:'10px 14px',background:'rgba(182,139,46,0.06)',borderRadius:8,fontSize:12,color:'#8a6a1e',marginTop:8}}>
-                Contact: <strong>concierge@vollardblack.com</strong>
-              </div>
-            </div>
-          </div>
-        )}
-        {/* PURCHASES */}
-        {tab==='purchases'&&(
-          <div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,fontWeight:300,color:'#1a1714',marginBottom:16}}>Purchases & Payments</div>
-
-            {/* Auction wins pending payment */}
-            {auctions.filter(a=>a.status==='Sold'&&a.leadBidderId===buyer?.id&&!purchases.some(p=>p.auctionId===a.id||p.artworkId===a.artworkId)).map(a=>(
-              <div key={a.id} style={{...S.card,border:'2px solid rgba(74,158,107,0.40)',marginBottom:12}}>
-                <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.2em',textTransform:'uppercase',color:'#4a9e6b',marginBottom:10}}>🏆 Auction Won — Payment Due</div>
-                <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:12,marginBottom:14}}>
-                  <div>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:'#1a1714',marginBottom:4}}>{a.title}</div>
-                    <div style={{fontSize:12,color:'#8a8070'}}>Closed {a.closedAt?.slice(0,10)||'—'} · Winning bid</div>
-                  </div>
-                  <div style={{textAlign:'right'}}>
-                    <div style={{fontSize:10,color:'#8a8070',letterSpacing:1,textTransform:'uppercase'}}>Amount Due</div>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:600,color:'#4a9e6b'}}>R {fmt(a.currentBid)}</div>
-                  </div>
-                </div>
-                <div style={{padding:'10px 14px',background:'rgba(74,158,107,0.06)',borderRadius:8,fontSize:12,color:'#4a4440',lineHeight:1.7,marginBottom:14}}>
-                  As the winning bidder, please complete your payment. The artwork will be released to you once payment is confirmed and all license fees are settled.
-                </div>
-                <button
-                  onClick={()=>payWithIkhoka({amount:a.currentBid,description:`Vollard Black Auction Purchase: ${a.title}`,referenceId:a.id.slice(-8),type:'auction'})}
-                  style={{padding:'13px 28px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#4a9e6b,#2d7a4a)',color:'#fff',cursor:'pointer',fontSize:13,fontWeight:700,fontFamily:"'DM Sans',sans-serif",boxShadow:'0 4px 14px rgba(74,158,107,0.3)'}}>
-                  💳 Pay R {fmt(a.currentBid)} via iKhoka
-                </button>
-              </div>
-            ))}
-
-            {/* Completed purchases */}
-            {purchases.length===0&&auctions.filter(a=>a.status==='Sold'&&a.leadBidderId===buyer?.id).length===0&&(
-              <div style={{...S.card,textAlign:'center',padding:40}}><div style={{fontSize:14,color:'#8a8070'}}>No purchases recorded yet.</div></div>
-            )}
-            {purchases.map(p=>(
-              <div key={p.id} style={S.card}>
-                <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:10}}>
-                  <div>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:'#1a1714',marginBottom:4}}>{p.artworkTitle}</div>
-                    <div style={{display:'flex',gap:8,alignItems:'center',marginTop:4,flexWrap:'wrap'}}>
-                      <span style={{fontSize:12,color:'#8a8070'}}>{p.date||'—'}</span>
-                      <span style={{fontSize:10,fontWeight:600,padding:'2px 8px',borderRadius:4,background:p.source==='auction'?'rgba(74,158,107,0.12)':'rgba(182,139,46,0.12)',color:p.source==='auction'?'#4a9e6b':'#b68b2e'}}>{p.source==='auction'?'⚖ Auction':'Direct'}</span>
-                    </div>
-                  </div>
-                  <div style={{textAlign:'right'}}>
-                    <div style={{fontSize:9,color:'#8a8070',letterSpacing:1,textTransform:'uppercase'}}>Sale Price</div>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,...S.gold}}>R {fmt(p.salePrice)}</div>
-                    <div style={{fontSize:11,color:'#4a9e6b',marginTop:2,fontWeight:600}}>✓ Payment Complete</div>
-                    <button onClick={()=>generatePurchaseCert(p)} style={{marginTop:6,padding:'5px 12px',borderRadius:8,border:'1px solid rgba(182,139,46,0.25)',background:'transparent',color:'#b68b2e',cursor:'pointer',fontSize:10,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>📜 Certificate</button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* WATCHLIST */}
-        {tab==='watchlist'&&(
-          <div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,fontWeight:300,color:'#1a1714',marginBottom:8}}>Saved Artworks</div>
-            <div style={{fontSize:13,color:'#8a8070',marginBottom:20}}>Artworks you've saved for later.</div>
-            {watchlist.length===0?<div style={{background:'#fff',border:`1px solid ${'rgba(182,139,46,0.18)'}`,borderRadius:16,padding:56,textAlign:'center'}}><div style={{fontSize:44,marginBottom:12,opacity:0.2}}>🤍</div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,color:'#1a1714',marginBottom:8}}>No saved artworks</div><div style={{fontSize:13,color:'#8a8070',marginBottom:20}}>Tap the heart on any artwork to save it here.</div><button onClick={()=>setTab('gallery')} style={{padding:'11px 28px',borderRadius:24,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Browse Gallery →</button></div>
-            :<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))',gap:16}}>
-              {artworks.filter(a=>watchlist.includes(a.id)).map(art=>(
-                <div key={art.id} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:12,overflow:'hidden'}}>
-                  <div style={{height:200,background:'#f0ede8',overflow:'hidden',position:'relative',cursor:art.imageUrl?'zoom-in':'default'}} onClick={()=>art.imageUrl&&setZoomImg(art.imageUrl)}>
-                    {art.imageUrl?<img src={art.imageUrl} alt={art.title} style={{width:'100%',height:'100%',objectFit:'cover'}}/>:<div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',color:'#b68b2e',fontSize:32}}>◆</div>}
-                    <button onClick={e=>{e.stopPropagation();toggleWatchlist(art.id);}} style={{position:'absolute',top:8,right:8,width:34,height:34,borderRadius:'50%',background:'rgba(255,255,255,0.92)',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,boxShadow:'0 2px 8px rgba(0,0,0,0.15)'}}>❤️</button>
-                  </div>
-                  <div style={{padding:'14px 16px'}}>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:'#1a1714',marginBottom:4}}>{art.title}</div>
-                    <div style={{fontSize:12,color:'#8a8070',marginBottom:10}}>{art.artist||'—'} · {art.medium||'—'}</div>
-                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
-                      <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:'#b68b2e',fontWeight:600}}>R {fmt(art.recommendedPrice)}</span>
-                    </div>
-                    <div style={{display:'flex',gap:8}}>
-                      <button onClick={()=>setEnquiry(art)} style={{flex:1,padding:'9px',borderRadius:10,border:'1px solid rgba(182,139,46,0.28)',background:'transparent',color:'#b68b2e',cursor:'pointer',fontSize:11,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>Enquire</button>
-                      <button onClick={()=>payWithIkhoka({amount:art.recommendedPrice,description:`Vollard Black: ${art.title}`,referenceId:art.id.slice(-8),type:'gallery'})} style={{flex:1,padding:'9px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',cursor:'pointer',fontSize:11,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>💳 Buy Now</button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>}
-          </div>
-        )}
-
-        {/* PROFILE */}
-        
-        {/* WATCHLIST */}
-        {tab==='watchlist'&&(
-          <div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,fontWeight:300,color:'#1a1714',marginBottom:20}}>Saved Artworks</div>
-            {watchlist.length===0?(
-              <div style={{background:'#fff',border:`1px solid ${'rgba(182,139,46,0.18)'}`,borderRadius:16,padding:56,textAlign:'center'}}>
-                <div style={{fontSize:44,opacity:0.2,marginBottom:12}}>🤍</div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:'#1a1714',marginBottom:8}}>No saved artworks</div>
-                <div style={{fontSize:13,color:'#8a8070',marginBottom:20}}>Tap the heart icon on any artwork in the gallery to save it here.</div>
-                <button onClick={()=>setTab('gallery')} style={{padding:'11px 24px',borderRadius:24,border:'none',background:`linear-gradient(135deg,#b68b2e,#8a6a1e)`,color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Browse Gallery →</button>
-              </div>
-            ):(
-              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:16}}>
-                {artworks.filter(a=>watchlist.includes(a.id)).map(art=>(
-                  <div key={art.id} style={{background:'#fff',border:`1px solid ${'rgba(182,139,46,0.18)'}`,borderRadius:16,overflow:'hidden'}}>
-                    <div style={{position:'relative',height:200,background:'#e8e4dd',cursor:'pointer'}} onClick={()=>setArtDetail(art)}>
-                      {art.imageUrl?<img src={art.imageUrl} alt="" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/>:<div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:40,opacity:0.2}}>🖼</div>}
-                      <button onClick={e=>{e.stopPropagation();toggleWatchlist(art.id);}} style={{position:'absolute',top:10,right:10,width:36,height:36,borderRadius:'50%',border:'none',background:'rgba(0,0,0,0.5)',color:'#c45c4a',cursor:'pointer',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center'}}>❤</button>
-                    </div>
-                    <div style={{padding:'14px 16px'}}>
-                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:'#1a1714',marginBottom:4}}>{art.title}</div>
-                      <div style={{fontSize:12,color:'#8a8070',marginBottom:8}}>{art.artistName||art.artist||'—'} · {art.medium||'—'}</div>
-                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                        <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:'#b68b2e',fontWeight:600}}>R {fmt(art.recommendedPrice)}</span>
-                        <button onClick={()=>setEnquiry(art)} style={{padding:'8px 16px',borderRadius:20,border:'none',background:`linear-gradient(135deg,#b68b2e,#8a6a1e)`,color:'#fff',fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Enquire</button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-{tab==='profile'&&(
-          <div>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,flexWrap:'wrap',gap:10}}>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,fontWeight:300,color:'#1a1714'}}>My Profile</div>
-              {!profileEdit&&buyer&&<button onClick={()=>setProfileEdit(true)} style={S.btn(false)}>Edit</button>}
-            </div>
-            {saveMsg&&<div style={{padding:'10px 14px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:8,fontSize:13,color:'#4a9e6b',marginBottom:14}}>✓ {saveMsg}</div>}
-            {!buyer?(
-              <div style={{...S.card,textAlign:'center',padding:40}}><div style={{fontSize:14,color:'#8a8070'}}>Profile not linked yet. Contact Vollard Black.</div></div>
-            ):!profileEdit?(
-              <div>
-                <div style={S.card}>
-                  <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.16em',textTransform:'uppercase',color:'#b68b2e',marginBottom:14}}>Personal Information</div>
-                  {[
-                    ['Name',`${buyer.firstName||''} ${buyer.lastName||''}`.trim()||buyer.companyName||'—'],
-                    ['Email',buyer.email||session.user.email||'—'],
-                    ['Mobile',buyer.mobile||'—'],
-                    ['ID / Passport',buyer.idNumber||'—'],
-                    ['Nationality',buyer.nationality||'—'],
-                    ['City',buyer.city||'—'],
-                    ['Country',buyer.country||'—'],
-                    ['KYC Status',buyer.kycStatus==='approved'?'✓ Approved':'⚠ Pending'],
-                    ['Auction Access',buyer.auctionApproved?'✓ Approved':buyer.auctionRequested?'⏳ Requested':'Not requested'],
-                  ].map(([label,value])=>(
-                    <div key={label} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'9px 0',borderBottom:'1px solid rgba(182,139,46,0.08)',fontSize:13,gap:12}}>
-                      <span style={{color:'#8a8070',flexShrink:0}}>{label}</span>
-                      <span style={{fontWeight:500,textAlign:'right',color:String(value).includes('✓')?'#4a9e6b':String(value).includes('⚠')||String(value).includes('⏳')?'#e6be32':'#1a1714'}}>{value}</span>
-                    </div>
-                  ))}
-                </div>
-                <div style={S.card}>
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-                    <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.16em',textTransform:'uppercase',color:'#b68b2e'}}>Banking Details</div>
-                    {buyer.bankVerified
-                      ?<span style={{fontSize:11,fontWeight:700,color:'#4a9e6b',background:'rgba(74,158,107,0.10)',padding:'3px 10px',borderRadius:20}}>✓ Verified</span>
-                      :(buyer.bankName||buyer.accountNumber)
-                        ?<span style={{fontSize:11,fontWeight:700,color:'#e6be32',background:'rgba(230,190,50,0.10)',padding:'3px 10px',borderRadius:20}}>⏳ Pending Verification</span>
-                        :<span style={{fontSize:11,color:'#8a8070'}}>Not yet added — tap Edit to add</span>
-                    }
-                  </div>
-                  {(buyer.bankName||buyer.accountNumber)?[
-                    ['Bank',buyer.bankName||'—'],['Account Holder',buyer.accountHolder||'—'],
-                    ['Account Number',buyer.accountNumber||'—'],['Branch Code',buyer.branchCode||'—'],
-                  ].map(([label,value])=>(
-                    <div key={label} style={{display:'flex',justifyContent:'space-between',padding:'9px 0',borderBottom:'1px solid rgba(182,139,46,0.08)',fontSize:13,gap:12}}>
-                      <span style={{color:'#8a8070',flexShrink:0}}>{label}</span><span style={{fontWeight:500}}>{value}</span>
-                    </div>
-                  )):<div style={{fontSize:13,color:'#8a8070',padding:'8px 0'}}>Add your banking details so proceeds can be paid to you.</div>}
-                </div>
-              </div>
-            ):(
-              <div>
-                <div style={{...S.card,marginBottom:12}}>
-                  <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.16em',textTransform:'uppercase',color:'#b68b2e',marginBottom:16}}>Personal Information</div>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
-                    {[['firstName','First Name'],['lastName','Last Name'],['mobile','Mobile'],['idNumber','ID / Passport'],['nationality','Nationality'],['city','City'],['country','Country']].map(([key,label])=>(
-                      <div key={key}><label style={S.label}>{label}</label><input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={S.input}/></div>
-                    ))}
-                    <div style={{gridColumn:'1/-1'}}><label style={S.label}>Address</label><textarea value={profileForm.address||''} onChange={e=>setProfileForm(p=>({...p,address:e.target.value}))} style={{...S.input,minHeight:60,resize:'vertical'}}/></div>
-                  </div>
-                </div>
-                <div style={{...S.card,marginBottom:12}}>
-                  <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.16em',textTransform:'uppercase',color:'#b68b2e',marginBottom:4}}>Banking Details</div>
-                  <div style={{fontSize:12,color:'#8a8070',marginBottom:16,lineHeight:1.6}}>Your payout account for any proceeds. Changes require verification by Vollard Black.</div>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
-                    {[['bankName','Bank Name'],['accountHolder','Account Holder'],['accountNumber','Account Number'],['branchCode','Branch Code']].map(([key,label])=>(
-                      <div key={key}><label style={S.label}>{label}</label><input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={S.input} placeholder={key==='bankName'?'e.g. FNB':key==='branchCode'?'e.g. 250655':''} inputMode={key==='accountNumber'||key==='branchCode'?'numeric':undefined}/></div>
-                    ))}
-                  </div>
-                  <div style={{marginTop:12,padding:'10px 14px',background:'rgba(230,190,50,0.06)',border:'1px solid rgba(230,190,50,0.20)',borderRadius:8,fontSize:12,color:'#6b635a',lineHeight:1.6}}>
-                    ⚠ Saving new bank details will flag your account for verification before payouts are processed.
-                  </div>
-                </div>
-                <div style={{display:'flex',gap:10,justifyContent:'flex-end'}}>
-                  <button onClick={()=>setProfileEdit(false)} style={S.btn(false)}>Cancel</button>
-                  <button onClick={saveProfile} disabled={saving} style={{...S.btn(true),opacity:saving?0.6:1}}>{saving?'Saving…':'Save Changes'}</button>
-                </div>
-              </div>
-            )}
+            <div style={{fontFamily:SER,fontSize:28,fontWeight:300,color:'#1a1714',marginBottom:20}}>Artist Representation Agreement</div>
+            <div style={{background:'#fff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16}}><div style={CP}><div style={{fontSize:12,color:'#8a8070',marginBottom:20}}>Vollard Black (Pty) Ltd · Hermanus, South Africa</div>{[['1. Representation','By registering, you authorise Vollard Black to display, market, and sell your artworks through its platform, gallery network, and auction services.'],['2. Commission','On each sale: Artist Share 30% · Gallery Partner Share 40% · Vollard Black Share 30%. Applied to the license fee (50% of sale price).'],['3. Submissions','All submissions are subject to approval. Approved works are listed in the gallery.'],['4. Intellectual Property','You retain full copyright. You grant Vollard Black a non-exclusive licence to use artwork images for marketing.'],['5. Authenticity','You warrant all submitted works are original and free from third-party claims.'],['6. Payment','Artist shares are paid within 14 business days of a confirmed sale to the bank account on file.']].map(([title,text])=><div key={title} style={{marginBottom:16,paddingBottom:16,borderBottom:`1px solid ${C.goldL}`}}><div style={{fontFamily:SER,fontSize:16,color:'#1a1714',marginBottom:6,fontWeight:500}}>{title}</div><div style={{fontSize:13,color:'#8a8070',lineHeight:1.8}}>{text}</div></div>)}<div style={{padding:'12px 16px',background:'rgba(182,139,46,0.06)',borderRadius:10,fontSize:12,color:'#8a6a1e'}}>Contact: <strong>concierge@vollardblack.com</strong></div></div></div>
           </div>
         )}
       </div>
-
-      {/* Artwork Detail Modal */}
-      {artDetail&&<div onClick={()=>setArtDetail(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.85)',zIndex:300,display:'flex',alignItems:'center',justifyContent:'center',padding:16,overflowY:'auto'}}>
-        <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:20,maxWidth:520,width:'100%',overflow:'hidden',maxHeight:'90vh',overflowY:'auto'}}>
-          {artDetail.imageUrl&&<img src={artDetail.imageUrl} alt="" style={{width:'100%',maxHeight:320,objectFit:'cover',display:'block'}}/>}
-          <div style={{padding:'24px 20px'}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,color:'#1a1714',fontWeight:400,lineHeight:1.2,flex:1}}>{artDetail.title}</div>
-              <button onClick={()=>toggleWatchlist(artDetail.id)} style={{marginLeft:12,padding:'8px',borderRadius:'50%',border:'1px solid rgba(182,139,46,0.25)',background:'transparent',color:watchlist.includes(artDetail.id)?'#c45c4a':'#8a8070',cursor:'pointer',fontSize:20,flexShrink:0,width:40,height:40,display:'flex',alignItems:'center',justifyContent:'center'}}>{watchlist.includes(artDetail.id)?'❤':'🤍'}</button>
-            </div>
-            <div style={{fontSize:14,color:'#b68b2e',fontWeight:600,marginBottom:16}}>{artDetail.artistName||artDetail.artist||'—'}</div>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:16}}>
-              {[['Medium',artDetail.medium||'—'],['Year',artDetail.year||'—'],['Dimensions',artDetail.dimensions||'—'],['Status',artDetail.status||'—']].map(([l,v])=>(
-                <div key={l} style={{padding:'10px 12px',background:'#f7f5f1',borderRadius:10}}>
-                  <div style={{fontSize:9,letterSpacing:'0.14em',textTransform:'uppercase',color:'#8a8070',marginBottom:4}}>{l}</div>
-                  <div style={{fontSize:13,fontWeight:600,color:'#1a1714'}}>{v}</div>
-                </div>
-              ))}
-            </div>
-            {artDetail.description&&<div style={{fontSize:13,color:'#6b635a',lineHeight:1.8,fontStyle:'italic',marginBottom:16,padding:'12px 16px',background:'rgba(182,139,46,0.05)',borderRadius:10}}>"{artDetail.description}"</div>}
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:32,color:'#b68b2e',fontWeight:600}}>R {fmt(artDetail.recommendedPrice)}</div>
-            </div>
-            <div style={{display:'flex',gap:10}}>
-              <button onClick={()=>{setEnquiry(artDetail);setArtDetail(null);}} style={{flex:1,padding:'13px',borderRadius:12,border:'1px solid rgba(182,139,46,0.30)',background:'transparent',color:'#b68b2e',cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>Enquire</button>
-              <button onClick={()=>{payWithIkhoka({amount:artDetail.recommendedPrice,description:`Vollard Black: ${artDetail.title}`,referenceId:artDetail.id.slice(-8),type:'gallery'});setArtDetail(null);}} style={{flex:1,padding:'13px',borderRadius:12,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',cursor:'pointer',fontSize:13,fontWeight:700,fontFamily:"'DM Sans',sans-serif",boxShadow:'0 4px 14px rgba(182,139,46,0.30)'}}>💳 Buy Now</button>
-            </div>
-            <button onClick={()=>setArtDetail(null)} style={{width:'100%',marginTop:12,padding:'12px',borderRadius:12,border:'1px solid rgba(182,139,46,0.20)',background:'transparent',color:'#8a8070',cursor:'pointer',fontSize:13,fontFamily:"'DM Sans',sans-serif"}}>Close</button>
-          </div>
-        </div>
-      </div>}
-
-      {/* Bottom nav */}
-      <div style={{position:'fixed',bottom:0,left:0,right:0,background:'#fff',borderTop:`1px solid ${'rgba(182,139,46,0.18)'}`,padding:'8px 0',display:'flex',justifyContent:'space-around',zIndex:50,boxShadow:'0 -4px 20px rgba(0,0,0,0.08)'}}>
-        {[['gallery','🖼','Gallery'],['watchlist','❤','Saved'],['auctions','⚖','Auctions'],['purchases','📦','Purchases'],['profile','👤','Profile']].map(([id,icon,lbl])=>(
-          <button key={id} onClick={()=>setTab(id)} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,padding:'4px 8px',background:'none',border:'none',cursor:'pointer',fontFamily:"'DM Sans',sans-serif",minWidth:48,position:'relative'}}>
-            <span style={{fontSize:18,opacity:tab===id?1:0.4}}>{icon}</span>
-            <span style={{fontSize:9,letterSpacing:'0.06em',textTransform:'uppercase',color:tab===id?'#b68b2e':'#8a8070',fontWeight:tab===id?700:400}}>{lbl}</span>
-            {id==='auctions'&&liveAuctions.length>0&&<div style={{position:'absolute',top:0,right:4,width:8,height:8,borderRadius:'50%',background:'#c45c4a'}}/>}
-            {id==='watchlist'&&watchlist.length>0&&<div style={{position:'absolute',top:0,right:4,width:8,height:8,borderRadius:'50%',background:'#c45c4a'}}/>}
-          </button>
-        ))}
-      </div>
-
-      {/* Zoom */}
-      {zoomImg&&<div onClick={()=>setZoomImg(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.92)',zIndex:300,display:'flex',alignItems:'center',justifyContent:'center',padding:20,cursor:'zoom-out'}}><button onClick={()=>setZoomImg(null)} style={{position:'absolute',top:20,right:24,background:'none',border:'none',color:'rgba(255,255,255,0.7)',fontSize:36,cursor:'pointer',lineHeight:1}}>×</button><img src={zoomImg} alt="" style={{maxWidth:'100%',maxHeight:'90vh',objectFit:'contain',borderRadius:8}}/></div>}
-
-      {/* Enquiry Modal */}
-      {enquiry&&<div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.6)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>
-        <div style={{background:'#fff',borderRadius:16,padding:28,maxWidth:460,width:'100%'}}>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,color:'#1a1714',marginBottom:4}}>Enquire to Purchase</div>
-          <div style={{fontSize:12,color:'#8a8070',marginBottom:20}}>Submitting will open WhatsApp with a pre-filled message to Vollard Black.</div>
-          <div style={{display:'flex',gap:14,marginBottom:20}}>
-            {enquiry.imageUrl&&<div style={{width:80,height:80,borderRadius:8,overflow:'hidden',flexShrink:0}}><img src={enquiry.imageUrl} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}}/></div>}
-            <div><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:'#1a1714'}}>{enquiry.title}</div><div style={{fontSize:12,color:'#8a8070',marginTop:2}}>{enquiry.artist||'—'} · {enquiry.medium||'—'}</div><div style={{fontSize:16,fontWeight:600,color:'#b68b2e',marginTop:4}}>R {fmt(enquiry.recommendedPrice)}</div></div>
-          </div>
-          <div style={{display:'flex',gap:10,justifyContent:'flex-end'}}><button onClick={()=>setEnquiry(null)} style={S.btn(false)}>Cancel</button><button onClick={sendEnquiry} style={S.btn(true)}>Send via WhatsApp</button></div>
-        </div>
-      </div>}
-
-      {/* Bid Modal */}
-      {bidTarget&&buyer&&<BidModal auction={bidTarget} buyer={buyer} myBids={bids} onClose={()=>setBidTarget(null)} onBidPlaced={()=>{setBidTarget(null);loadData(false);}}/>}
 
       {/* Mobile bottom nav */}
-      <div style={{position:'fixed',bottom:0,left:0,right:0,background:'#fff',borderTop:`1px solid ${'rgba(182,139,46,0.18)'}`,padding:'8px 0',display:'flex',justifyContent:'space-around',zIndex:50,boxShadow:'0 -4px 20px rgba(0,0,0,0.08)'}}>
-        {[['gallery','🖼','Gallery'],['watchlist','❤','Saved'],['auctions','⚖','Auctions'],['purchases','🏆','Purchases'],['profile','👤','Profile']].map(([id,icon,l])=>(
-          <button key={id} onClick={()=>setTab(id)} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,padding:'4px 8px',background:'none',border:'none',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
-            <span style={{fontSize:18,opacity:tab===id?1:0.4}}>{icon}</span>
-            <span style={{fontSize:9,letterSpacing:'0.06em',textTransform:'uppercase',color:tab===id?'#b68b2e':'#8a8070',fontWeight:tab===id?700:400}}>{l}</span>
+      <div style={{position:'fixed',bottom:0,left:0,right:0,background:'#fff',borderTop:'1px solid rgba(182,139,46,0.18)',padding:'8px 0',display:'flex',justifyContent:'space-around',zIndex:50,boxShadow:'0 -4px 20px rgba(0,0,0,0.08)'}}>
+        {[['overview','🏠','Home'],['works','🖼','Works'],['upload','➕','Upload'],['sales','💰','Sales'],['profile','👤','Profile']].map(([id,icon,lbl])=>(
+          <button key={id} onClick={()=>setTab(id)} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2,padding:'4px 12px',background:'none',border:'none',cursor:'pointer',fontFamily:SAN}}>
+            <span style={{fontSize:18,opacity:tab===id?1:0.45}}>{icon}</span>
+            <span style={{fontSize:9,letterSpacing:'0.06em',textTransform:'uppercase',color:tab===id?C.gold:'#8a8070',fontWeight:tab===id?700:400}}>{lbl}</span>
           </button>
         ))}
       </div>
@@ -1314,86 +666,13 @@ function BuyerDashboard({session, kycComplete=true}) {
   );
 }
 
-// ── KYC Docs Banner ─────────────────────────────────────────
-function KycBanner({email}){
-  const[uploading,setUploading]=useState(false);
-  const[done,setDone]=useState(false);
-  const[idFile,setIdFile]=useState(null);
-  const[selfieFile,setSelfieFile]=useState(null);
-  const[open,setOpen]=useState(false);
-
-  const upload=async()=>{
-    if(!idFile&&!selfieFile)return;
-    setUploading(true);
-    try{
-      const now=Date.now();
-      let idUrl='',selfieUrl='';
-      if(idFile){
-        const path=`kyc/${email}/id_${now}.${idFile.name.split('.').pop()}`;
-        await sb.storage.from('kyc-documents').upload(path,idFile,{upsert:true});
-        idUrl=sb.storage.from('kyc-documents').getPublicUrl(path).data?.publicUrl||'';
-      }
-      if(selfieFile){
-        const path=`kyc/${email}/selfie_${now}.${selfieFile.name.split('.').pop()}`;
-        await sb.storage.from('kyc-documents').upload(path,selfieFile,{upsert:true});
-        selfieUrl=sb.storage.from('kyc-documents').getPublicUrl(path).data?.publicUrl||'';
-      }
-      // Update portal_requests with doc URLs
-      const updates={};
-      if(idUrl)updates.id_document_url=idUrl;
-      if(selfieUrl)updates.selfie_url=selfieUrl;
-      if(Object.keys(updates).length)
-        await sb.from('portal_requests').update(updates).eq('email',email);
-      setDone(true);
-    }catch(e){console.error(e);}
-    setUploading(false);
-  };
-
-  if(done)return null;
-
-  return(
-    <div style={{background:'rgba(230,190,50,0.10)',border:'1.5px solid rgba(182,139,46,0.30)',borderRadius:12,padding:'14px 18px',marginBottom:16,fontFamily:F.san}}>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:10}}>
-        <div style={{display:'flex',gap:10,alignItems:'center'}}>
-          <span style={{fontSize:18}}>⚠️</span>
-          <div>
-            <div style={{fontSize:13,fontWeight:700,color:'#7a5c00',marginBottom:2}}>KYC Documents Required</div>
-            <div style={{fontSize:12,color:'#8a7040',lineHeight:1.5}}>Please upload your ID document and a selfie. Artworks will only be released once verified.</div>
-          </div>
-        </div>
-        <button onClick={()=>setOpen(o=>!o)} style={{padding:'8px 16px',borderRadius:8,border:'1px solid rgba(182,139,46,0.30)',background:'transparent',color:G.gold,cursor:'pointer',fontSize:12,fontWeight:600,fontFamily:F.san,flexShrink:0}}>
-          {open?'Hide':'Upload Documents'}
-        </button>
-      </div>
-      {open&&(
-        <div style={{marginTop:14,display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-          <div>
-            <label style={{display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:G.mid,marginBottom:6}}>ID Document</label>
-            <input type="file" accept="image/*,.pdf" onChange={e=>setIdFile(e.target.files[0])} style={{width:'100%',fontSize:12,fontFamily:F.san}}/>
-            {idFile&&<div style={{fontSize:11,color:G.greenD,marginTop:4}}>✓ {idFile.name}</div>}
-          </div>
-          <div>
-            <label style={{display:'block',fontSize:10,fontWeight:700,letterSpacing:'0.14em',textTransform:'uppercase',color:G.mid,marginBottom:6}}>Selfie with ID</label>
-            <input type="file" accept="image/*" capture="user" onChange={e=>setSelfieFile(e.target.files[0])} style={{width:'100%',fontSize:12,fontFamily:F.san}}/>
-            {selfieFile&&<div style={{fontSize:11,color:G.greenD,marginTop:4}}>✓ {selfieFile.name}</div>}
-          </div>
-          <div style={{gridColumn:'1/-1'}}>
-            <button onClick={upload} disabled={uploading||(!idFile&&!selfieFile)} style={{width:'100%',padding:'11px',borderRadius:10,border:'none',background:`linear-gradient(135deg,${G.gold},${G.goldD})`,color:G.white,fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:F.san,opacity:uploading||(!idFile&&!selfieFile)?0.5:1}}>
-              {uploading?'Uploading…':'Submit Documents'}
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ── Root ────────────────────────────────────────────────────
 // ── Root ────────────────────────────────────────────────────
-export default function BuyerPortal(){
+export default function ArtistPortal(){
   const[session,setSession]=useState(undefined);
   const[screen,setScreen]=useState('loading');
   const[hasKycDocs,setHasKycDocs]=useState(true);
+  const[accessError,setAccessError]=useState('');
   const justRegistered=useRef(false);
 
   useEffect(()=>{
@@ -1411,13 +690,13 @@ export default function BuyerPortal(){
   },[session]);
 
   const checkTermsLocal=(email)=>{
-    try{const s=JSON.parse(localStorage.getItem('vb_terms_buyer')||'null');return !!(s&&s.email===email&&s.v===TERMS_VERSION);}catch{return false;}
+    try{const s=JSON.parse(localStorage.getItem('vb_terms_artist')||'null');return !!(s&&s.email===email&&s.v===TERMS_VERSION);}catch{return false;}
   };
 
   const checkAccess=async(email)=>{
     setScreen('loading');
     try{
-      const{data:myRow}=await sb.from('portal_requests').select('status,id_document_url,selfie_url').eq('email',email).eq('role','buyer').order('created_at',{ascending:false}).limit(1).maybeSingle();
+      const{data:myRow}=await sb.from('portal_requests').select('status,id_document_url,selfie_url').eq('email',email).eq('role','artist').order('created_at',{ascending:false}).limit(1).maybeSingle();
       if(myRow){
         if(myRow.status==='approved'){
           setHasKycDocs(!!(myRow.id_document_url||myRow.selfie_url));
@@ -1427,12 +706,16 @@ export default function BuyerPortal(){
       }
       const{data:anyRow}=await sb.from('portal_requests').select('id').eq('email',email).limit(1).maybeSingle();
       if(anyRow){
-        await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email,role:'buyer',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'}).catch(()=>{});
+        await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email,role:'artist',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'}).catch(()=>{});
         setScreen('pending');
       }else{
         setScreen('kyc');
       }
-    }catch(e){console.error(e);setScreen('auth');}
+    }catch(e){
+      console.error('checkAccess error:',e);
+      setAccessError(e.message||'Access check failed');
+      setScreen('auth');
+    }
   };
 
   if(session===undefined||screen==='loading')
@@ -1441,10 +724,10 @@ export default function BuyerPortal(){
     </div>;
 
   if(screen==='auth'||!session)
-    return<AuthScreen onAuth={s=>setSession(s)}/>;
+    return<AuthScreen onAuth={s=>{setAccessError('');setSession(s);}} accessError={accessError}/>;
 
   if(screen==='kyc')
-    return<KYCRegistration role="buyer" supabase={sb}
+    return<KYCRegistration role="artist" supabase={sb}
       onComplete={()=>{justRegistered.current=true;setScreen('pending');}}
       onSignIn={()=>setScreen('auth')}/>;
 
@@ -1454,5 +737,5 @@ export default function BuyerPortal(){
   if(screen==='terms')
     return<TermsModal email={session.user.email} onAccepted={()=>setScreen('dashboard')}/>;
 
-  return<BuyerDashboard session={session} kycComplete={hasKycDocs}/>;
+  return<ArtistDashboard session={session} kycComplete={hasKycDocs}/>;
 }
