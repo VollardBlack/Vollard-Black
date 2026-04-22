@@ -38,6 +38,7 @@ function UpBox({ label:lb, required, value, onChange, hint, onOpenCamera }) {
     const base64 = await new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(file); });
     onChange({ file, base64, name: file.name, type: file.type });
   };
+  const [showOptions, setShowOptions] = useState(false);
   const clear = (e) => { e.stopPropagation(); onChange(null); };
   return (
     <div style={{marginBottom:20}}>
@@ -47,17 +48,26 @@ function UpBox({ label:lb, required, value, onChange, hint, onOpenCamera }) {
           <img src={value.base64} alt="" style={{width:'100%',maxHeight:180,objectFit:'cover',display:'block'}}/>
           <button type="button" onClick={clear} style={{position:'absolute',top:8,right:8,background:'rgba(196,92,74,0.85)',border:'none',borderRadius:20,color:'#fff',padding:'4px 12px',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>✕ Redo</button>
         </div>
+      ) : null}
+      {/* Single upload button */}
+      {!showOptions ? (
+        <button type="button" onClick={()=>setShowOptions(true)} style={{width:'100%',padding:'13px',borderRadius:10,border:`1.5px dashed ${value?'rgba(74,158,107,0.5)':C.goldB}`,background:value?'rgba(74,158,107,0.04)':C.cream,color:value?C.green:C.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
+          {value ? '✓ Captured — tap to redo' : (hint||'📎 Upload or take photo')}
+        </button>
       ) : (
-        <div style={{border:`2px dashed ${C.goldB}`,borderRadius:14,background:C.cream,padding:'16px',textAlign:'center',marginBottom:8}}>
-          <div style={{fontSize:26,marginBottom:4}}>📎</div>
-          <div style={{fontSize:12,color:C.mid}}>{hint||'Take a photo or upload a file'}</div>
+        <div style={{border:`1px solid ${C.goldB}`,borderRadius:12,overflow:'hidden',background:C.white}}>
+          <button type="button" onClick={()=>{setShowOptions(false);onOpenCamera();}} style={{width:'100%',padding:'14px 16px',border:'none',borderBottom:`1px solid ${C.goldB}`,background:'transparent',color:C.dark,cursor:'pointer',fontSize:14,fontFamily:"'DM Sans',sans-serif",display:'flex',alignItems:'center',gap:12,textAlign:'left'}}>
+            <span style={{fontSize:20}}>📸</span><span style={{fontWeight:600}}>Take Photo</span>
+          </button>
+          <button type="button" onClick={()=>{setShowOptions(false);fileRef.current?.click();}} style={{width:'100%',padding:'14px 16px',border:'none',borderBottom:`1px solid ${C.goldB}`,background:'transparent',color:C.dark,cursor:'pointer',fontSize:14,fontFamily:"'DM Sans',sans-serif",display:'flex',alignItems:'center',gap:12,textAlign:'left'}}>
+            <span style={{fontSize:20}}>📁</span><span style={{fontWeight:600}}>Upload from Device</span>
+          </button>
+          <button type="button" onClick={()=>setShowOptions(false)} style={{width:'100%',padding:'12px 16px',border:'none',background:'transparent',color:C.light,cursor:'pointer',fontSize:13,fontFamily:"'DM Sans',sans-serif"}}>
+            Cancel
+          </button>
         </div>
       )}
-      <div style={{display:'flex',gap:8}}>
-        <button type="button" onClick={onOpenCamera} style={{flex:1,padding:'11px 6px',borderRadius:10,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>📸 Camera</button>
-        <button type="button" onClick={()=>fileRef.current?.click()} style={{flex:1,padding:'11px 6px',borderRadius:10,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>📁 Upload</button>
-      </div>
-      <input ref={fileRef} type="file" accept="image/*,.pdf" onChange={handleFile} style={{display:'none'}}/>
+      <input ref={fileRef} type="file" accept="image/*,.pdf" onChange={e=>{setShowOptions(false);handleFile(e);}} style={{display:'none'}}/>
     </div>
   );
 }
