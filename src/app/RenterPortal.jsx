@@ -465,7 +465,11 @@ export default function RenterPortal(){
   },[]);
   useEffect(()=>{
     if(!session){setApproved(null);return;}
-    supabase.from('portal_requests').select('status').eq('email',session.user.email).eq('role','renter').order('created_at',{ascending:false}).limit(1).single().then(({data})=>{setApproved(data?.status==='approved');});
+    supabase.from('portal_requests').select('status').eq('email',session.user.email).eq('role','renter').order('created_at',{ascending:false}).limit(1).single().then(({data,error})=>{
+      // No record = not yet registered — sign out so they can register
+      if(!data||error){supabase.auth.signOut();return;}
+      setApproved(data.status==='approved'?true:data.status==='pending'?'pending':false);
+    });
   },[session]);
   if(session===undefined)return<div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:SER,fontSize:24,letterSpacing:8,color:C.gold,opacity:0.5}}>VOLLARD BLACK</div></div>;
   if(!session){
@@ -474,6 +478,7 @@ export default function RenterPortal(){
     return<LoginScreen onLogin={s=>setSession(s)} onRegister={()=>setScreen('register')}/>;
   }
   if(approved===null)return<div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:SER,fontSize:18,color:C.gold,opacity:0.5}}>Checking access…</div></div>;
-  if(!approved)return<NotApprovedScreen onSignOut={()=>supabase.auth.signOut()}/>;
+  // 'pending' or false = registered but not yet approved / rejected
+  if(approved==='pending'||(!approved&&approved!==null))return<NotApprovedScreen onSignOut={()=>supabase.auth.signOut()}/>;
   return<RenterDashboard session={session}/>;
 }
