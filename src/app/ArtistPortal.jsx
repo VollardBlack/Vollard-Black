@@ -69,13 +69,13 @@ function AuthScreen({onAuth, accessError}){
       const{data:d2,error:e2}=await sb.auth.signInWithPassword({email:emailClean,password:pw});
       if(e2){setLoading(false);return setError('An account with this email already exists. Use your existing password to sign in.');}
       // Add artist role request
-      await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email:emailClean,role:'artist',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'}).catch(()=>{});
+      await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email:emailClean,role:'artist',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'});
       setLoading(false);
       return onAuth(d2.session,'signup');
     }
     if(e){setLoading(false);return setError(e.message);}
     // New account created
-    await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email:emailClean,role:'artist',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'}).catch(()=>{});
+    await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email:emailClean,role:'artist',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'});
     setLoading(false);
     if(data?.session)return onAuth(data.session,'signup');
     setMsg('Account created! Check your email to confirm your address, then sign in.');
@@ -706,7 +706,7 @@ export default function ArtistPortal(){
       }
       const{data:anyRow}=await sb.from('portal_requests').select('id').eq('email',email).limit(1).maybeSingle();
       if(anyRow){
-        await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email,role:'artist',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'}).catch(()=>{});
+        await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email,role:'artist',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'});
         setScreen('pending');
       }else{
         setScreen('kyc');
