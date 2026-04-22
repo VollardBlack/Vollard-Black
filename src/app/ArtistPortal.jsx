@@ -704,9 +704,19 @@ export default function ArtistPortal(){
         }else{setScreen('pending');}
         return;
       }
-      const{data:anyRow}=await sb.from('portal_requests').select('id').eq('email',email).limit(1).maybeSingle();
+      const{data:anyRow}=await sb.from('portal_requests').select('id,full_name,mobile,message').eq('email',email).limit(1).maybeSingle();
       if(anyRow){
-        await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email,role:'artist',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'});
+        // KYC exists on another portal - copy details and create pending row for this role
+        await sb.from('portal_requests').upsert({
+          id:crypto.randomUUID(),
+          email,
+          role:'artist',
+          status:'pending',
+          full_name:anyRow.full_name||'',
+          mobile:anyRow.mobile||'',
+          message:anyRow.message||'',
+          created_at:new Date().toISOString()
+        },{onConflict:'email,role'});
         setScreen('pending');
       }else{
         setScreen('kyc');
