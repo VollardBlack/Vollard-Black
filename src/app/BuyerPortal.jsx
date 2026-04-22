@@ -772,7 +772,9 @@ function pushNotif(title, body, tag) {
 }
 
 function BuyerDashboard({session}) {
-  const [termsSigned,setTermsSigned]=useState(null);
+  const [termsSigned,setTermsSigned]=useState(()=>{
+    try{const s=JSON.parse(localStorage.getItem('vb_agreed_buyer')||'null');return !!(s&&s.terms_version===TERMS_VERSION);}catch{return false;}
+  });
   const [tab,setTab] = useState('gallery');
   const [buyer,setBuyer] = useState(null);
   const [artworks,setArtworks] = useState([]);
@@ -813,11 +815,6 @@ function BuyerDashboard({session}) {
   },[]);
 
   useEffect(()=>{ loadData(true); },[session]);
-
-  useEffect(()=>{
-    if(!session)return;
-    checkTermsSigned(session.user.email,PORTAL_ROLE).then(signed=>setTermsSigned(signed));
-  },[session]);
 
   useEffect(()=>{
     if(typeof window==='undefined') return;
@@ -1025,8 +1022,7 @@ function BuyerDashboard({session}) {
     </div>
   );
 
-  if(termsSigned===null)return<div style={{minHeight:'100vh',background:'#f5f3ef',display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,color:'#b68b2e',opacity:0.6}}>Loading…</div></div>;
-  if(termsSigned===false)return<TermsModal role={PORTAL_ROLE} email={session.user.email} onAccepted={sig=>{setTermsSigned(true);}}/>;
+  if(!termsSigned)return<TermsModal role={PORTAL_ROLE} email={session.user.email} onAccepted={()=>setTermsSigned(true)}/>;
 
   return (
     <div style={S.page}>
@@ -1501,39 +1497,61 @@ function BuyerDashboard({session}) {
   );
 }
 
-export default function BuyerPortal() {
-  const [session,setSession] = useState(undefined);
-  const [screen,setScreen] = useState('login');
-  const [pendingEmail,setPendingEmail] = useState('');
-  const [requestStatus,setRequestStatus] = useState(null);
+// ── Root ────────────────────────────────────────────────────
+export default function BuyerPortal(){
+  const[session,setSession]=useState(undefined);
+  const[screen,setScreen]=useState('login');
+  const[pendingEmail,setPendingEmail]=useState('');
+  const[status,setStatus]=useState('init'); // init | checking | approved | pending | none | error
 
   useEffect(()=>{
-    if(!supabase){setSession(null);return;}
+    if(!supabase){setSession(null);setStatus('none');return;}
     supabase.auth.getSession().then(({data})=>setSession(data?.session||null));
-    const {data:{subscription}} = supabase.auth.onAuthStateChange((_,s)=>setSession(s));
-    return ()=>subscription.unsubscribe();
+    const{data:{subscription}}=supabase.auth.onAuthStateChange((_,s)=>setSession(s));
+    return()=>subscription.unsubscribe();
   },[]);
 
   useEffect(()=>{
-    if(!session||!supabase){setRequestStatus(null);return;}
-    supabase.from('portal_requests').select('status').eq('email',session.user.email).eq('role','buyer').order('created_at',{ascending:false}).limit(1).single()
+    if(session===undefined)return; // still initialising
+    if(!session){setStatus('none');return;} // logged out
+    setStatus('checking');
+    const _chkTimer=setTimeout(()=>setStatus('none'),6000);
+    supabase
+      .from('portal_requests')
+      .select('status')
+      .eq('email',session.user.email.toLowerCase())
+      .eq('role','buyer')
+      .order('created_at',{ascending:false})
+      .limit(1)
+      .maybeSingle() // maybeSingle returns null data (not error) when no row found
       .then(({data,error})=>{
-        if(error||!data) {
-          // No portal_request row = admin-created buyer, allow through
-          setRequestStatus('approved');
-        } else {
-          setRequestStatus(data.status||'pending');
-        }
+        clearTimeout(_chkTimer);
+        if(error){console.error('portal_requests error',error);setStatus('none');return;}
+        if(!data){setStatus('none');return;} // no row = not registered for this portal
+        if(data.status==='approved')setStatus('approved');
+        else if(data.status==='pending')setStatus('pending');
+        else setStatus('none');
       });
   },[session]);
 
-  if(session===undefined) return <div style={{minHeight:'100vh',background:'#f5f3ef',display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,letterSpacing:8,color:'#b68b2e',opacity:0.5}}>VOLLARD BLACK</div></div>;
-  if(!session){
-    if(screen==='register') return <KYCRegistration role="buyer" supabase={supabase} onComplete={email=>{setPendingEmail(email);setScreen('pending');}} onSignIn={()=>setScreen('login')}/>;
-    if(screen==='pending') return <PendingScreen email={pendingEmail} onSignIn={()=>setScreen('login')}/>;
-    return <LoginScreen onLogin={s=>setSession(s)} onRegister={()=>setScreen('register')} role="buyer" portalLabel="Buyer Portal"/>;
+  // Still initialising session
+  if(session===undefined||status==='init')
+    return<div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:SER,fontSize:24,letterSpacing:8,color:C.gold,opacity:0.5}}>VOLLARD BLACK</div></div>;
+
+  // Checking portal_requests
+  if(session&&status==='checking')
+    return<div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:12}}><div style={{fontFamily:SER,fontSize:18,color:C.gold,opacity:0.6}}>Checking access…</div><button onClick={()=>supabase.auth.signOut().then(()=>setStatus('none'))} style={{fontSize:12,color:C.light,background:'none',border:'none',cursor:'pointer',fontFamily:SAN,marginTop:4}}>Cancel</button></div>;
+
+  // Not logged in (or no portal_requests row)
+  if(!session||status==='none'){
+    if(screen==='register')return<KYCRegistration role="buyer" supabase={supabase} onComplete={email=>{setPendingEmail(email);setScreen('pending');}} onSignIn={()=>setScreen('login')}/>;
+    if(screen==='pending')return<PendingScreen email={pendingEmail} onSignIn={()=>setScreen('login')}/>;
+    return<LoginScreen onLogin={s=>setSession(s)} onRegister={()=>setScreen('register')} role="buyer" portalLabel="Buyer Portal"/>;
   }
-  if(requestStatus===null) return <div style={{minHeight:'100vh',background:'#f5f3ef',display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:'#b68b2e',opacity:0.5}}>Checking access…</div></div>;
-  if(requestStatus!=='approved') return <NotApprovedScreen status={requestStatus} onSignOut={()=>supabase.auth.signOut()}/>;
-  return <BuyerDashboard session={session}/>;
+
+  // Registered but not yet approved
+  if(status==='pending')return<NotApprovedScreen onSignOut={()=>supabase.auth.signOut().then(()=>{setSession(null);setStatus('none');})}/>; 
+
+  // Approved — show dashboard
+  return<BuyerDashboard session={session}/>;
 }
