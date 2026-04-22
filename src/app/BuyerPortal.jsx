@@ -538,8 +538,6 @@ function BuyerDashboard({session}) {
   const [bids,setBids] = useState([]);
   const [purchases,setPurchases] = useState([]);
   const [initialLoading,setInitialLoading] = useState(true);
-  const [watchlist,setWatchlist] = useState(()=>{try{return JSON.parse(localStorage.getItem('vb_watchlist')||'[]');}catch{return[];}});
-  const [artDetail,setArtDetail] = useState(null);
   const [notifs,setNotifs] = useState([]);
   const [enquiry,setEnquiry] = useState(null);
   const [profileEdit,setProfileEdit] = useState(false);
@@ -557,8 +555,6 @@ function BuyerDashboard({session}) {
   const [soundReady,setSoundReady] = useState(false);
   const buyerRef = useRef(null);
 
-  const addNotif=msg=>setNotifs(p=>[{msg,time:new Date().toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'}),read:false},...p.slice(0,19)]);
-  const toggleWatchlist=(id)=>{const w=watchlist.includes(id)?watchlist.filter(x=>x!==id):[...watchlist,id];setWatchlist(w);try{localStorage.setItem('vb_watchlist',JSON.stringify(w));}catch{}};
   const unlockSound = () => { const ctx = _getAudioCtxBuyer(); if(ctx) setSoundReady(true); };
   const auctionsRef = useRef([]);
   const toastTimer = useRef(null);
