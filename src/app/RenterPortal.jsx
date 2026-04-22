@@ -57,7 +57,7 @@ const S = {
   input: { width:'100%', padding:'12px 14px', background:'#f5f3ef', border:'1px solid rgba(182,139,46,0.25)', borderRadius:8, color:'#1a1714', fontFamily:"'DM Sans',sans-serif", fontSize:14, outline:'none', boxSizing:'border-box' },
   label: { display:'block', fontSize:10, fontWeight:500, letterSpacing:2, textTransform:'uppercase', color:'#6b635a', marginBottom:6 },
   btn: (gold) => ({ width:'100%', padding:14, borderRadius:8, border: gold?'none':'1px solid rgba(182,139,46,0.30)', background: gold?'linear-gradient(135deg,#b68b2e,#8a6a1e)':'transparent', color: gold?'#fff':'#b68b2e', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:"'DM Sans',sans-serif", letterSpacing:0.5 }),
-  tab: (a) => ({ padding:'10px 18px', border:'none', borderBottom: a?'2px solid #b68b2e':'2px solid transparent', background:'transparent', color: a?'#b68b2e':'#6b635a', fontSize:13, fontWeight: a?600:400, cursor:'pointer', fontFamily:"'DM Sans',sans-serif" }),
+  tab: (a) => ({ padding:'9px 18px', border: a?'none':'1px solid rgba(182,139,46,0.25)', borderRadius:24, background: a?'linear-gradient(135deg,#b68b2e,#8a6a1e)':'transparent', color: a?'#fff':'#6b635a', fontSize:13, fontWeight:a?600:400, cursor:'pointer', fontFamily:"'DM Sans',sans-serif", whiteSpace:'nowrap', transition:'all 0.2s' }),
   gold: { color:'#b68b2e', fontWeight:600 },
   green: { color:'#4a9e6b', fontWeight:600 },
 };
@@ -293,7 +293,7 @@ function RenterDashboard({session}) {
           <span style={{fontSize:20}}>🎉</span><span>{saleAlert}</span>
           <button onClick={()=>setSaleAlert('')} style={{marginLeft:'auto',background:'none',border:'none',color:'#4a9e6b',cursor:'pointer',fontSize:18}}>×</button>
         </div>}
-        <div style={{display:'flex',borderBottom:'1px solid rgba(182,139,46,0.15)',marginBottom:20,gap:4,overflowX:'auto'}}>
+        <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:24,padding:'4px 0'}}>
           {[['overview','Overview'],['artworks','My Artworks'],['payments','Payments'],['statements','Statements'],['profile','My Profile'],['terms','Terms']].map(([id,lbl])=>(
             <button key={id} onClick={()=>setTab(id)} style={S.tab(tab===id)}>{lbl}</button>
           ))}
@@ -446,45 +446,6 @@ function RenterDashboard({session}) {
           </div>
         )}
 
-        {tab==='profile'&&(
-          <div>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20,flexWrap:'wrap',gap:10}}>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:'#1a1714'}}>My Profile</div>
-              {!profileEdit&&<button onClick={()=>setProfileEdit(true)} style={{padding:'10px 20px',borderRadius:8,border:'1px solid rgba(182,139,46,0.30)',background:'transparent',color:'#b68b2e',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Edit Profile</button>}
-            </div>
-            {saveMsg&&<div style={{padding:'10px 14px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:8,fontSize:13,color:'#4a9e6b',marginBottom:14}}>✓ {saveMsg}</div>}
-            {!profileEdit?(
-              <div style={S.card}>
-                {[['Name',collector?`${collector.firstName||''} ${collector.lastName||''}`.trim()||collector.companyName:'—'],['Email',collector?.email||'—'],['Mobile',collector?.mobile||'—'],['ID',collector?.idNumber||'—'],['Nationality',collector?.nationality||'—'],['City',collector?.city||'—'],['Country',collector?.country||'—']].map(([label,value])=>(
-                  <div key={label} style={{display:'flex',justifyContent:'space-between',padding:'10px 0',borderBottom:'1px solid rgba(182,139,46,0.08)',fontSize:13}}>
-                    <span style={{color:'#8a8070'}}>{label}</span>
-                    <span style={{fontWeight:500}}>{value}</span>
-                  </div>
-                ))}
-              </div>
-            ):(
-              <div style={S.card}>
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
-                  {[['firstName','First Name'],['lastName','Last Name'],['mobile','Mobile'],['idNumber','ID / Passport'],['nationality','Nationality'],['city','City'],['country','Country']].map(([key,label])=>(
-                    <div key={key}>
-                      <label style={{display:'block',fontSize:10,fontWeight:500,letterSpacing:2,textTransform:'uppercase',color:'#6b635a',marginBottom:6}}>{label}</label>
-                      <input value={profileForm[key]||''} onChange={e=>setProfileForm(p=>({...p,[key]:e.target.value}))} style={S.input}/>
-                    </div>
-                  ))}
-                  <div style={{gridColumn:'1/-1'}}>
-                    <label style={{display:'block',fontSize:10,fontWeight:500,letterSpacing:2,textTransform:'uppercase',color:'#6b635a',marginBottom:6}}>Address</label>
-                    <textarea value={profileForm.address||''} onChange={e=>setProfileForm(p=>({...p,address:e.target.value}))} style={{...S.input,minHeight:70,resize:'vertical'}}/>
-                  </div>
-                </div>
-                <div style={{display:'flex',gap:10,marginTop:16,justifyContent:'flex-end'}}>
-                  <button onClick={()=>setProfileEdit(false)} style={{padding:'10px 20px',borderRadius:8,border:'1px solid rgba(182,139,46,0.30)',background:'transparent',color:'#b68b2e',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Cancel</button>
-                  <button onClick={saveProfile} disabled={saving} style={{padding:'10px 20px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",opacity:saving?0.6:1}}>{saving?'Saving…':'Save Profile'}</button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
         {tab==='statements'&&(
           <div>
             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:'#1a1714',marginBottom:16}}>Statements</div>
@@ -570,11 +531,55 @@ function RenterDashboard({session}) {
             </div>
           </div>
         )}
-        {tab==='profile'&&profileForm&&(
+        {tab==='profile'&&(
           <div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:'#1a1714',marginBottom:16}}>My Profile</div>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,flexWrap:'wrap',gap:10}}>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:'#1a1714'}}>My Profile</div>
+              {!profileEdit&&collector&&<button onClick={()=>{setProfileEdit(true);}} style={{padding:'10px 20px',borderRadius:8,border:'1px solid rgba(182,139,46,0.30)',background:'transparent',color:'#b68b2e',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Edit</button>}
+            </div>
             {profileSaved&&<div style={{padding:'10px 14px',background:'rgba(74,158,107,0.08)',border:'1px solid rgba(74,158,107,0.2)',borderRadius:8,fontSize:13,color:'#4a9e6b',marginBottom:14}}>✓ Profile updated</div>}
-            <div style={S.card}>
+            {!profileEdit&&collector&&(
+              <div>
+                <div style={S.card}>
+                  <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.16em',textTransform:'uppercase',color:'#b68b2e',marginBottom:14}}>Personal Information</div>
+                  {[
+                    ['Name',`${collector.firstName||''} ${collector.lastName||''}`.trim()||collector.companyName||'—'],
+                    ['Email',collector.email||session.user.email||'—'],
+                    ['Mobile',collector.mobile||'—'],
+                    ['ID / Passport',collector.idNumber||'—'],
+                    ['Nationality',collector.nationality||'—'],
+                    ['City',collector.city||'—'],
+                    ['Country',collector.country||'—'],
+                    ['Address',collector.address||'—'],
+                  ].map(([label,value])=>(
+                    <div key={label} style={{display:'flex',justifyContent:'space-between',padding:'9px 0',borderBottom:'1px solid rgba(182,139,46,0.08)',fontSize:13,gap:12}}>
+                      <span style={{color:'#8a8070',flexShrink:0}}>{label}</span>
+                      <span style={{fontWeight:500,textAlign:'right'}}>{value}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={S.card}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+                    <div style={{fontSize:10,fontWeight:700,letterSpacing:'0.16em',textTransform:'uppercase',color:'#b68b2e'}}>Banking Details</div>
+                    {collector.bankVerified
+                      ?<span style={{fontSize:11,fontWeight:700,color:'#4a9e6b',background:'rgba(74,158,107,0.10)',padding:'3px 10px',borderRadius:20}}>✓ Verified</span>
+                      :(collector.bankName||collector.accountNumber)
+                        ?<span style={{fontSize:11,fontWeight:700,color:'#e6be32',background:'rgba(230,190,50,0.10)',padding:'3px 10px',borderRadius:20}}>⏳ Pending Verification</span>
+                        :<span style={{fontSize:11,color:'#8a8070'}}>Not yet added — tap Edit to add</span>
+                    }
+                  </div>
+                  {(collector.bankName||collector.accountNumber)?[
+                    ['Bank',collector.bankName||'—'],['Account Holder',collector.accountHolder||'—'],
+                    ['Account Number',collector.accountNumber||'—'],['Branch Code',collector.branchCode||'—'],
+                  ].map(([label,value])=>(
+                    <div key={label} style={{display:'flex',justifyContent:'space-between',padding:'9px 0',borderBottom:'1px solid rgba(182,139,46,0.08)',fontSize:13,gap:12}}>
+                      <span style={{color:'#8a8070',flexShrink:0}}>{label}</span><span style={{fontWeight:500}}>{value}</span>
+                    </div>
+                  )):<div style={{fontSize:13,color:'#8a8070',padding:'8px 0'}}>Add your banking details so sale proceeds can be paid to you.</div>}
+                </div>
+              </div>
+            )}
+            {profileEdit&&profileForm&&(<div style={S.card}>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
                 <div><label style={S.label}>First Name</label><input value={profileForm.firstName||''} onChange={e=>setProfileForm(p=>({...p,firstName:e.target.value}))} style={S.input}/></div>
                 <div><label style={S.label}>Last Name</label><input value={profileForm.lastName||''} onChange={e=>setProfileForm(p=>({...p,lastName:e.target.value}))} style={S.input}/></div>
@@ -595,10 +600,15 @@ function RenterDashboard({session}) {
                 </div>
                 <div style={{gridColumn:'1/-1'}}><label style={S.label}>Email (cannot change)</label><input value={session.user.email} readOnly style={{...S.input,background:'#e8e4dd',color:'#8a8070'}}/></div>
               </div>
-              <div style={{marginTop:16,display:'flex',justifyContent:'flex-end'}}>
-                <button onClick={async()=>{if(!collector)return;setSavingProfile(true);await supabase.from('collectors').update({first_name:profileForm.firstName,last_name:profileForm.lastName,mobile:profileForm.mobile,id_number:profileForm.idNumber,nationality:profileForm.nationality,city:profileForm.city,country:profileForm.country,address:profileForm.address,bank_name:profileForm.bankName||'',account_holder:profileForm.accountHolder||'',account_number:profileForm.accountNumber||'',branch_code:profileForm.branchCode||''}).eq('id',collector.id);setSavingProfile(false);setProfileSaved(true);setTimeout(()=>setProfileSaved(false),3000);}} disabled={savingProfile} style={{padding:'12px 28px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",opacity:savingProfile?0.6:1}}>{savingProfile?'Saving…':'Save Changes'}</button>
+              <div style={{marginTop:12,padding:'10px 14px',background:'rgba(230,190,50,0.06)',border:'1px solid rgba(230,190,50,0.20)',borderRadius:8,fontSize:12,color:'#6b635a',lineHeight:1.6}}>
+                ⚠ Saving new bank details will flag your account for verification before payouts are processed.
+              </div>
+              <div style={{marginTop:16,display:'flex',gap:10,justifyContent:'flex-end'}}>
+                <button onClick={()=>setProfileEdit(false)} style={{padding:'10px 20px',borderRadius:8,border:'1px solid rgba(182,139,46,0.30)',background:'transparent',color:'#b68b2e',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Cancel</button>
+                <button onClick={async()=>{if(!collector)return;setSavingProfile(true);const bankChanged=((profileForm.bankName||'')!==(collector.bankName||'')||(profileForm.accountNumber||'')!==(collector.accountNumber||''));await supabase.from('collectors').update({first_name:profileForm.firstName,last_name:profileForm.lastName,mobile:profileForm.mobile,id_number:profileForm.idNumber,nationality:profileForm.nationality,city:profileForm.city,country:profileForm.country,address:profileForm.address,bank_name:profileForm.bankName||'',account_holder:profileForm.accountHolder||'',account_number:profileForm.accountNumber||'',branch_code:profileForm.branchCode||'',bank_verified:bankChanged?false:(collector.bankVerified||false)}).eq('id',collector.id);setCollector(c=>({...c,...profileForm,bankVerified:bankChanged?false:c.bankVerified}));setSavingProfile(false);setProfileSaved(true);setProfileEdit(false);setTimeout(()=>setProfileSaved(false),4000);}} disabled={savingProfile} style={{padding:'10px 24px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#b68b2e,#8a6a1e)',color:'#fff',cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",opacity:savingProfile?0.6:1}}>{savingProfile?'Saving…':'Save Changes'}</button>
               </div>
             </div>
+          )}
           </div>
         )}
       </div>
