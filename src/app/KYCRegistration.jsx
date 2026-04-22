@@ -276,7 +276,8 @@ export default function KYCRegistration({ role, supabase, onComplete, onSignIn }
       } else {
         await supabase.from('portal_requests').insert({id:crypto.randomUUID(),email:f.email,full_name:`${f.firstName} ${f.lastName}`,mobile:f.mobile,role,message:msg,status:'pending',id_document_url:frontUrl,selfie_url:selfieUrl});
       }
-      await supabase.auth.signInWithPassword({email:f.email,password:f.password});
+      // Don't auto sign-in here - the auth.signUp above already creates a session
+      // Portal's onAuthStateChange will handle routing to pending screen
       setSubmittedName(f.firstName);
       setDone(true);
       window.scrollTo({top:0,behavior:'smooth'});
@@ -284,7 +285,7 @@ export default function KYCRegistration({ role, supabase, onComplete, onSignIn }
     setLoading(false);
   };
 
-  if(done) return <SuccessScreen name={submittedName} role={role} onLogin={onSignIn}/>;
+  if(done) return <SuccessScreen name={submittedName} role={role} onLogin={onComplete}/>;
 
   return(
     <>
