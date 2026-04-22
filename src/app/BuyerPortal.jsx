@@ -1405,6 +1405,7 @@ export default function BuyerPortal(){
   useEffect(()=>{
     if(session===undefined)return;
     if(!session){setScreen('auth');return;}
+    if(screen==='pending')return; // already showing pending — don't re-check
     checkAccess(session.user.email.toLowerCase());
   },[session]);
 
@@ -1444,7 +1445,7 @@ export default function BuyerPortal(){
     return<AuthScreen onAuth={s=>setSession(s)}/>;
 
   if(screen==='kyc')
-    return<KYCRegistration role="buyer" supabase={sb} onComplete={()=>{if(session)checkAccess(session.user.email.toLowerCase());else setScreen('pending');}} onSignIn={()=>setScreen('auth')}/>;
+    return<KYCRegistration role="buyer" supabase={sb} onComplete={()=>setScreen('pending')} onSignIn={()=>setScreen('auth')}/>;
 
   if(screen==='pending')
     return<NotApprovedScreen onSignOut={()=>sb.auth.signOut()}/>;
