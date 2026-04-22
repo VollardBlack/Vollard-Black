@@ -628,68 +628,69 @@ function KycBanner({email}){
 
 // ── Root ────────────────────────────────────────────────────
 // ── Root ────────────────────────────────────────────────────
-export default function RenterPortal(){
+export default function RenterPortal(){{
   const[session,setSession]=useState(undefined);
-  const[screen,setScreen]=useState('loading'); // loading|auth|kyc|pending|terms|dashboard
+  const[screen,setScreen]=useState('loading');
   const[hasKycDocs,setHasKycDocs]=useState(true);
+  const justRegistered=useRef(false); // prevents auth state change from overriding pending
 
-  useEffect(()=>{
-    if(!sb){setSession(null);setScreen('auth');return;}
-    sb.auth.getSession().then(({data})=>setSession(data?.session||null));
-    const{data:{subscription}}=sb.auth.onAuthStateChange((_,s)=>setSession(s));
+  useEffect(()=>{{
+    if(!sb){{setSession(null);setScreen('auth');return;}}
+    sb.auth.getSession().then(({{data}})=>setSession(data?.session||null));
+    const{{data:{{subscription}}}}=sb.auth.onAuthStateChange((_,s)=>setSession(s));
     return()=>subscription.unsubscribe();
-  },[]);
+  }},[]);
 
-  useEffect(()=>{
+  useEffect(()=>{{
     if(session===undefined)return;
-    if(!session){setScreen('auth');return;}
-    if(screen==='pending')return; // already showing pending — don't re-check
+    if(!session){{setScreen('auth');return;}}
+    if(justRegistered.current)return; // just registered — stay on pending
     checkAccess(session.user.email.toLowerCase());
-  },[session]);
+  }},[session]);
 
-  const checkTermsLocal=(email)=>{try{const s=JSON.parse(localStorage.getItem('vb_terms_renter')||'null');return !!(s&&s.email===email&&s.v===TERMS_VERSION);}catch{return false;}};
+  const checkTermsLocal=(email)=>{{
+    try{{const s=JSON.parse(localStorage.getItem('vb_terms_renter')||'null');return !!(s&&s.email===email&&s.v===TERMS_VERSION);}}catch{{return false;}}
+  }};
 
-  const checkAccess=async(email)=>{
+  const checkAccess=async(email)=>{{
     setScreen('loading');
-    try{
-      // Check this role's portal_requests row
-      const{data:myRow}=await sb.from('portal_requests').select('status,id_document_url,selfie_url').eq('email',email).eq('role','renter').order('created_at',{ascending:false}).limit(1).maybeSingle();
-      if(myRow){
-        if(myRow.status==='approved'){
+    try{{
+      const{{data:myRow}}=await sb.from('portal_requests').select('status,id_document_url,selfie_url').eq('email',email).eq('role','renter').order('created_at',{{ascending:false}}).limit(1).maybeSingle();
+      if(myRow){{
+        if(myRow.status==='approved'){{
           setHasKycDocs(!!(myRow.id_document_url||myRow.selfie_url));
           setScreen(checkTermsLocal(email)?'dashboard':'terms');
-        }else{setScreen('pending');}
+        }}else{{setScreen('pending');}}
         return;
-      }
-      // No row for this role — check if KYC done on any portal
-      const{data:anyRow}=await sb.from('portal_requests').select('id').eq('email',email).limit(1).maybeSingle();
-      if(anyRow){
-        // KYC exists — register for this role and show pending
-        await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email,role:'renter',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'}).catch(()=>{});
+      }}
+      const{{data:anyRow}}=await sb.from('portal_requests').select('id').eq('email',email).limit(1).maybeSingle();
+      if(anyRow){{
+        await sb.from('portal_requests').upsert({{id:crypto.randomUUID(),email,role:'renter',status:'pending',created_at:new Date().toISOString()}},{{onConflict:'email,role'}}).catch(()=>{{}});
         setScreen('pending');
-      }else{
-        // No KYC anywhere — full registration needed
+      }}else{{
         setScreen('kyc');
-      }
-    }catch(e){console.error(e);setScreen('auth');}
-  };
+      }}
+    }}catch(e){{console.error(e);setScreen('auth');}}
+  }};
 
   if(session===undefined||screen==='loading')
-    return<div style={{minHeight:'100vh',background:G.cream,display:'flex',alignItems:'center',justifyContent:'center'}}>
-      <div style={{fontFamily:F.ser,fontSize:20,letterSpacing:8,color:G.gold,opacity:0.5}}>VOLLARD BLACK</div>
+    return<div style={{{{minHeight:'100vh',background:G.cream,display:'flex',alignItems:'center',justifyContent:'center'}}}}>
+      <div style={{{{fontFamily:F.ser,fontSize:20,letterSpacing:8,color:G.gold,opacity:0.5}}}}>VOLLARD BLACK</div>
     </div>;
 
   if(screen==='auth'||!session)
-    return<AuthScreen onAuth={s=>setSession(s)}/>;
+    return<AuthScreen onAuth={{s=>setSession(s)}}/>;
 
   if(screen==='kyc')
-    return<KYCRegistration role="renter" supabase={sb} onComplete={()=>setScreen('pending')} onSignIn={()=>setScreen('auth')}/>;
+    return<KYCRegistration role="renter" supabase={{sb}} 
+      onComplete={{()=>{{justRegistered.current=true;setScreen('pending');}}}} 
+      onSignIn={{()=>setScreen('auth')}}/>;
 
   if(screen==='pending')
-    return<NotApprovedScreen onSignOut={()=>sb.auth.signOut()}/>;
+    return<NotApprovedScreen onSignOut={{()=>{{justRegistered.current=false;sb.auth.signOut();}}}}/>;
 
   if(screen==='terms')
-    return<TermsModal email={session.user.email} onAccepted={()=>setScreen('dashboard')}/>;
+    return<TermsModal email={{session.user.email}} onAccepted={{()=>setScreen('dashboard')}}/>;
 
-  return<RenterDashboard session={session} kycComplete={hasKycDocs}/>;
-}
+  return<RenterDashboard session={{session}} kycComplete={{hasKycDocs}}/>;
+}}
