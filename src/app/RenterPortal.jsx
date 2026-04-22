@@ -625,10 +625,11 @@ export default function RenterPortal() {
     supabase.from('portal_requests')
       .select('status')
       .eq('email', session.user.email)
+      .eq('role', 'renter')
+      .order('created_at', {ascending:false})
+      .limit(1)
       .single()
-      .then(({data})=>{
-        setApproved(data?.status==='approved');
-      });
+      .then(({data})=>{ setApproved(data?.status==='approved'); });
   },[session]);
 
   if(session===undefined) return <div style={{minHeight:'100vh',background:'#f5f3ef',display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,letterSpacing:8,color:'#b68b2e',opacity:0.5}}>VOLLARD BLACK</div></div>;
