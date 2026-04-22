@@ -342,8 +342,13 @@ function NotifCentre({notifs,onClear}){
 
 // ── Main Dashboard ──────────────────────────────────────────
 function RenterDashboard({session}){
-  const[termsSigned,setTermsSigned]=useState(null); // null=checking, true=signed, false=needs signing
-  const[termsSig,setTermsSig]=useState(null);
+  const[termsSigned,setTermsSigned]=useState(()=>{
+    // Quick sync check of localStorage - no network needed
+    try{
+      const stored=JSON.parse(localStorage.getItem('vb_agreed_renter')||'null');
+      return !!(stored&&stored.terms_version===TERMS_VERSION);
+    }catch{return false;}
+  }); // null=checking, true=signed, false=needs signing
   const[tab,setTab]=useState('overview');
   const[collector,setCollector]=useState(null);
   const[schedules,setSchedules]=useState([]);
@@ -437,8 +442,7 @@ function RenterDashboard({session}){
   if(!collector)return(<div style={{minHeight:'100vh',background:'#f5f3ef',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:16,padding:20,fontFamily:SAN}}><Logo sub="License Holder Portal"/><div style={{background:'#ffffff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,padding:40,textAlign:'center',maxWidth:420,width:'100%'}}><div style={{fontFamily:SER,fontSize:22,color:'#1a1714',marginBottom:8}}>Account Not Linked</div><div style={{fontSize:13,color:'#8a8070',marginBottom:16}}>Contact Vollard Black to link your account.</div><button onClick={signOut} style={{padding:'10px 24px',borderRadius:8,border:`1px solid ${C.goldB}`,background:'transparent',color:C.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:SAN}}>Sign Out</button></div></div>);
 
   // Show terms if not signed yet
-  if(termsSigned===null)return<div style={{minHeight:'100vh',background:'#f5f3ef',display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:SER,fontSize:16,color:'#b68b2e',opacity:0.6}}>Loading…</div></div>;
-  if(termsSigned===false)return<TermsModal role={PORTAL_ROLE} email={session.user.email} onAccepted={sig=>{setTermsSig(sig);setTermsSigned(true);}}/>;
+  if(!termsSigned)return<TermsModal role={PORTAL_ROLE} email={session.user.email} onAccepted={()=>setTermsSigned(true)}/>;
 
   return(
     <div style={{minHeight:'100vh',background:'#f5f3ef',fontFamily:SAN,color:'#1a1714',transition:'background 0.3s'}}>
@@ -733,34 +737,61 @@ function RenterDashboard({session}){
   );
 }
 
+// ── Root ────────────────────────────────────────────────────
 export default function RenterPortal(){
   const[session,setSession]=useState(undefined);
   const[screen,setScreen]=useState('login');
   const[pendingEmail,setPendingEmail]=useState('');
-  const[approved,setApproved]=useState(null);
+  const[status,setStatus]=useState('init'); // init | checking | approved | pending | none | error
+
   useEffect(()=>{
-    if(supabase)supabase.auth.getSession().then(({data})=>setSession(data?.session||null));else setSession(null);
-    const{data:{subscription}}=supabase?supabase.auth.onAuthStateChange((_,s)=>setSession(s)):{data:{subscription:{unsubscribe:()=>{}}}};
+    if(!supabase){setSession(null);setStatus('none');return;}
+    supabase.auth.getSession().then(({data})=>setSession(data?.session||null));
+    const{data:{subscription}}=supabase.auth.onAuthStateChange((_,s)=>setSession(s));
     return()=>subscription.unsubscribe();
   },[]);
+
   useEffect(()=>{
-    if(!session){setApproved(null);return;}
-    supabase.from('portal_requests').select('status').eq('email',session.user.email).eq('role','renter').order('created_at',{ascending:false}).limit(1).single().then(({data,error})=>{
-      // No portal_requests row = either new user or admin-created
-      // Only sign out if it's definitively a "no rows found" error
-      if(error&&error.code!=='PGRST116'){setApproved(null);return;}
-      if(!data){setApproved(null);return;}
-      setApproved(data.status==='approved'?true:data.status==='pending'?'pending':false);
-    });
+    if(session===undefined)return; // still initialising
+    if(!session){setStatus('none');return;} // logged out
+    setStatus('checking');
+    const _chkTimer=setTimeout(()=>setStatus('none'),6000); // 6s timeout
+    supabase
+      .from('portal_requests')
+      .select('status')
+      .eq('email',session.user.email.toLowerCase())
+      .eq('role','renter')
+      .order('created_at',{ascending:false})
+      .limit(1)
+      .maybeSingle() // maybeSingle returns null data (not error) when no row found
+      .then(({data,error})=>{
+        clearTimeout(_chkTimer);
+        if(error){console.error('portal_requests error',error);setStatus('none');return;}
+        if(!data){setStatus('none');return;} // no row = not registered for this portal
+        if(data.status==='approved')setStatus('approved');
+        else if(data.status==='pending')setStatus('pending');
+        else setStatus('none');
+      });
   },[session]);
-  if(session===undefined)return<div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:SER,fontSize:24,letterSpacing:8,color:C.gold,opacity:0.5}}>VOLLARD BLACK</div></div>;
-  if(!session){
+
+  // Still initialising session
+  if(session===undefined||status==='init')
+    return<div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontFamily:SER,fontSize:24,letterSpacing:8,color:C.gold,opacity:0.5}}>VOLLARD BLACK</div></div>;
+
+  // Checking portal_requests
+  if(session&&status==='checking')
+    return<div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:12}}><div style={{fontFamily:SER,fontSize:18,color:C.gold,opacity:0.6}}>Checking access…</div><button onClick={()=>supabase.auth.signOut().then(()=>setStatus('none'))} style={{fontSize:12,color:C.light,background:'none',border:'none',cursor:'pointer',fontFamily:SAN,marginTop:4}}>Cancel</button></div>;
+
+  // Not logged in (or no portal_requests row)
+  if(!session||status==='none'){
     if(screen==='register')return<KYCRegistration role="renter" supabase={supabase} onComplete={email=>{setPendingEmail(email);setScreen('pending');}} onSignIn={()=>setScreen('login')}/>;
     if(screen==='pending')return<PendingScreen email={pendingEmail} onSignIn={()=>setScreen('login')}/>;
     return<LoginScreen onLogin={s=>setSession(s)} onRegister={()=>setScreen('register')} role="renter" portalLabel="License Holder Portal"/>;
   }
-  if(approved===null)return<div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:16}}><div style={{fontFamily:SER,fontSize:18,color:C.gold,opacity:0.5}}>Checking access…</div><button onClick={()=>supabase.auth.signOut()} style={{fontSize:12,color:C.light,background:'none',border:'none',cursor:'pointer',fontFamily:SAN}}>Cancel</button></div>;
-  // 'pending' or false = registered but not yet approved / rejected
-  if(approved==='pending'||(!approved&&approved!==null))return<NotApprovedScreen onSignOut={()=>supabase.auth.signOut()}/>;
+
+  // Registered but not yet approved
+  if(status==='pending')return<NotApprovedScreen onSignOut={()=>supabase.auth.signOut().then(()=>{setSession(null);setStatus('none');})}/>; 
+
+  // Approved — show dashboard
   return<RenterDashboard session={session}/>;
 }
