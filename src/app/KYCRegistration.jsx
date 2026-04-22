@@ -206,6 +206,7 @@ export default function KYCRegistration({ role, supabase, onComplete, onSignIn }
   const [showPw, setShowPw] = useState(false);
   const [done, setDone] = useState(false);
   const [submittedName, setSubmittedName] = useState('');
+  const [showTerms, setShowTerms] = useState(false);
 
   // Camera state lives HERE at top level — never causes form reset
   const [cam, setCam] = useState(null); // null | { target:'idFront'|'idBack'|'selfie', facingMode:'environment'|'user' }
@@ -294,6 +295,30 @@ export default function KYCRegistration({ role, supabase, onComplete, onSignIn }
         @keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
         select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a8070' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:40px!important;}
       `}</style>
+
+      {/* Terms overlay — fixed position, never unmounts form */}
+      {showTerms && (
+        <div style={{position:'fixed',inset:0,background:'rgba(26,23,20,0.85)',zIndex:9998,display:'flex',alignItems:'flex-end',justifyContent:'center',fontFamily:"'DM Sans',sans-serif"}} onClick={()=>setShowTerms(false)}>
+          <div style={{background:'#fff',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:600,maxHeight:'85vh',overflow:'hidden',display:'flex',flexDirection:'column'}} onClick={e=>e.stopPropagation()}>
+            <div style={{padding:'16px 20px',borderBottom:`1px solid ${C.goldB}`,display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:C.dark}}>Terms & Conditions</div>
+              <button onClick={()=>setShowTerms(false)} style={{background:'none',border:'none',fontSize:22,color:C.light,cursor:'pointer',padding:'4px 8px',lineHeight:1}}>✕</button>
+            </div>
+            <div style={{overflowY:'auto',padding:'20px',flex:1}}>
+              <p style={{fontSize:13,color:C.mid,lineHeight:1.8,marginBottom:16}}>These Terms & Conditions govern your use of the Vollard Black platform and all associated portals.</p>
+              {[['1. Acceptance','By registering on the Vollard Black platform, you agree to be bound by these Terms & Conditions and all applicable laws and regulations.'],['2. KYC & Identity','You confirm that all personal information, identification documents, and photographs submitted during registration are genuine, accurate, and belong to you. Submission of false or fraudulent information will result in immediate termination of your account and may be reported to relevant authorities.'],['3. Data Protection','Your personal data is processed in accordance with the Protection of Personal Information Act (POPIA). Data is stored securely and will not be shared with third parties except as required to complete transactions or comply with legal obligations.'],['4. Platform Use','You agree to use the Vollard Black platform solely for lawful purposes related to fine art acquisition, display, or representation. Any misuse, fraudulent activity, or breach of these terms will result in account suspension.'],['5. Financial Obligations','All financial commitments made through the platform — including auction bids, license fees, and purchase agreements — are legally binding once confirmed.'],['6. Governing Law','These terms are governed by the laws of the Republic of South Africa. Any disputes will be subject to the jurisdiction of South African courts.'],['7. Contact','For queries: concierge@vollardblack.com · Vollard Black (Pty) Ltd · Hermanus, Western Cape, South Africa']].map(([t,x])=>(
+                <div key={t} style={{marginBottom:18,paddingBottom:18,borderBottom:`1px solid ${C.goldB}`}}>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:15,fontWeight:500,color:C.dark,marginBottom:6}}>{t}</div>
+                  <div style={{fontSize:13,color:'#4a4440',lineHeight:1.8}}>{x}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{padding:'16px 20px',borderTop:`1px solid ${C.goldB}`,flexShrink:0}}>
+              <button onClick={()=>setShowTerms(false)} style={{width:'100%',padding:'14px',borderRadius:12,border:'none',background:`linear-gradient(135deg,${C.gold},#8a6a1e)`,color:'#fff',fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Close & Return to Registration</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Camera modal — always at root level, never causes form remount */}
       {cam && (
@@ -439,13 +464,13 @@ export default function KYCRegistration({ role, supabase, onComplete, onSignIn }
               <Sect title="Declaration & Signature"/>
               <div style={{padding:'16px',background:C.goldL,border:`1px solid ${C.goldB}`,borderRadius:12,fontSize:14,color:'#5a4820',lineHeight:1.8,marginBottom:24}}>
                 I, <strong>{f.firstName} {f.lastName}</strong>, confirm that all information provided is accurate and I agree to the{' '}
-                <a href="/terms" target="_blank" rel="noreferrer" style={{color:C.gold,fontWeight:700}}>Vollard Black Terms & Conditions</a>.
+                <button type="button" onClick={()=>setShowTerms(true)} style={{background:'none',border:'none',color:C.gold,fontWeight:700,cursor:'pointer',fontSize:'inherit',fontFamily:'inherit',padding:0,textDecoration:'underline'}}>Vollard Black Terms & Conditions</button>.
               </div>
               <SigPad onChange={setSignature}/>
               <div style={{marginTop:20,padding:'16px',background:C.cream,borderRadius:12,border:`1px solid ${C.goldB}`}}>
                 <label style={{display:'flex',alignItems:'flex-start',gap:14,cursor:'pointer'}}>
                   <input type="checkbox" checked={terms} onChange={e=>setTerms(e.target.checked)} style={{width:20,height:20,marginTop:2,accentColor:C.gold,flexShrink:0}}/>
-                  <span style={{fontSize:14,color:'#4a4440',lineHeight:1.75}}>I confirm I have read and agree to the <a href="/terms" target="_blank" rel="noreferrer" style={{color:C.gold,fontWeight:700}}>Terms & Conditions</a> and consent to my personal information being processed in accordance with POPIA.</span>
+                  <span style={{fontSize:14,color:'#4a4440',lineHeight:1.75}}>I confirm I have read and agree to the <button type="button" onClick={()=>setShowTerms(true)} style={{background:'none',border:'none',color:C.gold,fontWeight:700,cursor:'pointer',fontSize:'inherit',fontFamily:'inherit',padding:0,textDecoration:'underline'}}>Terms & Conditions</button> and consent to my personal information being processed in accordance with POPIA.</span>
                 </label>
               </div>
               <div style={{marginTop:20,padding:'16px',background:C.white,border:`1px solid ${C.goldB}`,borderRadius:12}}>
