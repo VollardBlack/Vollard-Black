@@ -1,7 +1,7 @@
 'use client';
 import KYCRegistration from './KYCRegistration';
 import { useState, useEffect, useRef } from "react";
-import { createClient } from '@sb/sb-js';
+import { createClient } from '@supabase/supabase-js';
 
 const sUrl = process.env.NEXT_PUBLIC_SUPABASE_URL||'';
 const sKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY||'';
