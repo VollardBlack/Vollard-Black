@@ -145,12 +145,6 @@ function RenterDashboard({session}){
   const activeScheds=schedules.filter(s=>['Active','Chasing'].includes(s.status));
 
   // Colors
-  const bg='#f5f3ef';
-  const cardBg='#ffffff';
-  const cardBorder='rgba(182,139,46,0.18)';
-  const '#1a1714'='#1a1714';
-  const ts='#8a8070';
-  const ib='#ffffff';
   const CARD={background:'#ffffff',border:'1px solid rgba(182,139,46,0.18)',borderRadius:16,overflow:'hidden',marginBottom:16};
   const CP={padding:'20px'};
   const SH={fontSize:10,fontWeight:700,letterSpacing:'0.20em',textTransform:'uppercase',color:C.gold,marginBottom:14,paddingBottom:10,borderBottom:`1px solid ${C.goldL}`};
