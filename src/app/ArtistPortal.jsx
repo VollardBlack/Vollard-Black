@@ -527,6 +527,9 @@ export default function ArtistPortal() {
     supabase.from('portal_requests')
       .select('status')
       .eq('email', session.user.email)
+      .eq('role', 'artist')
+      .order('created_at', {ascending:false})
+      .limit(1)
       .single()
       .then(({data})=>{ setApproved(data?.status==='approved'); });
   },[session]);
