@@ -157,9 +157,22 @@ export default function KYCRegistration({ role, supabase, onComplete, onSignIn }
     if(step<3){setStep(s=>s+1);window.scrollTo({top:0,behavior:'smooth'});return;}
     setLoading(true);
     try {
+      // Try sign up — if already registered, sign in instead
+      let userId = null;
       const {data:authData,error:authErr} = await supabase.auth.signUp({email:f.email,password:f.password});
-      if(authErr)throw authErr;
-      const userId = authData.user?.id;
+      
+      if(authErr && (authErr.message?.includes('already registered') || authErr.message?.includes('already been registered') || authErr.status===400)){
+        // User exists — try signing in to get their ID
+        const {data:signInData,error:signInErr} = await supabase.auth.signInWithPassword({email:f.email,password:f.password});
+        if(signInErr) throw new Error('This email is already registered. Please sign in instead.');
+        userId = signInData.user?.id;
+      } else if(authErr){
+        throw authErr;
+      } else {
+        userId = authData.user?.id;
+      }
+      
+      if(!userId) throw new Error('Could not create account. Please try again.');
       const base = `${role}/${userId}`;
       const uploadDoc = async(fileObj,path)=>{
         if(!fileObj?.file)return null;
@@ -170,7 +183,34 @@ export default function KYCRegistration({ role, supabase, onComplete, onSignIn }
       const[frontUrl,backUrl,selfieUrl]=await Promise.all([uploadDoc(idFront,`${base}/id-front`),uploadDoc(idBack,`${base}/id-back`),uploadDoc(selfie,`${base}/selfie`)]);
       if(signature){const blob=await(await fetch(signature)).blob();await supabase.storage.from('kyc-documents').upload(`${base}/signature.png`,blob,{upsert:true,contentType:'image/png'});}
       const msg=[`ID Type: ${f.idType}`,f.idNumber&&`ID: ${f.idNumber}`,f.passportNumber&&`Passport: ${f.passportNumber}`,f.dob&&`DOB: ${f.dob}`,age&&`Age: ${age}`,f.gender&&`Gender: ${f.gender}`,f.occupation&&`Occupation: ${f.occupation}`,`Address: ${f.address1}${f.address2?', '+f.address2:''}, ${f.city}, ${f.postalCode}, ${f.country}`,`Emergency: ${f.emergencyName} (${f.emergencyRelationship}) ${f.emergencyPhone}`,frontUrl&&`ID Front: ${frontUrl}`,backUrl&&`ID Back: ${backUrl}`,selfieUrl&&`Selfie: ${selfieUrl}`,role==='artist'&&f.medium&&`Medium: ${f.medium}`,role==='artist'&&f.style&&`Style: ${f.style}`,role==='artist'&&f.instagram&&`Instagram: ${f.instagram}`,f.message&&`Note: ${f.message}`].filter(Boolean).join(' | ');
-      await supabase.from('portal_requests').insert({id:userId,email:f.email,full_name:`${f.firstName} ${f.lastName}`,mobile:f.mobile,role,message:msg,status:'pending'});
+      // Check if this email+role combo already exists
+      const {data:existingReq} = await supabase.from('portal_requests')
+        .select('id,status')
+        .eq('email', f.email)
+        .eq('role', role)
+        .single();
+      
+      if(existingReq) {
+        // Update existing request with fresh data
+        await supabase.from('portal_requests').update({
+          full_name:`${f.firstName} ${f.lastName}`,
+          mobile:f.mobile,
+          message:msg,
+          status:'pending',
+        }).eq('id', existingReq.id);
+      } else {
+        // New registration for this role — use a unique ID
+        const newReqId = crypto.randomUUID();
+        await supabase.from('portal_requests').insert({
+          id:newReqId,
+          email:f.email,
+          full_name:`${f.firstName} ${f.lastName}`,
+          mobile:f.mobile,
+          role,
+          message:msg,
+          status:'pending',
+        });
+      }
       // Auto sign-in after registration
       await supabase.auth.signInWithPassword({email:f.email,password:f.password});
       setSubmittedName(f.firstName);
