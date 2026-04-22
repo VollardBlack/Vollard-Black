@@ -27,7 +27,7 @@ function Logo(){return(<div style={{textAlign:'center',marginBottom:32}}><div st
 
 function NotApprovedScreen({onSignOut}){return(<div style={{minHeight:'100vh',background:G.cream,display:'flex',alignItems:'center',justifyContent:'center',padding:20,fontFamily:F.san}}><div style={{width:'100%',maxWidth:420,textAlign:'center'}}><Logo/><div style={{...CARD,padding:36}}><div style={{fontSize:48,marginBottom:12}}>⏳</div><div style={{fontFamily:F.ser,fontSize:22,color:G.dark,marginBottom:8}}>Pending Approval</div><div style={{fontSize:13,color:G.mid,lineHeight:1.8,marginBottom:20}}>Your application is under review. Vollard Black will activate your account shortly. Contact <strong>concierge@vollardblack.com</strong> for immediate assistance.</div><button onClick={onSignOut} style={{padding:'11px 24px',borderRadius:24,border:'1px solid rgba(182,139,46,0.28)',background:'transparent',color:G.gold,cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:F.san}}>Sign Out</button></div></div></div>);}
 
-function AuthScreen({onAuth}){
+function AuthScreen({onAuth, accessError}){
   const[mode,setMode]=useState('login');
   const[email,setEmail]=useState('');
   const[pw,setPw]=useState('');
@@ -62,11 +62,11 @@ function AuthScreen({onAuth}){
     if(e&&e.message.toLowerCase().includes('already')){
       const{data:d2,error:e2}=await sb.auth.signInWithPassword({email:emailClean,password:pw});
       if(e2){setLoading(false);return setError('An account with this email already exists. Use your existing password to sign in.');}
-      await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email:emailClean,role:'renter',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'}).catch(()=>{});
+      await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email:emailClean,role:'renter',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'});
       setLoading(false);return onAuth(d2.session);
     }
     if(e){setLoading(false);return setError(e.message);}
-    await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email:emailClean,role:'renter',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'}).catch(()=>{});
+    await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email:emailClean,role:'renter',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'});
     setLoading(false);
     if(data?.session)return onAuth(data.session);
     setMsg('Account created! Check your email to confirm, then sign in.');
@@ -87,6 +87,7 @@ function AuthScreen({onAuth}){
       <div style={{width:'100%',maxWidth:420}}>
         <Logo/>
         <div style={{...CARD,padding:28}}>
+          {accessError&&<div style={{padding:'11px 14px',background:'rgba(196,92,74,0.08)',border:'1px solid rgba(196,92,74,0.25)',borderRadius:10,fontSize:12,color:'#c45c4a',marginBottom:16}}>⚠ {accessError}</div>}
           <div style={{display:'flex',gap:4,marginBottom:24,background:'#f7f5f1',padding:4,borderRadius:10}}>
             {[['login','Sign In'],['signup','Create Account']].map(([m,l])=>(
               <button key={m} onClick={()=>{setMode(m);setError('');setMsg('');}} style={{flex:1,padding:'9px 0',borderRadius:8,border:'none',background:mode===m?G.white:'transparent',color:mode===m?G.dark:G.light,fontWeight:mode===m?700:400,cursor:'pointer',fontSize:13,fontFamily:F.san,boxShadow:mode===m?'0 1px 4px rgba(0,0,0,0.08)':'none'}}>{l}</button>
@@ -650,6 +651,7 @@ export default function RenterPortal(){
   const[session,setSession]=useState(undefined);
   const[screen,setScreen]=useState('loading');
   const[hasKycDocs,setHasKycDocs]=useState(true);
+  const[accessError,setAccessError]=useState('');
   const justRegistered=useRef(false);
 
   useEffect(()=>{
@@ -683,19 +685,15 @@ export default function RenterPortal(){
       }
       const{data:anyRow}=await sb.from('portal_requests').select('id').eq('email',email).limit(1).maybeSingle();
       if(anyRow){
-        await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email,role:'renter',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'}).catch(()=>{});
+        await sb.from('portal_requests').upsert({id:crypto.randomUUID(),email,role:'renter',status:'pending',created_at:new Date().toISOString()},{onConflict:'email,role'});
         setScreen('pending');
       }else{
         setScreen('kyc');
       }
     }catch(e){
       console.error('checkAccess error:',e);
-      // If RLS/permission error, user needs to register
-      if(e.message?.includes('permission') || e.message?.includes('policy') || e.code===403){
-        setScreen('kyc');
-      } else {
-        setScreen('kyc'); // Default to KYC so user can register rather than being stuck
-      }
+      setAccessError(e.message||'Access check failed');
+      setScreen('auth');
     }
   };
 
@@ -705,7 +703,7 @@ export default function RenterPortal(){
     </div>;
 
   if(screen==='auth'||!session)
-    return<AuthScreen onAuth={s=>setSession(s)}/>;
+    return<AuthScreen onAuth={s=>{setAccessError('');setSession(s);}} accessError={accessError}/>;
 
   if(screen==='kyc')
     return<KYCRegistration role="renter" supabase={sb}
