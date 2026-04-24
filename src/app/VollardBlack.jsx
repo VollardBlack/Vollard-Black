@@ -2444,6 +2444,64 @@ function EnquiriesPage({data,up}){
 // ═══════════════════════════════════════════
 // PORTAL USERS MANAGEMENT
 // ═══════════════════════════════════════════
+
+function AgreementsSection({supabase}){
+  const[agreements,setAgreements]=React.useState([]);
+  const[loading,setLoading]=React.useState(true);
+  const[open,setOpen]=React.useState(false);
+
+  React.useEffect(()=>{
+    if(!open)return;
+    setLoading(true);
+    supabase.from('portal_agreements').select('*').order('signed_at',{ascending:false})
+      .then(({data})=>{setAgreements(data||[]);setLoading(false);})
+      .catch(()=>setLoading(false));
+  },[open]);
+
+  const roleColor={artist:'rgba(100,140,200,0.12)',renter:'rgba(182,139,46,0.12)',buyer:'rgba(74,158,107,0.12)'};
+  const roleText={artist:'#4a6890',renter:'#8a6a1e',buyer:'#2d7a4a'};
+  const fmt=(d)=>d?new Date(d).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+
+  return(
+    <div style={{marginTop:32,borderTop:'1px solid rgba(182,139,46,0.15)',paddingTop:24}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:open?20:0}}>
+        <div>
+          <div style={{fontSize:11,fontWeight:700,letterSpacing:'0.18em',textTransform:'uppercase',color:'#b68b2e',marginBottom:4}}>Signed Agreements</div>
+          <div style={{fontSize:12,color:'#8a8070'}}>Digital signatures from portal terms acceptance</div>
+        </div>
+        <button onClick={()=>setOpen(o=>!o)} style={{padding:'8px 18px',borderRadius:8,border:'1px solid rgba(182,139,46,0.25)',background:open?'rgba(182,139,46,0.08)':'transparent',color:'#b68b2e',cursor:'pointer',fontSize:12,fontWeight:600,fontFamily:'DM Sans,sans-serif'}}>
+          {open?'Hide':'View Agreements'}
+        </button>
+      </div>
+      {open&&(
+        <div>
+          {loading?<div style={{fontSize:13,color:'#8a8070',padding:'20px 0'}}>Loading…</div>:
+          agreements.length===0?<div style={{fontSize:13,color:'#8a8070',padding:'20px 0'}}>No agreements signed yet.</div>:
+          agreements.map(a=>(
+            <div key={a.id} style={{background:'#fff',border:'1px solid rgba(182,139,46,0.15)',borderRadius:12,padding:'14px 18px',marginBottom:8,display:'flex',gap:16,alignItems:'flex-start',flexWrap:'wrap'}}>
+              <div style={{flex:1,minWidth:200}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+                  <span style={{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:12,background:roleColor[a.role]||'rgba(182,139,46,0.08)',color:roleText[a.role]||'#8a6a1e',textTransform:'uppercase',letterSpacing:'0.1em'}}>{a.role}</span>
+                  <span style={{fontSize:13,fontWeight:600,color:'#1a1714'}}>{a.email}</span>
+                </div>
+                <div style={{fontSize:11,color:'#8a8070'}}>Signed: {fmt(a.signed_at)} · Version {a.terms_version||'1.0'}</div>
+                <div style={{fontSize:10,color:'#aaa',marginTop:2}}>{a.ip_address||''} · {(a.user_agent||'').slice(0,60)}</div>
+              </div>
+              {a.signature_data&&(
+                <div style={{flexShrink:0}}>
+                  <div style={{fontSize:10,color:'#8a8070',marginBottom:4,textTransform:'uppercase',letterSpacing:'0.1em'}}>Signature</div>
+                  <img src={a.signature_data} alt="signature" style={{height:48,border:'1px solid rgba(182,139,46,0.20)',borderRadius:6,background:'#fafaf8'}}/>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 function PortalsPage({data,setPendingPortalCount}){
   const [tab,setTab]=useState("pending");
   const [requests,setRequests]=useState([]);
@@ -2663,6 +2721,9 @@ function PortalsPage({data,setPendingPortalCount}){
         showReapprove={tab==="rejected"}
       />
     ))}
+
+    {/* Signed Agreements */}
+    <AgreementsSection supabase={supabase}/>
   </div>);}
 
 
