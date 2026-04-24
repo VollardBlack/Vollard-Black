@@ -822,13 +822,16 @@ function BuyerDashboard({session, kycComplete=true}) {
           scheduleId: referenceId,
           monthNumber: 1,
           collectorEmail: session.user.email,
+          portalType: 'buyer',
+          paymentType: type,
         }),
       });
       const data = await res.json();
       if (data.paylinkUrl) {
         window.location.href = data.paylinkUrl;
       } else {
-        alert('Payment setup failed: ' + (data.error || 'Please try again.'));
+        const errMsg = data.error || data.details?.message || data.details?.responseDescription || 'Please try again.';
+        alert('Payment error: ' + errMsg);
       }
     } catch(e) {
       alert('Payment error. Please try again.');
