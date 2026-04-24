@@ -432,6 +432,8 @@ function ArtistDashboard({session, kycComplete=true}){
         </div>
       </div>
 
+      {!kycComplete&&<KycBanner email={session.user.email}/>}
+
       {/* Header */}
       <div style={{background:'#fff',borderBottom:'1px solid rgba(182,139,46,0.18)',padding:'24px 20px 20px'}}>
         <div style={{maxWidth:960,margin:'0 auto'}}>
