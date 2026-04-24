@@ -1432,7 +1432,15 @@ export default function BuyerPortal(){
       if(myRow){
         if(myRow.status==='approved'){
           setHasKycDocs(!!(myRow.id_document_url||myRow.selfie_url));
-          setScreen(checkTermsLocal(email)?'dashboard':'terms');
+          // Check DB first, then localStorage fallback
+          const{data:agrRow}=await sb.from('portal_agreements').select('signed_at').eq('email',email).eq('role','buyer').maybeSingle().catch(()=>({data:null}));
+          if(agrRow){
+            // Already signed in DB - save to localStorage and go to dashboard
+            try{localStorage.setItem('vb_terms_buyer',JSON.stringify({email,v:TERMS_VERSION}));}catch{}
+            setScreen('dashboard');
+          }else{
+            setScreen(checkTermsLocal(email)?'dashboard':'terms');
+          }
         }else{setScreen('pending');}
         return;
       }
