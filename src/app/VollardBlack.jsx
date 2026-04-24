@@ -797,19 +797,13 @@ export default function App(){
   };
 
   const nav=[
-    {id:"dashboard",label:"Dashboard",icon:I.dash},
-    {id:"catalogue",label:"Art Catalogue",icon:I.art},
-    {id:"artists",label:"Artists",icon:I.star},
-    {id:"collectors",label:"License Holders",icon:I.ppl},
-    {id:"buyers",label:"Buyers",icon:I.buyer},
-    {id:"renters",label:"Fee Calculator",icon:I.calc},
-    {id:"gallery",label:"Break-Even",icon:I.gallery},
-    {id:"invoices",label:"Invoicing",icon:I.bill},
-    {id:"sales",label:"Sales",icon:I.sale},
-    {id:"auction",label:"Auction Platform",icon:I.gavel},
-    {id:"reports",label:"Reports",icon:I.report},
-    {id:"portals",label:"Portal Users",icon:I.ppl},
-    {id:"enquiries",label:"Enquiries",icon:I.mail},
+    {id:"dashboard",  label:"Dashboard",       icon:I.dash},
+    {id:"catalogue",  label:"Art Catalogue",    icon:I.art},
+    {id:"people",     label:"People",           icon:I.ppl},
+    {id:"finance",    label:"Finance",          icon:I.bill},
+    {id:"auction",    label:"Auction Platform", icon:I.gavel},
+    {id:"portals",    label:"Portal Users",     icon:I.ppl},
+    {id:"enquiries",  label:"Enquiries",        icon:I.mail},
   ];
 
   const d={artworks:Array.isArray(data.artworks)?data.artworks:[],artists:Array.isArray(data.artists)?data.artists:[],collectors:Array.isArray(data.collectors)?data.collectors:[],buyers:Array.isArray(data.buyers)?data.buyers:[],schedules:liveSchedules,payments:Array.isArray(data.payments)?data.payments:[],sales:Array.isArray(data.sales)?data.sales:[],reports:Array.isArray(data.reports)?data.reports:[],auctions:Array.isArray(data.auctions)?data.auctions:[],bids:Array.isArray(data.bids)?data.bids:[]};
@@ -821,6 +815,14 @@ export default function App(){
   const pg={
     dashboard:<Dashboard data={d} navTo={navTo} chasing={chasing} inDispute={inDispute} cancelled={cancelled} pendingPortalRequests={pendingPortalCount}/>,
     catalogue:<Catalogue data={d} up={up} actions={actions}/>,
+    // People: Artists + License Holders + Buyers in one tabbed page
+    people:<PeoplePage data={d} up={up} actions={actions}/>,
+    // Finance: Invoicing + Sales + Fee Calculator + Break-Even + Reports in one tabbed page
+    finance:<FinancePage data={d} up={up} actions={actions} initialFilter={invoiceFilter} clearFilter={()=>setInvoiceFilter(null)}/>,
+    auction:<AuctionPage data={d} actions={actions}/>,
+    portals:<PortalsPage data={d} setPendingPortalCount={setPendingPortalCount}/>,
+    enquiries:<EnquiriesPage data={d} up={up}/>,
+    // Keep old pages accessible for backwards compat via navTo
     artists:<ArtistsPage data={d} up={up}/>,
     collectors:<CollectorsPage data={d} up={up} actions={actions}/>,
     buyers:<BuyersPage data={d} actions={actions}/>,
@@ -828,10 +830,7 @@ export default function App(){
     gallery:<GalleryPage data={d} actions={actions}/>,
     invoices:<InvoicePage data={d} actions={actions} initialFilter={invoiceFilter} clearFilter={()=>setInvoiceFilter(null)}/>,
     sales:<SalesPage data={d} actions={actions}/>,
-    auction:<AuctionPage data={d} actions={actions}/>,
     reports:<ReportsPage data={d} actions={actions}/>,
-    portals:<PortalsPage data={d} setPendingPortalCount={setPendingPortalCount}/>,
-    enquiries:<EnquiriesPage data={d} up={up}/>,
   };
 
   // ── Session gate ──
@@ -878,7 +877,7 @@ export default function App(){
         </div>
         <nav style={{flex:1,padding:"16px 12px",overflowY:"auto"}}>
           {nav.map(n=>{
-            const alertCount=n.id==="invoices"?chasing.length+inDispute.length+cancelled.length:n.id==="auction"?(liveAuctionCount>0?liveAuctionCount:0)+(pendingApprovalCount>0?pendingApprovalCount:0):n.id==="portals"?pendingPortalCount:n.id==="enquiries"?(d.enquiries||[]).filter(e=>!e.read).length:0;
+            const alertCount=n.id==="finance"?(chasing.length+inDispute.length+cancelled.length)||undefined:n.id==="auction"?(liveAuctionCount>0?liveAuctionCount:0)+(pendingApprovalCount>0?pendingApprovalCount:0):n.id==="portals"?pendingPortalCount:n.id==="enquiries"?(d.enquiries||[]).filter(e=>!e.read).length:0;
             return<button key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:"12px 14px",background:page===n.id?"rgba(182,139,46,0.20)":"transparent",border:"none",borderRadius:10,color:page===n.id?"#b68b2e":"#6b635a",fontSize:13,fontWeight:page===n.id?600:400,cursor:"pointer",marginBottom:4,fontFamily:"DM Sans,sans-serif"}}>{n.icon}<span style={{flex:1,textAlign:"left"}}>{n.label}</span>{alertCount>0&&<span style={{fontSize:10,background:n.id==="auction"&&liveAuctionCount>0?"rgba(74,158,107,0.2)":"rgba(196,92,74,0.2)",color:n.id==="auction"&&liveAuctionCount>0?"#4a9e6b":"#c45c4a",padding:"2px 6px",borderRadius:8,fontWeight:700}}>{alertCount}</span>}</button>;
           })}
         </nav>
@@ -2444,6 +2443,62 @@ function EnquiriesPage({data,up}){
 // ═══════════════════════════════════════════
 // PORTAL USERS MANAGEMENT
 // ═══════════════════════════════════════════
+
+// ═══════════════════════════════════════════
+// PEOPLE PAGE — Artists + License Holders + Buyers
+// ═══════════════════════════════════════════
+function PeoplePage({data,up,actions}){
+  const[tab,setTab]=React.useState("artists");
+  const tabs=[["artists","Artists"],["collectors","License Holders"],["buyers","Buyers"]];
+  return(
+    <div>
+      <PT title="People" sub="Manage artists, license holders and buyers"/>
+      <div style={{display:"flex",gap:8,marginBottom:24,flexWrap:"wrap"}}>
+        {tabs.map(([id,label])=>(
+          <button key={id} onClick={()=>setTab(id)} style={{padding:"9px 20px",borderRadius:24,border:tab===id?"none":"1px solid rgba(182,139,46,0.20)",background:tab===id?"linear-gradient(135deg,#b68b2e,#8a6a1e)":"#fff",color:tab===id?"#fff":"#6b635a",fontSize:13,fontWeight:tab===id?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif",transition:"all 0.2s",boxShadow:tab===id?"0 4px 12px rgba(182,139,46,0.25)":"none"}}>
+            {label} ({tab==="artists"?data.artists?.length||0:tab==="collectors"?data.collectors?.length||0:data.buyers?.length||0})
+          </button>
+        ))}
+      </div>
+      {tab==="artists"&&<ArtistsPage data={data} up={up}/>}
+      {tab==="collectors"&&<CollectorsPage data={data} up={up} actions={actions}/>}
+      {tab==="buyers"&&<BuyersPage data={data} actions={actions}/>}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════
+// FINANCE PAGE — Invoicing + Sales + Calculator + Break-Even + Reports
+// ═══════════════════════════════════════════
+function FinancePage({data,up,actions,initialFilter,clearFilter}){
+  const[tab,setTab]=React.useState(initialFilter?"invoices":"invoices");
+  const invoiceAlerts=(data.schedules||[]).filter(s=>["Chasing","In Dispute","Cancelled"].includes(s.status)).length;
+  const tabs=[
+    ["invoices","Invoicing"+(invoiceAlerts>0?" ("+invoiceAlerts+")":"")],
+    ["sales","Sales"],
+    ["renters","Fee Calculator"],
+    ["gallery","Break-Even"],
+    ["reports","Reports"],
+  ];
+  return(
+    <div>
+      <PT title="Finance" sub="Invoicing, sales, calculations and reports"/>
+      <div style={{display:"flex",gap:8,marginBottom:24,flexWrap:"wrap"}}>
+        {tabs.map(([id,label])=>(
+          <button key={id} onClick={()=>setTab(id)} style={{padding:"9px 20px",borderRadius:24,border:tab===id?"none":"1px solid rgba(182,139,46,0.20)",background:tab===id?"linear-gradient(135deg,#b68b2e,#8a6a1e)":"#fff",color:tab===id?"#fff":"#6b635a",fontSize:13,fontWeight:tab===id?600:400,cursor:"pointer",fontFamily:"DM Sans,sans-serif",transition:"all 0.2s",boxShadow:tab===id?"0 4px 12px rgba(182,139,46,0.25)":"none"}}>
+            {label}
+          </button>
+        ))}
+      </div>
+      {tab==="invoices"&&<InvoicePage data={data} actions={actions} initialFilter={initialFilter} clearFilter={clearFilter}/>}
+      {tab==="sales"&&<SalesPage data={data} actions={actions}/>}
+      {tab==="renters"&&<CalcPage data={data} actions={actions}/>}
+      {tab==="gallery"&&<GalleryPage data={data} actions={actions}/>}
+      {tab==="reports"&&<ReportsPage data={data} actions={actions}/>}
+    </div>
+  );
+}
+
 
 function AgreementsSection({supabase}){
   const[agreements,setAgreements]=React.useState([]);
