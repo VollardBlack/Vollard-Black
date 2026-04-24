@@ -45,14 +45,14 @@ export async function POST(request) {
       amount: Math.round(amount * 100), // iKhoka uses cents
       currency: 'ZAR',
       requesterUrl: SITE_URL + '/renter',
-      mode: 'live', // change to 'test' for sandbox
+      mode: 'test', // Change to 'live' when bank account confirmed // change to 'test' for sandbox
       description: description || `Vollard Black License Fee - Month ${monthNumber}`,
       externalTransactionID,
       urls: {
         callbackUrl:    SITE_URL + '/api/ikhoka-webhook',
-        successPageUrl: SITE_URL + '/renter?payment=success&ref=' + externalTransactionID,
-        failurePageUrl: SITE_URL + '/renter?payment=failed',
-        cancelUrl:      SITE_URL + '/renter?payment=cancelled',
+        successPageUrl: SITE_URL + '/' + (body.portalType||'renter') + '?payment=success&ref=' + externalTransactionID,
+        failurePageUrl: SITE_URL + '/' + (body.portalType||'renter') + '?payment=failed',
+        cancelUrl:      SITE_URL + '/' + (body.portalType||'renter') + '?payment=cancelled',
       },
     };
 
@@ -71,8 +71,10 @@ export async function POST(request) {
     const data = await response.json();
 
     if (!response.ok || data.responseCode !== '00') {
-      console.error('iKhoka error:', data);
-      return Response.json({ error: data.message || 'iKhoka payment creation failed', details: data }, { status: 400 });
+      console.error('iKhoka error response:', JSON.stringify(data));
+      console.error('iKhoka HTTP status:', response.status);
+      const errorMsg = data.message || data.description || data.responseDescription || JSON.stringify(data);
+      return Response.json({ error: errorMsg, details: data }, { status: 400 });
     }
 
     return Response.json({
