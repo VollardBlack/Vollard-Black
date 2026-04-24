@@ -704,7 +704,13 @@ export default function ArtistPortal(){
       if(myRow){
         if(myRow.status==='approved'){
           setHasKycDocs(!!(myRow.id_document_url||myRow.selfie_url));
-          setScreen(checkTermsLocal(email)?'dashboard':'terms');
+          const{data:agrRow}=await sb.from('portal_agreements').select('signed_at').eq('email',email).eq('role','artist').maybeSingle().catch(()=>({data:null}));
+          if(agrRow){
+            try{localStorage.setItem('vb_terms_artist',JSON.stringify({email,v:TERMS_VERSION}));}catch{}
+            setScreen('dashboard');
+          }else{
+            setScreen(checkTermsLocal(email)?'dashboard':'terms');
+          }
         }else{setScreen('pending');}
         return;
       }
