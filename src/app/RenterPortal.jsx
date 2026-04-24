@@ -308,16 +308,28 @@ function RenterDashboard({session, kycComplete=true}){
   };
 
   const signOut=()=>sb.auth.signOut();
-  const payWithIkhoka=({amount,description,email,name,onSuccess})=>{
-    // iKhoka payment - open payment URL or redirect
-    const ref='VB-'+Date.now();
-    const url=`https://pay.ikhoka.com/pay?amount=${amount}&description=${encodeURIComponent(description||'Vollard Black Payment')}&reference=${ref}&email=${encodeURIComponent(email||session.user.email)}`;
-    const win=window.open(url,'_blank');
-    if(!win){
-      // Fallback: show payment details
-      alert(`Payment Reference: ${ref}\nAmount: R${Number(amount||0).toFixed(2)}\nPlease complete payment via your iKhoka portal.`);
+  const payWithIkhoka=async({amount,description,scheduleId,monthNumber,email})=>{
+    try{
+      const res=await fetch('/api/ikhoka-paylink',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          amount,
+          description,
+          scheduleId:scheduleId||'unknown',
+          monthNumber:monthNumber||1,
+          collectorEmail:email||session.user.email,
+        }),
+      });
+      const data=await res.json();
+      if(data.paylinkUrl){
+        window.location.href=data.paylinkUrl;
+      }else{
+        alert('Payment setup failed: '+(data.error||'Please try again or contact Vollard Black.'));
+      }
+    }catch(e){
+      alert('Payment error. Please try again.');
     }
-    if(onSuccess)setTimeout(onSuccess,2000);
   };
   const gn=c=>c?(c.type==='company'?c.companyName:`${c.firstName||''} ${c.lastName||''}`.trim()):'';
 
