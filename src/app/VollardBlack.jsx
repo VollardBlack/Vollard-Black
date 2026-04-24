@@ -732,6 +732,7 @@ export default function App(){
           acquisitionModel:acqModel,
           collectorId:sched?.collectorId||null,collectorName,
           buyerId:auction.leadBidderId||null,buyerName:winnerName,
+          buyer_id:auction.leadBidderId||null,
           salePrice:auction.currentBid,artworkValue,monthsPaid,
           colNet:deal.colNet||0,colProfit:deal.colProfit||0,colROI:deal.colROI||0,
           vbTotal:deal.vbTotal||0,vbBalance:deal.vbBalance||0,
@@ -739,6 +740,7 @@ export default function App(){
           galleryShare:deal.galleryAmt||0,vbNet:deal.vbAmt||0,artistShare:deal.artistAmt||0,
           source:"auction",auctionId:id,
           artistId:artistRec?.id||null,artistName:artistRec?.name||null,
+          paymentStatus:"pending",
         };
         up("sales",p=>[...p,auctionSale]);
         // Complete the schedule if one exists
@@ -746,6 +748,10 @@ export default function App(){
       }
       if(reserveMet) setTimeout(()=>adminSoundSold(),200); else adminSoundClick();
       sendPushNotification(reserveMet?"✓ Auction Sold":"Auction Closed",reserveMet?`${auction.title} sold for R ${fmt(auction.currentBid)}`:`${auction.title} — reserve not met.`);
+    },
+    updateSale:(id,fields)=>{
+      up("sales",p=>p.map(s=>s.id===id?{...s,...fields}:s));
+      if(dbModeRef.current)db.update("sales",id,fields).catch(e=>console.error('updateSale failed:',e));
     },
     placeBid:(auctionId,buyerId,buyerName,amount)=>{ adminSoundNewBid();
       const bid={id:uid(),auctionId,buyerId,buyerName,amount,timestamp:new Date().toISOString()};
@@ -2123,6 +2129,58 @@ Vollard Black`);window.open(`mailto:${email}?subject=${subj}&body=${body}`,"_bla
     {overrideModal&&<OverrideModal sched={overrideModal} onSave={(note)=>{actions.overrideSchedule(overrideModal.id,note);setOverrideModal(null);}} onClose={()=>setOverrideModal(null)}/>}
     {graceModal&&<GraceModal sched={graceModal} onSave={(date,month,note)=>{actions.setGraceException(graceModal.id,date,month,note);setGraceModal(null);}} onClose={()=>setGraceModal(null)}/>}
     {emailModal&&<EmailReviewModal config={emailModal} collectors={data.collectors} schedules={data.schedules} onClose={()=>setEmailModal(null)} TEMPLATES_LOCAL={TEMPLATES_LOCAL}/>}
+
+    {/* Auction Sales Pending Payment */}
+    {(data.sales||[]).filter(s=>s.source==="auction"&&s.paymentStatus==="pending").length>0&&(
+      <div style={{marginTop:28}}>
+        <div style={{fontSize:11,fontWeight:700,letterSpacing:"0.18em",textTransform:"uppercase",color:"#b68b2e",marginBottom:14}}>
+          ⚖ Auction Sales — Pending Payment
+        </div>
+        {(data.sales||[]).filter(s=>s.source==="auction"&&s.paymentStatus==="pending").map(sale=>{
+          const buyer=(data.buyers||[]).find(b=>b.id===sale.buyerId||b.id===sale.buyer_id);
+          const buyerEmail=buyer?.email||"—";
+          return(
+            <div key={sale.id} style={{background:"#fff",border:"1.5px solid rgba(74,158,107,0.30)",borderRadius:12,padding:"16px 20px",marginBottom:10}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:10}}>
+                <div>
+                  <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:18,color:"#1a1714",marginBottom:4}}>{sale.artworkTitle}</div>
+                  <div style={{fontSize:12,color:"#8a8070"}}>Winner: <strong>{sale.buyerName||"—"}</strong> · {buyerEmail}</div>
+                  <div style={{fontSize:12,color:"#8a8070"}}>Closed: {sale.date?.slice(0,10)||"—"} · Auction #{sale.auctionId?.slice(-6)}</div>
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:24,fontWeight:600,color:"#4a9e6b"}}>R {fmt(sale.salePrice)}</div>
+                  <div style={{fontSize:10,color:"#8a8070",marginTop:2}}>PAYMENT DUE</div>
+                </div>
+              </div>
+              <div style={{display:"flex",gap:8,marginTop:12,flexWrap:"wrap"}}>
+                <button onClick={()=>window.open("mailto:"+buyerEmail+"?subject="+encodeURIComponent("Payment Due — "+sale.artworkTitle)+"&body="+encodeURIComponent("Dear "+sale.buyerName+",\n\nCongratulations on winning the auction for "+sale.artworkTitle+" at R "+fmt(sale.salePrice)+".\n\nPlease log into your Buyer Portal at vollard-black.vercel.app/buyer to complete payment.\n\nKind regards,\nVollard Black"),"_blank")} style={{padding:"8px 16px",borderRadius:8,border:"1px solid rgba(74,158,107,0.30)",background:"rgba(74,158,107,0.06)",color:"#2d7a4a",cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>
+                  ✉ Email Winner
+                </button>
+                <button onClick={()=>{if(confirm("Mark as paid manually?"))actions.updateSale&&actions.updateSale(sale.id,{paymentStatus:"paid"});}} style={{padding:"8px 16px",borderRadius:8,border:"1px solid rgba(182,139,46,0.25)",background:"transparent",color:"#b68b2e",cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"DM Sans,sans-serif"}}>
+                  ✓ Mark Paid
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    )}
+    {(data.sales||[]).filter(s=>s.source==="auction"&&s.paymentStatus==="paid").length>0&&(
+      <div style={{marginTop:16}}>
+        <div style={{fontSize:11,fontWeight:700,letterSpacing:"0.18em",textTransform:"uppercase",color:"#4a9e6b",marginBottom:14}}>
+          ✓ Auction Sales — Paid
+        </div>
+        {(data.sales||[]).filter(s=>s.source==="auction"&&s.paymentStatus==="paid").map(sale=>(
+          <div key={sale.id} style={{background:"#fff",border:"1px solid rgba(74,158,107,0.20)",borderRadius:12,padding:"14px 18px",marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
+            <div>
+              <div style={{fontSize:14,fontWeight:600,color:"#1a1714"}}>{sale.artworkTitle}</div>
+              <div style={{fontSize:12,color:"#8a8070"}}>{sale.buyerName||"—"} · {sale.date?.slice(0,10)||"—"}</div>
+            </div>
+            <div style={{fontFamily:"Cormorant Garamond,serif",fontSize:20,color:"#4a9e6b",fontWeight:600}}>R {fmt(sale.salePrice)}</div>
+          </div>
+        ))}
+      </div>
+    )}
   </div>);}
 
 function OverrideModal({sched,onSave,onClose}){const [note,setNote]=useState("");return<Modal title="Override Status" onClose={onClose}><p style={{fontSize:13,color:"#6b635a",marginBottom:16}}>Resets to Active and clears all strikes.</p><Field label="Note"><textarea value={note} onChange={e=>setNote(e.target.value)} style={{...is,minHeight:80,resize:"vertical"}} placeholder="e.g. Collector settled balance"/></Field><div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:16}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>onSave(note)} disabled={!note}>Apply Override</Btn></div></Modal>;}
