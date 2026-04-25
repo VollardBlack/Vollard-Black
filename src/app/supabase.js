@@ -11,15 +11,12 @@ export const supabase = supabaseUrl && supabaseAnonKey
 
 export const db = {
   isConnected: () => !!supabase,
-
   getAll: async (table) => {
     if (!supabase) return [];
     const { data, error } = await supabase.from(table).select('*');
     if (error) throw error;
-    // Convert snake_case to camelCase
     return (data || []).map(toCamel);
   },
-
   insert: async (table, item) => {
     if (!supabase) return item;
     const snake = toSnake(item);
@@ -27,7 +24,6 @@ export const db = {
     if (error) { console.error('DB insert error:', table, error); return null; }
     return toCamel(data);
   },
-
   update: async (table, id, fields) => {
     if (!supabase) return;
     const snake = toSnake(fields);
@@ -35,7 +31,6 @@ export const db = {
     const { error } = await supabase.from(table).update(snake).eq('id', id);
     if (error) console.error('DB update error:', table, error);
   },
-
   remove: async (table, id) => {
     if (!supabase) return;
     const { error } = await supabase.from(table).delete().eq('id', id);
@@ -52,29 +47,24 @@ export const auth = {
     });
     return { data, error };
   },
-
   signOut: async () => {
     if (!supabase) return;
     await supabase.auth.signOut();
     window.location.reload();
   },
-
   getSession: async () => {
     if (!supabase) return null;
     const { data } = await supabase.auth.getSession();
     return data?.session || null;
   },
-
   onAuthStateChange: (callback) => {
     if (!supabase) return { data: { subscription: { unsubscribe: () => {} } } };
     return supabase.auth.onAuthStateChange(callback);
   },
-
   isAdmin: async () => {
-    if (!supabase) return true; // local mode = always admin
+    if (!supabase) return true;
     const { data } = await supabase.auth.getUser();
     if (!data?.user) return false;
-    // Check if user email matches admin email
     return data.user.email === 'concierge@vollardblack.com';
   },
 };
@@ -91,14 +81,12 @@ export const storage = {
     const { data } = supabase.storage.from('artwork-images').getPublicUrl(path);
     return data?.publicUrl || null;
   },
-
   deleteArtworkImage: async (artworkId) => {
     if (!supabase) return;
     await supabase.storage.from('artwork-images').remove([`artworks/${artworkId}`]);
   },
 };
 
-// ── Helpers ──────────────────────────────────────────────────
 function toCamel(obj) {
   if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return obj;
   const out = {};
