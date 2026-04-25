@@ -1,3 +1,4 @@
 'use client';
-import HubPage from './HubPage';
-export default function Home() { return <HubPage />; }
+import dynamic from 'next/dynamic';
+const HubPage = dynamic(() => import('./HubPage.jsx'), { ssr: false });
+export default function Page() { return <HubPage />; }
