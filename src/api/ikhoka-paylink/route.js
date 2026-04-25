@@ -1,62 +1,63 @@
-// ═══════════════════════════════════════════════════════════════
-// VOLLARD BLACK — iKhoka Payment API Route
-// File: src/app/api/ikhoka-paylink/route.js
-//
-// Creates an iKhoka paylink for renter monthly license fee payments.
-// Called by RenterPortal when collector clicks "Pay Now".
-//
-// ENV VARS required in Vercel:
-//   IKHOKA_APP_ID       — your Application ID from iKhoka dashboard
-//   IKHOKA_SIGN_SECRET  — your Sign Secret from iKhoka dashboard
-//   IKHOKA_ENTITY_ID    — same as IKHOKA_APP_ID (your merchant entity)
-// ═══════════════════════════════════════════════════════════════
-
 import crypto from 'crypto';
 
-const APP_ID       = process.env.IKHOKA_APP_ID;
-const SIGN_SECRET  = process.env.IKHOKA_SIGN_SECRET;
-const ENTITY_ID    = process.env.IKHOKA_ENTITY_ID || process.env.IKHOKA_APP_ID;
-const BASE_URL     = 'https://api.ikhokha.com';
-const SITE_URL     = process.env.NEXT_PUBLIC_SITE_URL || 'https://vollard-black.vercel.app';
+const APP_ID      = process.env.IKHOKA_APP_ID;
+const SIGN_SECRET = process.env.IKHOKA_SIGN_SECRET;
+const ENTITY_ID   = process.env.IKHOKA_ENTITY_ID || process.env.IKHOKA_APP_ID;
+const BASE_URL    = 'https://api.ikhokha.com';
+const SITE_URL    = process.env.NEXT_PUBLIC_SITE_URL || 'https://vollard-black.vercel.app';
 
-function generateSignature(appId, secret, payload) {
-  // iKhoka signs: appId + JSON.stringify(payload)
-  const message = appId + JSON.stringify(payload);
-  return crypto.createHmac('sha256', secret).update(message).digest('hex');
+function generateSignature(secret, payloadString) {
+  return crypto
+    .createHmac('sha256', secret)
+    .update(payloadString)
+    .digest('base64');
 }
 
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { amount, description, scheduleId, monthNumber, collectorEmail, collectorName } = body;
+    const {
+      amount,
+      description,
+      scheduleId,
+      monthNumber,
+      collectorEmail,
+      portalType,
+      paymentType,
+    } = body;
 
     if (!amount || !scheduleId) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
+
     if (!APP_ID || !SIGN_SECRET) {
       return Response.json({ error: 'iKhoka credentials not configured' }, { status: 500 });
     }
 
-    // Payment reference: VB-{8 chars of scheduleId}-M{monthNumber}
-    const externalTransactionID = `VB-${scheduleId.slice(-8)}-M${monthNumber}`;
+    const portal = portalType || 'renter';
+    const externalTransactionID = `VB-${String(scheduleId).slice(-8).toUpperCase()}-M${monthNumber || 1}`;
+    const amountCents = Math.round(Number(amount) * 100);
 
     const payload = {
       entityID: ENTITY_ID,
-      amount: Math.round(amount * 100), // iKhoka uses cents
+      amount: amountCents,
       currency: 'ZAR',
-      requesterUrl: SITE_URL + '/renter',
-      mode: 'test', // Change to 'live' when bank account confirmed // change to 'test' for sandbox
-      description: description || `Vollard Black License Fee - Month ${monthNumber}`,
+      requesterUrl: `${SITE_URL}/${portal}`,
+      description: description || `Vollard Black - ${paymentType || 'License Fee'} Month ${monthNumber || 1}`,
       externalTransactionID,
       urls: {
-        callbackUrl:    SITE_URL + '/api/ikhoka-webhook',
-        successPageUrl: SITE_URL + '/' + (body.portalType||'renter') + '?payment=success&ref=' + externalTransactionID,
-        failurePageUrl: SITE_URL + '/' + (body.portalType||'renter') + '?payment=failed',
-        cancelUrl:      SITE_URL + '/' + (body.portalType||'renter') + '?payment=cancelled',
+        callbackUrl:    `${SITE_URL}/api/ikhoka-webhook`,
+        successPageUrl: `${SITE_URL}/${portal}?payment=success&ref=${externalTransactionID}`,
+        failurePageUrl: `${SITE_URL}/${portal}?payment=failed`,
+        cancelUrl:      `${SITE_URL}/${portal}?payment=cancelled`,
       },
     };
 
-    const signature = generateSignature(APP_ID, SIGN_SECRET, payload);
+    const payloadString = JSON.stringify(payload);
+    const signature = generateSignature(SIGN_SECRET, payloadString);
+
+    console.log('iKhoka request to:', `${BASE_URL}/applications/${APP_ID}/payment`);
+    console.log('iKhoka payload:', payloadString);
 
     const response = await fetch(`${BASE_URL}/applications/${APP_ID}/payment`, {
       method: 'POST',
@@ -65,22 +66,42 @@ export async function POST(request) {
         'ApplicationId': APP_ID,
         'Signature': signature,
       },
-      body: JSON.stringify(payload),
+      body: payloadString,
     });
 
-    const data = await response.json();
+    const responseText = await response.text();
+    console.log('iKhoka raw response:', responseText);
 
-    if (!response.ok || data.responseCode !== '00') {
-      console.error('iKhoka error response:', JSON.stringify(data));
-      console.error('iKhoka HTTP status:', response.status);
-      const errorMsg = data.message || data.description || data.responseDescription || JSON.stringify(data);
-      return Response.json({ error: errorMsg, details: data }, { status: 400 });
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      return Response.json({
+        error: 'iKhoka returned non-JSON response',
+        details: responseText,
+      }, { status: 502 });
+    }
+
+    if (!response.ok) {
+      console.error('iKhoka HTTP error:', response.status, data);
+      return Response.json({
+        error: data.message || data.description || data.responseDescription || 'iKhoka request failed',
+        details: data,
+      }, { status: 400 });
+    }
+
+    if (data.responseCode && data.responseCode !== '00') {
+      console.error('iKhoka responseCode error:', data);
+      return Response.json({
+        error: data.message || data.responseDescription || `iKhoka error code: ${data.responseCode}`,
+        details: data,
+      }, { status: 400 });
     }
 
     return Response.json({
       paylinkUrl: data.paylinkUrl,
       paylinkID: data.paylinkID,
-      externalTransactionID: data.externalTransactionID,
+      externalTransactionID: data.externalTransactionID || externalTransactionID,
     });
 
   } catch (err) {
