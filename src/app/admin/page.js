@@ -1,3 +1,4 @@
-'use client';
-import App from '../VollardBlack';
-export default function AdminPage() { return <App />; }
+import VollardBlack from '../VollardBlack.jsx';
+export default function AdminPage() {
+  return <VollardBlack />;
+}
