@@ -4230,7 +4230,7 @@ const sF = "'DM Sans', -apple-system, sans-serif";
 // ─── GLOBAL CSS ──────────────────────────────────────────────────────
 const GlobalStyles = () => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+    /* Google Fonts loaded via layout.js */
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     html,body{background:#1a2744;color:#e8edf5;font-family:${sF};}
     ::-webkit-scrollbar{width:4px;height:4px;}
@@ -4378,8 +4378,7 @@ function HomePage({ setPage }) {
 
         <div style={{
           position: 'relative', zIndex: 1, textAlign: 'center', padding: '0 24px',
-          animation: mounted ? 'fadeUp 1s ease both' : 'none',
-        }}>
+                  }}>
           <div style={{ fontSize: 11, letterSpacing: '0.45em', textTransform: 'uppercase', color: C.gold, marginBottom: 24, opacity: 0.9 }}>
             Fine Art · South African Masters
           </div>
@@ -4473,9 +4472,7 @@ function HomePage({ setPage }) {
               style={{
                 position: 'relative', overflow: 'hidden', borderRadius: 6,
                 border: `1px solid ${C.goldBorder}`,
-                animation: mounted ? `fadeUp 0.7s ${i * 0.1}s ease both` : 'none',
-                opacity: mounted ? 1 : 0,
-              }}
+                                              }}
             >
               <div style={{ paddingBottom: '130%', position: 'relative', overflow: 'hidden', background: C.inkMid }}>
                 <img
@@ -4677,9 +4674,7 @@ function ArtistCard({ artist, delay, mounted, onClick, onBacking }) {
       style={{
         background: C.inkMid, border: `1px solid ${C.goldBorder}`, borderRadius: 6,
         overflow: 'hidden',
-        animation: mounted ? `fadeUp 0.7s ${delay}s ease both` : 'none',
-        opacity: mounted ? 1 : 0,
-        display: 'flex', flexDirection: 'column',
+                        display: 'flex', flexDirection: 'column',
       }}
     >
       {/* Artist image */}
@@ -4904,9 +4899,7 @@ function ArtistDetail({ artist, setPage, isAdmin, getWorkStatus, onMarkSold, onM
                           transform: isSelected ? 'translateY(-3px)' : 'none',
                           boxShadow: isSelected ? `0 8px 24px rgba(201,168,76,0.3)` : 'none',
                           transition: 'all 0.2s ease',
-                          animation: mounted ? `fadeUp 0.4s ${i * 0.04}s ease both` : 'none',
-                          opacity: mounted ? 1 : 0,
-                        }}>
+                                                                            }}>
                         {/* Image */}
                         <div style={{ position: 'relative', paddingBottom: '90%', overflow: 'hidden' }}>
                           <img
