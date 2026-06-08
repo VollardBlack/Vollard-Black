@@ -1,4 +1,8 @@
 'use client';
+// ═══════════════════════════════════════════════════════════════
+// DEV BYPASS — set to false before go-live
+const DEV_MODE = true;
+// ═══════════════════════════════════════════════════════════════
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import dynamic from 'next/dynamic';
@@ -288,6 +292,9 @@ export default function AdminPage() {
   const [session, setSession] = useState(null);
 
   useEffect(() => {
+    // DEV BYPASS ─────────────────────────────────────────
+    if (DEV_MODE) { setStatus('dashboard'); return; }
+    // ─────────────────────────────────────────────────────
     const sb = getSb();
     if (!sb) { setStatus('login'); return; }
 
