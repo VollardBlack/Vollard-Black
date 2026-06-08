@@ -673,6 +673,7 @@ export default function RenterPortal(){
   const justRegistered=useRef(false);
 
   useEffect(()=>{
+    if(DEV_MODE){ setSession(null); return; } // DEV BYPASS
     if(!sb){setSession(null);setScreen('auth');return;}
     sb.auth.getSession().then(({data})=>setSession(data?.session||null));
     const{data:{subscription}}=sb.auth.onAuthStateChange((_,s)=>setSession(s));
@@ -680,16 +681,10 @@ export default function RenterPortal(){
   },[]);
 
   useEffect(()=>{
-    if(session===undefined)return;
     // DEV BYPASS ─────────────────────────────────────────
-    if(DEV_MODE){
-      if(!session){
-        // Auto sign-in with OTP-less dev session mock
-        setScreen('dashboard');
-        return;
-      }
-    }
+    if(DEV_MODE){ setScreen('dashboard'); return; }
     // ─────────────────────────────────────────────────────
+    if(session===undefined)return;
     if(!session){setScreen('auth');return;}
     if(justRegistered.current)return;
     checkAccess(session.user.email.toLowerCase());
