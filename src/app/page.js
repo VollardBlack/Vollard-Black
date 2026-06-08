@@ -1,3 +1,6 @@
 'use client';
-import HubPage from './HubPage';
-export default function Home() { return <HubPage />; }
+import WinelandsBackers from './WinelandsBackers';
+
+export default function Home() {
+  return <WinelandsBackers />;
+}

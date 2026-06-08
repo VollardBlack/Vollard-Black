@@ -1,21 +1,24 @@
-# Vollard Black — Fine Art Acquisitions Platform
+# The Winelands Art Gallery — Art Backers Platform
 
-A luxury art acquisition and sales platform built with Next.js and React.
+A backer-facing platform for The Winelands Art Gallery, built with Next.js 14.
 
-## Business Model
-- **Collector pays 40%** of artwork value to Vollard Black
-- **Collector receives 60%** of the sale price when artwork sells
-- Three payment models: Outright, Deposit (variable %), Monthly
-- Backend split: Gallery 40% · Vollard Black 30% · Artist 30%
+## What it is
 
-## Features
-- **Dashboard** — Revenue chart, payment tracker, activity feed
-- **Art Catalogue** — Full inventory with image upload & AI descriptions
-- **Artists** — Profile management with banking details
-- **Collectors** — Registration, artwork linking, auto-invoicing
-- **Calculator** — Variable deposit %, insurance, term modelling
-- **Invoicing** — Payment tracking with multiple payment methods
-- **Sales** — Full breakdown with backend split
+This app lets prospective art backers:
+- Browse the full artist roster with biographies and portfolios
+- View the complete artwork catalogue (available & sold)
+- Model their backing earnings with the interactive calculator
+- Understand the 50/50 display license model across 6, 12, and 24-month terms
+
+## Pages
+
+| Route | Description |
+|-------|-------------|
+| `/` | Home — hero, how it works, featured artists, recently sold |
+| Artists | Full roster with bios, mediums, available/sold counts |
+| Artist Detail | Full biography, artwork gallery, backer snapshot sidebar |
+| Catalogue | Masonry grid of all works, filterable by status |
+| Backing Calculator | Full deal modeller with scenario table |
 
 ## Getting Started
 
@@ -31,17 +34,45 @@ Open [http://localhost:3000](http://localhost:3000)
 1. Push this repo to GitHub
 2. Go to [vercel.com](https://vercel.com)
 3. Import the repository
-4. Click Deploy
+4. Click Deploy — no environment variables needed
 
 ## Tech Stack
+
 - Next.js 14 (App Router)
 - React 18
-- localStorage for data persistence
-- Claude AI for artwork descriptions
+- No external dependencies beyond Next.js
+- Artist data sourced from [thewinelandsartgallery.com](https://thewinelandsartgallery.com)
+
+## Adding More Artists
+
+All artist data lives in the `ARTISTS` array inside `src/app/WinelandsBackers.jsx`. Each artist entry takes:
+
+```js
+{
+  id: 'unique-slug',
+  name: 'Full Name',
+  born: 1970,             // or null
+  birthplace: 'City',
+  medium: 'Oil on Canvas',
+  style: 'Landscapes, Seascapes',
+  image: 'https://...',   // portrait or hero image URL
+  bio: `Multi-paragraph biography...`,
+  galleryUrl: 'https://thewinelandsartgallery.com/collections/...',
+  works: [
+    {
+      title: 'Artwork Title',
+      price: 15000,
+      status: 'available', // or 'sold'
+      image: 'https://...',
+    },
+  ],
+}
+```
 
 ## FAIS Compliance
-All terminology is compliant with South African FAIS regulations. No investment claims are made. Collectors acquire artworks, not investments.
+
+All terminology refers to display license arrangements. The word "investment" is not used. The calculator includes a FAIS disclaimer. No financial advice is provided.
 
 ---
 
-**Vollard Black** — Fine Art Acquisitions
+© The Winelands Art Gallery (Pty) Ltd · Hermanus, Western Cape
