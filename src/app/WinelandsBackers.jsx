@@ -5207,7 +5207,7 @@ function ArtistDetail({ artist, setPage, isAdmin, getWorkStatus, onMarkSold, onM
                           <span style={{ color: C.green }}>R {fmt(s.backerNet)}</span>
                         </div>
                       );
-                    })}
+                    }) : null}
                   </div>
                 </div>
               )}
