@@ -618,10 +618,7 @@ function BuyerDashboard({session, kycComplete=true}) {
   const [search,setSearch] = useState('');
   const [bidTarget,setBidTarget] = useState(null);
   const [toast,setToast] = useState(null); // {msg, type: 'bid'|'outbid'|'sold'|'info'}
-  const [watchlist,setWatchlist] = useState([]);
-  useEffect(() => {
-    try { setWatchlist(JSON.parse(localStorage.getItem('vb_watchlist') || '[]')); } catch { setWatchlist([]); }
-  }, []);
+  const [watchlist,setWatchlist] = useState(() => { try{return JSON.parse(localStorage.getItem('vb_watchlist')||'[]');}catch{return[];} });
   const [artDetail,setArtDetail] = useState(null); // artwork detail modal
   const [notifEnabled,setNotifEnabled] = useState(false);
   const [soundReady,setSoundReady] = useState(false);
@@ -1342,12 +1339,12 @@ function KycBanner({email}){
       const now=Date.now();
       let idUrl='',selfieUrl='';
       if(idFile){
-        const path=`buyer/${email}/id_${now}.${idFile.name.split('.').pop()}`;
+        const path=`kyc/${email}/id_${now}.${idFile.name.split('.').pop()}`;
         await sb.storage.from('kyc-documents').upload(path,idFile,{upsert:true});
         idUrl=sb.storage.from('kyc-documents').getPublicUrl(path).data?.publicUrl||'';
       }
       if(selfieFile){
-        const path=`buyer/${email}/selfie_${now}.${selfieFile.name.split('.').pop()}`;
+        const path=`kyc/${email}/selfie_${now}.${selfieFile.name.split('.').pop()}`;
         await sb.storage.from('kyc-documents').upload(path,selfieFile,{upsert:true});
         selfieUrl=sb.storage.from('kyc-documents').getPublicUrl(path).data?.publicUrl||'';
       }

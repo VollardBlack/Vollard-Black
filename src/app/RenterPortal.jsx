@@ -364,32 +364,25 @@ function RenterDashboard({session, kycComplete=true}){
 
   // Show terms if not signed yet
 
-  const dm=darkMode;
-  const dmBg=dm?'#0d0b08':'#f5f3ef';
-  const dmSurface=dm?'#1a1714':'#fff';
-  const dmText=dm?'#f5f0e8':'#1a1714';
-  const dmMid=dm?'rgba(245,240,232,0.55)':'#6b635a';
-
   return(
-    <div style={{minHeight:'100vh',background:dmBg,fontFamily:SAN,color:dmText,transition:'background 0.3s,color 0.3s'}}>
+    <div style={{minHeight:'100vh',background:'#f5f3ef',fontFamily:SAN,color:'#1a1714',transition:'background 0.3s'}}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap');*{box-sizing:border-box;}input:focus,select:focus,textarea:focus{border-color:${C.gold}!important;box-shadow:0 0 0 3px rgba(182,139,46,0.12)!important;outline:none;}`}</style>
 
       {/* Top bar */}
-      <div style={{background:dmSurface,borderBottom:'1px solid rgba(182,139,46,0.18)',padding:'0 20px',height:56,display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:50,boxShadow:'0 1px 12px rgba(0,0,0,0.06)'}}>
+      <div style={{background:'#fff',borderBottom:'1px solid rgba(182,139,46,0.18)',padding:'0 20px',height:56,display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:50,boxShadow:'0 1px 12px rgba(0,0,0,0.06)'}}>
         <a href="/" style={{textDecoration:'none',display:'flex',alignItems:'center',gap:10}}>
-          <div style={{fontFamily:SER,fontSize:18,fontWeight:300,letterSpacing:'0.20em',color:dmText}}>VOLLARD <span style={{color:C.gold}}>BLACK</span></div>
+          <div style={{fontFamily:SER,fontSize:18,fontWeight:300,letterSpacing:'0.20em',color:'#1a1714'}}>VOLLARD <span style={{color:C.gold}}>BLACK</span></div>
           <div style={{width:1,height:14,background:C.goldB}}/>
           <span style={{fontSize:9,letterSpacing:'0.18em',textTransform:'uppercase',color:C.gold,fontWeight:700}}>License Holder</span>
         </a>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
-          <button onClick={()=>setDarkMode(d=>!d)} title={dm?'Light mode':'Dark mode'} style={{padding:'7px 12px',borderRadius:8,border:'1px solid rgba(182,139,46,0.18)',background:dm?'rgba(182,139,46,0.12)':'transparent',color:dm?C.gold:'#8a8070',cursor:'pointer',fontSize:14,lineHeight:1}}>{dm?'☀️':'🌙'}</button>
+          <button onClick={()=>setDarkMode(d=>!d)} style={{padding:'7px 12px',borderRadius:8,border:'1px solid rgba(182,139,46,0.18)',background:'transparent',color:'#8a8070',cursor:'pointer',fontSize:14,lineHeight:1}}>{'🌙'}</button>
           <NotifCentre notifs={notifs} onClear={()=>setNotifs([])}/>
           <button onClick={()=>window.open('https://wa.me/27826503393?text='+encodeURIComponent('Hi Vollard Black, I need assistance.'),'_blank')} style={{padding:'7px 12px',borderRadius:8,border:'1px solid rgba(37,211,102,0.30)',background:'rgba(37,211,102,0.08)',color:'#25d366',cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:SAN}}>Chat</button>
-          <span style={{fontSize:13,color:dmMid,fontWeight:500}}>{gn(collector)}</span>
-          <button onClick={signOut} style={{padding:'7px 14px',borderRadius:8,border:'1px solid rgba(182,139,46,0.18)',background:'transparent',color:dmMid,cursor:'pointer',fontSize:11,fontFamily:SAN}}>Sign Out</button>
+          <span style={{fontSize:13,color:'#8a8070',fontWeight:500}}>{gn(collector)}</span>
+          <button onClick={signOut} style={{padding:'7px 14px',borderRadius:8,border:'1px solid rgba(182,139,46,0.18)',background:'transparent',color:'#8a8070',cursor:'pointer',fontSize:11,fontFamily:SAN}}>Sign Out</button>
         </div>
       </div>
-      {!kycComplete&&<KycBanner email={session.user.email}/>}
 
       {/* Header */}
       <div style={{background:'#ffffff',borderBottom:'1px solid rgba(182,139,46,0.18)',padding:'24px 20px 20px'}}>

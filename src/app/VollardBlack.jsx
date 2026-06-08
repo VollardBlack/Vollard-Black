@@ -797,13 +797,19 @@ export default function App(){
   };
 
   const nav=[
-    {id:"dashboard",  label:"Dashboard",       icon:I.dash},
-    {id:"catalogue",  label:"Art Catalogue",    icon:I.art},
-    {id:"people",     label:"People",           icon:I.ppl},
-    {id:"finance",    label:"Finance",          icon:I.bill},
-    {id:"auction",    label:"Auction Platform", icon:I.gavel},
-    {id:"portals",    label:"Portal Users",     icon:I.ppl},
-    {id:"enquiries",  label:"Enquiries",        icon:I.mail},
+    {id:"dashboard",label:"Dashboard",icon:I.dash},
+    {id:"catalogue",label:"Art Catalogue",icon:I.art},
+    {id:"artists",label:"Artists",icon:I.star},
+    {id:"collectors",label:"License Holders",icon:I.ppl},
+    {id:"buyers",label:"Buyers",icon:I.buyer},
+    {id:"renters",label:"Fee Calculator",icon:I.calc},
+    {id:"gallery",label:"Break-Even",icon:I.gallery},
+    {id:"invoices",label:"Invoicing",icon:I.bill},
+    {id:"sales",label:"Sales",icon:I.sale},
+    {id:"auction",label:"Auction Platform",icon:I.gavel},
+    {id:"reports",label:"Reports",icon:I.report},
+    {id:"portals",label:"Portal Users",icon:I.ppl},
+    {id:"enquiries",label:"Enquiries",icon:I.mail},
   ];
 
   const d={artworks:Array.isArray(data.artworks)?data.artworks:[],artists:Array.isArray(data.artists)?data.artists:[],collectors:Array.isArray(data.collectors)?data.collectors:[],buyers:Array.isArray(data.buyers)?data.buyers:[],schedules:liveSchedules,payments:Array.isArray(data.payments)?data.payments:[],sales:Array.isArray(data.sales)?data.sales:[],reports:Array.isArray(data.reports)?data.reports:[],auctions:Array.isArray(data.auctions)?data.auctions:[],bids:Array.isArray(data.bids)?data.bids:[]};
@@ -815,14 +821,6 @@ export default function App(){
   const pg={
     dashboard:<Dashboard data={d} navTo={navTo} chasing={chasing} inDispute={inDispute} cancelled={cancelled} pendingPortalRequests={pendingPortalCount}/>,
     catalogue:<Catalogue data={d} up={up} actions={actions}/>,
-    // People: Artists + License Holders + Buyers in one tabbed page
-    people:<PeoplePage data={d} up={up} actions={actions}/>,
-    // Finance: Invoicing + Sales + Fee Calculator + Break-Even + Reports in one tabbed page
-    finance:<FinancePage data={d} up={up} actions={actions} initialFilter={invoiceFilter} clearFilter={()=>setInvoiceFilter(null)}/>,
-    auction:<AuctionPage data={d} actions={actions}/>,
-    portals:<PortalsPage data={d} setPendingPortalCount={setPendingPortalCount}/>,
-    enquiries:<EnquiriesPage data={d} up={up}/>,
-    // Keep old pages accessible for backwards compat via navTo
     artists:<ArtistsPage data={d} up={up}/>,
     collectors:<CollectorsPage data={d} up={up} actions={actions}/>,
     buyers:<BuyersPage data={d} actions={actions}/>,
@@ -830,7 +828,10 @@ export default function App(){
     gallery:<GalleryPage data={d} actions={actions}/>,
     invoices:<InvoicePage data={d} actions={actions} initialFilter={invoiceFilter} clearFilter={()=>setInvoiceFilter(null)}/>,
     sales:<SalesPage data={d} actions={actions}/>,
+    auction:<AuctionPage data={d} actions={actions}/>,
     reports:<ReportsPage data={d} actions={actions}/>,
+    portals:<PortalsPage data={d} setPendingPortalCount={setPendingPortalCount}/>,
+    enquiries:<EnquiriesPage data={d} up={up}/>,
   };
 
   // ── Session gate ──
@@ -877,7 +878,7 @@ export default function App(){
         </div>
         <nav style={{flex:1,padding:"16px 12px",overflowY:"auto"}}>
           {nav.map(n=>{
-            const alertCount=n.id==="finance"?(chasing.length+inDispute.length+cancelled.length)||undefined:n.id==="auction"?(liveAuctionCount>0?liveAuctionCount:0)+(pendingApprovalCount>0?pendingApprovalCount:0):n.id==="portals"?pendingPortalCount:n.id==="enquiries"?(d.enquiries||[]).filter(e=>!e.read).length:0;
+            const alertCount=n.id==="invoices"?chasing.length+inDispute.length+cancelled.length:n.id==="auction"?(liveAuctionCount>0?liveAuctionCount:0)+(pendingApprovalCount>0?pendingApprovalCount:0):n.id==="portals"?pendingPortalCount:n.id==="enquiries"?(d.enquiries||[]).filter(e=>!e.read).length:0;
             return<button key={n.id} onClick={()=>navTo(n.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:"12px 14px",background:page===n.id?"rgba(182,139,46,0.20)":"transparent",border:"none",borderRadius:10,color:page===n.id?"#b68b2e":"#6b635a",fontSize:13,fontWeight:page===n.id?600:400,cursor:"pointer",marginBottom:4,fontFamily:"DM Sans,sans-serif"}}>{n.icon}<span style={{flex:1,textAlign:"left"}}>{n.label}</span>{alertCount>0&&<span style={{fontSize:10,background:n.id==="auction"&&liveAuctionCount>0?"rgba(74,158,107,0.2)":"rgba(196,92,74,0.2)",color:n.id==="auction"&&liveAuctionCount>0?"#4a9e6b":"#c45c4a",padding:"2px 6px",borderRadius:8,fontWeight:700}}>{alertCount}</span>}</button>;
           })}
         </nav>
@@ -1624,7 +1625,7 @@ function ArtModal({art,artists,onSave,onClose}){
       <Field label="Break-Even"><input value={f.galleryName} onChange={e=>s("galleryName",e.target.value)} style={is}/></Field>
       <Field label="Status"><select value={f.status} onChange={e=>s("status",e.target.value)} style={ss}><option>Available</option><option>Reserved</option><option>In Gallery</option><option>Sold</option><option>Pending Approval</option></select></Field>
       <Field label="Image" style={{gridColumn:"1/-1"}}><div style={{display:"flex",gap:14,alignItems:"flex-start"}}><div style={{flex:1,display:"flex",flexDirection:"column",gap:8}}><Btn ghost onClick={()=>document.getElementById("imgUp").click()} style={{justifyContent:"center",width:"100%",padding:"14px"}} disabled={uploading}>{uploading?"Uploading...":f.imageUrl?<>{I.up} Change</>:<>{I.up} Upload</>}</Btn><input id="imgUp" type="file" accept="image/*" onChange={e=>hFile(e.target.files[0])} style={{display:"none"}}/><div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:9,color:"#8a8070",letterSpacing:1,textTransform:"uppercase",whiteSpace:"nowrap"}}>URL:</span><input value={f.imageUrl?.startsWith("data:")?"":f.imageUrl||""} onChange={e=>s("imageUrl",e.target.value)} style={{...is,marginBottom:0,fontSize:12}} placeholder="https://..."/></div></div>{f.imageUrl&&<div style={{position:"relative",flexShrink:0}}><div style={{width:130,height:130,borderRadius:10,overflow:"hidden",border:"1px solid rgba(182,139,46,0.30)"}}><img src={f.imageUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div><button onClick={()=>s("imageUrl","")} style={{position:"absolute",top:4,right:4,width:22,height:22,borderRadius:6,background:"rgba(0,0,0,0.7)",border:"none",color:"#c45c4a",cursor:"pointer",fontSize:14}}>×</button></div>}</div></Field>
-      <Field label="Description" style={{gridColumn:"1/-1"}}><div style={{position:"relative"}}><textarea value={f.description} onChange={e=>s("description",e.target.value)} style={{...is,minHeight:80,resize:"vertical",paddingRight:130}} placeholder="Describe the artwork..."/><button type="button" onClick={async()=>{s("description","✦ Generating…");try{const r=await fetch("/api/ai-describe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({title:f.title,artist:f.artist,medium:f.medium,dimensions:f.dimensions,year:f.year,imageUrl:f.imageUrl?.startsWith("http")?f.imageUrl:null})});const d=await r.json();s("description",d.description||"");}catch{s("description","");}}} style={{position:"absolute",top:10,right:10,padding:"5px 12px",borderRadius:6,border:"1px solid rgba(182,139,46,0.35)",background:"rgba(182,139,46,0.10)",color:"#b68b2e",cursor:"pointer",fontSize:11,fontWeight:700,fontFamily:"DM Sans,sans-serif",whiteSpace:"nowrap"}}>✦ AI Describe</button></div></Field>
+      <Field label="Description" style={{gridColumn:"1/-1"}}><textarea value={f.description} onChange={e=>s("description",e.target.value)} style={{...is,minHeight:80,resize:"vertical"}} placeholder="Describe the artwork..."/></Field>
     </div>
     <div style={{display:"flex",gap:10,marginTop:20,justifyContent:"flex-end"}}><Btn ghost onClick={onClose}>Cancel</Btn><Btn gold onClick={()=>{if(!f.title||!f.recommendedPrice)return alert("Title & price required");const sv={...f};delete sv._pendingId;if(f._pendingId&&!art.id)sv.id=f._pendingId;onSave(sv);}}>{art.id?"Save":"Add"}</Btn></div>
   </Modal>);}
