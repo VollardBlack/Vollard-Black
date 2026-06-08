@@ -5559,6 +5559,85 @@ function BackingPage({ preloadWork }) {
 }
 
 // ─── APP SHELL ────────────────────────────────────────────────────────
+
+// ─── BACKING TRAY ────────────────────────────────────────────────────
+function BackingTray({ basket, toggleBasket, onOpenCalc, setCalcWork }) {
+  const [open, setOpen] = useState(false);
+  if (!basket || basket.length === 0) return null;
+  const total = basket.reduce((s, w) => s + (w.price || 0), 0);
+  return (
+    <>
+      <button onClick={() => setOpen(true)} style={{
+        position: 'fixed', bottom: 28, right: 28, zIndex: 400,
+        background: `linear-gradient(135deg, ${C.gold}, #a07828)`,
+        border: 'none', borderRadius: 50, padding: '14px 22px',
+        color: '#1a2744', fontFamily: sF, fontSize: 12, fontWeight: 700,
+        letterSpacing: '0.1em', textTransform: 'uppercase',
+        cursor: 'pointer', boxShadow: '0 8px 32px rgba(201,168,76,0.5)',
+        display: 'flex', alignItems: 'center', gap: 10,
+      }}>
+        <span style={{
+          background: '#1a2744', color: C.gold, borderRadius: '50%',
+          width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 11, fontWeight: 900,
+        }}>{basket.length}</span>
+        Backing Selection · R {total.toLocaleString('en-ZA')}
+      </button>
+      {open && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 450, display: 'flex', justifyContent: 'flex-end', background: 'rgba(10,16,32,0.7)' }}
+          onClick={() => setOpen(false)}>
+          <div onClick={e => e.stopPropagation()} style={{
+            width: '100%', maxWidth: 480, background: C.inkMid,
+            borderLeft: `1px solid ${C.goldBorder}`, overflowY: 'auto', display: 'flex', flexDirection: 'column',
+          }}>
+            <div style={{ padding: '24px', borderBottom: `1px solid ${C.goldBorder}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: C.ink }}>
+              <div>
+                <div style={{ fontSize: 9, letterSpacing: '0.35em', textTransform: 'uppercase', color: C.gold, marginBottom: 6 }}>Your Backing Selection</div>
+                <div style={{ fontFamily: gF, fontSize: 22, color: C.cream }}>{basket.length} Artwork{basket.length !== 1 ? 's' : ''}</div>
+              </div>
+              <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', color: C.fog, fontSize: 28, cursor: 'pointer' }}>×</button>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
+              {basket.map((work, i) => (
+                <div key={i} style={{ display: 'flex', gap: 14, alignItems: 'center', padding: '14px 0', borderBottom: `1px solid ${C.goldBorder}` }}>
+                  <div style={{ width: 60, height: 60, borderRadius: 4, overflow: 'hidden', flexShrink: 0, background: C.ink }}>
+                    <img src={work.image} alt={work.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: C.gold, marginBottom: 2 }}>{work.artistName}</div>
+                    <div style={{ fontSize: 12, color: C.cream, lineHeight: 1.3, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{work.title}</div>
+                    <div style={{ fontFamily: gF, fontSize: 16, color: C.gold }}>R {(work.price||0).toLocaleString('en-ZA')}</div>
+                  </div>
+                  <button onClick={() => toggleBasket(work)} style={{ background: 'none', border: '1px solid rgba(176,64,64,0.4)', borderRadius: 3, color: '#e07070', fontSize: 11, padding: '4px 8px', cursor: 'pointer', flexShrink: 0 }}>Remove</button>
+                </div>
+              ))}
+            </div>
+            <div style={{ padding: '20px 24px', borderTop: `1px solid ${C.goldBorder}`, background: C.ink }}>
+              {[
+                ['Total artwork value', `R ${total.toLocaleString('en-ZA')}`],
+                ['Combined monthly fee (12mo)', `R ${Math.round(total * 0.5 / 12).toLocaleString('en-ZA')}`],
+                ['Your 50% share at sale', `R ${Math.round(total * 0.5).toLocaleString('en-ZA')}`],
+              ].map(([label, val], i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: i < 2 ? `1px solid rgba(201,168,76,0.1)` : 'none' }}>
+                  <span style={{ fontSize: 12, color: C.fog }}>{label}</span>
+                  <span style={{ fontFamily: i === 2 ? gF : sF, fontSize: i === 2 ? 20 : 13, color: i === 2 ? C.green : C.gold, fontWeight: i === 2 ? 400 : 600 }}>{val}</span>
+                </div>
+              ))}
+              <div style={{ fontSize: 10, color: C.fog, lineHeight: 1.6, margin: '16px 0', padding: '10px', background: C.goldGlow, border: `1px solid ${C.goldBorder}`, borderRadius: 4 }}>
+                <strong style={{ color: C.gold }}>FAIS:</strong> Display license arrangement. Not an investment product.
+              </div>
+              <button onClick={() => { setOpen(false); if (basket[0]) setCalcWork(basket[0]); onOpenCalc(); }}
+                style={{ width: '100%', padding: '16px', background: `linear-gradient(135deg, ${C.gold}, #a07828)`, border: 'none', borderRadius: 4, color: '#1a2744', fontFamily: sF, fontSize: 12, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer' }}>
+                Open Backing Calculator →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 // ─── ADMIN LOGIN MODAL ───────────────────────────────────────────────
 function AdminLogin({ onLogin, onClose }) {
   const [email, setEmail] = useState('');
@@ -5633,20 +5712,30 @@ export default function WinelandsBackers() {
   const [calcWork, setCalcWork] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
-  const [soldOverrides, setSoldOverrides] = useState({}); // { artKey: 'sold'|'available' }
+  const [soldOverrides, setSoldOverrides] = useState({});
   const [loadingKey, setLoadingKey] = useState(null);
+  const [basket, setBasket] = useState([]);
+
+  const toggleBasket = (work) => {
+    const key = `${work.artistId}|${work.title}`;
+    setBasket(prev => {
+      const exists = prev.find(w => `${w.artistId}|${w.title}` === key);
+      return exists ? prev.filter(w => `${w.artistId}|${w.title}` !== key) : [...prev, work];
+    });
+  };
+  const inBasket = (work) => basket.some(w => `${w.artistId}|${w.title}` === `${work.artistId}|${work.title}`);
 
   // Check auth on mount + load sold overrides
   useEffect(() => {
     const init = async () => {
       if (!sb) return;
-      const { data: { session } } = await sb.auth.getSession();
+      const { data: { session } } = await sb.auth.getSession().catch(() => ({ data: { session: null } }));
       if (session?.user) {
         const { data } = await sb.from('admin_profiles').select('id').eq('id', session.user.id).maybeSingle();
         if (data) setIsAdmin(true);
       }
       // Load all sold overrides
-      const { data: statuses } = await sb.from('artwork_status').select('artwork_key, status');
+      const { data: statuses } = await sb.from('artwork_status').select('artwork_key, status').catch(() => ({ data: null }));
       if (statuses) {
         const map = {};
         statuses.forEach(s => { map[s.artwork_key] = s.status; });
@@ -5709,6 +5798,8 @@ export default function WinelandsBackers() {
     <>
       <GlobalStyles />
       <Nav page={page} setPage={navigateTo} isAdmin={isAdmin} onAdminLogin={() => setShowLogin(true)} onSignOut={signOut} />
+      {showLogin && <AdminLogin onLogin={() => setIsAdmin(true)} onClose={() => setShowLogin(false)} />}
+      <BackingTray basket={basket} toggleBasket={toggleBasket} onOpenCalc={() => navigateTo('backing')} setCalcWork={setCalcWork} />
       {page === 'home' && <HomePage setPage={navigateTo} />}
       {page === 'artists' && <ArtistsPage setSelectedArtist={setSelectedArtist} setPage={navigateTo} />}
       {page === 'artist-detail' && (
@@ -5726,7 +5817,6 @@ export default function WinelandsBackers() {
           inBasket={inBasket}
         />
       )}
-      {page === 'catalogue' && <CataloguePage setPage={navigateTo} />}
       {page === 'backing' && <BackingPage preloadWork={calcWork} />}
     </>
   );
