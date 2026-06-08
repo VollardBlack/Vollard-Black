@@ -1,4 +1,10 @@
 'use client';
+
+// ═══════════════════════════════════════════════════════════════
+// DEV BYPASS — set to false before go-live
+const DEV_MODE = true;
+const DEV_EMAIL = 'dev@vollardblack.com';
+// ═══════════════════════════════════════════════════════════════
 import KYCRegistration from './KYCRegistration';
 import { useState, useEffect, useRef } from "react";
 import { createClient } from '@supabase/supabase-js';
@@ -1416,6 +1422,15 @@ export default function BuyerPortal(){
 
   useEffect(()=>{
     if(session===undefined)return;
+    // DEV BYPASS ─────────────────────────────────────────
+    if(DEV_MODE){
+      if(!session){
+        // Auto sign-in with OTP-less dev session mock
+        setScreen('dashboard');
+        return;
+      }
+    }
+    // ─────────────────────────────────────────────────────
     if(!session){setScreen('auth');return;}
     if(justRegistered.current)return;
     checkAccess(session.user.email.toLowerCase());
@@ -1468,24 +1483,24 @@ export default function BuyerPortal(){
     }
   };
 
-  if(session===undefined||screen==='loading')
+  if(!DEV_MODE && (session===undefined||screen==='loading'))
     return<div style={{minHeight:'100vh',background:G.cream,display:'flex',alignItems:'center',justifyContent:'center'}}>
       <div style={{fontFamily:F.ser,fontSize:20,letterSpacing:8,color:G.gold,opacity:0.5}}>VOLLARD BLACK</div>
     </div>;
 
-  if(screen==='auth'||!session)
+  if(!DEV_MODE && (screen==='auth'||!session))
     return<AuthScreen onAuth={s=>{setAccessError('');setSession(s);}} accessError={accessError}/>;
 
-  if(screen==='kyc')
+  if(!DEV_MODE && screen==='kyc')
     return<KYCRegistration role="buyer" supabase={sb}
       onComplete={()=>{justRegistered.current=true;setScreen('pending');}}
       onSignIn={()=>setScreen('auth')}/>;
 
-  if(screen==='pending')
+  if(!DEV_MODE && screen==='pending')
     return<NotApprovedScreen onSignOut={()=>{justRegistered.current=false;sb.auth.signOut();}}/>;
 
-  if(screen==='terms')
+  if(!DEV_MODE && screen==='terms')
     return<TermsModal email={session.user.email} onAccepted={()=>setScreen('dashboard')}/>;
 
-  return<BuyerDashboard session={session} kycComplete={hasKycDocs}/>;
+  return<BuyerDashboard session={session||{user:{email:DEV_EMAIL}}} kycComplete={hasKycDocs}/>;
 }
