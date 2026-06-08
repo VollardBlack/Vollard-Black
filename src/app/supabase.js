@@ -42,8 +42,12 @@ export const auth = {
   },
   async isAdmin() {
     if (!supabase) return true; // local mode = always admin
-    const { data } = await supabase.from('admin_profiles').select('id').single();
-    return !!data;
+    const { data } = await supabase.auth.getUser();
+    const email = data?.user?.email?.toLowerCase() || '';
+    const ADMIN_EMAILS = [
+      'concierge@vollardblack.com',
+    ];
+    return ADMIN_EMAILS.includes(email);
   },
   onAuthStateChange(callback) {
     if (!supabase) return { data: { subscription: { unsubscribe: () => {} } } };
