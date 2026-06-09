@@ -4845,7 +4845,7 @@ function ArtistDetail({ artist, setPage, isAdmin, getWorkStatus, onMarkSold, onM
   const sp = parseFloat(calcSaleVal) || av;
   const m = { label: 'Standard', term: TERM_MONTHS };
   const mo = Math.max(1, Math.min(parseInt(calcMonths) || TERM_MONTHS, TERM_MONTHS));
-  const deal = av > 0 ? calcBacking(av, sp, mo) : null;
+  const deal = av > 0 ? calcBacking(av, sp, parseInt(calcMonths) || TERM_MONTHS) : null;
 
   const swBasketWork = sw ? { ...sw, artistName: artist.name, artistId: artist.id } : null;
   const swInBasket = sw && inBasket && swBasketWork ? inBasket(swBasketWork) : false;
@@ -5155,20 +5155,16 @@ function ArtistDetail({ artist, setPage, isAdmin, getWorkStatus, onMarkSold, onM
                     <div style={{ fontFamily: gF, fontSize: 16, color: C.cream, marginBottom: 16 }}>
                       R {selectedWork.price.toLocaleString('en-ZA')}
                     </div>
-                    {/* Term buttons */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginBottom: 14 }}>
-                      {[[TERM_MONTHS]].map(([term]) => (
-                        <button key={key} onClick={() => setCalcModelKey(key)} style={{
-                          padding: '10px 4px', borderRadius: 4, cursor: 'pointer',
-                          border: calcModelKey === key ? 'none' : `1px solid ${C.goldBorder}`,
-                          background: calcModelKey === key ? `linear-gradient(135deg, ${C.gold}, #a07828)` : C.ink,
-                          color: calcModelKey === key ? '#1a2744' : C.fog,
-                          fontFamily: sF, textAlign: 'center',
-                        }}>
-                          <div style={{ fontSize: 10, fontWeight: 700 }}>{mod.term}mo</div>
-                          <div style={{ fontSize: 9, opacity: 0.8 }}>R {fmt(Math.round(selectedWork.price * 0.5 / mod.term))}/mo</div>
-                        </button>
-                      ))}
+                    {/* Fee info */}
+                    <div style={{ padding: '10px 12px', background: C.goldGlow, border: `1px solid ${C.goldBorder}`, borderRadius: 4, marginBottom: 14 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 11 }}>
+                        <span style={{ color: C.fog }}>Backing fee ({(getDepositPct(av)*100).toFixed(0)}%)</span>
+                        <span style={{ color: C.gold, fontWeight: 600 }}>R {fmt(Math.round(av * getDepositPct(av)))}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
+                        <span style={{ color: C.fog }}>Auction platform fee/mo</span>
+                        <span style={{ color: C.gold, fontWeight: 600 }}>R {fmt(Math.round(av * (0.5 - getDepositPct(av)) / 24))}</span>
+                      </div>
                     </div>
                     {/* Expected sale */}
                     <div style={{ marginBottom: 10 }}>
@@ -5206,8 +5202,8 @@ function ArtistDetail({ artist, setPage, isAdmin, getWorkStatus, onMarkSold, onM
                   <div style={{ height: 1, background: C.goldBorder, margin: '0 0 14px' }} />
                   {[
                     ['Monthly auction fee', `R ${fmt(deal.monthly)}`, C.gold],
-                    ['Total collected', `R ${fmt(deal.totalMonthlyFeessPaid)}`, C.goldLight],
-                    ['Balance at sale', `−R ${fmt(deal.totalMonthlyFeessStillOwing)}`, deal.totalMonthlyFeessStillOwing > 0 ? C.red : C.green],
+                    ['Fees paid to date', `R ${fmt(deal.feesPaid)}`, C.goldLight],
+                    ['Total paid to date', `R ${fmt(deal.totalPaid)}`, C.goldLight],
                   ].map(([label, val, color]) => (
                     <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: 12 }}>
                       <span style={{ color: C.fog }}>{label}</span>
@@ -5229,10 +5225,10 @@ function ArtistDetail({ artist, setPage, isAdmin, getWorkStatus, onMarkSold, onM
                   <div style={{ fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: C.fog, marginBottom: 8 }}>All months</div>
                   <div style={{ maxHeight: 140, overflowY: 'auto', fontSize: 11 }}>
                     {av > 0 ? Array.from({length: TERM_MONTHS}, (_,i) => {
-                      const s = calcBacking(av, sp, i+1);
-                      const isSel = (i+1) === mo;
+                      const s = calcBacking(av, sp, i + 1);
+                      const isSel = (i + 1) === (parseInt(calcMonths) || TERM_MONTHS);
                       return (
-                        <div key={i} onClick={() => setCalcMonths(String(i+1))}
+                        <div key={i} onClick={() => setCalcMonths(String(i + 1))}
                           style={{
                             display: 'flex', justifyContent: 'space-between', padding: '4px 8px',
                             borderRadius: 3, cursor: 'pointer', marginBottom: 2,
@@ -5846,13 +5842,17 @@ export default function WinelandsBackers() {
   useEffect(() => {
     const init = async () => {
       if (!sb) return;
-      const { data: { session } } = await sb.auth.getSession().catch(() => ({ data: { session: null } }));
+      let session = null;
+      try { const r = await sb.auth.getSession(); session = r?.data?.session; } catch(e) {}
       if (session?.user) {
-        const { data } = await sb.from('admin_profiles').select('id').eq('id', session.user.id).maybeSingle();
-        if (data) setIsAdmin(true);
+        try {
+          const { data } = await sb.from('admin_profiles').select('id').eq('id', session.user.id).maybeSingle();
+          if (data) setIsAdmin(true);
+        } catch(e) {}
       }
       // Load all sold overrides
-      const { data: statuses } = await sb.from('artwork_status').select('artwork_key, status').catch(() => ({ data: null }));
+      let statuses = null;
+      try { const r = await sb.from('artwork_status').select('artwork_key, status'); statuses = r?.data; } catch(e) {}
       if (statuses) {
         const map = {};
         statuses.forEach(s => { map[s.artwork_key] = s.status; });
