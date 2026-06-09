@@ -5651,10 +5651,10 @@ function BackingPage({ preloadWork }) {
                             </tr>
                           );
                         })}
-                        {/* Month 37+ row */}
-                        <tr style={{ background: 'rgba(201,168,76,0.04)' }}>
-                          <td style={{ padding: '9px 16px', color: C.goldLight, fontStyle: 'italic', fontSize: 11 }} colSpan={5}>
-                            Month 37+ — Artwork returned to backer. Purchased at R {fmt(deal.totalPaid)} (50% of recommended price).
+                        {/* Month 25 option row */}
+                        <tr style={{ background: 'rgba(90,170,122,0.06)' }}>
+                          <td style={{ padding: '12px 16px', color: C.green, fontSize: 11, lineHeight: 1.7 }} colSpan={5}>
+                            ★ <strong>From the 1st day of Month 25</strong> — artwork is fully paid off. The backer may <strong>take the physical artwork</strong> (acquired at 50% of the recommended price) or <strong>keep it on the auction platform free of charge for one further year</strong>.
                           </td>
                         </tr>
                       </tbody>
