@@ -5266,460 +5266,327 @@ function ArtistDetail({ artist, setPage, isAdmin, getWorkStatus, onMarkSold, onM
 
 // ─── BACKING / CALCULATOR ─────────────────────────────────────────────
 function BackingPage({ preloadWork, preloadBasket }) {
-  const [artVal, setArtVal] = useState('');
-  const [saleVal, setSaleVal] = useState('');
-  const [monthSold, setMonthSold] = useState(1);
+  const [manualVal, setManualVal] = useState('');
+  const [manualSale, setManualSale] = useState('');
   const [mode, setMode] = useState('manual');
   const [selArtist, setSelArtist] = useState('');
   const [selWork, setSelWork] = useState('');
 
-  // Track which basket item is being viewed
-  const [basketIdx, setBasketIdx] = useState(0);
-  const activeBasket = (preloadBasket && preloadBasket.length > 0) ? preloadBasket : (preloadWork ? [preloadWork] : []);
-  const activeWork = activeBasket[basketIdx] || null;
+  // Build list of artworks to show — basket takes priority
+  const basketItems = (preloadBasket && preloadBasket.length > 0)
+    ? preloadBasket
+    : (preloadWork ? [preloadWork] : []);
 
   useEffect(() => {
-    setBasketIdx(0);
-  }, [preloadBasket]);
-
-  useEffect(() => {
-    if (activeWork) {
-      setMode('gallery');
-      const a = ARTISTS.find(x => x.id === activeWork.artistId);
-      if (a) {
-        setSelArtist(a.id);
-        const idx = (a.works||[]).findIndex(w => w.title === activeWork.title);
-        if (idx >= 0) setSelWork(String(idx));
-      }
-      setArtVal(String(activeWork.price || ''));
-      setSaleVal('');
-      setMonthSold(1);
+    if (preloadWork && basketItems.length === 1) {
+      setManualVal(String(preloadWork.price || ''));
     }
-  }, [activeWork]);
+  }, [preloadWork]);
 
   const artist = ARTISTS.find(a => a.id === selArtist);
   const work = artist?.works[parseInt(selWork)];
-  useEffect(() => { if (work) setArtVal(String(work.price || '')); }, [selWork]);
+  useEffect(() => { if (work) setManualVal(String(work.price || '')); }, [selWork]);
 
-  const av = parseFloat(artVal) || 0;
-  const sp = parseFloat(saleVal) || av;
-  const deal = av > 0 ? calcBacking(av, sp, monthSold) : null;
-  const depositPct = av > 0 ? getDepositPct(av) : 0.20;
-
-  // Only show months 1-24 in table
-  const allMonths = av > 0 ? Array.from({ length: TERM_MONTHS }, (_, i) => ({
-    month: i + 1,
-    ...calcBacking(av, sp, i + 1),
-  })) : [];
-
-  const previewImg = activeWork?.image || work?.image || '';
-  const previewTitle = activeWork?.title || work?.title || '';
-  const previewArtist = activeWork?.artistName || artist?.name || '';
-
-  // Phase label
-  const getPhaseLabel = (mo) => {
-    if (mo <= TERM_MONTHS) return `Month ${mo} of 24`;
-    if (mo <= TOTAL_MONTHS) return `Year 3 Free — Month ${mo}`;
-    return 'Artwork Returned';
-  };
+  // Manual mode single calc
+  const av = parseFloat(manualVal) || 0;
+  const sp = parseFloat(manualSale) || av;
 
   return (
     <div style={{ paddingTop: 72, minHeight: '100vh', background: C.ink }}>
 
       {/* Header */}
-      <div style={{ padding: '64px 40px 48px', borderBottom: `1px solid ${C.goldBorder}`, background: C.inkMid }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ fontSize: 10, letterSpacing: '0.40em', textTransform: 'uppercase', color: C.gold, marginBottom: 14 }}>
+      <div style={{ padding: '56px 40px 40px', borderBottom: `1px solid ${C.goldBorder}`, background: C.inkMid }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+          <div style={{ fontSize: 10, letterSpacing: '0.40em', textTransform: 'uppercase', color: C.gold, marginBottom: 12 }}>
             Backer Platform · Auction Calculator
           </div>
-          <h1 style={{ fontFamily: gF, fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 300, color: C.cream, letterSpacing: '0.04em', marginBottom: 16 }}>
-            Model Your Backing Deal
+          <h1 style={{ fontFamily: gF, fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 300, color: C.cream, letterSpacing: '0.04em', marginBottom: 16 }}>
+            {basketItems.length > 0 ? `Your Backing Selection — ${basketItems.length} Artwork${basketItems.length > 1 ? 's' : ''}` : 'Model Your Backing Deal'}
           </h1>
-          {/* Three phase explainer */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, maxWidth: 900 }}>
+          {/* Phase strip */}
+          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', fontSize: 11, color: C.fog }}>
             {[
-              { phase: 'Phase 1', period: 'Months 1–24', color: C.gold,
-                title: 'Backed & Active',
-                desc: '20% backing fee owns the artwork. 30% auction platform fee paid over 24 months. Artwork entered into online auctions, live auctions & exhibitions. You receive 50% at sale.' },
-              { phase: 'Phase 2', period: 'Months 25–36', color: C.green,
-                title: 'Year 3 — Free',
-                desc: 'Artwork fully paid off. No further fees. Gallery continues running auctions at no cost to you. You now receive 100% of the sale price.' },
-              { phase: 'Phase 3', period: 'Month 37+', color: C.goldLight,
-                title: 'Artwork Yours',
-                desc: 'If unsold, the physical artwork is returned to you — purchased at 50% of the recommended selling price.' },
+              { label: 'Months 1–24', desc: '20% backing fee + 30% auction platform fee · 50/50 split at sale', color: C.gold },
+              { label: 'Month 25+', desc: 'Fully paid off · 100% of sale price to backer · Year 3 free on platform', color: C.green },
+              { label: 'Month 37+', desc: 'Physical artwork returned to backer', color: C.goldLight },
             ].map(p => (
-              <div key={p.phase} style={{ padding: '16px 18px', border: `1px solid ${C.goldBorder}`, borderRadius: 6, background: C.goldGlow }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: p.color }}>{p.phase}</span>
-                  <span style={{ fontSize: 9, color: C.fog, letterSpacing: '0.1em' }}>{p.period}</span>
-                </div>
-                <div style={{ fontFamily: gF, fontSize: 16, color: C.cream, marginBottom: 6 }}>{p.title}</div>
-                <div style={{ fontSize: 11, color: C.fog, lineHeight: 1.7 }}>{p.desc}</div>
+              <div key={p.label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 8, height: 8, borderRadius: 2, background: p.color, flexShrink: 0 }} />
+                <span style={{ color: p.color, fontWeight: 600 }}>{p.label}</span>
+                <span>— {p.desc}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      <div style={{ padding: '48px 40px', maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: 48, alignItems: 'start' }}>
+      <div style={{ padding: '40px', maxWidth: 1400, margin: '0 auto' }}>
 
-          {/* ── LEFT: Inputs ── */}
-          <div>
-            {/* Multi-artwork selector */}
-            {activeBasket.length > 1 && (
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 9, letterSpacing: '0.25em', textTransform: 'uppercase', color: C.gold, marginBottom: 8 }}>
-                  Backing Selection ({activeBasket.length} artworks)
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {activeBasket.map((w, i) => (
-                    <button key={i} onClick={() => setBasketIdx(i)} style={{
-                      display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px',
-                      borderRadius: 4, cursor: 'pointer', textAlign: 'left',
-                      border: basketIdx === i ? `2px solid ${C.gold}` : `1px solid ${C.goldBorder}`,
-                      background: basketIdx === i ? C.goldDim : C.inkMid,
-                    }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 3, overflow: 'hidden', flexShrink: 0 }}>
-                        <img src={w.image} alt={w.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 10, color: basketIdx === i ? C.gold : C.fog, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{w.title}</div>
-                        <div style={{ fontFamily: gF, fontSize: 14, color: basketIdx === i ? C.gold : C.cream }}>R {fmt(w.price)}</div>
-                      </div>
-                      {basketIdx === i && <span style={{ color: C.gold, fontSize: 14 }}>◆</span>}
-                    </button>
-                  ))}
-                </div>
-                {/* Combined totals strip */}
-                <div style={{ marginTop: 10, padding: '10px 12px', background: C.goldGlow, border: `1px solid ${C.goldBorder}`, borderRadius: 4 }}>
-                  <div style={{ fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: C.fog, marginBottom: 6 }}>Combined totals</div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
-                    <span style={{ color: C.fog }}>Total artwork value</span>
-                    <span style={{ color: C.gold, fontWeight: 600 }}>R {fmt(activeBasket.reduce((s,w) => s+(w.price||0), 0))}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
-                    <span style={{ color: C.fog }}>Combined backing fee</span>
-                    <span style={{ color: C.gold, fontWeight: 600 }}>R {fmt(activeBasket.reduce((s,w) => s+((w.price||0)*getDepositPct(w.price||0)), 0))}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
-                    <span style={{ color: C.fog }}>Combined auction fee/mo</span>
-                    <span style={{ color: C.gold, fontWeight: 600 }}>R {fmt(activeBasket.reduce((s,w) => s+Math.round((w.price||0)*(0.5-getDepositPct(w.price||0))/24), 0))}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Artwork preview */}
-            {previewImg && (
-              <div style={{ marginBottom: 20, borderRadius: 6, overflow: 'hidden', border: `1px solid ${C.goldBorder}` }}>
-                <div style={{ position: 'relative', paddingBottom: '60%', overflow: 'hidden' }}>
-                  <img src={previewImg} alt={previewTitle}
-                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(26,39,68,0.95), transparent 50%)', display: 'flex', alignItems: 'flex-end', padding: 14 }}>
-                    <div>
-                      <div style={{ fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: C.gold, marginBottom: 3 }}>{previewArtist}</div>
-                      <div style={{ fontFamily: gF, fontSize: 13, color: C.cream, lineHeight: 1.3 }}>{previewTitle}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Mode toggle */}
-            <div style={{ display: 'flex', marginBottom: 16, border: `1px solid ${C.goldBorder}`, borderRadius: 4, overflow: 'hidden' }}>
-              {[['manual', 'Manual Entry'], ['gallery', 'From Gallery']].map(([id, label]) => (
-                <button key={id} onClick={() => setMode(id)} style={{
-                  flex: 1, padding: '11px 0', fontFamily: sF, fontSize: 11, fontWeight: 600,
-                  letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', border: 'none',
-                  background: mode === id ? `linear-gradient(135deg, ${C.gold}, #a07828)` : C.inkMid,
-                  color: mode === id ? '#1a2744' : C.fog,
-                }}>{label}</button>
-              ))}
-            </div>
-
-            {/* Gallery lookup */}
-            {mode === 'gallery' && (
-              <div style={{ marginBottom: 14 }}>
-                <label style={{ display: 'block', fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.gold, marginBottom: 7 }}>Artist</label>
-                <select value={selArtist} onChange={e => { setSelArtist(e.target.value); setSelWork(''); }}
-                  style={{ width: '100%', padding: '11px 14px', background: C.inkMid, border: `1px solid ${C.goldBorder}`, borderRadius: 4, color: C.cream, fontFamily: sF, fontSize: 13, outline: 'none', appearance: 'none', marginBottom: 10 }}>
-                  <option value="">— Select artist</option>
-                  {ARTISTS.filter(a => (a.works||[]).some(w => w.status === 'available')).map(a => (
-                    <option key={a.id} value={a.id}>{a.name}</option>
-                  ))}
-                </select>
-                {artist && (
-                  <>
-                    <label style={{ display: 'block', fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.gold, marginBottom: 7 }}>Artwork</label>
-                    <select value={selWork} onChange={e => setSelWork(e.target.value)}
-                      style={{ width: '100%', padding: '11px 14px', background: C.inkMid, border: `1px solid ${C.goldBorder}`, borderRadius: 4, color: C.cream, fontFamily: sF, fontSize: 12, outline: 'none', appearance: 'none' }}>
-                      <option value="">— Select artwork</option>
-                      {(artist.works||[]).filter(w => w.status === 'available').map((w, i) => (
-                        <option key={i} value={String(i)}>{w.title} — R {fmt(w.price)}</option>
-                      ))}
-                    </select>
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* Recommended selling price */}
-            <div style={{ marginBottom: 12 }}>
-              <label style={{ display: 'block', fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.gold, marginBottom: 7 }}>
-                Recommended Selling Price (R)
-              </label>
-              <div style={{ display: 'flex', alignItems: 'center', border: `1px solid ${C.goldBorder}`, borderRadius: 4, overflow: 'hidden', background: C.inkMid }}>
-                <span style={{ padding: '0 12px', color: C.fog, borderRight: `1px solid ${C.goldBorder}`, height: 46, display: 'flex', alignItems: 'center' }}>R</span>
-                <input type="text" inputMode="decimal" value={artVal}
-                  onChange={e => setArtVal(e.target.value.replace(/[^0-9.]/g, ''))}
-                  placeholder="e.g. 100 000"
-                  style={{ flex: 1, padding: '0 14px', height: 46, background: 'transparent', border: 'none', color: C.cream, fontFamily: sF, fontSize: 16, outline: 'none', textAlign: 'right' }} />
-              </div>
-              {av > 0 && (
-                <div style={{ fontSize: 10, color: C.fog, marginTop: 5, textAlign: 'right' }}>
-                  Backing fee tier: {(depositPct*100).toFixed(0)}%
-                  {av <= 500000 ? ' — up to R500k' : av <= 1000000 ? ' — R500k to R1m' : ' — above R1m'}
-                </div>
-              )}
-            </div>
-
-            {/* Expected auction price */}
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.gold, marginBottom: 7 }}>
-                Expected Auction Price <span style={{ color: C.fog, textTransform: 'none', letterSpacing: 0 }}>optional</span>
-              </label>
-              <div style={{ display: 'flex', alignItems: 'center', border: `1px solid ${C.goldBorder}`, borderRadius: 4, overflow: 'hidden', background: C.inkMid }}>
-                <span style={{ padding: '0 12px', color: C.fog, borderRight: `1px solid ${C.goldBorder}`, height: 46, display: 'flex', alignItems: 'center' }}>R</span>
-                <input type="text" inputMode="decimal" value={saleVal}
-                  onChange={e => setSaleVal(e.target.value.replace(/[^0-9.]/g, ''))}
-                  placeholder={artVal || 'same as selling price'}
-                  style={{ flex: 1, padding: '0 14px', height: 46, background: 'transparent', border: 'none', color: C.cream, fontFamily: sF, fontSize: 16, outline: 'none', textAlign: 'right' }} />
-              </div>
-            </div>
-
-            {/* Month slider */}
-            {av > 0 && (
-              <div style={{ marginBottom: 20 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <label style={{ fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.gold }}>
-                    Month Sold
-                  </label>
-                  <span style={{
-                    fontSize: 11, fontWeight: 700, fontFamily: sF,
-                    color: monthSold > TERM_MONTHS ? C.green : C.gold,
-                    background: monthSold > TERM_MONTHS ? C.greenDim : C.goldDim,
-                    padding: '3px 10px', borderRadius: 3,
-                  }}>
-                    {getPhaseLabel(monthSold)}
-                  </span>
-                </div>
-                <input type="range" min="1" max={TERM_MONTHS} value={monthSold}
-                  onChange={e => setMonthSold(parseInt(e.target.value))}
-                  style={{ width: '100%', accentColor: monthSold > TERM_MONTHS ? '#5aaa7a' : C.gold, cursor: 'pointer' }} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: C.fog, marginTop: 4 }}>
-                  <span>Month 1 · Max return</span>
-                  <span style={{ color: C.goldLight }}>Month 24 · Break even</span>
-                </div>
-              </div>
-            )}
-
-            {/* Deal summary card */}
-            {deal && (
-              <div style={{ border: `1px solid ${deal.fullyPaidOff ? 'rgba(90,170,122,0.4)' : C.goldBorder}`, borderRadius: 6, overflow: 'hidden', background: C.inkMid }}>
-                <div style={{ height: 3, background: deal.fullyPaidOff ? `linear-gradient(90deg, ${C.green}, transparent)` : `linear-gradient(90deg, ${C.gold}, transparent)` }} />
-                <div style={{ padding: '18px 20px' }}>
-                  {deal.fullyPaidOff ? (
-                    <div style={{ padding: '10px 14px', background: C.greenDim, border: `1px solid rgba(90,170,122,0.4)`, borderRadius: 4, marginBottom: 14, fontSize: 12, color: C.green, lineHeight: 1.7 }}>
-                      ✓ <strong>Artwork fully paid off.</strong> You receive <strong>100% of the sale price</strong> — no deductions.
-                    </div>
-                  ) : null}
+        {/* ── If basket has items, show each with full breakdown ── */}
+        {basketItems.length > 0 ? (
+          <>
+            {/* Combined summary bar */}
+            {basketItems.length > 1 && (() => {
+              const totalVal = basketItems.reduce((s,w) => s+(w.price||0), 0);
+              const totalDeposit = basketItems.reduce((s,w) => s+((w.price||0)*getDepositPct(w.price||0)), 0);
+              const totalMonthly = basketItems.reduce((s,w) => s+Math.round((w.price||0)*(0.5-getDepositPct(w.price||0))/24), 0);
+              const totalShare = basketItems.reduce((s,w) => s+((w.price||0)*0.5), 0);
+              const totalMaxReturn = basketItems.reduce((s,w) => {
+                const d = calcBacking(w.price||0, w.price||0, 1);
+                return s + d.netReturn;
+              }, 0);
+              return (
+                <div style={{ padding: '20px 28px', border: `1px solid ${C.goldBorder}`, borderRadius: 6, background: C.inkMid, marginBottom: 32, display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 20 }}>
                   {[
-                    ['Recommended price', `R ${fmt(av)}`, C.cream],
-                    ['Backing fee (deposit)', `R ${fmt(deal.deposit)} (${(depositPct*100).toFixed(0)}%)`, C.fog],
-                    ['Auction platform fee/mo', `R ${fmt(deal.monthly)}`, C.fog],
-                    ['Platform fees paid', `R ${fmt(deal.feesPaid)}`, C.fog],
-                    ['Total paid to date', `R ${fmt(deal.totalPaid)}`, C.goldLight],
+                    ['Total Artwork Value', `R ${fmt(totalVal)}`, C.cream],
+                    ['Combined Backing Fee', `R ${fmt(totalDeposit)}`, C.gold],
+                    ['Combined Fee/Month', `R ${fmt(totalMonthly)}`, C.goldLight],
+                    ['Combined 50% Share', `R ${fmt(totalShare)}`, C.green],
+                    ['Max Combined Return', `+R ${fmt(totalMaxReturn)}`, C.green],
                   ].map(([label, val, color]) => (
-                    <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: `1px solid rgba(201,168,76,0.07)`, fontSize: 11 }}>
-                      <span style={{ color: C.fog }}>{label}</span>
-                      <span style={{ color }}>{val}</span>
-                    </div>
-                  ))}
-                  <div style={{ height: 1, background: C.goldBorder, margin: '10px 0' }} />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
-                    <span style={{ color: C.fog }}>Your share at sale ({deal.fullyPaidOff ? '100%' : '50%'})</span>
-                    <span style={{ color: C.gold, fontWeight: 600 }}>R {fmt(deal.backerShare)}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-                    <span style={{ color: C.fog }}>Less total paid</span>
-                    <span style={{ color: C.fog }}>− R {fmt(deal.totalPaid)}</span>
-                  </div>
-                  <div style={{ height: 1, background: C.goldBorder, margin: '10px 0' }} />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 13, color: C.cream, fontWeight: 600 }}>Net return</span>
-                    <span style={{ fontFamily: gF, fontSize: 28, color: deal.netReturn >= 0 ? C.green : C.red }}>
-                      {deal.netReturn >= 0 ? '+' : ''}R {fmt(deal.netReturn)}
-                    </span>
-                  </div>
-                  {deal.fullyPaidOff && (
-                    <div style={{ marginTop: 12, padding: '10px 12px', background: C.goldGlow, border: `1px solid ${C.goldBorder}`, borderRadius: 4, fontSize: 11, color: C.fog, lineHeight: 1.6 }}>
-                      If artwork remains unsold after month 36, the physical artwork is yours — purchased at R {fmt(deal.totalPaid)} (50% of recommended price).
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div style={{ marginTop: 14, padding: '12px 14px', background: C.goldGlow, border: `1px solid ${C.goldBorder}`, borderRadius: 4, fontSize: 10, color: C.fog, lineHeight: 1.7 }}>
-              <strong style={{ color: C.gold }}>Legal note:</strong> This is a backer platform arrangement. The auction platform fee funds participation in online auctions, live auctions, and exhibitions at the gallery's discretion. Not a financial investment product.
-            </div>
-          </div>
-
-          {/* ── RIGHT: Visual + Table ── */}
-          <div>
-            {!deal ? (
-              <div style={{ textAlign: 'center', padding: '80px 40px', border: `1px solid ${C.goldBorder}`, borderRadius: 6, background: C.inkMid }}>
-                <div style={{ fontFamily: gF, fontSize: 52, color: C.gold, opacity: 0.12, marginBottom: 20 }}>◆</div>
-                <div style={{ fontFamily: gF, fontSize: 20, color: C.fog, fontWeight: 300 }}>Enter a recommended selling price to model your deal</div>
-              </div>
-            ) : (
-              <>
-                {/* 4 hero metrics */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
-                  {[
-                    { label: 'Backing Fee', val: `R ${fmt(deal.deposit)}`, sub: `${(depositPct*100).toFixed(0)}% — you own it`, color: C.gold },
-                    { label: 'Platform Fee/mo', val: `R ${fmt(deal.monthly)}`, sub: '× 24 months', color: C.goldLight },
-                    { label: deal.fullyPaidOff ? '100% of Sale Price' : '50% of Sale Price', val: `R ${fmt(deal.backerShare)}`, sub: 'Received when artwork sells', color: C.green },
-                    { label: `Net Return — Mo ${monthSold}`, val: `${deal.netReturn >= 0 ? '+' : ''}R ${fmt(deal.netReturn)}`, sub: monthSold === 1 ? 'Maximum return' : monthSold === 24 ? 'Break even' : `Less fees paid`, color: deal.netReturn >= 0 ? C.green : C.red },
-                  ].map(card => (
-                    <div key={card.label} style={{ padding: '18px 12px', border: `1px solid ${C.goldBorder}`, borderRadius: 6, background: C.inkMid, textAlign: 'center' }}>
-                      <div style={{ fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.fog, marginBottom: 8 }}>{card.label}</div>
-                      <div style={{ fontFamily: gF, fontSize: 20, color: card.color, marginBottom: 4 }}>{card.val}</div>
-                      <div style={{ fontSize: 9, color: C.fog }}>{card.sub}</div>
+                    <div key={label} style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.fog, marginBottom: 8 }}>{label}</div>
+                      <div style={{ fontFamily: gF, fontSize: 22, color }}>{val}</div>
                     </div>
                   ))}
                 </div>
+              );
+            })()}
 
-                {/* Money flow bar */}
-                <div style={{ padding: '22px', border: `1px solid ${C.goldBorder}`, borderRadius: 6, background: C.inkMid, marginBottom: 24 }}>
-                  <div style={{ fontSize: 10, letterSpacing: '0.28em', textTransform: 'uppercase', color: C.gold, marginBottom: 16 }}>
-                    How R {fmt(av)} breaks down
-                  </div>
-                  <div style={{ display: 'flex', height: 44, borderRadius: 4, overflow: 'hidden', marginBottom: 14 }}>
-                    <div style={{ width: `${depositPct*100}%`, background: `linear-gradient(135deg, ${C.gold}, #a07828)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: '#1a2744' }}>{(depositPct*100).toFixed(0)}% Backing Fee</span>
+            {/* Each artwork with its own full 24-month table */}
+            {basketItems.map((bw, bi) => {
+              const price = bw.price || 0;
+              const depositPct = getDepositPct(price);
+              const deposit = price * depositPct;
+              const monthly = price * (0.5 - depositPct) / TERM_MONTHS;
+              const share50 = price * 0.5;
+              const months = Array.from({length: TERM_MONTHS}, (_, i) => ({
+                month: i + 1,
+                ...calcBacking(price, price, i + 1),
+              }));
+
+              return (
+                <div key={bi} style={{ marginBottom: 40, border: `1px solid ${C.goldBorder}`, borderRadius: 8, background: C.inkMid, overflow: 'hidden' }}>
+                  {/* Artwork header */}
+                  <div style={{ display: 'flex', gap: 20, alignItems: 'center', padding: '20px 24px', borderBottom: `1px solid ${C.goldBorder}`, background: C.ink }}>
+                    <div style={{ width: 72, height: 72, borderRadius: 6, overflow: 'hidden', flexShrink: 0, border: `1px solid ${C.goldBorder}` }}>
+                      <img src={bw.image} alt={bw.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
-                    <div style={{ width: `${(0.50-depositPct)*100}%`, background: 'rgba(201,168,76,0.2)', borderLeft: `1px solid ${C.goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: C.gold }}>{((0.50-depositPct)*100).toFixed(0)}% Platform Fee</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 9, letterSpacing: '0.25em', textTransform: 'uppercase', color: C.gold, marginBottom: 4 }}>{bw.artistName}</div>
+                      <div style={{ fontFamily: gF, fontSize: 20, color: C.cream, marginBottom: 4 }}>{bw.title}</div>
+                      <div style={{ fontFamily: gF, fontSize: 24, color: C.gold }}>R {fmt(price)}</div>
                     </div>
-                    <div style={{ width: '50%', background: 'rgba(90,170,122,0.18)', borderLeft: `1px solid ${C.goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: C.green }}>50% Yours at Sale</span>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', fontSize: 11 }}>
-                    {[
-                      { dot: C.gold, label: `Backing fee R ${fmt(deal.deposit)}`, sub: 'Upfront · Owns artwork' },
-                      { dot: 'rgba(201,168,76,0.6)', label: `Platform fee R ${fmt(deal.totalMonthlyFees)}`, sub: `R ${fmt(deal.monthly)}/mo · Auctions & exhibitions` },
-                      { dot: C.green, label: `Your share R ${fmt(deal.backerShare)}`, sub: deal.fullyPaidOff ? '100% — fully paid off' : '50% of auction price' },
-                    ].map(item => (
-                      <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ width: 10, height: 10, borderRadius: 2, background: item.dot, flexShrink: 0 }} />
-                        <div>
-                          <div style={{ color: C.cream, fontWeight: 600 }}>{item.label}</div>
-                          <div style={{ fontSize: 10, color: C.fog }}>{item.sub}</div>
+                    {/* Key metrics */}
+                    <div style={{ display: 'flex', gap: 16, flexShrink: 0, flexWrap: 'wrap' }}>
+                      {[
+                        { label: 'Backing Fee', val: `R ${fmt(deposit)}`, sub: `${(depositPct*100).toFixed(0)}% upfront · you own it` },
+                        { label: 'Auction Fee/mo', val: `R ${fmt(monthly)}`, sub: '× 24 months' },
+                        { label: '50% at Sale', val: `R ${fmt(share50)}`, sub: 'received when sold' },
+                        { label: 'Max Return', val: `+R ${fmt(months[0].netReturn)}`, sub: 'if sold month 1', green: true },
+                      ].map(card => (
+                        <div key={card.label} style={{ padding: '12px 16px', background: C.goldGlow, border: `1px solid ${C.goldBorder}`, borderRadius: 4, textAlign: 'center', minWidth: 110 }}>
+                          <div style={{ fontSize: 9, letterSpacing: '0.15em', textTransform: 'uppercase', color: C.fog, marginBottom: 6 }}>{card.label}</div>
+                          <div style={{ fontFamily: gF, fontSize: 18, color: card.green ? C.green : C.gold, marginBottom: 2 }}>{card.val}</div>
+                          <div style={{ fontSize: 9, color: C.fog }}>{card.sub}</div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Net return progress bar */}
-                <div style={{ padding: '18px 22px', border: `1px solid ${C.goldBorder}`, borderRadius: 6, background: C.inkMid, marginBottom: 24 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                    <div style={{ fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.gold }}>Net return at {getPhaseLabel(monthSold)}</div>
-                    <div style={{ fontFamily: gF, fontSize: 24, color: deal.netReturn >= 0 ? C.green : C.red }}>
-                      {deal.netReturn >= 0 ? '+' : ''}R {fmt(deal.netReturn)}
+                      ))}
                     </div>
                   </div>
-                  <div style={{ height: 8, background: 'rgba(255,255,255,0.06)', borderRadius: 4, overflow: 'hidden', marginBottom: 8 }}>
-                    <div style={{
-                      height: '100%', borderRadius: 4, transition: 'width 0.35s ease',
-                      width: `${Math.max(4, Math.min(100, (deal.netReturn / (av * 0.5)) * 100))}%`,
-                      background: `linear-gradient(90deg, ${C.green}, rgba(90,170,122,0.4))`,
-                    }} />
-                  </div>
-                  <div style={{ fontSize: 11, color: C.fog }}>
-                    R {fmt(deal.backerShare)} received − R {fmt(deal.totalPaid)} paid = <strong style={{ color: deal.netReturn >= 0 ? C.green : C.red }}>R {fmt(Math.abs(deal.netReturn))} {deal.netReturn >= 0 ? 'profit' : 'loss'}</strong>
-                  </div>
-                </div>
 
-                {/* Full 36-month table */}
-                <div style={{ border: `1px solid ${C.goldBorder}`, borderRadius: 6, background: C.inkMid, overflow: 'hidden' }}>
-                  <div style={{ padding: '16px 22px', borderBottom: `1px solid ${C.goldBorder}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-                    <div style={{ fontSize: 10, letterSpacing: '0.28em', textTransform: 'uppercase', color: C.gold }}>
-                      24-Month Schedule
-                    </div>
-                    <div style={{ fontSize: 10, color: C.fog }}>Max profit: Month 1 · Break even: Month 24</div>
-                  </div>
-                  <div style={{ overflowX: 'auto', maxHeight: 420, overflowY: 'auto' }}>
+                  {/* 24-month table */}
+                  <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                       <thead>
                         <tr>
-                          {['Period', 'Total Paid', 'Platform Fee', 'Your Share', 'Net Return'].map((h, i) => (
+                          {['Month', 'Backing Fee', 'Fees Paid', 'Total Paid', '50% Share', 'Net Return'].map((h, i) => (
                             <th key={h} style={{
                               padding: '10px 16px', textAlign: i > 0 ? 'right' : 'left',
                               fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase',
                               color: C.fog, borderBottom: `1px solid ${C.goldBorder}`,
-                              background: C.inkMid, position: 'sticky', top: 0, zIndex: 1,
+                              background: C.inkMid,
                             }}>{h}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody>
-                        {allMonths.map(s => {
-                          const isSel = s.month === monthSold;
-                          const isFree = s.month > TERM_MONTHS;
-                          return (
-                            <tr key={s.month} onClick={() => setMonthSold(s.month)}
-                              style={{
-                                background: isSel ? (isFree ? 'rgba(90,170,122,0.12)' : C.goldDim) : (isFree ? 'rgba(90,170,122,0.04)' : 'transparent'),
-                                cursor: 'pointer',
-                                borderLeft: isSel ? `3px solid ${isFree ? C.green : C.gold}` : '3px solid transparent',
-                              }}>
-                              <td style={{ padding: '9px 16px', borderBottom: `1px solid rgba(201,168,76,0.07)`, color: isSel ? (isFree ? C.green : C.gold) : (isFree ? C.green : C.cream), fontWeight: isSel ? 700 : 400 }}>
-                                {isFree ? `★ Mo ${s.month} — Free` : `Mo ${s.month}`}{isSel ? ' ◆' : ''}
-                              </td>
-                              <td style={{ padding: '9px 16px', textAlign: 'right', borderBottom: `1px solid rgba(201,168,76,0.07)`, color: C.goldLight }}>
-                                R {fmt(s.totalPaid)}
-                              </td>
-                              <td style={{ padding: '9px 16px', textAlign: 'right', borderBottom: `1px solid rgba(201,168,76,0.07)`, color: isFree ? C.green : C.fog }}>
-                                {isFree ? 'Free ✓' : `R ${fmt(s.monthly)}/mo`}
-                              </td>
-                              <td style={{ padding: '9px 16px', textAlign: 'right', borderBottom: `1px solid rgba(201,168,76,0.07)`, color: isFree ? C.green : C.gold, fontWeight: 600 }}>
-                                {isFree ? '100%' : '50%'} · R {fmt(s.backerShare)}
-                              </td>
-                              <td style={{ padding: '9px 16px', textAlign: 'right', borderBottom: `1px solid rgba(201,168,76,0.07)`, fontFamily: gF, fontSize: 15,
-                                color: s.netReturn >= 0 ? C.green : C.red, fontWeight: 600 }}>
-                                {s.netReturn >= 0 ? '+' : ''}R {fmt(s.netReturn)}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                        {/* Month 25 option row */}
+                        {months.map(s => (
+                          <tr key={s.month} style={{ background: s.month % 2 === 0 ? 'rgba(201,168,76,0.03)' : 'transparent' }}>
+                            <td style={{ padding: '9px 16px', borderBottom: `1px solid rgba(201,168,76,0.06)`, color: C.cream, fontWeight: 500 }}>
+                              Month {s.month}
+                            </td>
+                            <td style={{ padding: '9px 16px', textAlign: 'right', borderBottom: `1px solid rgba(201,168,76,0.06)`, color: C.fog }}>
+                              R {fmt(s.deposit)}
+                            </td>
+                            <td style={{ padding: '9px 16px', textAlign: 'right', borderBottom: `1px solid rgba(201,168,76,0.06)`, color: C.fog }}>
+                              R {fmt(s.feesPaid)}
+                            </td>
+                            <td style={{ padding: '9px 16px', textAlign: 'right', borderBottom: `1px solid rgba(201,168,76,0.06)`, color: C.goldLight }}>
+                              R {fmt(s.totalPaid)}
+                            </td>
+                            <td style={{ padding: '9px 16px', textAlign: 'right', borderBottom: `1px solid rgba(201,168,76,0.06)`, color: C.gold, fontWeight: 600 }}>
+                              R {fmt(s.backerShare)}
+                            </td>
+                            <td style={{ padding: '9px 16px', textAlign: 'right', borderBottom: `1px solid rgba(201,168,76,0.06)`, fontFamily: gF, fontSize: 15,
+                              color: s.netReturn >= 0 ? C.green : C.red, fontWeight: 600 }}>
+                              {s.netReturn >= 0 ? '+' : ''}R {fmt(s.netReturn)}
+                            </td>
+                          </tr>
+                        ))}
+                        {/* Month 25 note */}
                         <tr style={{ background: 'rgba(90,170,122,0.06)' }}>
-                          <td style={{ padding: '12px 16px', color: C.green, fontSize: 11, lineHeight: 1.7 }} colSpan={5}>
-                            ★ <strong>From the 1st day of Month 25</strong> — artwork is fully paid off. The backer may <strong>take the physical artwork</strong> (acquired at 50% of the recommended price) or <strong>keep it on the auction platform free of charge for one further year</strong>.
+                          <td colSpan={6} style={{ padding: '12px 16px', color: C.green, fontSize: 11, lineHeight: 1.7 }}>
+                            ★ <strong>From Month 25</strong> — fully paid off. Take the physical artwork or keep on platform free for 1 year. Any sale = <strong>100% to backer</strong>.
                           </td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
                 </div>
-              </>
-            )}
+              );
+            })}
+          </>
+        ) : (
+          /* ── Manual entry mode ── */
+          <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 40 }}>
+            <div>
+              {/* Mode toggle */}
+              <div style={{ display: 'flex', marginBottom: 16, border: `1px solid ${C.goldBorder}`, borderRadius: 4, overflow: 'hidden' }}>
+                {[['manual','Manual Entry'],['gallery','From Gallery']].map(([id,label]) => (
+                  <button key={id} onClick={() => setMode(id)} style={{
+                    flex: 1, padding: '11px 0', fontFamily: sF, fontSize: 11, fontWeight: 600,
+                    letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', border: 'none',
+                    background: mode === id ? `linear-gradient(135deg, ${C.gold}, #a07828)` : C.inkMid,
+                    color: mode === id ? '#1a2744' : C.fog,
+                  }}>{label}</button>
+                ))}
+              </div>
+              {mode === 'gallery' && (
+                <div style={{ marginBottom: 14 }}>
+                  <label style={{ display: 'block', fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.gold, marginBottom: 7 }}>Artist</label>
+                  <select value={selArtist} onChange={e => { setSelArtist(e.target.value); setSelWork(''); }}
+                    style={{ width: '100%', padding: '11px 14px', background: C.inkMid, border: `1px solid ${C.goldBorder}`, borderRadius: 4, color: C.cream, fontFamily: sF, fontSize: 13, outline: 'none', appearance: 'none', marginBottom: 10 }}>
+                    <option value="">— Select artist</option>
+                    {ARTISTS.filter(a => (a.works||[]).some(w => w.status==='available')).map(a => (
+                      <option key={a.id} value={a.id}>{a.name}</option>
+                    ))}
+                  </select>
+                  {artist && (
+                    <>
+                      <label style={{ display: 'block', fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.gold, marginBottom: 7 }}>Artwork</label>
+                      <select value={selWork} onChange={e => setSelWork(e.target.value)}
+                        style={{ width: '100%', padding: '11px 14px', background: C.inkMid, border: `1px solid ${C.goldBorder}`, borderRadius: 4, color: C.cream, fontFamily: sF, fontSize: 12, outline: 'none', appearance: 'none' }}>
+                        <option value="">— Select artwork</option>
+                        {(artist.works||[]).filter(w => w.status==='available').map((w,i) => (
+                          <option key={i} value={String(i)}>{w.title} — R {fmt(w.price)}</option>
+                        ))}
+                      </select>
+                    </>
+                  )}
+                </div>
+              )}
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ display: 'block', fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.gold, marginBottom: 7 }}>Recommended Selling Price (R)</label>
+                <div style={{ display: 'flex', alignItems: 'center', border: `1px solid ${C.goldBorder}`, borderRadius: 4, overflow: 'hidden', background: C.inkMid }}>
+                  <span style={{ padding: '0 12px', color: C.fog, borderRight: `1px solid ${C.goldBorder}`, height: 46, display: 'flex', alignItems: 'center' }}>R</span>
+                  <input type="text" inputMode="decimal" value={manualVal}
+                    onChange={e => setManualVal(e.target.value.replace(/[^0-9.]/g,''))}
+                    placeholder="e.g. 100 000"
+                    style={{ flex: 1, padding: '0 14px', height: 46, background: 'transparent', border: 'none', color: C.cream, fontFamily: sF, fontSize: 16, outline: 'none', textAlign: 'right' }} />
+                </div>
+                {av > 0 && <div style={{ fontSize: 10, color: C.fog, marginTop: 5, textAlign: 'right' }}>Backing fee tier: {(getDepositPct(av)*100).toFixed(0)}%</div>}
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.gold, marginBottom: 7 }}>
+                  Expected Auction Price <span style={{ color: C.fog, textTransform: 'none', letterSpacing: 0 }}>optional</span>
+                </label>
+                <div style={{ display: 'flex', alignItems: 'center', border: `1px solid ${C.goldBorder}`, borderRadius: 4, overflow: 'hidden', background: C.inkMid }}>
+                  <span style={{ padding: '0 12px', color: C.fog, borderRight: `1px solid ${C.goldBorder}`, height: 46, display: 'flex', alignItems: 'center' }}>R</span>
+                  <input type="text" inputMode="decimal" value={manualSale}
+                    onChange={e => setManualSale(e.target.value.replace(/[^0-9.]/g,''))}
+                    placeholder={manualVal || 'same as selling price'}
+                    style={{ flex: 1, padding: '0 14px', height: 46, background: 'transparent', border: 'none', color: C.cream, fontFamily: sF, fontSize: 16, outline: 'none', textAlign: 'right' }} />
+                </div>
+              </div>
+              <div style={{ padding: '12px 14px', background: C.goldGlow, border: `1px solid ${C.goldBorder}`, borderRadius: 4, fontSize: 10, color: C.fog, lineHeight: 1.7 }}>
+                <strong style={{ color: C.gold }}>Legal note:</strong> Backer platform arrangement. Auction platform fees fund online auctions, live auctions and exhibitions at the gallery's discretion. Not a financial investment product.
+              </div>
+            </div>
+
+            {/* Manual results */}
+            <div>
+              {av <= 0 ? (
+                <div style={{ textAlign: 'center', padding: '80px 40px', border: `1px solid ${C.goldBorder}`, borderRadius: 6, background: C.inkMid }}>
+                  <div style={{ fontFamily: gF, fontSize: 48, color: C.gold, opacity: 0.12, marginBottom: 16 }}>◆</div>
+                  <div style={{ fontFamily: gF, fontSize: 18, color: C.fog, fontWeight: 300 }}>Enter a recommended selling price to model your deal</div>
+                  <div style={{ fontSize: 12, color: C.fog, marginTop: 8, opacity: 0.7 }}>Or browse artists and add artworks to your backing selection</div>
+                </div>
+              ) : (() => {
+                const depositPct = getDepositPct(av);
+                const deposit = av * depositPct;
+                const monthly = av * (0.5 - depositPct) / TERM_MONTHS;
+                const share50 = sp * 0.5;
+                const months = Array.from({length: TERM_MONTHS}, (_, i) => ({
+                  month: i + 1, ...calcBacking(av, sp, i + 1),
+                }));
+                return (
+                  <>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 24 }}>
+                      {[
+                        { label: 'Backing Fee', val: `R ${fmt(deposit)}`, sub: `${(depositPct*100).toFixed(0)}% upfront`, color: C.gold },
+                        { label: 'Auction Fee/mo', val: `R ${fmt(monthly)}`, sub: '× 24 months', color: C.goldLight },
+                        { label: '50% at Sale', val: `R ${fmt(share50)}`, sub: 'when artwork sells', color: C.green },
+                        { label: 'Max Return', val: `+R ${fmt(months[0].netReturn)}`, sub: 'if sold month 1', color: C.green },
+                      ].map(card => (
+                        <div key={card.label} style={{ padding: '18px 12px', border: `1px solid ${C.goldBorder}`, borderRadius: 6, background: C.inkMid, textAlign: 'center' }}>
+                          <div style={{ fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.fog, marginBottom: 8 }}>{card.label}</div>
+                          <div style={{ fontFamily: gF, fontSize: 22, color: card.color, marginBottom: 4 }}>{card.val}</div>
+                          <div style={{ fontSize: 9, color: C.fog }}>{card.sub}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ border: `1px solid ${C.goldBorder}`, borderRadius: 6, background: C.inkMid, overflow: 'hidden' }}>
+                      <div style={{ padding: '14px 20px', borderBottom: `1px solid ${C.goldBorder}`, display: 'flex', justifyContent: 'space-between' }}>
+                        <div style={{ fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: C.gold }}>24-Month Schedule</div>
+                        <div style={{ fontSize: 10, color: C.fog }}>Max return Month 1 · Break even Month 24</div>
+                      </div>
+                      <div style={{ overflowX: 'auto', maxHeight: 480, overflowY: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                          <thead>
+                            <tr>
+                              {['Month','Backing Fee','Fees Paid','Total Paid','50% Share','Net Return'].map((h,i) => (
+                                <th key={h} style={{ padding: '10px 16px', textAlign: i>0?'right':'left', fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.fog, borderBottom: `1px solid ${C.goldBorder}`, background: C.inkMid }}>{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {months.map(s => (
+                              <tr key={s.month} style={{ background: s.month%2===0?'rgba(201,168,76,0.03)':'transparent' }}>
+                                <td style={{ padding: '9px 16px', borderBottom: `1px solid rgba(201,168,76,0.06)`, color: C.cream, fontWeight: 500 }}>Month {s.month}</td>
+                                <td style={{ padding: '9px 16px', textAlign: 'right', borderBottom: `1px solid rgba(201,168,76,0.06)`, color: C.fog }}>R {fmt(s.deposit)}</td>
+                                <td style={{ padding: '9px 16px', textAlign: 'right', borderBottom: `1px solid rgba(201,168,76,0.06)`, color: C.fog }}>R {fmt(s.feesPaid)}</td>
+                                <td style={{ padding: '9px 16px', textAlign: 'right', borderBottom: `1px solid rgba(201,168,76,0.06)`, color: C.goldLight }}>R {fmt(s.totalPaid)}</td>
+                                <td style={{ padding: '9px 16px', textAlign: 'right', borderBottom: `1px solid rgba(201,168,76,0.06)`, color: C.gold, fontWeight: 600 }}>R {fmt(s.backerShare)}</td>
+                                <td style={{ padding: '9px 16px', textAlign: 'right', borderBottom: `1px solid rgba(201,168,76,0.06)`, fontFamily: gF, fontSize: 15, color: s.netReturn>=0?C.green:C.red, fontWeight: 600 }}>
+                                  {s.netReturn>=0?'+':''}R {fmt(s.netReturn)}
+                                </td>
+                              </tr>
+                            ))}
+                            <tr style={{ background: 'rgba(90,170,122,0.06)' }}>
+                              <td colSpan={6} style={{ padding: '12px 16px', color: C.green, fontSize: 11, lineHeight: 1.7 }}>
+                                ★ <strong>From Month 25</strong> — fully paid off. Take the artwork or keep on platform free for 1 year. Any sale = <strong>100% to backer</strong>.
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
