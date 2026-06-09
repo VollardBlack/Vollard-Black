@@ -4494,7 +4494,7 @@ function HomePage({ setPage }) {
           <div>
             <div style={{ fontSize: 10, letterSpacing: '0.40em', textTransform: 'uppercase', color: C.gold, marginBottom: 12 }}>Our Artists</div>
             <h2 style={{ fontFamily: gF, fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 300, color: C.cream, letterSpacing: '0.04em' }}>
-              Masters of Their Craft
+              Discover the Latest Works by Our Artists
             </h2>
           </div>
           <button onClick={() => setPage('artists')} style={{
