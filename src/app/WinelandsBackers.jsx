@@ -5265,7 +5265,7 @@ function ArtistDetail({ artist, setPage, isAdmin, getWorkStatus, onMarkSold, onM
 }
 
 // ─── BACKING / CALCULATOR ─────────────────────────────────────────────
-function BackingPage({ preloadWork }) {
+function BackingPage({ preloadWork, preloadBasket }) {
   const [artVal, setArtVal] = useState('');
   const [saleVal, setSaleVal] = useState('');
   const [monthSold, setMonthSold] = useState(1);
@@ -5273,18 +5273,29 @@ function BackingPage({ preloadWork }) {
   const [selArtist, setSelArtist] = useState('');
   const [selWork, setSelWork] = useState('');
 
+  // Track which basket item is being viewed
+  const [basketIdx, setBasketIdx] = useState(0);
+  const activeBasket = (preloadBasket && preloadBasket.length > 0) ? preloadBasket : (preloadWork ? [preloadWork] : []);
+  const activeWork = activeBasket[basketIdx] || null;
+
   useEffect(() => {
-    if (preloadWork) {
+    setBasketIdx(0);
+  }, [preloadBasket]);
+
+  useEffect(() => {
+    if (activeWork) {
       setMode('gallery');
-      const a = ARTISTS.find(x => x.id === preloadWork.artistId);
+      const a = ARTISTS.find(x => x.id === activeWork.artistId);
       if (a) {
         setSelArtist(a.id);
-        const idx = (a.works||[]).findIndex(w => w.title === preloadWork.title);
+        const idx = (a.works||[]).findIndex(w => w.title === activeWork.title);
         if (idx >= 0) setSelWork(String(idx));
       }
-      setArtVal(String(preloadWork.price || ''));
+      setArtVal(String(activeWork.price || ''));
+      setSaleVal('');
+      setMonthSold(1);
     }
-  }, [preloadWork]);
+  }, [activeWork]);
 
   const artist = ARTISTS.find(a => a.id === selArtist);
   const work = artist?.works[parseInt(selWork)];
@@ -5301,9 +5312,9 @@ function BackingPage({ preloadWork }) {
     ...calcBacking(av, sp, i + 1),
   })) : [];
 
-  const previewImg = preloadWork?.image || work?.image || '';
-  const previewTitle = preloadWork?.title || work?.title || '';
-  const previewArtist = preloadWork?.artistName || artist?.name || '';
+  const previewImg = activeWork?.image || work?.image || '';
+  const previewTitle = activeWork?.title || work?.title || '';
+  const previewArtist = activeWork?.artistName || artist?.name || '';
 
   // Phase label
   const getPhaseLabel = (mo) => {
@@ -5355,6 +5366,50 @@ function BackingPage({ preloadWork }) {
 
           {/* ── LEFT: Inputs ── */}
           <div>
+            {/* Multi-artwork selector */}
+            {activeBasket.length > 1 && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 9, letterSpacing: '0.25em', textTransform: 'uppercase', color: C.gold, marginBottom: 8 }}>
+                  Backing Selection ({activeBasket.length} artworks)
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {activeBasket.map((w, i) => (
+                    <button key={i} onClick={() => setBasketIdx(i)} style={{
+                      display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px',
+                      borderRadius: 4, cursor: 'pointer', textAlign: 'left',
+                      border: basketIdx === i ? `2px solid ${C.gold}` : `1px solid ${C.goldBorder}`,
+                      background: basketIdx === i ? C.goldDim : C.inkMid,
+                    }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 3, overflow: 'hidden', flexShrink: 0 }}>
+                        <img src={w.image} alt={w.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 10, color: basketIdx === i ? C.gold : C.fog, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{w.title}</div>
+                        <div style={{ fontFamily: gF, fontSize: 14, color: basketIdx === i ? C.gold : C.cream }}>R {fmt(w.price)}</div>
+                      </div>
+                      {basketIdx === i && <span style={{ color: C.gold, fontSize: 14 }}>◆</span>}
+                    </button>
+                  ))}
+                </div>
+                {/* Combined totals strip */}
+                <div style={{ marginTop: 10, padding: '10px 12px', background: C.goldGlow, border: `1px solid ${C.goldBorder}`, borderRadius: 4 }}>
+                  <div style={{ fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: C.fog, marginBottom: 6 }}>Combined totals</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
+                    <span style={{ color: C.fog }}>Total artwork value</span>
+                    <span style={{ color: C.gold, fontWeight: 600 }}>R {fmt(activeBasket.reduce((s,w) => s+(w.price||0), 0))}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
+                    <span style={{ color: C.fog }}>Combined backing fee</span>
+                    <span style={{ color: C.gold, fontWeight: 600 }}>R {fmt(activeBasket.reduce((s,w) => s+((w.price||0)*getDepositPct(w.price||0)), 0))}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
+                    <span style={{ color: C.fog }}>Combined auction fee/mo</span>
+                    <span style={{ color: C.gold, fontWeight: 600 }}>R {fmt(activeBasket.reduce((s,w) => s+Math.round((w.price||0)*(0.5-getDepositPct(w.price||0))/24), 0))}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Artwork preview */}
             {previewImg && (
               <div style={{ marginBottom: 20, borderRadius: 6, overflow: 'hidden', border: `1px solid ${C.goldBorder}` }}>
@@ -5535,8 +5590,8 @@ function BackingPage({ preloadWork }) {
                   {[
                     { label: 'Backing Fee', val: `R ${fmt(deal.deposit)}`, sub: `${(depositPct*100).toFixed(0)}% — you own it`, color: C.gold },
                     { label: 'Platform Fee/mo', val: `R ${fmt(deal.monthly)}`, sub: '× 24 months', color: C.goldLight },
-                    { label: deal.fullyPaidOff ? '100% at Sale' : '50% at Sale', val: `R ${fmt(deal.backerShare)}`, sub: deal.fullyPaidOff ? 'Fully paid off' : 'of auction price', color: C.green },
-                    { label: 'Net Return', val: `${deal.netReturn >= 0 ? '+' : ''}R ${fmt(deal.netReturn)}`, sub: getPhaseLabel(monthSold), color: deal.netReturn >= 0 ? C.green : C.red },
+                    { label: deal.fullyPaidOff ? '100% of Sale Price' : '50% of Sale Price', val: `R ${fmt(deal.backerShare)}`, sub: 'Received when artwork sells', color: C.green },
+                    { label: `Net Return — Mo ${monthSold}`, val: `${deal.netReturn >= 0 ? '+' : ''}R ${fmt(deal.netReturn)}`, sub: monthSold === 1 ? 'Maximum return' : monthSold === 24 ? 'Break even' : `Less fees paid`, color: deal.netReturn >= 0 ? C.green : C.red },
                   ].map(card => (
                     <div key={card.label} style={{ padding: '18px 12px', border: `1px solid ${C.goldBorder}`, borderRadius: 6, background: C.inkMid, textAlign: 'center' }}>
                       <div style={{ fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.fog, marginBottom: 8 }}>{card.label}</div>
@@ -5674,7 +5729,7 @@ function BackingPage({ preloadWork }) {
 // ─── APP SHELL ────────────────────────────────────────────────────────
 
 // ─── BACKING TRAY ────────────────────────────────────────────────────
-function BackingTray({ basket, toggleBasket, onOpenCalc, setCalcWork }) {
+function BackingTray({ basket, toggleBasket, onOpenCalc, setCalcWork, setCalcBasket }) {
   const [open, setOpen] = useState(false);
   if (!basket || basket.length === 0) return null;
 
@@ -5775,7 +5830,7 @@ function BackingTray({ basket, toggleBasket, onOpenCalc, setCalcWork }) {
               <div style={{ fontSize: 10, color: C.fog, lineHeight: 1.6, margin: '16px 0', padding: '10px', background: C.goldGlow, border: `1px solid ${C.goldBorder}`, borderRadius: 4 }}>
                 <strong style={{ color: C.gold }}>FAIS:</strong> Backer platform arrangement. Auction platform fees fund online auctions, live auctions and exhibitions. Not a financial investment product.
               </div>
-              <button onClick={() => { setOpen(false); if (basket[0]) setCalcWork(basket[0]); onOpenCalc(); }}
+              <button onClick={() => { setOpen(false); if(setCalcBasket) setCalcBasket(basket); if (basket[0]) setCalcWork(basket[0]); onOpenCalc(); }}
                 style={{ width: '100%', padding: '16px', background: `linear-gradient(135deg, ${C.gold}, #a07828)`, border: 'none', borderRadius: 4, color: '#1a2744', fontFamily: sF, fontSize: 12, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer' }}>
                 Open Backing Calculator →
               </button>
@@ -5859,6 +5914,7 @@ export default function WinelandsBackers() {
   const [page, setPage] = useState('home');
   const [selectedArtist, setSelectedArtist] = useState(null);
   const [calcWork, setCalcWork] = useState(null);
+  const [calcBasket, setCalcBasket] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [soldOverrides, setSoldOverrides] = useState({});
@@ -5952,7 +6008,7 @@ export default function WinelandsBackers() {
       <GlobalStyles />
       <Nav page={page} setPage={navigateTo} isAdmin={isAdmin} onAdminLogin={() => setShowLogin(true)} onSignOut={signOut} />
       {showLogin && <AdminLogin onLogin={() => setIsAdmin(true)} onClose={() => setShowLogin(false)} />}
-      <BackingTray basket={basket} toggleBasket={toggleBasket} onOpenCalc={() => navigateTo('backing')} setCalcWork={setCalcWork} />
+      <BackingTray basket={basket} toggleBasket={toggleBasket} onOpenCalc={() => navigateTo('backing')} setCalcWork={setCalcWork} setCalcBasket={setCalcBasket} />
       {page === 'home' && <HomePage setPage={navigateTo} />}
       {page === 'artists' && <ArtistsPage setSelectedArtist={setSelectedArtist} setPage={navigateTo} />}
       {page === 'artist-detail' && (
@@ -5970,7 +6026,7 @@ export default function WinelandsBackers() {
           inBasket={inBasket}
         />
       )}
-      {page === 'backing' && <BackingPage preloadWork={calcWork} />}
+      {page === 'backing' && <BackingPage preloadWork={calcWork} preloadBasket={calcBasket} />}
     </>
   );
 }
