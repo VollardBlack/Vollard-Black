@@ -5299,8 +5299,8 @@ function BackingPage({ preloadWork }) {
   const deal = av > 0 ? calcBacking(av, sp, monthSold) : null;
   const depositPct = av > 0 ? getDepositPct(av) : 0.20;
 
-  // All 36 months
-  const allMonths = av > 0 ? Array.from({ length: TOTAL_MONTHS }, (_, i) => ({
+  // Only show months 1-24 in table
+  const allMonths = av > 0 ? Array.from({ length: TERM_MONTHS }, (_, i) => ({
     month: i + 1,
     ...calcBacking(av, sp, i + 1),
   })) : [];
@@ -5463,13 +5463,12 @@ function BackingPage({ preloadWork }) {
                     {getPhaseLabel(monthSold)}
                   </span>
                 </div>
-                <input type="range" min="1" max={TOTAL_MONTHS} value={monthSold}
+                <input type="range" min="1" max={TERM_MONTHS} value={monthSold}
                   onChange={e => setMonthSold(parseInt(e.target.value))}
                   style={{ width: '100%', accentColor: monthSold > TERM_MONTHS ? '#5aaa7a' : C.gold, cursor: 'pointer' }} />
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: C.fog, marginTop: 4 }}>
-                  <span>Mo 1 · Max return</span>
-                  <span style={{ color: C.goldLight }}>Mo 24 · Break even</span>
-                  <span style={{ color: C.green }}>Mo 25–36 · Free · 100%</span>
+                  <span>Month 1 · Max return</span>
+                  <span style={{ color: C.goldLight }}>Month 24 · Break even</span>
                 </div>
               </div>
             )}
@@ -5608,12 +5607,9 @@ function BackingPage({ preloadWork }) {
                 <div style={{ border: `1px solid ${C.goldBorder}`, borderRadius: 6, background: C.inkMid, overflow: 'hidden' }}>
                   <div style={{ padding: '16px 22px', borderBottom: `1px solid ${C.goldBorder}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
                     <div style={{ fontSize: 10, letterSpacing: '0.28em', textTransform: 'uppercase', color: C.gold }}>
-                      Full 36-Month Schedule
+                      24-Month Schedule
                     </div>
-                    <div style={{ display: 'flex', gap: 16, fontSize: 10 }}>
-                      <span style={{ color: C.gold }}>● Months 1–24: 50% share</span>
-                      <span style={{ color: C.green }}>● Months 25–36: 100% FREE</span>
-                    </div>
+                    <div style={{ fontSize: 10, color: C.fog }}>Max profit: Month 1 · Break even: Month 24</div>
                   </div>
                   <div style={{ overflowX: 'auto', maxHeight: 420, overflowY: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
