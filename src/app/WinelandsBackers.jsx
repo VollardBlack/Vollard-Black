@@ -5677,7 +5677,22 @@ function BackingPage({ preloadWork }) {
 function BackingTray({ basket, toggleBasket, onOpenCalc, setCalcWork }) {
   const [open, setOpen] = useState(false);
   if (!basket || basket.length === 0) return null;
-  const total = basket.reduce((s, w) => s + (w.price || 0), 0);
+
+  // Calculate per-artwork using correct model
+  const items = basket.map(w => {
+    const av = w.price || 0;
+    const depositPct = getDepositPct(av);
+    const deposit = av * depositPct;
+    const monthly = av * (0.50 - depositPct) / TERM_MONTHS;
+    const backerShare = av * 0.50; // at sale, 50% of recommended price
+    return { ...w, deposit, monthly, backerShare };
+  });
+
+  const totalValue = items.reduce((s, w) => s + (w.price || 0), 0);
+  const totalDeposit = items.reduce((s, w) => s + w.deposit, 0);
+  const totalMonthly = items.reduce((s, w) => s + w.monthly, 0);
+  const totalShare = items.reduce((s, w) => s + w.backerShare, 0);
+
   return (
     <>
       <button onClick={() => setOpen(true)} style={{
@@ -5694,7 +5709,7 @@ function BackingTray({ basket, toggleBasket, onOpenCalc, setCalcWork }) {
           width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 11, fontWeight: 900,
         }}>{basket.length}</span>
-        Backing Selection · R {total.toLocaleString('en-ZA')}
+        Backing Selection · R {totalValue.toLocaleString('en-ZA')}
       </button>
       {open && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 450, display: 'flex', justifyContent: 'flex-end', background: 'rgba(10,16,32,0.7)' }}
@@ -5703,6 +5718,7 @@ function BackingTray({ basket, toggleBasket, onOpenCalc, setCalcWork }) {
             width: '100%', maxWidth: 480, background: C.inkMid,
             borderLeft: `1px solid ${C.goldBorder}`, overflowY: 'auto', display: 'flex', flexDirection: 'column',
           }}>
+            {/* Header */}
             <div style={{ padding: '24px', borderBottom: `1px solid ${C.goldBorder}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: C.ink }}>
               <div>
                 <div style={{ fontSize: 9, letterSpacing: '0.35em', textTransform: 'uppercase', color: C.gold, marginBottom: 6 }}>Your Backing Selection</div>
@@ -5710,34 +5726,54 @@ function BackingTray({ basket, toggleBasket, onOpenCalc, setCalcWork }) {
               </div>
               <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', color: C.fog, fontSize: 28, cursor: 'pointer' }}>×</button>
             </div>
+
+            {/* Items */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
-              {basket.map((work, i) => (
-                <div key={i} style={{ display: 'flex', gap: 14, alignItems: 'center', padding: '14px 0', borderBottom: `1px solid ${C.goldBorder}` }}>
-                  <div style={{ width: 60, height: 60, borderRadius: 4, overflow: 'hidden', flexShrink: 0, background: C.ink }}>
-                    <img src={work.image} alt={work.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              {items.map((work, i) => (
+                <div key={i} style={{ padding: '14px 0', borderBottom: `1px solid ${C.goldBorder}` }}>
+                  <div style={{ display: 'flex', gap: 14, alignItems: 'center', marginBottom: 10 }}>
+                    <div style={{ width: 56, height: 56, borderRadius: 4, overflow: 'hidden', flexShrink: 0, background: C.ink }}>
+                      <img src={work.image} alt={work.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: C.gold, marginBottom: 2 }}>{work.artistName}</div>
+                      <div style={{ fontSize: 12, color: C.cream, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{work.title}</div>
+                    </div>
+                    <button onClick={() => toggleBasket(work)} style={{ background: 'none', border: '1px solid rgba(176,64,64,0.4)', borderRadius: 3, color: '#e07070', fontSize: 11, padding: '4px 8px', cursor: 'pointer', flexShrink: 0 }}>Remove</button>
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: C.gold, marginBottom: 2 }}>{work.artistName}</div>
-                    <div style={{ fontSize: 12, color: C.cream, lineHeight: 1.3, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{work.title}</div>
-                    <div style={{ fontFamily: gF, fontSize: 16, color: C.gold }}>R {(work.price||0).toLocaleString('en-ZA')}</div>
+                  {/* Per-artwork breakdown */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
+                    {[
+                      ['Backing fee', `R ${fmt(work.deposit)}`],
+                      ['Auction fee/mo', `R ${fmt(work.monthly)}`],
+                      ['50% at sale', `R ${fmt(work.backerShare)}`],
+                    ].map(([label, val]) => (
+                      <div key={label} style={{ padding: '8px 10px', background: C.goldGlow, border: `1px solid ${C.goldBorder}`, borderRadius: 4, textAlign: 'center' }}>
+                        <div style={{ fontSize: 9, color: C.fog, marginBottom: 3, letterSpacing: '0.1em' }}>{label}</div>
+                        <div style={{ fontSize: 12, color: C.gold, fontWeight: 600 }}>{val}</div>
+                      </div>
+                    ))}
                   </div>
-                  <button onClick={() => toggleBasket(work)} style={{ background: 'none', border: '1px solid rgba(176,64,64,0.4)', borderRadius: 3, color: '#e07070', fontSize: 11, padding: '4px 8px', cursor: 'pointer', flexShrink: 0 }}>Remove</button>
                 </div>
               ))}
             </div>
+
+            {/* Totals */}
             <div style={{ padding: '20px 24px', borderTop: `1px solid ${C.goldBorder}`, background: C.ink }}>
+              <div style={{ fontSize: 9, letterSpacing: '0.25em', textTransform: 'uppercase', color: C.gold, marginBottom: 14 }}>Combined Totals</div>
               {[
-                ['Total artwork value', `R ${total.toLocaleString('en-ZA')}`],
-                ['Combined monthly fee (12mo)', `R ${Math.round(total * 0.5 / 12).toLocaleString('en-ZA')}`],
-                ['Your 50% share at sale', `R ${Math.round(total * 0.5).toLocaleString('en-ZA')}`],
-              ].map(([label, val], i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: i < 2 ? `1px solid rgba(201,168,76,0.1)` : 'none' }}>
+                ['Total artwork value', `R ${fmt(totalValue)}`, false],
+                ['Total backing fee (upfront)', `R ${fmt(totalDeposit)}`, false],
+                ['Combined auction fee/mo', `R ${fmt(totalMonthly)}`, false],
+                ['Your combined 50% at sale', `R ${fmt(totalShare)}`, true],
+              ].map(([label, val, highlight], i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: i < 3 ? `1px solid rgba(201,168,76,0.1)` : 'none' }}>
                   <span style={{ fontSize: 12, color: C.fog }}>{label}</span>
-                  <span style={{ fontFamily: i === 2 ? gF : sF, fontSize: i === 2 ? 20 : 13, color: i === 2 ? C.green : C.gold, fontWeight: i === 2 ? 400 : 600 }}>{val}</span>
+                  <span style={{ fontFamily: highlight ? gF : sF, fontSize: highlight ? 20 : 13, color: highlight ? C.green : C.gold, fontWeight: highlight ? 400 : 600 }}>{val}</span>
                 </div>
               ))}
               <div style={{ fontSize: 10, color: C.fog, lineHeight: 1.6, margin: '16px 0', padding: '10px', background: C.goldGlow, border: `1px solid ${C.goldBorder}`, borderRadius: 4 }}>
-                <strong style={{ color: C.gold }}>FAIS:</strong> Display license arrangement. Not an investment product.
+                <strong style={{ color: C.gold }}>FAIS:</strong> Backer platform arrangement. Auction platform fees fund online auctions, live auctions and exhibitions. Not a financial investment product.
               </div>
               <button onClick={() => { setOpen(false); if (basket[0]) setCalcWork(basket[0]); onOpenCalc(); }}
                 style={{ width: '100%', padding: '16px', background: `linear-gradient(135deg, ${C.gold}, #a07828)`, border: 'none', borderRadius: 4, color: '#1a2744', fontFamily: sF, fontSize: 12, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer' }}>
