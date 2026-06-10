@@ -66,12 +66,8 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
           {
             label: `Thomas Kohler Oil on Stretched Canvas "2021 Winter Storm"`,
             price: 6750
-          },
-          {
-            label: `Thomas Kohler Oil on Stretched Canvas "2021 Winter Storm"`,
-            price: 6750
           }
-        ]
+]
       },
       {
         title: `Thomas Kohler Oil on Stretched Canvas "2022 Danneborg "`,
@@ -87,12 +83,8 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
           {
             label: `Thomas Kohler Oil on Stretched Canvas "2022 Danneborg "`,
             price: 9500
-          },
-          {
-            label: `Thomas Kohler Oil on Stretched Canvas "2022 Danneborg "`,
-            price: 9500
           }
-        ]
+]
       },
       {
         title: `Thomas Kohler Oil on Stretched Canvas "2019 Autumn"`,
@@ -108,12 +100,8 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
           {
             label: `Thomas Kohler Oil on Stretched Canvas "2019 Autumn"`,
             price: 6500
-          },
-          {
-            label: `Thomas Kohler Oil on Stretched Canvas "2019 Autumn"`,
-            price: 6500
           }
-        ]
+]
       },
       {
         title: `Thomas Kohler Oil on Stretched Canvas "2017 Sydney Harbour"`,
@@ -129,12 +117,8 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
           {
             label: `Thomas Kohler Oil on Stretched Canvas "2017 Sydney Harbour"`,
             price: 8950
-          },
-          {
-            label: `Thomas Kohler Oil on Stretched Canvas "2017 Sydney Harbour"`,
-            price: 8950
           }
-        ]
+]
       },
       {
         title: `Thomas Kohler Oil on Stretched Canvas "2017 Public Transport in Norway "`,
@@ -150,12 +134,8 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
           {
             label: `Thomas Kohler Oil on Stretched Canvas "2017 Public Transport in Norway "`,
             price: 8500
-          },
-          {
-            label: `Thomas Kohler Oil on Stretched Canvas "2017 Public Transport in Norway "`,
-            price: 8500
           }
-        ]
+]
       },
       {
         title: `Thomas Kohler Oil on Stretched Canvas "2007 Rounding Lighthouse"`,
@@ -171,12 +151,8 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
           {
             label: `Thomas Kohler Oil on Stretched Canvas "2007 Rounding Lighthouse"`,
             price: 13500
-          },
-          {
-            label: `Thomas Kohler Oil on Stretched Canvas "2007 Rounding Lighthouse"`,
-            price: 13500
           }
-        ]
+]
       }
     ]
   },
@@ -221,12 +197,8 @@ In AJ Burns' world of art, creativity knows no bounds, and the canvas is a dynam
           {
             label: `Many Parts To Each Of Us by AJ Burns (600mm x 400mm)`,
             price: 5500
-          },
-          {
-            label: `Many Parts To Each Of Us by AJ Burns (600mm x 400mm)`,
-            price: 5500
           }
-        ]
+]
       },
       {
         title: `Fiery Redheads by AJ Burns`,
@@ -243,12 +215,8 @@ In AJ Burns' world of art, creativity knows no bounds, and the canvas is a dynam
           {
             label: `Fiery Redheads by AJ Burns (600mm x 400mm)`,
             price: 5500
-          },
-          {
-            label: `Fiery Redheads by AJ Burns (600mm x 400mm)`,
-            price: 5500
           }
-        ]
+]
       },
       {
         title: `Close but different by AJ Burns`,
@@ -265,12 +233,8 @@ In AJ Burns' world of art, creativity knows no bounds, and the canvas is a dynam
           {
             label: `Close but different by AJ Burns (600mm x 400mm)`,
             price: 5500
-          },
-          {
-            label: `Close but different by AJ Burns (600mm x 400mm)`,
-            price: 5500
           }
-        ]
+]
       },
       {
         title: `A Little Left of Centre by AJ Burns`,
@@ -287,12 +251,8 @@ In AJ Burns' world of art, creativity knows no bounds, and the canvas is a dynam
           {
             label: `A Little Left of Centre by AJ Burns (1200mm x 740mm)`,
             price: 21500
-          },
-          {
-            label: `A Little Left of Centre by AJ Burns (1200mm x 740mm)`,
-            price: 21500
           }
-        ]
+]
       },
       {
         title: `Keep Exploring by AJ Burns`,
@@ -309,12 +269,8 @@ In AJ Burns' world of art, creativity knows no bounds, and the canvas is a dynam
           {
             label: `Keep Exploring by AJ Burns (900mm x 700mm)`,
             price: 15400
-          },
-          {
-            label: `Keep Exploring by AJ Burns (900mm x 700mm)`,
-            price: 15400
           }
-        ]
+]
       }
     ]
   },
@@ -356,12 +312,8 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
           {
             label: `Paul van Rensburg - Exclusive USA Series #1 (1270mm x 1010mm)`,
             price: 74497
-          },
-          {
-            label: `Paul van Rensburg - Exclusive USA Series #1 (1270mm x 1010mm)`,
-            price: 74497
           }
-        ]
+]
       },
       {
         title: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`,
@@ -380,20 +332,8 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
           {
             label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`,
             price: 16500
-          },
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`,
-            price: 16500
-          },
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`,
-            price: 16500
-          },
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`,
-            price: 16500
           }
-        ]
+]
       },
       {
         title: `Paul van Rensburg - 850mm x 600mm`,
@@ -416,60 +356,8 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
           {
             label: `Paul van Rensburg - 850mm x 600mm`,
             price: 5750
-          },
-          {
-            label: `Paul van Rensburg - 850mm x 600mm`,
-            price: 5750
-          },
-          {
-            label: `Paul van Rensburg - 850mm x 600mm`,
-            price: 5750
-          },
-          {
-            label: `Paul van Rensburg - 850mm x 600mm`,
-            price: 5750
-          },
-          {
-            label: `Paul van Rensburg - 850mm x 600mm`,
-            price: 5750
-          },
-          {
-            label: `Paul van Rensburg - 850mm x 600mm`,
-            price: 5750
-          },
-          {
-            label: `Paul van Rensburg - 850mm x 600mm`,
-            price: 5750
-          },
-          {
-            label: `Paul van Rensburg - 850mm x 600mm`,
-            price: 5750
-          },
-          {
-            label: `Paul van Rensburg - 850mm x 600mm`,
-            price: 5750
-          },
-          {
-            label: `Paul van Rensburg - 850mm x 600mm`,
-            price: 5750
-          },
-          {
-            label: `Paul van Rensburg - 850mm x 600mm`,
-            price: 5750
-          },
-          {
-            label: `Paul van Rensburg - 850mm x 600mm`,
-            price: 5750
-          },
-          {
-            label: `Paul van Rensburg - 850mm x 600mm`,
-            price: 5750
-          },
-          {
-            label: `Paul van Rensburg - 850mm x 600mm`,
-            price: 5750
           }
-        ]
+]
       },
       {
         title: `Paul van Rensburg - 1270mm x 1010mm`,
@@ -486,12 +374,8 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
           {
             label: `Paul van Rensburg - 1270mm x 1010mm`,
             price: 28500
-          },
-          {
-            label: `Paul van Rensburg - 1270mm x 1010mm`,
-            price: 28500
           }
-        ]
+]
       },
       {
         title: `Paul van Rensburg - 1200mm x 600mm`,
@@ -509,12 +393,8 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
           {
             label: `Paul van Rensburg - 1200mm x 600mm`,
             price: 8950
-          },
-          {
-            label: `Paul van Rensburg - 1200mm x 600mm`,
-            price: 8950
           }
-        ]
+]
       }
     ]
   },
@@ -557,28 +437,8 @@ From 2016 to 2018, Harry found solace in his studio nestled within The Winelands
           {
             label: `Harry Erasmus - 760mm x 380mm`,
             price: 10950
-          },
-          {
-            label: `Harry Erasmus - 760mm x 380mm`,
-            price: 10950
-          },
-          {
-            label: `Harry Erasmus - 760mm x 380mm`,
-            price: 10950
-          },
-          {
-            label: `Harry Erasmus - 760mm x 380mm`,
-            price: 10950
-          },
-          {
-            label: `Harry Erasmus - 760mm x 380mm`,
-            price: 10950
-          },
-          {
-            label: `Harry Erasmus - 760mm x 380mm`,
-            price: 10950
           }
-        ]
+]
       },
       {
         title: `Harry Erasmus - 410mm x 200mm`,
@@ -595,12 +455,8 @@ From 2016 to 2018, Harry found solace in his studio nestled within The Winelands
           {
             label: `Harry Erasmus - 410mm x 200mm`,
             price: 4750
-          },
-          {
-            label: `Harry Erasmus - 410mm x 200mm`,
-            price: 4750
           }
-        ]
+]
       },
       {
         title: `Harry Erasmus - 350mm x 250mm`,
@@ -617,12 +473,8 @@ From 2016 to 2018, Harry found solace in his studio nestled within The Winelands
           {
             label: `Harry Erasmus - 350mm x 250mm`,
             price: 2750
-          },
-          {
-            label: `Harry Erasmus - 350mm x 250mm`,
-            price: 2750
           }
-        ]
+]
       },
       {
         title: `Harry Erasmus - 1600mm x 600mm`,
@@ -641,20 +493,8 @@ From 2016 to 2018, Harry found solace in his studio nestled within The Winelands
           {
             label: `Harry Erasmus - 1600mm x 600mm`,
             price: 19500
-          },
-          {
-            label: `Harry Erasmus - 1600mm x 600mm`,
-            price: 19500
-          },
-          {
-            label: `Harry Erasmus - 1600mm x 600mm`,
-            price: 19500
-          },
-          {
-            label: `Harry Erasmus - 1600mm x 600mm`,
-            price: 19500
           }
-        ]
+]
       }
     ]
   },
@@ -693,12 +533,8 @@ There is a quiet nostalgia woven through her canvases—a gentle invitation for 
           {
             label: `Marina K - After the Rain (1200mm x 900mm)`,
             price: 14950
-          },
-          {
-            label: `Marina K - After the Rain (1200mm x 900mm)`,
-            price: 14950
           }
-        ]
+]
       },
       {
         title: `Marina K - Cape Town Dreams`,
@@ -715,12 +551,8 @@ There is a quiet nostalgia woven through her canvases—a gentle invitation for 
           {
             label: `Marina K - Cape Town Dreams (1200mm x 900mm)`,
             price: 14950
-          },
-          {
-            label: `Marina K - Cape Town Dreams (1200mm x 900mm)`,
-            price: 14950
           }
-        ]
+]
       },
       {
         title: `Marina K - Above the Atlantic`,
@@ -737,12 +569,8 @@ There is a quiet nostalgia woven through her canvases—a gentle invitation for 
           {
             label: `Marina K - Above the Atlantic (500mm x 360mm)`,
             price: 3950
-          },
-          {
-            label: `Marina K - Above the Atlantic (500mm x 360mm)`,
-            price: 3950
           }
-        ]
+]
       },
       {
         title: `Marina K - Keeper of the Light`,
@@ -759,12 +587,8 @@ There is a quiet nostalgia woven through her canvases—a gentle invitation for 
           {
             label: `Marina K - Keeper of the Light (500mm x 360mm)`,
             price: 3950
-          },
-          {
-            label: `Marina K - Keeper of the Light (500mm x 360mm)`,
-            price: 3950
           }
-        ]
+]
       }
     ]
   },
@@ -813,28 +637,8 @@ With unwavering dedication and a deep reverence for the craft, Corne Weideman co
           {
             label: `Corne Weideman - 460mm x 310mm`,
             price: 1850
-          },
-          {
-            label: `Corne Weideman - 460mm x 310mm`,
-            price: 1850
-          },
-          {
-            label: `Corne Weideman - 460mm x 310mm`,
-            price: 1850
-          },
-          {
-            label: `Corne Weideman - 460mm x 310mm`,
-            price: 1850
-          },
-          {
-            label: `Corne Weideman - 460mm x 310mm`,
-            price: 1850
-          },
-          {
-            label: `Corne Weideman - 460mm x 310mm`,
-            price: 1850
           }
-        ]
+]
       },
       {
         title: `Corne Weideman - 420mm x 300mm`,
@@ -858,68 +662,8 @@ With unwavering dedication and a deep reverence for the craft, Corne Weideman co
           {
             label: `Corne Weideman - 420mm x 300mm`,
             price: 1690
-          },
-          {
-            label: `Corne Weideman - 420mm x 300mm`,
-            price: 1690
-          },
-          {
-            label: `Corne Weideman - 420mm x 300mm`,
-            price: 1690
-          },
-          {
-            label: `Corne Weideman - 420mm x 300mm`,
-            price: 1690
-          },
-          {
-            label: `Corne Weideman - 420mm x 300mm`,
-            price: 1690
-          },
-          {
-            label: `Corne Weideman - 420mm x 300mm`,
-            price: 1690
-          },
-          {
-            label: `Corne Weideman - 420mm x 300mm`,
-            price: 1690
-          },
-          {
-            label: `Corne Weideman - 420mm x 300mm`,
-            price: 1690
-          },
-          {
-            label: `Corne Weideman - 420mm x 300mm`,
-            price: 1690
-          },
-          {
-            label: `Corne Weideman - 420mm x 300mm`,
-            price: 1690
-          },
-          {
-            label: `Corne Weideman - 420mm x 300mm`,
-            price: 1690
-          },
-          {
-            label: `Corne Weideman - 420mm x 300mm`,
-            price: 1690
-          },
-          {
-            label: `Corne Weideman - 420mm x 300mm`,
-            price: 1690
-          },
-          {
-            label: `Corne Weideman - 420mm x 300mm`,
-            price: 1690
-          },
-          {
-            label: `Corne Weideman - 420mm x 300mm`,
-            price: 1690
-          },
-          {
-            label: `Corne Weideman - 420mm x 300mm`,
-            price: 1690
           }
-        ]
+]
       },
       {
         title: `Corne Weideman - Acrylic on Stretched Canvas`,
@@ -936,12 +680,8 @@ With unwavering dedication and a deep reverence for the craft, Corne Weideman co
           {
             label: `Corne Weideman - Acrylic on Stretched Canvas`,
             price: 1690
-          },
-          {
-            label: `Corne Weideman - Acrylic on Stretched Canvas`,
-            price: 1690
           }
-        ]
+]
       }
     ]
   },
@@ -980,12 +720,8 @@ Beneath the stillness of his work lies a meditation on impermanence. Kotze exami
           {
             label: `Ferdinand Kotze - "Fragments of Play: Red Balloon" (1010mm x 760mm)`,
             price: 23500
-          },
-          {
-            label: `Ferdinand Kotze - "Fragments of Play: Red Balloon" (1010mm x 760mm)`,
-            price: 23500
           }
-        ]
+]
       },
       {
         title: `Ferdinand Kotze - "Fragments of Play: Leapfrog"`,
@@ -1002,12 +738,8 @@ Beneath the stillness of his work lies a meditation on impermanence. Kotze exami
           {
             label: `Ferdinand Kotze - "Fragments of Play: Leapfrog" (1010mm x 760mm)`,
             price: 23500
-          },
-          {
-            label: `Ferdinand Kotze - "Fragments of Play: Leapfrog" (1010mm x 760mm)`,
-            price: 23500
           }
-        ]
+]
       },
       {
         title: `Ferdinand Kotze - "Fragments of Play: Toss The Baby"`,
@@ -1024,12 +756,8 @@ Beneath the stillness of his work lies a meditation on impermanence. Kotze exami
           {
             label: `Ferdinand Kotze - "Fragments of Play: Toss The Baby" (760mm x 600mm)`,
             price: 11500
-          },
-          {
-            label: `Ferdinand Kotze - "Fragments of Play: Toss The Baby" (760mm x 600mm)`,
-            price: 11500
           }
-        ]
+]
       }
     ]
   },
@@ -1068,12 +796,8 @@ With each brushstroke, Gaynor doesn't just depict scenes; she encapsulates emoti
           {
             label: `Gaynor - Acrylic & Ink on Canvas Panel 200mm x 200mm`,
             price: 1690
-          },
-          {
-            label: `Gaynor - Acrylic & Ink on Canvas Panel 200mm x 200mm`,
-            price: 1690
           }
-        ]
+]
       },
       {
         title: `Gaynor - Oil on Stretched Canvas`,
@@ -1095,18 +819,10 @@ With each brushstroke, Gaynor doesn't just depict scenes; she encapsulates emoti
             price: 3490
           },
           {
-            label: `Gaynor - Oil on Stretched Canvas (400mm x 400mm)`,
-            price: 3490
-          },
-          {
-            label: `Gaynor - Oil on Stretched Canvas`,
-            price: 9890
-          },
-          {
             label: `Gaynor - Oil on Stretched Canvas`,
             price: 9890
           }
-        ]
+]
       },
       {
         title: `Oil on Stretched Canvas by Gaynor`,
@@ -1121,12 +837,8 @@ With each brushstroke, Gaynor doesn't just depict scenes; she encapsulates emoti
           {
             label: `Oil on Stretched Canvas by Gaynor`,
             price: 18500
-          },
-          {
-            label: `Oil on Stretched Canvas by Gaynor`,
-            price: 18500
           }
-        ]
+]
       }
     ]
   },
@@ -1168,12 +880,8 @@ Yet beneath the accolades lies an artist more concerned with truth than acclaim.
           {
             label: `Jonel Scholtz - "I'm Still Here" (1210mm x 910mm)`,
             price: 18500
-          },
-          {
-            label: `Jonel Scholtz - "I'm Still Here" (1210mm x 910mm)`,
-            price: 18500
           }
-        ]
+]
       },
       {
         title: `Jonel Scholtz - "The Weight of Quiet Things"`,
@@ -1193,12 +901,8 @@ Yet beneath the accolades lies an artist more concerned with truth than acclaim.
           {
             label: `Jonel Scholtz - "The Weight of Quiet Things" (1210mm x 910mm)`,
             price: 18500
-          },
-          {
-            label: `Jonel Scholtz - "The Weight of Quiet Things" (1210mm x 910mm)`,
-            price: 18500
           }
-        ]
+]
       },
       {
         title: `Jonel Scholtz - "As 'n Draai jou Omgooi"`,
@@ -1218,12 +922,8 @@ Yet beneath the accolades lies an artist more concerned with truth than acclaim.
           {
             label: `Jonel Scholtz - "As 'n Draai jou Omgooi" (1010mm x 760mm)`,
             price: 12850
-          },
-          {
-            label: `Jonel Scholtz - "As 'n Draai jou Omgooi" (1010mm x 760mm)`,
-            price: 12850
           }
-        ]
+]
       }
     ]
   },
@@ -1262,12 +962,8 @@ With over 600 artworks, Niki's portfolio is divided into two parts: her surreal 
           {
             label: `Niki McQueen - "Travels by Moonlight" Mixed Media on Archival Paper`,
             price: 17900
-          },
-          {
-            label: `Niki McQueen - "Travels by Moonlight" Mixed Media on Archival Paper`,
-            price: 17900
           }
-        ]
+]
       },
       {
         title: `Niki McQueen - "Queer Flock" Mixed Media on Archival Paper`,
@@ -1284,12 +980,8 @@ With over 600 artworks, Niki's portfolio is divided into two parts: her surreal 
           {
             label: `Niki McQueen - "Queer Flock" Mixed Media on Archival Paper`,
             price: 16200
-          },
-          {
-            label: `Niki McQueen - "Queer Flock" Mixed Media on Archival Paper`,
-            price: 16200
           }
-        ]
+]
       },
       {
         title: `Niki McQueen - "Whale Gazing" Mixed Media on Archival Paper`,
@@ -1306,12 +998,8 @@ With over 600 artworks, Niki's portfolio is divided into two parts: her surreal 
           {
             label: `Niki McQueen - "Whale Gazing" Mixed Media on Archival Paper`,
             price: 8750
-          },
-          {
-            label: `Niki McQueen - "Whale Gazing" Mixed Media on Archival Paper`,
-            price: 8750
           }
-        ]
+]
       }
     ]
   },
@@ -1361,30 +1049,6 @@ Now, in the fullness of time, Anton Gericke embarks on a new chapter as a full-t
           },
           {
             label: `Anton Gericke - Acrylic on Panel (Framed)`,
-            price: 27000
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel (Framed)`,
-            price: 27000
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel (Framed)`,
-            price: 27000
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel (Framed)`,
-            price: 27000
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel (Framed)`,
-            price: 27000
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel (Framed)`,
-            price: 37800
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel (Framed)`,
             price: 37800
           },
           {
@@ -1393,33 +1057,9 @@ Now, in the fullness of time, Anton Gericke embarks on a new chapter as a full-t
           },
           {
             label: `Anton Gericke - Acrylic on Panel (Framed)`,
-            price: 23880
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel (Framed)`,
             price: 24880
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel (Framed)`,
-            price: 24880
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel (Framed)`,
-            price: 23880
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel (Framed)`,
-            price: 23880
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel (Framed)`,
-            price: 27000
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel (Framed)`,
-            price: 27000
           }
-        ]
+]
       },
       {
         title: `Acrylic on Panel by Anton Gericke`,
@@ -1438,28 +1078,8 @@ Now, in the fullness of time, Anton Gericke embarks on a new chapter as a full-t
           {
             label: `Acrylic on Panel by Anton Gericke`,
             price: 15480
-          },
-          {
-            label: `Acrylic on Panel by Anton Gericke`,
-            price: 15480
-          },
-          {
-            label: `Acrylic on Panel by Anton Gericke`,
-            price: 15480
-          },
-          {
-            label: `Acrylic on Panel by Anton Gericke`,
-            price: 15480
-          },
-          {
-            label: `Acrylic on Panel by Anton Gericke`,
-            price: 15480
-          },
-          {
-            label: `Acrylic on Panel by Anton Gericke`,
-            price: 15480
           }
-        ]
+]
       }
     ]
   },
@@ -1504,44 +1124,8 @@ Now living in Still Bay, surrounded by river and sea, Fourie continues to paint 
           {
             label: `Gerhard Fourie - 700mm x 500mm`,
             price: 4750
-          },
-          {
-            label: `Gerhard Fourie - 700mm x 500mm`,
-            price: 4750
-          },
-          {
-            label: `Gerhard Fourie - 700mm x 500mm`,
-            price: 4750
-          },
-          {
-            label: `Gerhard Fourie - 700mm x 500mm`,
-            price: 4750
-          },
-          {
-            label: `Gerhard Fourie - 700mm x 500mm`,
-            price: 4750
-          },
-          {
-            label: `Gerhard Fourie - 700mm x 500mm`,
-            price: 4750
-          },
-          {
-            label: `Gerhard Fourie - 700mm x 500mm`,
-            price: 4750
-          },
-          {
-            label: `Gerhard Fourie - 700mm x 500mm`,
-            price: 4750
-          },
-          {
-            label: `Gerhard Fourie - 700mm x 500mm`,
-            price: 4750
-          },
-          {
-            label: `Gerhard Fourie - 700mm x 500mm`,
-            price: 4750
           }
-        ]
+]
       },
       {
         title: `Gerhard Fourie - 600mm x 300mm`,
@@ -1558,12 +1142,8 @@ Now living in Still Bay, surrounded by river and sea, Fourie continues to paint 
           {
             label: `Gerhard Fourie - 600mm x 300mm`,
             price: 2300
-          },
-          {
-            label: `Gerhard Fourie - 600mm x 300mm`,
-            price: 2300
           }
-        ]
+]
       }
     ]
   },
@@ -1611,33 +1191,13 @@ In essence, Ian Hertslet's paintings strike a chord with art enthusiasts who see
           },
           {
             label: `Ian Hertslet - Oil on Canvas`,
-            price: 34500
-          },
-          {
-            label: `Ian Hertslet - Oil on Canvas`,
             price: 27600
-          },
-          {
-            label: `Ian Hertslet - Oil on Canvas`,
-            price: 27600
-          },
-          {
-            label: `Ian Hertslet - Oil on Canvas`,
-            price: 19750
-          },
-          {
-            label: `Ian Hertslet - Oil on Canvas`,
-            price: 19750
-          },
-          {
-            label: `Ian Hertslet - Oil on Canvas`,
-            price: 19750
           },
           {
             label: `Ian Hertslet - Oil on Canvas`,
             price: 19750
           }
-        ]
+]
       },
       {
         title: `Oil on Stretched Canvas by Ian Hertslet`,
@@ -1654,12 +1214,8 @@ In essence, Ian Hertslet's paintings strike a chord with art enthusiasts who see
           {
             label: `Oil on Stretched Canvas by Ian Hertslet`,
             price: 28500
-          },
-          {
-            label: `Oil on Stretched Canvas by Ian Hertslet`,
-            price: 28500
           }
-        ]
+]
       }
     ]
   },
@@ -1698,12 +1254,8 @@ In August 2010, Fungai's art crossed borders for a special exhibition at Amazwi 
           {
             label: `Acrylic on Stretched Canvas by Junior Fungai`,
             price: 7475
-          },
-          {
-            label: `Acrylic on Stretched Canvas by Junior Fungai`,
-            price: 7475
           }
-        ]
+]
       },
       {
         title: `Acrylic on Rolled Canvas by Junior Fungai`,
@@ -1720,20 +1272,8 @@ In August 2010, Fungai's art crossed borders for a special exhibition at Amazwi 
           {
             label: `Acrylic on Rolled Canvas by Junior Fungai`,
             price: 6900
-          },
-          {
-            label: `Acrylic on Rolled Canvas by Junior Fungai`,
-            price: 6900
-          },
-          {
-            label: `Acrylic on Rolled Canvas by Junior Fungai`,
-            price: 6900
-          },
-          {
-            label: `Acrylic on Rolled Canvas by Junior Fungai`,
-            price: 6900
           }
-        ]
+]
       }
     ]
   },
@@ -1783,25 +1323,13 @@ With no formal art training, Solly's gift is a divine endowment, an unspoken poe
           },
           {
             label: `Solly Manthata - 1200mm x 800mm`,
-            price: 14750
-          },
-          {
-            label: `Solly Manthata - 1200mm x 800mm`,
             price: 13800
-          },
-          {
-            label: `Solly Manthata - 1200mm x 800mm`,
-            price: 13800
-          },
-          {
-            label: `Solly Manthata - 1200mm x 800mm`,
-            price: 12990
           },
           {
             label: `Solly Manthata - 1200mm x 800mm`,
             price: 12990
           }
-        ]
+]
       },
       {
         title: `Solly Manthata - Triptych (3 in 1 ) Oil & Acrylic on Stretched Canvas`,
@@ -1820,12 +1348,8 @@ With no formal art training, Solly's gift is a divine endowment, an unspoken poe
           {
             label: `Solly Manthata - Triptych (3 in 1 ) Oil & Acrylic on Stretched Canvas (400mm x 300mm each)`,
             price: 10950
-          },
-          {
-            label: `Solly Manthata - Triptych (3 in 1 ) Oil & Acrylic on Stretched Canvas (400mm x 300mm each)`,
-            price: 10950
           }
-        ]
+]
       }
     ]
   },
@@ -1879,42 +1403,18 @@ Working between control and chance, Stuart allows fluid elements to shape the fi
             price: 6900
           },
           {
-            label: `Craig Stuart - (613mm x 307mm)`,
-            price: 6900
-          },
-          {
-            label: `Craig Stuart - (613mm x 307mm)`,
-            price: 6900
-          },
-          {
-            label: `Craig Stuart - (613mm x 307mm)`,
-            price: 6900
-          },
-          {
-            label: `Craig Stuart - (607mm x 457mm)`,
-            price: 14500
-          },
-          {
             label: `Craig Stuart - (607mm x 457mm)`,
             price: 14500
           },
           {
             label: `Craig Stuart - (840mm x 595mm)`,
             price: 23000
-          },
-          {
-            label: `Craig Stuart - (840mm x 595mm)`,
-            price: 23000
-          },
-          {
-            label: `Craig Stuart - (1189mm x 840mm)`,
-            price: 35000
           },
           {
             label: `Craig Stuart - (1189mm x 840mm)`,
             price: 35000
           }
-        ]
+]
       }
     ]
   },
@@ -1961,26 +1461,14 @@ Those years left a lasting impression on her canvas. Today, with the Atlantic wi
             price: 14950
           },
           {
-            label: `Dante Ruben - (610mm x 510mm)`,
-            price: 14950
-          },
-          {
             label: `Dante Ruben - (1500mm x 900mm)`,
             price: 35000
-          },
-          {
-            label: `Dante Ruben - (1500mm x 900mm)`,
-            price: 35000
-          },
-          {
-            label: `Dante Ruben - (900mm x 900mm)`,
-            price: 18900
           },
           {
             label: `Dante Ruben - (900mm x 900mm)`,
             price: 18900
           }
-        ]
+]
       }
     ]
   },
@@ -2032,34 +1520,14 @@ For over two decades, Emile's works have graced the homes of South Africans. In 
             price: 3850
           },
           {
-            label: `Emile Cronje - Acrylic on Panel (600mm x 300mm)`,
-            price: 3850
-          },
-          {
-            label: `Emile Cronje - Acrylic on Panel (600mm x 300mm)`,
-            price: 3850
-          },
-          {
-            label: `Emile Cronje - Acrylic on Panel (600mm x 300mm)`,
-            price: 3850
-          },
-          {
             label: `Emile Cronje - Acrylic on Panel (580mm x 330mm)`,
-            price: 3850
-          },
-          {
-            label: `Emile Cronje - Acrylic on Panel (580mm x 330mm)`,
-            price: 3850
-          },
-          {
-            label: `Emile Cronje - Acrylic on Panel (590mm x 330mm)`,
             price: 3850
           },
           {
             label: `Emile Cronje - Acrylic on Panel (590mm x 330mm)`,
             price: 3850
           }
-        ]
+]
       }
     ]
   },
@@ -2106,36 +1574,8 @@ Louise's artistic journey has graced numerous group and solo exhibitions, leavin
           {
             label: `Louise de Klerk Oil on Stretched Canvas`,
             price: 8900
-          },
-          {
-            label: `Louise de Klerk Oil on Stretched Canvas`,
-            price: 8900
-          },
-          {
-            label: `Louise de Klerk Oil on Stretched Canvas`,
-            price: 8900
-          },
-          {
-            label: `Louise de Klerk Oil on Stretched Canvas`,
-            price: 8900
-          },
-          {
-            label: `Louise de Klerk Oil on Stretched Canvas`,
-            price: 8900
-          },
-          {
-            label: `Louise de Klerk Oil on Stretched Canvas`,
-            price: 8900
-          },
-          {
-            label: `Louise de Klerk Oil on Stretched Canvas`,
-            price: 8900
-          },
-          {
-            label: `Louise de Klerk Oil on Stretched Canvas`,
-            price: 8900
           }
-        ]
+]
       }
     ]
   },
@@ -2179,41 +1619,9 @@ In the vivid strokes and nuanced palettes of Stef van den Berg's art, we glimpse
           },
           {
             label: `Acrylic on Panel by Stef van den Berg`,
-            price: 4950
-          },
-          {
-            label: `Acrylic on Panel by Stef van den Berg`,
-            price: 4950
-          },
-          {
-            label: `Acrylic on Panel by Stef van den Berg`,
-            price: 4950
-          },
-          {
-            label: `Acrylic on Panel by Stef van den Berg`,
-            price: 3950
-          },
-          {
-            label: `Acrylic on Panel by Stef van den Berg`,
-            price: 3950
-          },
-          {
-            label: `Acrylic on Panel by Stef van den Berg`,
-            price: 3950
-          },
-          {
-            label: `Acrylic on Panel by Stef van den Berg`,
-            price: 3950
-          },
-          {
-            label: `Acrylic on Panel by Stef van den Berg`,
-            price: 3950
-          },
-          {
-            label: `Acrylic on Panel by Stef van den Berg`,
             price: 3950
           }
-        ]
+]
       }
     ]
   },
