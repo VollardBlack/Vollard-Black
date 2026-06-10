@@ -30,7 +30,7 @@ const C = {
 const fmt = n => Number(n || 0).toLocaleString('en-ZA', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 const fmtDec = n => Number(n || 0).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-// ─── ARTIST DATA (correct per-handle images)
+// ─── ARTIST DATA (mockup images filtered)
 const ARTISTS = [
   {
     id: `paul-van-rensburg`,
@@ -58,7 +58,6 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         title: `Paul van Rensburg - Exclusive USA Series #1`,
         price: 74497.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260061.png?v=1773316368`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260061.png?v=1773316368`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260062.png?v=1773316369`,
@@ -76,7 +75,6 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         title: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`,
         price: 24500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260051.png?v=1773316254`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260051.png?v=1773316254`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260052.png?v=1773316254`,
@@ -165,7 +163,6 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         title: `Paul van Rensburg - 850mm x 600mm`,
         price: 5750.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260041.png?v=1773315990`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260041.png?v=1773315990`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260042.png?v=1773315990`,
@@ -273,7 +270,6 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         title: `Paul van Rensburg - 1270mm x 1010mm`,
         price: 34500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260301.png?v=1771592738`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260301.png?v=1771592738`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260302.png?v=1771592738`,
@@ -297,7 +293,6 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         title: `Paul van Rensburg - 1200mm x 600mm`,
         price: 8950.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260281.png?v=1771592490`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260281.png?v=1771592490`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260282.png?v=1771592490`,
@@ -315,7 +310,6 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         title: `Paul van Rensburg - 600mm x 420mm`,
         price: 2750.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260271.png?v=1771591917`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260271.png?v=1771591917`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260272.png?v=1771591917`,
@@ -339,7 +333,6 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         title: `Paul van Rensburg - 420mm x 300mm`,
         price: 1750.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260251.png?v=1771591744`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260251.png?v=1771591744`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260252.png?v=1771591744`,
@@ -370,7 +363,6 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         title: `Paul van Rensburg - 1200mm x 800mm`,
         price: 13750.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260161.png?v=1771502745`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260161.png?v=1771502745`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260162.png?v=1771502746`,
@@ -394,7 +386,6 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         title: `Paul van Rensburg - Acrylic on Stretched Canvas`,
         price: 19500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260151.png?v=1771502610`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260151.png?v=1771502610`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260152.png?v=1771502610`,
@@ -609,7 +600,6 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         title: `Paul van Rensburg - 900mm x 600mm`,
         price: 4350.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260071.png?v=1768817298`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260071.png?v=1768817298`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260072.png?v=1768817298`,
@@ -626,7 +616,6 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         title: `Paul van Rensburg - 600mm x 400mm`,
         price: 1990.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260061.png?v=1768817249`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260061.png?v=1768817249`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260062.png?v=1768817250`,
@@ -650,7 +639,6 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         title: `Paul van Rensburg - 500mm x 370mm`,
         price: 1850.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/5_4d01fbab-6e7e-4376-8448-062a017745fc.png?v=1768816161`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/5_4d01fbab-6e7e-4376-8448-062a017745fc.png?v=1768816161`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/6_eeb4ac8b-d975-4e6e-9c7d-c3f4fe37e766.png?v=1768816161`,
@@ -674,7 +662,6 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         title: `Paul van Rensburg - 450mm x 350mm`,
         price: 1750.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/3_92159713-2d15-4376-a620-d82739d17f29.png?v=1768816017`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/3_92159713-2d15-4376-a620-d82739d17f29.png?v=1768816017`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/4_a1150e78-5727-4c54-a403-2986f5d8d186.png?v=1768816017`,
@@ -698,7 +685,6 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         title: `Paul van Rensburg - Acrylic on Stretched`,
         price: 42500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR12240021.png?v=1757493295`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR12240021.png?v=1757493295`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR12240022.png?v=1757493295`,
@@ -711,10 +697,8 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR04240031900x500copy.jpg?v=1757493075`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0524005.png?v=1723464799`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240051.jpg?v=1723464799`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240051800x1600plusFramecopy.jpg?v=1723464799`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0524004.png?v=1723464570`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240041.jpg?v=1723464569`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240041800x1600plusFramecopy.jpg?v=1723464570`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240031200x600.png?v=1716452446`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240031copy.jpg?v=1716452497`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240032copy.jpg?v=1716452497`,
@@ -817,7 +801,6 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         title: `Paul van Rensburg - Acrylic on Stretched Canvas 1010mm x 760mm`,
         price: 13500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR06250031.png?v=1749808512`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR06250031.png?v=1749808512`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR06250032.png?v=1749808512`,
@@ -862,7 +845,6 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         title: `Paul van Rensburg - Acrylic on Stretched Canvas 1250mm x 1010mm`,
         price: 24500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425014.png?v=1744871817`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425014.png?v=1744871817`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425014copy.jpg?v=1744871817`,
@@ -900,7 +882,6 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         title: `Paul van Rensburg - Acrylic on Panel`,
         price: 14900.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024028a.png?v=1729242903`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024028a.png?v=1729242903`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024028b.png?v=1729242902`,
@@ -1005,7 +986,6 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         title: `Paul van Rensburg - Acrylic & Goldl Leaf on Stretched`,
         price: 14500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1123001.png?v=1700216678`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1123001.png?v=1700216678`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1123001copy.jpg?v=1700216679`
@@ -1043,7 +1023,6 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
         title: `Thomas Kohler Oil on Stretched Canvas "2022 Expectations"`,
         price: 5500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224009.png?v=1707989116`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224009.png?v=1707989116`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240092022Expectations350x300copy.jpg?v=1707989116`
@@ -1059,7 +1038,6 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
         title: `Thomas Kohler Oil on Stretched Canvas "2021 Winter Storm"`,
         price: 6750.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224008.png?v=1707989018`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224008.png?v=1707989018`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240082021WinterStormGrottoBay54x40copy.jpg?v=1707989019`
@@ -1075,7 +1053,6 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
         title: `Thomas Kohler Oil on Stretched Canvas "2022 Danneborg "`,
         price: 9500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224007.png?v=1707988926`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224007.png?v=1707988926`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240072022Danneborg56x38copy.jpg?v=1707988926`
@@ -1091,7 +1068,6 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
         title: `Thomas Kohler Oil on Stretched Canvas "2021 Flying Kites"`,
         price: 10500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224006.png?v=1707988804`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224006.png?v=1707988804`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240062021FlyingKites460x610copy.jpg?v=1707988804`
@@ -1107,7 +1083,6 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
         title: `Thomas Kohler Oil on Stretched Canvas "2019 Fishing Lesson"`,
         price: 4500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224005.png?v=1707988704`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224005.png?v=1707988704`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240052019FishingLesson450x350copy.jpg?v=1707988705`
@@ -1123,7 +1098,6 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
         title: `Thomas Kohler Oil on Stretched Canvas "2019 Autumn"`,
         price: 6500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224004.png?v=1707988552`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224004.png?v=1707988552`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240042019Autumn54x400copy.jpg?v=1707988553`
@@ -1139,7 +1113,6 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
         title: `Thomas Kohler Oil on Stretched Canvas "2017 Sydney Harbour"`,
         price: 8950.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224003.png?v=1707988455`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224003.png?v=1707988455`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240032017SydneyHarbour51x61copy.jpg?v=1707988455`
@@ -1155,7 +1128,6 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
         title: `Thomas Kohler Oil on Stretched Canvas "2017 Public Transport in Norway "`,
         price: 8500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224002.png?v=1707988340`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224002.png?v=1707988340`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240022017PublicTransportinNorway455x605copy.jpg?v=1707988340`
@@ -1171,7 +1143,6 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
         title: `Thomas Kohler Oil on Stretched Canvas "2007 Rounding Lighthouse"`,
         price: 13500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224001.png?v=1707988066`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224001.png?v=1707988066`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240012007RoundingLighthouse61x76copy.jpg?v=1707988066`
@@ -1211,7 +1182,6 @@ For over two decades, Emile's works have graced the homes of South Africans. In 
         title: `Emile Cronje - Acrylic on Panel`,
         price: 6500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260011.png?v=1774538327`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260011.png?v=1774538327`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260012.png?v=1774538328`,
@@ -1355,7 +1325,6 @@ For over two decades, Emile's works have graced the homes of South Africans. In 
         title: `Emile Cronje - Acrylic on Stretched Canvas`,
         price: 2450.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250031.png?v=1756725989`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250031.png?v=1756725989`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250032.png?v=1756725989`,
@@ -1379,7 +1348,6 @@ For over two decades, Emile's works have graced the homes of South Africans. In 
         title: `Emile Cronje - 900mm x 340mm`,
         price: 3950.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC04250021.png?v=1752070529`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC04250021.png?v=1752070529`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC04250022.png?v=1752070529`,
@@ -1403,7 +1371,6 @@ For over two decades, Emile's works have graced the homes of South Africans. In 
         title: `Emile Cronje - 450mm x 300mm`,
         price: 2250.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250071.png?v=1752069237`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250071.png?v=1752069237`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250072.png?v=1752069238`,
@@ -1441,7 +1408,6 @@ For over two decades, Emile's works have graced the homes of South Africans. In 
         title: `Emile Cronje - 590mm x 450mm`,
         price: 3850.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250031.png?v=1752069077`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250031.png?v=1752069077`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250032.png?v=1752069077`,
@@ -1502,7 +1468,6 @@ With unwavering dedication and a deep reverence for the craft, Corne Weideman co
         title: `Corne Weideman - 460mm x 270mm`,
         price: 1750.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250271.png?v=1752068829`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250271.png?v=1752068829`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250272.png?v=1752068829`,
@@ -1526,7 +1491,6 @@ With unwavering dedication and a deep reverence for the craft, Corne Weideman co
         title: `Corne Weideman - 460mm x 310mm`,
         price: 1850.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250251.png?v=1752068695`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250251.png?v=1752068695`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250252.png?v=1752068695`,
@@ -1620,7 +1584,6 @@ With unwavering dedication and a deep reverence for the craft, Corne Weideman co
         title: `Corne Weideman - 420mm x 300mm`,
         price: 1690.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250131.png?v=1752068095`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250131.png?v=1752068095`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250132.png?v=1752068095`,
@@ -1721,7 +1684,6 @@ With unwavering dedication and a deep reverence for the craft, Corne Weideman co
         title: `Corne Weideman - Acrylic on Stretched Canvas`,
         price: 1690.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924124a.png?v=1727084857`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924124a.png?v=1727084857`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924124b.png?v=1727084857`,
@@ -1928,7 +1890,6 @@ With each brushstroke, Gaynor doesn't just depict scenes; she encapsulates emoti
         title: `Gaynor -`,
         price: 3490.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260061.png?v=1774538091`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260061.png?v=1774538091`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260062.png?v=1774538091`,
@@ -1980,7 +1941,6 @@ With each brushstroke, Gaynor doesn't just depict scenes; she encapsulates emoti
         title: `Gaynor - Acrylic & Ink on Canvas Panel 200mm x 200mm`,
         price: 1690.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225013_1.png?v=1765885143`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225013_1.png?v=1765885143`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225013_2.png?v=1765885143`,
@@ -2060,7 +2020,6 @@ With each brushstroke, Gaynor doesn't just depict scenes; she encapsulates emoti
         title: `Gaynor - Oil on Stretched Canvas`,
         price: 9890.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225007_1.png?v=1765884767`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225007_1.png?v=1765884767`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225007_2.png?v=1765884766`,
@@ -2250,7 +2209,6 @@ With each brushstroke, Gaynor doesn't just depict scenes; she encapsulates emoti
         title: `Gaynor - Acrylic on Stretched Canvas`,
         price: 3490.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324002.png?v=1712051356`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324002.png?v=1712051356`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324002copy.jpg?v=1712051356`,
@@ -2296,7 +2254,6 @@ From 2016 to 2018, Harry found solace in his studio nestled within The Winelands
         title: `Harry Erasmus - 760mm x 380mm`,
         price: 10950.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0526003_1.png?v=1777556294`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0526003_1.png?v=1777556294`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0526003_2.png?v=1777556294`,
@@ -2341,7 +2298,6 @@ From 2016 to 2018, Harry found solace in his studio nestled within The Winelands
         title: `Harry Erasmus - 410mm x 200mm`,
         price: 4750.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260031.png?v=1777555988`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260031.png?v=1777555988`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260032.png?v=1777555988`,
@@ -2358,7 +2314,6 @@ From 2016 to 2018, Harry found solace in his studio nestled within The Winelands
         title: `Harry Erasmus - 350mm x 250mm`,
         price: 2750.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260021.png?v=1771590720`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260021.png?v=1771590720`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260022.png?v=1771590719`,
@@ -2382,7 +2337,6 @@ From 2016 to 2018, Harry found solace in his studio nestled within The Winelands
         title: `Harry Erasmus - 1600mm x 600mm`,
         price: 19500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250041.png?v=1758526812`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250041.png?v=1758526812`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250042.png?v=1758526812`,
@@ -2422,12 +2376,10 @@ From 2016 to 2018, Harry found solace in his studio nestled within The Winelands
         title: `Harry Erasmus - Acrylic on Stretched Canvas`,
         price: 28500.0,
         status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0924001A1000x750.png?v=1726230578`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0924001A1000x750.png?v=1726230578`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0924001B.png?v=1726230578`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0924001copy.jpg?v=1726230578`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/35.png?v=1694979613`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE08230011500mmx1200mm.jpg?v=1694979613`
         ],
         variants: [
@@ -2467,7 +2419,6 @@ There is a quiet nostalgia woven through her canvases—a gentle invitation for 
         title: `Marina K - After the Rain`,
         price: 14950.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260041.png?v=1779199074`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260041.png?v=1779199074`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260042.png?v=1779199075`,
@@ -2484,7 +2435,6 @@ There is a quiet nostalgia woven through her canvases—a gentle invitation for 
         title: `Marina K - Cape Town Dreams`,
         price: 14950.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260031.png?v=1779199000`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260031.png?v=1779199000`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260032.png?v=1779199000`,
@@ -2501,7 +2451,6 @@ There is a quiet nostalgia woven through her canvases—a gentle invitation for 
         title: `Marina K - Above the Atlantic`,
         price: 3950.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260021.png?v=1779198928`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260021.png?v=1779198928`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260022.png?v=1779198928`,
@@ -2518,7 +2467,6 @@ There is a quiet nostalgia woven through her canvases—a gentle invitation for 
         title: `Marina K - Keeper of the Light`,
         price: 3950.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260011.png?v=1779198762`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260011.png?v=1779198762`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260012.png?v=1779198762`,
@@ -2557,7 +2505,6 @@ Beneath the stillness of his work lies a meditation on impermanence. Kotze exami
         title: `Ferdinand Kotze - "Fragments of Play: Red Balloon"`,
         price: 23500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526003_1.png?v=1779886093`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526003_1.png?v=1779886093`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526003_2.png?v=1779886093`,
@@ -2574,7 +2521,6 @@ Beneath the stillness of his work lies a meditation on impermanence. Kotze exami
         title: `Ferdinand Kotze - "Fragments of Play: Leapfrog"`,
         price: 23500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526002_1.png?v=1779886023`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526002_1.png?v=1779886023`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526002_2.png?v=1779886023`,
@@ -2591,7 +2537,6 @@ Beneath the stillness of his work lies a meditation on impermanence. Kotze exami
         title: `Ferdinand Kotze - "Fragments of Play: Toss The Baby"`,
         price: 11500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526001_1.png?v=1779885791`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526001_1.png?v=1779885791`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526001_2.png?v=1779885791`,
@@ -2630,7 +2575,6 @@ Yet beneath the accolades lies an artist more concerned with truth than acclaim.
         title: `Jonel Scholtz - "I'm Still Here"`,
         price: 18500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_1.png?v=1779886752`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_1.png?v=1779886752`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_2.png?v=1779886752`,
@@ -2650,7 +2594,6 @@ Yet beneath the accolades lies an artist more concerned with truth than acclaim.
         title: `Jonel Scholtz - "The Weight of Quiet Things"`,
         price: 18500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_1.png?v=1779886670`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_1.png?v=1779886670`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_2.png?v=1779886670`,
@@ -2670,7 +2613,6 @@ Yet beneath the accolades lies an artist more concerned with truth than acclaim.
         title: `Jonel Scholtz - "As 'n Draai jou Omgooi"`,
         price: 12850.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_1.png?v=1779886386`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_1.png?v=1779886386`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_2.png?v=1779886386`,
@@ -2712,11 +2654,9 @@ With over 600 artworks, Niki's portfolio is divided into two parts: her surreal 
         title: `Niki McQueen - "Travels by Moonlight" Mixed Media on Archival Paper`,
         price: 17900.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524003.png?v=1716200536`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524003.png?v=1716200536`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524003Travel-by-moonligh-webt.jpg?v=1716200536`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524003travels-by-moonlight.jpgFramed.jpg?v=1716200535`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524003Travel-by-moonligh-webt.jpg?v=1716200536`
         ],
         variants: [
           {
@@ -2729,7 +2669,6 @@ With over 600 artworks, Niki's portfolio is divided into two parts: her surreal 
         title: `Niki McQueen - "Queer Flock" Mixed Media on Archival Paper`,
         price: 16200.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524002.png?v=1716200381`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524002.png?v=1716200381`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524002QF-2024-a2-nw.jpg?v=1716200380`,
@@ -2746,11 +2685,9 @@ With over 600 artworks, Niki's portfolio is divided into two parts: her surreal 
         title: `Niki McQueen - "Whale Gazing" Mixed Media on Archival Paper`,
         price: 8750.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524001.png?v=1716200116`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524001.png?v=1716200116`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/whale-gazing.jpg?v=1716200116`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524001whale-gazing.jpgFramed.jpg?v=1716200113`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/whale-gazing.jpg?v=1716200116`
         ],
         variants: [
           {
@@ -2787,7 +2724,6 @@ Now living in Still Bay, surrounded by river and sea, Fourie continues to paint 
         title: `Gerhard Fourie - 700mm x 500mm`,
         price: 4750.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260061.png?v=1779198545`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260061.png?v=1779198545`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260062.png?v=1779198545`,
@@ -2832,7 +2768,6 @@ Now living in Still Bay, surrounded by river and sea, Fourie continues to paint 
         title: `Gerhard Fourie - 600mm x 300mm`,
         price: 2300.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260011.png?v=1779198135`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260011.png?v=1779198135`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260012.png?v=1779198135`,
@@ -2871,7 +2806,6 @@ In essence, Ian Hertslet's paintings strike a chord with art enthusiasts who see
         title: `Ian Hertslet - Oil on Canvas`,
         price: 34500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0226005.png?v=1770370442`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0226005.png?v=1770370442`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260050.png?v=1770370441`,
@@ -2933,7 +2867,6 @@ In essence, Ian Hertslet's paintings strike a chord with art enthusiasts who see
         title: `Ian Hertslet - Oil on Stretched Canvas`,
         price: 14500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0224001.png?v=1708942994`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0224001.png?v=1708942994`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02240011.png?v=1708942994`,
@@ -2990,7 +2923,6 @@ With no formal art training, Solly's gift is a divine endowment, an unspoken poe
         title: `Solly Manthata - 1200mm x 800mm`,
         price: 14750.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526002_1.png?v=1779871044`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526002_1.png?v=1779871044`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526002_2.png?v=1779871044`,
@@ -3048,7 +2980,6 @@ With no formal art training, Solly's gift is a divine endowment, an unspoken poe
         title: `Solly Manthata - 1600mm x 600mm`,
         price: 14700.0,
         status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM03260011.png?v=1773756732`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM03260011.png?v=1773756732`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM03260012.png?v=1773756732`,
@@ -3065,7 +2996,6 @@ With no formal art training, Solly's gift is a divine endowment, an unspoken poe
         title: `Solly Manthata - 1070mm x 800mm`,
         price: 9690.0,
         status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260061_674b917f-4076-437b-a136-8282f305e1a1.png?v=1774510172`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260061_674b917f-4076-437b-a136-8282f305e1a1.png?v=1774510172`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260062_866d7c3f-4ce6-485f-82bc-e1e823bd9432.png?v=1774510172`,
@@ -3082,7 +3012,6 @@ With no formal art training, Solly's gift is a divine endowment, an unspoken poe
         title: `Solly Manthata - 730mm x 730mm`,
         price: 9750.0,
         status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260031.png?v=1768818450`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260031.png?v=1768818450`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260032.png?v=1768818451`,
@@ -3099,7 +3028,6 @@ With no formal art training, Solly's gift is a divine endowment, an unspoken poe
         title: `Solly Manthata - 940mm x 350mm`,
         price: 5850.0,
         status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260021.png?v=1768818401`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260021.png?v=1768818401`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260022.png?v=1768818401`,
@@ -3116,7 +3044,6 @@ With no formal art training, Solly's gift is a divine endowment, an unspoken poe
         title: `Solly Manthata - 900mm x 330mm`,
         price: 5750.0,
         status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260011.png?v=1768818257`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260011.png?v=1768818257`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260012.png?v=1768818257`,
@@ -3133,7 +3060,6 @@ With no formal art training, Solly's gift is a divine endowment, an unspoken poe
         title: `Solly Manthata - Triptych (3 in 1 ) Oil & Acrylic on Stretched Canvas`,
         price: 10950.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/xSM1225001_1_61379b31-5cd1-4ede-9294-81ac409d2b5f.png?v=1765456252`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/xSM1225001_1_61379b31-5cd1-4ede-9294-81ac409d2b5f.png?v=1765456252`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/xSM1225001_2.png?v=1765456252`,
@@ -3152,7 +3078,6 @@ With no formal art training, Solly's gift is a divine endowment, an unspoken poe
         title: `Solly Manthata - Oil & Acrylic on Stretched Canvas`,
         price: 14700.0,
         status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225013_1.png?v=1765455843`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225013_1.png?v=1765455843`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225013_2.png?v=1765455843`,
@@ -3306,7 +3231,6 @@ With no formal art training, Solly's gift is a divine endowment, an unspoken poe
         title: `Solly Manthata - Oil & Acrylic on Panel (800mm x 600mm) with Reverse side "doodle"`,
         price: 8450.0,
         status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250071.png?v=1756729649`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250071.png?v=1756729649`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250072.png?v=1756729649`,
@@ -3325,7 +3249,6 @@ With no formal art training, Solly's gift is a divine endowment, an unspoken poe
         title: `Solly Manthata - Oil & Acrylic on Panel`,
         price: 14500.0,
         status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250061.png?v=1756729579`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250061.png?v=1756729579`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250062.png?v=1756729579`,
@@ -3870,7 +3793,6 @@ With no formal art training, Solly's gift is a divine endowment, an unspoken poe
         title: `Solly Manthata - Oil & Acrylic on Canvas`,
         price: 11750.0,
         status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0225003.png?v=1739878715`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0225003.png?v=1739878715`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM02250031.png?v=1739878715`,
@@ -3923,24 +3845,19 @@ Now, in the fullness of time, Anton Gericke embarks on a new chapter as a full-t
         title: `Anton Gericke - Acrylic on Panel`,
         price: 37800.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924010.png?v=1726150241`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924010.png?v=1726150241`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240108.png?v=1726150240`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924010900x600Panelcopy.jpg?v=1726150240`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240101200x900FramedPanelcopy.jpg?v=1726150240`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924009.png?v=1726150203`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240098.png?v=1726150203`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924009900x600Canvascopy.jpg?v=1726150204`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240091200x900FramedCanvascopy.jpg?v=1726150203`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924008.png?v=1726150107`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240088.png?v=1726150107`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924008900x600Canvascopy.jpg?v=1726150107`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240081200x900FramedCanvascopy.jpg?v=1726150107`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924007.png?v=1726149938`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240071.png?v=1726149938`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240071100x750copy.jpg?v=1726149938`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240071400x1050Framedcopy.jpg?v=1726149938`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924006.png?v=1726149473`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240066.png?v=1726149473`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924006750x500copy.jpg?v=1726149472`,
@@ -3948,7 +3865,6 @@ Now, in the fullness of time, Anton Gericke embarks on a new chapter as a full-t
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924005.png?v=1726149405`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240057.png?v=1726149405`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924005800x500Canvascopy.jpg?v=1726149404`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240051100x800FramedCanvascopy.jpg?v=1726149405`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924004.png?v=1726149276`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240046.png?v=1726149276`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924004750x510copy.jpg?v=1726149276`,
@@ -3963,8 +3879,7 @@ Now, in the fullness of time, Anton Gericke embarks on a new chapter as a full-t
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240021200x650copy.jpg?v=1726148948`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924001.png?v=1726146059`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240018.png?v=1726146059`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924001900x300copy.jpg?v=1726146059`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240011170x570Framedcopy.jpg?v=1726146059`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924001900x300copy.jpg?v=1726146059`
         ],
         variants: [
           {
@@ -4035,7 +3950,6 @@ Working between control and chance, Stuart allows fluid elements to shape the fi
         title: `Craig Stuart -`,
         price: 35000.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260051.png?v=1774952470`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260051.png?v=1774952470`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260052.png?v=1774952471`,
@@ -4100,7 +4014,6 @@ Those years left a lasting impression on her canvas. Today, with the Atlantic wi
         title: `Dante Ruben -`,
         price: 35000.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR05260011.png?v=1779199638`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR05260011.png?v=1779199638`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR05260012.png?v=1779199638`,
@@ -4155,7 +4068,6 @@ In August 2010, Fungai's art crossed borders for a special exhibition at Amazwi 
         title: `Junior Fungai - Acrylic on Canvas Panel`,
         price: 8500.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF1123002.png?v=1699952075`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF1123002.png?v=1699952075`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF11230021.jpg?v=1699952074`,
@@ -4209,7 +4121,6 @@ Louise's artistic journey has graced numerous group and solo exhibitions, leavin
         title: `Louise de Klerk Oil on Stretched Canvas`,
         price: 8900.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/LDK10230051.png?v=1696534532`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/LDK10230051.png?v=1696534532`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/LDK1023005copy.jpg?v=1696534532`,
@@ -4277,7 +4188,6 @@ In AJ Burns' world of art, creativity knows no bounds, and the canvas is a dynam
         title: `AJ Burns -`,
         price: 15600.0,
         status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/1_1.png?v=1776685361`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/1_1.png?v=1776685361`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/1_2.png?v=1776685361`,
@@ -4294,7 +4204,6 @@ In AJ Burns' world of art, creativity knows no bounds, and the canvas is a dynam
         title: `AJ Burns - Go With The Flow`,
         price: 20000.0,
         status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJBAV001_16dc74fe-5af0-4a92-9ced-d9daa2b29bcc.jpg?v=1771066286`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJBAV001_16dc74fe-5af0-4a92-9ced-d9daa2b29bcc.jpg?v=1771066286`
         ],
@@ -4332,7 +4241,6 @@ For Anmari, art isn't just a newfound pursuit; it's a lifelong commitment—a pr
         title: `Anmari - Acrylic on Blocked Panel`,
         price: 1500.0,
         status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/ANG10230031.png?v=1698329490`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/ANG10230031.png?v=1698329490`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/ANG1023003.jpg?v=1698329490`,
@@ -4419,7 +4327,6 @@ Isabel's canvas is more than a surface; it's a gateway to South Africa's soul, a
         title: `Isabel le Roux - Oil on Stretched Canvas`,
         price: 37500.0,
         status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IL0524002.png?v=1716451836`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IL0524002.png?v=1716451836`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IL0524002copy.jpg?v=1716451836`,
@@ -4486,7 +4393,6 @@ Living mindfully, Roos infuses his daily routines with a non-judgmental awarenes
         title: `Nicolaas Roos Oil on Stretched Canvas`,
         price: 25000.0,
         status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NR0224001.png?v=1707986677`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NR0224001.png?v=1707986677`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NR0224001copy.jpg?v=1707986676`
@@ -4523,7 +4429,6 @@ Yet, nature's timeless elegance beckoned. Rozanne's portraits, brought to life w
         title: `Rozanne Henning Oil on Stretched Canvas`,
         price: 8500.0,
         status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/RH1123005910mmx610mm1.png?v=1699343104`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/RH1123005910mmx610mm1.png?v=1699343104`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/RH1123005910mmx610mm.jpg?v=1699343104`,
