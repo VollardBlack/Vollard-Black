@@ -30,7 +30,7 @@ const C = {
 const fmt = n => Number(n || 0).toLocaleString('en-ZA', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 const fmtDec = n => Number(n || 0).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-// ─── ARTIST DATA (71 available · 66 sold · 26 artists)
+// ─── ARTIST DATA (correct per-handle images)
 const ARTISTS = [
   {
     id: `paul-van-rensburg`,
@@ -50,10 +50,13 @@ Driven by a growing local following, Paul journeyed back to his roots in the Eas
 In pursuit of his craft, Paul eventually found his way to the enchanting shores of Cape Town, Western Cape, South Africa. His art weaves together the stories of his life, etching the landscapes and experiences of a nation onto his canvases, offering viewers a vibrant tapestry of his journey.`,
     image: `https://thewinelandsartgallery.com/cdn/shop/collections/7_4.png?v=1695061520`,
     galleryUrl: `https://thewinelandsartgallery.com/collections/paul-van-rensburg`,
+    statsAvailable: 18,
+    statsSold: 0,
+    statsHighestSold: 0,
     works: [
       {
         title: `Paul van Rensburg - Exclusive USA Series #1`,
-        price: 74497,
+        price: 74497.0,
         status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260061.png?v=1773316368`,
         images: [
@@ -65,13 +68,13 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         variants: [
           {
             label: `Paul van Rensburg - Exclusive USA Series #1 (1270mm x 1010mm)`,
-            price: 74497
+            price: 74497.0
           }
         ]
       },
       {
         title: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`,
-        price: 24500,
+        price: 24500.0,
         status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260051.png?v=1773316254`,
         images: [
@@ -80,46 +83,87 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260053.png?v=1773316254`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260051270mmx1010mmcopy.jpg?v=1773316254`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0126031.png?v=1773316109`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260310.png?v=1773316109`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260310.png?v=1773316109`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260311270mmx1010mm1copy.jpg?v=1773316109`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260311270mmx1010mm2.jpg?v=1773316109`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260311270mmx1010mm3.jpg?v=1773316109`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260311270mmx1010mm4.jpg?v=1773316109`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260311270mmx1010mm5.jpg?v=1773316109`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260311270mmx1010mm6.jpg?v=1773316109`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05250041.png?v=1750838276`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05250042.png?v=1750838276`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05250043.jpg?v=1750838276`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05250031.png?v=1750838206`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05250032.png?v=1750838206`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05250033.jpg?v=1750838206`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR06250051.png?v=1749808428`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR06250052.png?v=1749808429`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR06250053.jpg?v=1749808428`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR06250041.png?v=1749808382`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR06250042.png?v=1749808381`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR06250043.jpg?v=1749808381`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05250021.png?v=1747904092`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05250022.png?v=1747904092`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05250023.png?v=1747904092`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05250024.jpg?v=1747904092`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05250011.png?v=1747904018`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05250012.png?v=1747904018`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05250013.png?v=1747904018`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05250014.jpg?v=1747904018`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR04250181.png?v=1747903934`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR04250182.png?v=1747903934`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR04250183.jpg?v=1747903934`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425012.png?v=1744871692`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425012copy.jpg?v=1744871692`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425012x.png?v=1744871693`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425012y.png?v=1744871692`
         ],
         variants: [
           {
             label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`,
-            price: 16500
+            price: 16500.0
           },
           {
             label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`,
-            price: 16500
+            price: 16500.0
           },
           {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm (John Lennon)`,
-            price: 24500
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`,
+            price: 24500.0
           },
           {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm (Harbour)`,
-            price: 24500
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`,
+            price: 24500.0
           },
           {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm (Jimi Hendrix)`,
-            price: 24500
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`,
+            price: 24500.0
           },
           {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm (Portrait 1)`,
-            price: 24500
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`,
+            price: 24500.0
           },
           {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm (Portrait 2)`,
-            price: 24500
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`,
+            price: 24500.0
           },
           {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm (Harbour boats)`,
-            price: 16500
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`,
+            price: 24500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`,
+            price: 18500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`,
+            price: 16500.0
           }
         ]
       },
       {
         title: `Paul van Rensburg - 850mm x 600mm`,
-        price: 5750,
+        price: 5750.0,
         status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260041.png?v=1773315990`,
         images: [
@@ -128,54 +172,106 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0326004850mmx600mmcopy.jpg?v=1773315990`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260031.png?v=1773315939`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260032.png?v=1773315939`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0326003850mmx600mmcopy.jpg?v=1773315939`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0326003850mmx600mmcopy.jpg?v=1773315939`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260021.png?v=1773315898`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260023.png?v=1773315898`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0326002850mmx600mmcopy.jpg?v=1773315898`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260011.png?v=1773315859`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260012.png?v=1773315859`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0326001850mmx600mmcopy.jpg?v=1773315859`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260351.png?v=1773315805`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260352.png?v=1773315805`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0126035850mmx600mmcopy.jpg?v=1773315805`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260341.png?v=1773315754`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260342.png?v=1773315754`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0126034850mmx600mmcopy.jpg?v=1773315754`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260331.png?v=1773315718`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260332.png?v=1773315718`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0126033850mmx600mmcopy.jpg?v=1773315718`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260321.png?v=1773315619`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260322.png?v=1773315619`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0126032850mmx600mmcopy.jpg?v=1773315619`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260221.png?v=1771592388`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260222.png?v=1771592388`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260223850mmx600mmcopy.jpg?v=1771592388`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260211.png?v=1771592346`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260212.png?v=1771592346`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260213850mmx600mmcopy.jpg?v=1771592346`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260201_76ec930c-7a0f-4db6-8462-cd26cf3b3704.png?v=1771592303`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260202_705eba6c-ba57-4356-a272-bde9a413f652.png?v=1771592303`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260203850mmx600mmcopy_f76e6614-ef2b-4e19-a0d3-b56cae89965c.jpg?v=1771592303`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260191.png?v=1771592224`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260192.png?v=1771592224`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260193850mmx600mmcopy.jpg?v=1771592224`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260181.png?v=1771592160`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260182.png?v=1771592160`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0126018850mmx600mmcopy.jpg?v=1771592160`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260171.png?v=1771592093`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260172.png?v=1771592093`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260173850mmx600mmcopy.jpg?v=1771592093`
         ],
         variants: [
           {
             label: `Paul van Rensburg - 850mm x 600mm`,
-            price: 5750
+            price: 5750.0
           },
           {
             label: `Paul van Rensburg - 850mm x 600mm`,
-            price: 5750
+            price: 2250.0
           },
           {
             label: `Paul van Rensburg - 850mm x 600mm`,
-            price: 5750
+            price: 5750.0
           },
           {
             label: `Paul van Rensburg - 850mm x 600mm`,
-            price: 5750
+            price: 5750.0
           },
           {
             label: `Paul van Rensburg - 850mm x 600mm`,
-            price: 5750
+            price: 5750.0
           },
           {
             label: `Paul van Rensburg - 850mm x 600mm`,
-            price: 5750
+            price: 2250.0
           },
           {
             label: `Paul van Rensburg - 850mm x 600mm`,
-            price: 5750
+            price: 5750.0
           },
           {
-            label: `Paul van Rensburg - 850mm x 600mm (Page 4 row 1)`,
-            price: 5750
+            label: `Paul van Rensburg - 850mm x 600mm`,
+            price: 5750.0
           },
           {
-            label: `Paul van Rensburg - 850mm x 600mm (Page 4 row 2)`,
-            price: 5750
+            label: `Paul van Rensburg - 850mm x 600mm`,
+            price: 2250.0
           },
           {
-            label: `Paul van Rensburg - 850mm x 600mm (Page 4 row 3)`,
-            price: 5750
+            label: `Paul van Rensburg - 850mm x 600mm`,
+            price: 5750.0
+          },
+          {
+            label: `Paul van Rensburg - 850mm x 600mm`,
+            price: 5750.0
+          },
+          {
+            label: `Paul van Rensburg - 850mm x 600mm`,
+            price: 5750.0
+          },
+          {
+            label: `Paul van Rensburg - 850mm x 600mm`,
+            price: 5750.0
+          },
+          {
+            label: `Paul van Rensburg - 850mm x 600mm`,
+            price: 5750.0
           }
         ]
       },
       {
         title: `Paul van Rensburg - 1270mm x 1010mm`,
-        price: 28500,
+        price: 34500.0,
         status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260301.png?v=1771592738`,
         images: [
@@ -189,13 +285,17 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         variants: [
           {
             label: `Paul van Rensburg - 1270mm x 1010mm`,
-            price: 28500
+            price: 34500.0
+          },
+          {
+            label: `Paul van Rensburg - 1270mm x 1010mm`,
+            price: 28500.0
           }
         ]
       },
       {
         title: `Paul van Rensburg - 1200mm x 600mm`,
-        price: 8950,
+        price: 8950.0,
         status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260281.png?v=1771592490`,
         images: [
@@ -207,263 +307,22 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         variants: [
           {
             label: `Paul van Rensburg - 1200mm x 600mm`,
-            price: 8950
-          }
-        ]
-      },
-      {
-        title: `Paul van Rensburg - 1200mm x 800mm`,
-        price: 13750,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260161.png?v=1771502745`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260161.png?v=1771502745`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260162.png?v=1771502746`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR012601631200x800copy.jpg?v=1771502745`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260081.png?v=1768817364`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260082.png?v=1768817366`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260081200mmx800mmcopy.jpg?v=1768817364`
-        ],
-        variants: [
-          {
-            label: `Paul van Rensburg - 1200mm x 800mm`,
-            price: 13750
-          }
-        ]
-      },
-      {
-        title: `Paul van Rensburg - Acrylic on Stretched Canvas`,
-        price: 11500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260051.png?v=1773316254`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260051.png?v=1773316254`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260052.png?v=1773316254`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260053.png?v=1773316254`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260051270mmx1010mmcopy.jpg?v=1773316254`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0126031.png?v=1773316109`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260310.png?v=1773316109`
-        ],
-        variants: [
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas`,
-            price: 11500
-          },
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas`,
-            price: 6500
-          },
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas`,
-            price: 6500
-          },
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas`,
-            price: 6500
-          },
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas`,
-            price: 1650
-          },
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas (Flowers)`,
-            price: 9500
-          }
-        ]
-      },
-      {
-        title: `Paul van Rensburg - Acrylic on Stretched Canvas 1200mm x 1000mm`,
-        price: 14500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260151.png?v=1771502610`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260151.png?v=1771502610`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260152.png?v=1771502610`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260153.png?v=1771502610`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR012601541010x760copy.jpg?v=1771502611`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260141.png?v=1771502558`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260142.png?v=1771502558`
-        ],
-        variants: [
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1200mm x 1000mm`,
-            price: 14500
-          }
-        ]
-      },
-      {
-        title: `Paul van Rensburg - Acrylic on Stretched 1800mm x 1600mm`,
-        price: 42500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0524005.png?v=1723464799`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0524005.png?v=1723464799`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240051.jpg?v=1723464799`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240051800x1600plusFramecopy.jpg?v=1723464799`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0524004.png?v=1723464570`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240041.jpg?v=1723464569`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240041800x1600plusFramecopy.jpg?v=1723464570`
-        ],
-        variants: [
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched 1800mm x 1600mm`,
-            price: 42500
-          }
-        ]
-      },
-      {
-        title: `Paul van Rensburg - Acrylic on Stretched 1900mm x 500mm`,
-        price: 18500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0524005.png?v=1723464799`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0524005.png?v=1723464799`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240051.jpg?v=1723464799`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240051800x1600plusFramecopy.jpg?v=1723464799`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0524004.png?v=1723464570`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240041.jpg?v=1723464569`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240041800x1600plusFramecopy.jpg?v=1723464570`
-        ],
-        variants: [
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched 1900mm x 500mm`,
-            price: 18500
-          }
-        ]
-      },
-      {
-        title: `Paul van Rensburg - Acrylic on Stretched Canvas 1010mm x 760mm`,
-        price: 13500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260151.png?v=1771502610`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260151.png?v=1771502610`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260152.png?v=1771502610`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260153.png?v=1771502610`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR012601541010x760copy.jpg?v=1771502611`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260141.png?v=1771502558`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260142.png?v=1771502558`
-        ],
-        variants: [
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1010mm x 760mm (Portrait Flag)`,
-            price: 13500
-          },
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1010mm x 760mm (Coastal)`,
-            price: 9500
-          },
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1010mm x 760mm (Seascape)`,
-            price: 9500
-          }
-        ]
-      },
-      {
-        title: `Paul van Rensburg - Acrylic on Stretched Canvas 1250mm x 1010mm`,
-        price: 24500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260151.png?v=1771502610`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260151.png?v=1771502610`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260152.png?v=1771502610`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260153.png?v=1771502610`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR012601541010x760copy.jpg?v=1771502611`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260141.png?v=1771502558`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260142.png?v=1771502558`
-        ],
-        variants: [
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1250mm x 1010mm (Portrait woman)`,
-            price: 24500
-          }
-        ]
-      },
-      {
-        title: `Paul van Rensburg - Acrylic on Stretched Canvas 1200mm x 800mm`,
-        price: 8500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260151.png?v=1771502610`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260151.png?v=1771502610`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260152.png?v=1771502610`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260153.png?v=1771502610`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR012601541010x760copy.jpg?v=1771502611`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260141.png?v=1771502558`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260142.png?v=1771502558`
-        ],
-        variants: [
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1200mm x 800mm (Abstract plants)`,
-            price: 8500
-          },
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1200mm x 800mm (Abstract)`,
-            price: 8500
-          }
-        ]
-      },
-      {
-        title: `Paul van Rensburg - Acrylic on Stretched`,
-        price: 28500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260051.png?v=1773316254`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260051.png?v=1773316254`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260052.png?v=1773316254`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260053.png?v=1773316254`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260051270mmx1010mmcopy.jpg?v=1773316254`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0126031.png?v=1773316109`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260310.png?v=1773316109`
-        ],
-        variants: [
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched (Clown fish)`,
-            price: 28500
-          },
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched (Portrait hat)`,
-            price: 28500
-          },
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched (3 in 1 Triptych)`,
-            price: 14700
-          },
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched (Red abstract)`,
-            price: 11500
-          }
-        ]
-      },
-      {
-        title: `Paul van Rensburg - Acrylic & Gold Leaf on Stretched`,
-        price: 14500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260061.png?v=1773316368`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260061.png?v=1773316368`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260062.png?v=1773316369`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260063.png?v=1773316369`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260061270mmx1010mmcopy.jpg?v=1773316368`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260051.png?v=1773316254`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260052.png?v=1773316254`
-        ],
-        variants: [
-          {
-            label: `Paul van Rensburg - Acrylic & Gold Leaf on Stretched`,
-            price: 14500
+            price: 8950.0
           }
         ]
       },
       {
         title: `Paul van Rensburg - 600mm x 420mm`,
         price: 2750.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260271.png?v=1771591917`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260271.png?v=1771591917`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260272.png?v=1771591917`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260273600x420copy.jpg?v=1771591917`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260273600x420copy.jpg?v=1771591917`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260261.png?v=1771591833`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260262.png?v=1771591833`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260263600x420copy.jpg?v=1771591833`
         ],
         variants: [
           {
@@ -479,12 +338,18 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
       {
         title: `Paul van Rensburg - 420mm x 300mm`,
         price: 1750.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260251.png?v=1771591744`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260251.png?v=1771591744`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260252.png?v=1771591744`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260253420x300copy.jpg?v=1771591744`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260253420x300copy.jpg?v=1771591744`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260241.png?v=1771591669`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260242.png?v=1771591669`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260243420x300copy.jpg?v=1771591669`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260231.png?v=1771591560`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260232.png?v=1771591560`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260233420x300copy.jpg?v=1771591560`
         ],
         variants: [
           {
@@ -502,9 +367,248 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         ]
       },
       {
+        title: `Paul van Rensburg - 1200mm x 800mm`,
+        price: 13750.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260161.png?v=1771502745`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260161.png?v=1771502745`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260162.png?v=1771502746`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR012601631200x800copy.jpg?v=1771502745`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260081.png?v=1768817364`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260082.png?v=1768817366`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260081200mmx800mmcopy.jpg?v=1768817364`
+        ],
+        variants: [
+          {
+            label: `Paul van Rensburg - 1200mm x 800mm`,
+            price: 13750.0
+          },
+          {
+            label: `Paul van Rensburg - 1200mm x 800mm`,
+            price: 13750.0
+          }
+        ]
+      },
+      {
+        title: `Paul van Rensburg - Acrylic on Stretched Canvas`,
+        price: 19500.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260151.png?v=1771502610`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260151.png?v=1771502610`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260152.png?v=1771502610`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260153.png?v=1771502610`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR012601541010x760copy.jpg?v=1771502611`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260141.png?v=1771502558`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260142.png?v=1771502558`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260143610x460copy.jpg?v=1771502557`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260131.png?v=1771502499`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260132.png?v=1771502499`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260133610x460copy.jpg?v=1771502499`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260121.png?v=1771502410`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260122.png?v=1771502413`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260123610x460copy.jpg?v=1771502414`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260101.png?v=1771502324`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260102.png?v=1771502324`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260103400x300copy.jpg?v=1771502323`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024038_1.png?v=1765875918`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024038_2.png?v=1765875918`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024038_3.jpg?v=1765875918`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024033a.png?v=1729592937`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024033b.png?v=1729592937`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024033copy.jpg?v=1729592937`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024032a.png?v=1729592881`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024032b.png?v=1729592881`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024032copy.jpg?v=1729592881`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024031a.png?v=1729592838`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024031b.png?v=1729592839`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024031copy.jpg?v=1729592838`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024030a.png?v=1729592787`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024030b.png?v=1729592787`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024030copy.jpg?v=1729592786`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024029a.png?v=1729592700`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024029b.png?v=1729592700`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024029copy.jpg?v=1729592700`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024023a.png?v=1729243098`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024023b.png?v=1729243098`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024023copy.jpg?v=1729243098`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024022a.png?v=1729243053`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024022b.png?v=1729243053`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024022copy.jpg?v=1729243053`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024021a.png?v=1729243005`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024021b.png?v=1729243005`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024021copy.jpg?v=1729243005`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024016a.png?v=1728987545`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024016b.png?v=1728987545`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024016copy.jpg?v=1728987545`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024015a.png?v=1728987512`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024015b.png?v=1728987513`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024015copy.jpg?v=1728987512`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024014a.png?v=1728987477`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024014b.png?v=1728987477`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024014copy.jpg?v=1728987477`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024013a.png?v=1728987442`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024013b.png?v=1728987442`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024013copy.jpg?v=1728987442`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024012a.png?v=1728987403`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024012b.png?v=1728987403`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024012copy.jpg?v=1728987403`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024011a.png?v=1728644230`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024011b.png?v=1728644230`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024011copy.jpg?v=1728644230`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024010a.png?v=1728644181`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024010b.png?v=1728644181`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024010copy.jpg?v=1728644181`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024009a.png?v=1728644138`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024009b.png?v=1728644138`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024009copy.jpg?v=1728644138`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024008a.png?v=1728644105`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024008b.png?v=1728644105`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024008copy.jpg?v=1728644105`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024007a.png?v=1728643977`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024007b.png?v=1728643977`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024007copy.jpg?v=1728643977`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0524006.png?v=1723464911`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240062300x850copy.jpg?v=1723464911`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0124006.png?v=1707984451`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01240061500mmx1000mmcopy.jpg?v=1707984451`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0124005.png?v=1707984351`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01240051200mmx1800mm2copy.jpg?v=1707984351`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0124004.png?v=1707984284`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0124004790x750copy.jpg?v=1707984284`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0124003.png?v=1707984196`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01240031600x600copy.jpg?v=1707984196`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0124001.png?v=1706262988`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0124001copy.jpg?v=1706262987`
+        ],
+        variants: [
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas`,
+            price: 11500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas`,
+            price: 6500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas`,
+            price: 6500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas`,
+            price: 6500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas`,
+            price: 1650.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas (1200mm x 1000mm)`,
+            price: 14500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas (1200mm x 800mm)`,
+            price: 8500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas (1200mm x 800mm)`,
+            price: 8500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas (1200mm x 800mm)`,
+            price: 8500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas (1200mm x 800mm)`,
+            price: 8500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas (1200mm x 800mm)`,
+            price: 8500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas (1200mm x 800mm)`,
+            price: 11500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas (1200mm x 800mm)`,
+            price: 11500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas (1200mm x 800mm)`,
+            price: 11500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas (1200mm x 800mm)`,
+            price: 5850.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas (1200mm x 800mm)`,
+            price: 11500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas (1200mm x 800mm)`,
+            price: 11500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas (1200mm x 800mm)`,
+            price: 11500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas (1200mm x 800mm)`,
+            price: 11500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas (1200mm x 800mm)`,
+            price: 11500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas (1200mm x 800mm)`,
+            price: 5850.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas (1200mm x 800mm)`,
+            price: 11500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas (1200mm x 800mm)`,
+            price: 11500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas (1200mm x 800mm)`,
+            price: 11500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas`,
+            price: 9950.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas`,
+            price: 12500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas`,
+            price: 19500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas`,
+            price: 4850.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas`,
+            price: 8500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas`,
+            price: 9500.0
+          }
+        ]
+      },
+      {
         title: `Paul van Rensburg - 900mm x 600mm`,
         price: 4350.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260071.png?v=1768817298`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260071.png?v=1768817298`,
@@ -521,12 +625,15 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
       {
         title: `Paul van Rensburg - 600mm x 400mm`,
         price: 1990.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260061.png?v=1768817249`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260061.png?v=1768817249`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260062.png?v=1768817250`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0126006600mmx400mmcopy.jpg?v=1768817249`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0126006600mmx400mmcopy.jpg?v=1768817249`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260051.png?v=1768817130`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260052.png?v=1768817130`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0126005600mmx400mmcopy.jpg?v=1768817130`
         ],
         variants: [
           {
@@ -542,12 +649,15 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
       {
         title: `Paul van Rensburg - 500mm x 370mm`,
         price: 1850.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/5_4d01fbab-6e7e-4376-8448-062a017745fc.png?v=1768816161`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/5_4d01fbab-6e7e-4376-8448-062a017745fc.png?v=1768816161`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/6_eeb4ac8b-d975-4e6e-9c7d-c3f4fe37e766.png?v=1768816161`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0126004500mmx370mmcopy.jpg?v=1768816161`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0126004500mmx370mmcopy.jpg?v=1768816161`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/7_129603de-5a39-4b51-94b6-5e23c4b9385c.png?v=1768816096`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/8_7d851ffc-a2c8-4e37-b798-32d222e41a0d.png?v=1768816096`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0126003500mmx370mmcopy.jpg?v=1768816096`
         ],
         variants: [
           {
@@ -563,12 +673,15 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
       {
         title: `Paul van Rensburg - 450mm x 350mm`,
         price: 1750.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/3_92159713-2d15-4376-a620-d82739d17f29.png?v=1768816017`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/3_92159713-2d15-4376-a620-d82739d17f29.png?v=1768816017`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/4_a1150e78-5727-4c54-a403-2986f5d8d186.png?v=1768816017`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0126002450mmx350mmcopy.jpg?v=1768816017`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0126002450mmx350mmcopy.jpg?v=1768816017`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/1_6dabd12b-ced9-446e-b50f-48352410143e.png?v=1768815928`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/2_ce0d648f-c41f-49f7-a574-10131b68b9df.png?v=1768815928`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0126001450mmx350mmcopy.jpg?v=1768815928`
         ],
         variants: [
           {
@@ -582,14 +695,252 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         ]
       },
       {
+        title: `Paul van Rensburg - Acrylic on Stretched`,
+        price: 42500.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR12240021.png?v=1757493295`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR12240021.png?v=1757493295`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR12240022.png?v=1757493295`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR12240021800x1600atAvondalecopy.jpg?v=1757493295`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR12240011_02d33fe2-8dbb-4fc6-9a23-526c559b256f.png?v=1757493264`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR12240012_5706e934-2acf-4ecb-b167-22a420bac938.png?v=1757493264`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR12240011800x1600atAvondalecopy_f0d949c8-51b8-414d-811a-a69c3c985ec1.jpg?v=1757493265`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR04240031.png?v=1757493075`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR04240032.png?v=1757493076`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR04240031900x500copy.jpg?v=1757493075`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0524005.png?v=1723464799`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240051.jpg?v=1723464799`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240051800x1600plusFramecopy.jpg?v=1723464799`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0524004.png?v=1723464570`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240041.jpg?v=1723464569`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240041800x1600plusFramecopy.jpg?v=1723464570`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240031200x600.png?v=1716452446`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240031copy.jpg?v=1716452497`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240032copy.jpg?v=1716452497`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240033copy.jpg?v=1716452497`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR05240021600x1200.png?v=1716452336`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0524002copy.jpg?v=1716452336`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0524001.png?v=1716452110`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0524001copy.jpg?v=1716452110`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0424001.png?v=1715167078`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR04240011600x800copy.jpg?v=1715167077`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1223002.png?v=1702471916`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR12230021600mmx1200mmcopy.jpg?v=1702471916`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1223001.png?v=1702471855`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR12230011350mmx1200mmcopy.jpg?v=1702471856`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1123007.png?v=1702040482`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1123007copy.jpg?v=1702040482`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1123006.png?v=1701237669`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1123006copy.jpg?v=1701237670`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1123004.png?v=1701237549`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1123004copy.jpg?v=1701237549`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1123003.png?v=1700216901`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1123003copy.jpg?v=1700216901`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1123002.png?v=1700216854`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1123002copy.jpg?v=1700216854`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR10230021.png?v=1697790915`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1023002.jpg?v=1697790915`
+        ],
+        variants: [
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched (1800mm x 1600mm)`,
+            price: 39500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched (1800mm x 1600mm)`,
+            price: 42500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched (1900mm x 500mm)`,
+            price: 18500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched`,
+            price: 28500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched`,
+            price: 28500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched (3 in 1 - Triptych)`,
+            price: 14700.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched`,
+            price: 6500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched`,
+            price: 14500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched`,
+            price: 22500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched`,
+            price: 11500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched`,
+            price: 11500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched`,
+            price: 9500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched`,
+            price: 11500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched`,
+            price: 28500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched`,
+            price: 22500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched`,
+            price: 22500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched`,
+            price: 12500.0
+          }
+        ]
+      },
+      {
+        title: `Paul van Rensburg - Acrylic on Stretched Canvas 1010mm x 760mm`,
+        price: 13500.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR06250031.png?v=1749808512`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR06250031.png?v=1749808512`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR06250032.png?v=1749808512`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR06250033.jpg?v=1749808512`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR04250201.png?v=1747903847`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR04250202.png?v=1747903846`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR04250203.jpg?v=1747903846`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR04250191.png?v=1747903779`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR04250192.png?v=1747903779`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR04250193.jpg?v=1747903779`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR04250171.png?v=1747903715`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR04250173.png?v=1747903715`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR04250174.jpg?v=1747903715`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR04250161.png?v=1747903329`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR04250162.png?v=1747903329`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR04250163.jpg?v=1747903329`
+        ],
+        variants: [
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1010mm x 760mm`,
+            price: 8500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1010mm x 760mm`,
+            price: 13500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1010mm x 760mm`,
+            price: 13500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1010mm x 760mm`,
+            price: 9500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1010mm x 760mm`,
+            price: 9500.0
+          }
+        ]
+      },
+      {
+        title: `Paul van Rensburg - Acrylic on Stretched Canvas 1250mm x 1010mm`,
+        price: 24500.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425014.png?v=1744871817`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425014.png?v=1744871817`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425014copy.jpg?v=1744871817`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425014x.png?v=1744871817`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425013.png?v=1744871754`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425013copy.jpg?v=1744871754`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425013x.png?v=1744871754`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425011.png?v=1744871630`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425011copy.jpg?v=1744871630`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425011x.png?v=1744871630`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0325001.png?v=1744871546`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0325001copy.jpg?v=1744871546`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0325001d.png?v=1744871546`
+        ],
+        variants: [
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1250mm x 1010mm`,
+            price: 14500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1250mm x 1010mm`,
+            price: 14500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1250mm x 1010mm`,
+            price: 24500.0
+          },
+          {
+            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1250mm x 1010mm`,
+            price: 24500.0
+          }
+        ]
+      },
+      {
         title: `Paul van Rensburg - Acrylic on Panel`,
         price: 14900.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024028a.png?v=1729242903`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024028a.png?v=1729242903`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024028b.png?v=1729242902`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024028copy.jpg?v=1729242902`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024028copy.jpg?v=1729242902`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024027a.png?v=1729242851`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024027b.png?v=1729242851`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024027copy.jpg?v=1729242851`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0924030.png?v=1728912130`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0924030b.png?v=1728912130`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0924030copy.jpg?v=1728912130`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0924029.png?v=1728912086`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0924029b.png?v=1728912086`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0924029copy.jpg?v=1728912086`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0924027.png?v=1728912001`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0924027b.png?v=1728912001`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0924027copy.jpg?v=1728912001`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024006a.png?v=1728643805`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024006b.png?v=1728643806`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024006copy.jpg?v=1728643805`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024005a.png?v=1728643765`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024005b.png?v=1728643765`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024005copy.jpg?v=1728643765`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024004a.png?v=1728643486`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024004b.png?v=1728643486`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1024004copy.jpg?v=1728643486`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0924028.png?v=1726580676`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0924028b.png?v=1726580676`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0924028copy.jpg?v=1726580676`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0924032.png?v=1726145468`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0924032b.png?v=1726145468`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0924032copy.jpg?v=1726145469`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0924031.png?v=1726145388`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0924031b.png?v=1726145388`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0924031copy.jpg?v=1726145388`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0824001.png?v=1723465209`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0824001copy.jpg?v=1723465209`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0724005.png?v=1723465104`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0724005720x600copy.jpg?v=1723465104`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0724004.png?v=1723465062`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0724004720x600copy.jpg?v=1723465061`
         ],
         variants: [
           {
@@ -653,7 +1004,7 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
       {
         title: `Paul van Rensburg - Acrylic & Goldl Leaf on Stretched`,
         price: 14500.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1123001.png?v=1700216678`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR1123001.png?v=1700216678`,
@@ -666,11 +1017,7 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
           }
         ]
       }
-    ],
-    statsAvailable: 15,
-    statsSold: 8,
-    statsHighestSold: 14900.0,
-    statsFromPrice: 5750
+    ]
   },
   {
     id: `thomas-kohler`,
@@ -688,131 +1035,14 @@ The sea has long shaped Kohler’s imagination. Ships run deep in his family’s
 Thomas also paints people, drawn to the subtle drama of human interaction. A self-described traditionalist with a quirky edge, he paints largely for private collectors, preserving memories of places, families, and the enduring pull of the sea.`,
     image: `https://thewinelandsartgallery.com/cdn/shop/collections/10_2_7d87a03a-e3ef-4f25-9d07-0ca715954ef4.png?v=1774946216`,
     galleryUrl: `https://thewinelandsartgallery.com/collections/thomas-kohler-art`,
+    statsAvailable: 9,
+    statsSold: 0,
+    statsHighestSold: 0,
     works: [
-      {
-        title: `Thomas Kohler Oil on Stretched Canvas '2021 Winter Storm'`,
-        price: 6750,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224009.png?v=1707989116`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224009.png?v=1707989116`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240092022Expectations350x300copy.jpg?v=1707989116`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224008.png?v=1707989018`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240082021WinterStormGrottoBay54x40copy.jpg?v=1707989019`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224007.png?v=1707988926`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240072022Danneborg56x38copy.jpg?v=1707988926`
-        ],
-        variants: [
-          {
-            label: `Thomas Kohler Oil on Stretched Canvas '2021 Winter Storm'`,
-            price: 6750
-          }
-        ]
-      },
-      {
-        title: `Thomas Kohler Oil on Stretched Canvas '2022 Danneborg'`,
-        price: 9500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224009.png?v=1707989116`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224009.png?v=1707989116`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240092022Expectations350x300copy.jpg?v=1707989116`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224008.png?v=1707989018`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240082021WinterStormGrottoBay54x40copy.jpg?v=1707989019`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224007.png?v=1707988926`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240072022Danneborg56x38copy.jpg?v=1707988926`
-        ],
-        variants: [
-          {
-            label: `Thomas Kohler Oil on Stretched Canvas '2022 Danneborg'`,
-            price: 9500
-          }
-        ]
-      },
-      {
-        title: `Thomas Kohler Oil on Stretched Canvas '2019 Autumn'`,
-        price: 6500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224009.png?v=1707989116`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224009.png?v=1707989116`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240092022Expectations350x300copy.jpg?v=1707989116`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224008.png?v=1707989018`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240082021WinterStormGrottoBay54x40copy.jpg?v=1707989019`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224007.png?v=1707988926`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240072022Danneborg56x38copy.jpg?v=1707988926`
-        ],
-        variants: [
-          {
-            label: `Thomas Kohler Oil on Stretched Canvas '2019 Autumn'`,
-            price: 6500
-          }
-        ]
-      },
-      {
-        title: `Thomas Kohler Oil on Stretched Canvas '2017 Sydney Harbour'`,
-        price: 8950,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224009.png?v=1707989116`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224009.png?v=1707989116`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240092022Expectations350x300copy.jpg?v=1707989116`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224008.png?v=1707989018`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240082021WinterStormGrottoBay54x40copy.jpg?v=1707989019`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224007.png?v=1707988926`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240072022Danneborg56x38copy.jpg?v=1707988926`
-        ],
-        variants: [
-          {
-            label: `Thomas Kohler Oil on Stretched Canvas '2017 Sydney Harbour'`,
-            price: 8950
-          }
-        ]
-      },
-      {
-        title: `Thomas Kohler Oil on Stretched Canvas '2017 Public Transport in Norway'`,
-        price: 8500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224009.png?v=1707989116`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224009.png?v=1707989116`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240092022Expectations350x300copy.jpg?v=1707989116`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224008.png?v=1707989018`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240082021WinterStormGrottoBay54x40copy.jpg?v=1707989019`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224007.png?v=1707988926`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240072022Danneborg56x38copy.jpg?v=1707988926`
-        ],
-        variants: [
-          {
-            label: `Thomas Kohler Oil on Stretched Canvas '2017 Public Transport in Norway'`,
-            price: 8500
-          }
-        ]
-      },
-      {
-        title: `Thomas Kohler Oil on Stretched Canvas '2007 Rounding Lighthouse'`,
-        price: 13500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224009.png?v=1707989116`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224009.png?v=1707989116`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240092022Expectations350x300copy.jpg?v=1707989116`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224008.png?v=1707989018`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240082021WinterStormGrottoBay54x40copy.jpg?v=1707989019`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224007.png?v=1707988926`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK02240072022Danneborg56x38copy.jpg?v=1707988926`
-        ],
-        variants: [
-          {
-            label: `Thomas Kohler Oil on Stretched Canvas '2007 Rounding Lighthouse'`,
-            price: 13500
-          }
-        ]
-      },
       {
         title: `Thomas Kohler Oil on Stretched Canvas "2022 Expectations"`,
         price: 5500.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224009.png?v=1707989116`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224009.png?v=1707989116`,
@@ -828,7 +1058,7 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
       {
         title: `Thomas Kohler Oil on Stretched Canvas "2021 Winter Storm"`,
         price: 6750.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224008.png?v=1707989018`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224008.png?v=1707989018`,
@@ -844,7 +1074,7 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
       {
         title: `Thomas Kohler Oil on Stretched Canvas "2022 Danneborg "`,
         price: 9500.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224007.png?v=1707988926`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224007.png?v=1707988926`,
@@ -860,7 +1090,7 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
       {
         title: `Thomas Kohler Oil on Stretched Canvas "2021 Flying Kites"`,
         price: 10500.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224006.png?v=1707988804`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224006.png?v=1707988804`,
@@ -876,7 +1106,7 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
       {
         title: `Thomas Kohler Oil on Stretched Canvas "2019 Fishing Lesson"`,
         price: 4500.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224005.png?v=1707988704`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224005.png?v=1707988704`,
@@ -892,7 +1122,7 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
       {
         title: `Thomas Kohler Oil on Stretched Canvas "2019 Autumn"`,
         price: 6500.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224004.png?v=1707988552`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224004.png?v=1707988552`,
@@ -908,7 +1138,7 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
       {
         title: `Thomas Kohler Oil on Stretched Canvas "2017 Sydney Harbour"`,
         price: 8950.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224003.png?v=1707988455`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224003.png?v=1707988455`,
@@ -924,7 +1154,7 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
       {
         title: `Thomas Kohler Oil on Stretched Canvas "2017 Public Transport in Norway "`,
         price: 8500.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224002.png?v=1707988340`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224002.png?v=1707988340`,
@@ -940,7 +1170,7 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
       {
         title: `Thomas Kohler Oil on Stretched Canvas "2007 Rounding Lighthouse"`,
         price: 13500.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224001.png?v=1707988066`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/TK0224001.png?v=1707988066`,
@@ -953,548 +1183,7 @@ Thomas also paints people, drawn to the subtle drama of human interaction. A sel
           }
         ]
       }
-    ],
-    statsAvailable: 6,
-    statsSold: 9,
-    statsHighestSold: 13500.0,
-    statsFromPrice: 6500
-  },
-  {
-    id: `aj-burns`,
-    name: `AJ Burns`,
-    born: null,
-    birthplace: `South Africa`,
-    medium: `Blown Acrylic`,
-    style: `Koi, Water, Underwater`,
-    bio: `AJ Burns: Breathing Life into Colours
-
-AJ Burns' artistic journey has been a testament to the enduring nature of creativity. Though he painted prodigiously as a child, he faced discouragement from teachers and family during his high school years. As the world tried to suppress his artistic spark, AJ turned to civil engineering, swapping paintbrushes for setsquares and pencils.
-
-After thriving as an entrepreneur in both the UK and South Africa, he ventured into the world of vodka distillery. However, the advent of Covid prohibition left him at a crossroads. It was during this uncertain period that AJ rekindled his artistic flame. A chance art class with an old friend led him back to the world of acrylics, a staggering 35 years after he had set them aside.
-
-AJ's unique approach to painting emerged from curiosity and circumstance. In a garage without electricity, he experimented with the movement of paint. Lacking conventional tools, he resorted to blowing air with his own breath, watching in awe as one color gracefully danced through another.
-
-Today, AJ continues to infuse life into his abstract masterpieces. With a deliberate yet unpredictable technique, he layers one color upon another and then breathes his own life into the canvas, creating vibrant and evocative compositions. His paintings become a burst of energy, a symphony of colors and textures that provoke a spectrum of emotions.
-
-"The unpredictability of it fascinates me," AJ enthuses. "The paint seems to come to life; it keeps moving even when I've finished. And the colors evolve during the drying process, which can take up to two weeks in winter. It's always exciting to come back the next day to see what's happened to the painting."
-
-In AJ Burns' world of art, creativity knows no bounds, and the canvas is a dynamic realm where colors and emotions entwine, breathing life into each stroke and reminding us that creativity is timeless.`,
-    image: `https://thewinelandsartgallery.com/cdn/shop/collections/15_c21be0eb-39e9-43e9-8ecb-89142dc1b2d4.png?v=1757591409`,
-    galleryUrl: `https://thewinelandsartgallery.com/collections/aj-burns`,
-    works: [
-      {
-        title: `Many Parts To Each Of Us by AJ Burns`,
-        price: 5500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB02260071.png?v=1771842480`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB02260071.png?v=1771842480`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB02260072.png?v=1771842480`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB0226007AJBurnsManypartstoeachofus60x40cmcopy.jpg?v=1771842480`
-        ],
-        variants: [
-          {
-            label: `Many Parts To Each Of Us by AJ Burns (600mm x 400mm)`,
-            price: 5500
-          }
-        ]
-      },
-      {
-        title: `Fiery Redheads by AJ Burns`,
-        price: 5500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB02260061.png?v=1771842397`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB02260061.png?v=1771842397`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB02260062.png?v=1771842397`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB0226006AJBurnsFieryRedheads60x40cm3copy.jpg?v=1771842397`
-        ],
-        variants: [
-          {
-            label: `Fiery Redheads by AJ Burns (600mm x 400mm)`,
-            price: 5500
-          }
-        ]
-      },
-      {
-        title: `Close but different by AJ Burns`,
-        price: 5500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB02260041.png?v=1771842248`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB02260041.png?v=1771842248`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB02260042.png?v=1771842248`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB0226004AJBurnsClosebutDifferent60x40cmcopy.jpg?v=1771842248`
-        ],
-        variants: [
-          {
-            label: `Close but different by AJ Burns (600mm x 400mm)`,
-            price: 5500
-          }
-        ]
-      },
-      {
-        title: `A Little Left of Centre by AJ Burns`,
-        price: 21500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025007AJBurnsALittleLeftofCentre120x74cm1.png?v=1761295746`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025007AJBurnsALittleLeftofCentre120x74cm1.png?v=1761295746`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025007AJBurnsALittleLeftofCentre120x74cm2.png?v=1761295746`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025007AJBurnsALittleLeftofCentre120x74cm3.jpg?v=1761295747`
-        ],
-        variants: [
-          {
-            label: `A Little Left of Centre by AJ Burns (1200mm x 740mm)`,
-            price: 21500
-          }
-        ]
-      },
-      {
-        title: `Keep Exploring by AJ Burns`,
-        price: 15400,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025004AJBurnsKeepExploring90x70cm1.png?v=1761295443`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025004AJBurnsKeepExploring90x70cm1.png?v=1761295443`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025004AJBurnsKeepExploring90x70cm2.png?v=1761295443`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025004AJBurnsKeepExploring90x70cm3.jpg?v=1761295443`
-        ],
-        variants: [
-          {
-            label: `Keep Exploring by AJ Burns (900mm x 700mm)`,
-            price: 15400
-          }
-        ]
-      },
-      {
-        title: `AJ Burns -`,
-        price: 15600.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/1_1.png?v=1776685361`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/1_1.png?v=1776685361`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/1_2.png?v=1776685361`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/1_2AJBLIT001900x700.jpg?v=1776685361`
-        ],
-        variants: [
-          {
-            label: `AJ Burns - (900mm x 700mm)`,
-            price: 15600.0
-          }
-        ]
-      },
-      {
-        title: `Common Goal by AJ Burns`,
-        price: 5500.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB02260051.png?v=1771842329`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB02260051.png?v=1771842329`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB02260052.png?v=1771842329`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB0226005AJBurnsCommonGoal60x40cmcopy.jpg?v=1771842329`
-        ],
-        variants: [
-          {
-            label: `Common Goal by AJ Burns (600mm x 400mm)`,
-            price: 5500.0
-          }
-        ]
-      },
-      {
-        title: `AJ Burns - Go With The Flow`,
-        price: 20000.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJBAV001_16dc74fe-5af0-4a92-9ced-d9daa2b29bcc.jpg?v=1771066286`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJBAV001_16dc74fe-5af0-4a92-9ced-d9daa2b29bcc.jpg?v=1771066286`
-        ],
-        variants: [
-          {
-            label: `AJ Burns - Go With The Flow (1600mm x 1000mm)`,
-            price: 20000.0
-          }
-        ]
-      },
-      {
-        title: `Each on Our Own Path by AJ Burns`,
-        price: 29500.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB10250091.png?v=1761295896`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB10250091.png?v=1761295896`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB10250092.png?v=1761295896`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB10250093AJBurnsEachonourownPath160x100cm.jpg?v=1761295896`
-        ],
-        variants: [
-          {
-            label: `Each on Our Own Path by AJ Burns (1600mm x 1000mm)`,
-            price: 29500.0
-          }
-        ]
-      },
-      {
-        title: `Colourful by AJ Burns`,
-        price: 29500.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025008AJBurnsColourfulLife160x100cm1.png?v=1761295815`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025008AJBurnsColourfulLife160x100cm1.png?v=1761295815`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025008AJBurnsColourfulLife160x100cm2.png?v=1761295815`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025008AJBurnsColourfulLife160x100cm3.jpg?v=1761295815`
-        ],
-        variants: [
-          {
-            label: `Colourful by AJ Burns (1600mm x 1000mm)`,
-            price: 29500.0
-          }
-        ]
-      },
-      {
-        title: `Do You See Me by AJ Burns`,
-        price: 21500.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025006AJBurnsDoyouseeme120x74cm1.png?v=1761295656`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025006AJBurnsDoyouseeme120x74cm1.png?v=1761295656`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025006AJBurnsDoyouseeme120x74cm2.png?v=1761295656`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025006AJBurnsDoyouseeme120x74cm3.jpg?v=1761295656`
-        ],
-        variants: [
-          {
-            label: `Do You See Me by AJ Burns (1200mm x 740mm)`,
-            price: 21500.0
-          }
-        ]
-      },
-      {
-        title: `Intersecting Paths by AJ Burns`,
-        price: 19500.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025005AJBurnsIntersectingPaths120x74cm1.png?v=1761295541`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025005AJBurnsIntersectingPaths120x74cm1.png?v=1761295541`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025005AJBurnsIntersectingPaths120x74cm2.png?v=1761295541`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025005AJBurnsIntersectingPaths120x74cm3.jpg?v=1761295541`
-        ],
-        variants: [
-          {
-            label: `Intersecting Paths by AJ Burns (1200mm x 740mm)`,
-            price: 19500.0
-          }
-        ]
-      },
-      {
-        title: `Coming Full Circle by AJ Burns`,
-        price: 15400.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025003AJBurnsComingFullCircle90x70cm1.png?v=1761295377`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025003AJBurnsComingFullCircle90x70cm1.png?v=1761295377`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025003AJBurnsComingFullCircle90x70cm2.png?v=1761295378`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025003AJBurnsComingFullCircle90x70cm3.jpg?v=1761295377`
-        ],
-        variants: [
-          {
-            label: `Coming Full Circle by AJ Burns (900mm x 700mm)`,
-            price: 15400.0
-          }
-        ]
-      },
-      {
-        title: `Best Buddies by AJ Burns`,
-        price: 15400.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB10250021_2AJBurnsBestBuddies90x70cm1.png?v=1761295247`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB10250021_2AJBurnsBestBuddies90x70cm1.png?v=1761295247`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB10250021_2AJBurnsBestBuddies90x70cm2.png?v=1761295247`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB10250021_2AJBurnsBestBuddies90x70cm3.jpg?v=1761295248`
-        ],
-        variants: [
-          {
-            label: `Best Buddies by AJ Burns (900mm x 700mm)`,
-            price: 15400.0
-          }
-        ]
-      },
-      {
-        title: `Peaceful by AJ Burns`,
-        price: 4800.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB10250011_1AJBurnsPeaceful60x40cm1.png?v=1761294931`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB10250011_1AJBurnsPeaceful60x40cm1.png?v=1761294931`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB10250011_1AJBurnsPeaceful60x40cm2.png?v=1761294931`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB10250011_1AJBurnsPeaceful60x40cm3.jpg?v=1761294931`
-        ],
-        variants: [
-          {
-            label: `Peaceful by AJ Burns (600mm x 400mm)`,
-            price: 4800.0
-          }
-        ]
-      },
-      {
-        title: `Serenity by AJ Burns`,
-        price: 19500.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJ0823106.png?v=1699949509`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJ0823106.png?v=1699949509`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJ0823106AJBurnsSerenity160x100cm.jpg?v=1699949509`
-        ],
-        variants: [
-          {
-            label: `Serenity by AJ Burns`,
-            price: 19500.0
-          }
-        ]
-      },
-      {
-        title: `Cruising by AJ Burns`,
-        price: 24500.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJ0823105.png?v=1699949445`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJ0823105.png?v=1699949445`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJ0823105AJBurnsCruising160x100cm.jpg?v=1699949446`
-        ],
-        variants: [
-          {
-            label: `Cruising by AJ Burns`,
-            price: 24500.0
-          }
-        ]
-      },
-      {
-        title: `Crossed Paths by AJ Burns`,
-        price: 29500.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJ0823104.png?v=1699949370`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJ0823104.png?v=1699949370`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJ0823104AJBurnsCrossedpaths160x100cm.jpg?v=1699949370`
-        ],
-        variants: [
-          {
-            label: `Crossed Paths by AJ Burns`,
-            price: 29500.0
-          }
-        ]
-      },
-      {
-        title: `Reef by AJ Burns`,
-        price: 29500.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NeutralElegantMinimalistShadowWallArtMockupInstagramPost.png?v=1694442047`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NeutralElegantMinimalistShadowWallArtMockupInstagramPost.png?v=1694442047`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJ0823103BurnsReef160x100cml.jpg?v=1694442047`
-        ],
-        variants: [
-          {
-            label: `Reef by AJ Burns`,
-            price: 29500.0
-          }
-        ]
-      },
-      {
-        title: `Happy Couple by AJ Burns`,
-        price: 1500.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/2.png?v=1694441754`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/2.png?v=1694441754`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJ0823102BurnsHappyCouple20x20cm.jpg?v=1694441754`
-        ],
-        variants: [
-          {
-            label: `Happy Couple by AJ Burns`,
-            price: 1500.0
-          }
-        ]
-      },
-      {
-        title: `First Date by AJ Burns`,
-        price: 1500.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/1.png?v=1694441778`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/1.png?v=1694441778`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJ0823101BurnsFirstDate.jpg?v=1694441778`
-        ],
-        variants: [
-          {
-            label: `First Date by AJ Burns`,
-            price: 1500.0
-          }
-        ]
-      }
-    ],
-    statsAvailable: 5,
-    statsSold: 16,
-    statsHighestSold: 29500.0,
-    statsFromPrice: 5500
-  },
-  {
-    id: `harry-erasmus`,
-    name: `Harry Erasmus`,
-    born: null,
-    birthplace: `South Africa`,
-    medium: `Oil & Acrylic`,
-    style: `Whimsical, Fantasy, Naïve`,
-    bio: `Harry Erasmus: Painting the Whimsy of Life
-
-Harry Erasmus stands as one of South Africa's most delightfully idiosyncratic artists, known for his unparalleled talent in translating a whimsical imagination onto canvas. Born in Pretoria in 1961, Harry's love affair with art ignited at an early age, a passion that would become his life's defining narrative.
-
-In the crucible of adversity, Harry's art became a beacon of light. Despite early hardships, he chose to infuse his creations with the radiant world of his childhood imagination, steering clear of darker themes.
-
-Lacking formal training, Harry proudly carved his own artistic path, a journey that guides viewers into a realm of untamed whimsy. His works, described as "gesels-kuns" in Afrikaans, invite conversations with the soul.
-
-From 2016 to 2018, Harry found solace in his studio nestled within The Winelands Art Gallery. We are honored to showcase his enchanting masterpieces, each brushstroke a testament to his unique gift for evoking joy and fostering dialogue through art.`,
-    image: `https://thewinelandsartgallery.com/cdn/shop/collections/8_3.png?v=1695061014`,
-    galleryUrl: `https://thewinelandsartgallery.com/collections/harry-erasmus`,
-    works: [
-      {
-        title: `Harry Erasmus - 760mm x 380mm`,
-        price: 10950,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0526003_1.png?v=1777556294`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0526003_1.png?v=1777556294`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0526003_2.png?v=1777556294`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0526003_3.jpg?v=1777556294`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0526002_1.png?v=1777556240`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0526002_2.png?v=1777556240`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0526002_3.jpg?v=1777556240`
-        ],
-        variants: [
-          {
-            label: `Harry Erasmus - 760mm x 380mm (Bicycle moonlight)`,
-            price: 10950
-          },
-          {
-            label: `Harry Erasmus - 760mm x 380mm (Red VW street)`,
-            price: 10950
-          },
-          {
-            label: `Harry Erasmus - 760mm x 380mm (Cape town landscape)`,
-            price: 10950
-          }
-        ]
-      },
-      {
-        title: `Harry Erasmus - 410mm x 200mm`,
-        price: 4750,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260031.png?v=1777555988`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260031.png?v=1777555988`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260032.png?v=1777555988`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0226003410mmx200mmcopy.jpg?v=1777555987`
-        ],
-        variants: [
-          {
-            label: `Harry Erasmus - 410mm x 200mm (Moon city)`,
-            price: 4750
-          }
-        ]
-      },
-      {
-        title: `Harry Erasmus - 350mm x 250mm`,
-        price: 2750,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260021.png?v=1771590720`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260021.png?v=1771590720`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260022.png?v=1771590719`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260023.jpg?v=1771590720`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260011.png?v=1771590659`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260012.png?v=1771590659`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260013.jpg?v=1771590659`
-        ],
-        variants: [
-          {
-            label: `Harry Erasmus - 350mm x 250mm (Ladies hats)`,
-            price: 2750
-          }
-        ]
-      },
-      {
-        title: `Harry Erasmus - 1600mm x 600mm`,
-        price: 19500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250041.png?v=1758526812`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250041.png?v=1758526812`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250042.png?v=1758526812`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250043.jpg?v=1758526812`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250031.png?v=1758526779`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250032.png?v=1758526779`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250033.jpg?v=1758526779`
-        ],
-        variants: [
-          {
-            label: `Harry Erasmus - 1600mm x 600mm (Church seascape)`,
-            price: 19500
-          },
-          {
-            label: `Harry Erasmus - 1600mm x 600mm (Beach scene)`,
-            price: 19500
-          }
-        ]
-      },
-      {
-        title: `Harry Erasmus - Acrylic on Stretched Canvas`,
-        price: 28500.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0924001A1000x750.png?v=1726230578`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0924001A1000x750.png?v=1726230578`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0924001B.png?v=1726230578`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0924001copy.jpg?v=1726230578`
-        ],
-        variants: [
-          {
-            label: `Harry Erasmus - Acrylic on Stretched Canvas`,
-            price: 11900.0
-          },
-          {
-            label: `Harry Erasmus - Acrylic on Stretched Canvas`,
-            price: 28500.0
-          }
-        ]
-      },
-      {
-        title: `Acrylic on Stretched Canvas by Harry Erasmus`,
-        price: 8500.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/34.png?v=1694979532`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/34.png?v=1694979532`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0512141000x750NoDrinking.jpg?v=1694979533`
-        ],
-        variants: [
-          {
-            label: `Acrylic on Stretched Canvas by Harry Erasmus`,
-            price: 8500.0
-          },
-          {
-            label: `Acrylic on Stretched Canvas by Harry Erasmus`,
-            price: 1450.0
-          },
-          {
-            label: `Acrylic on Stretched Canvas by Harry Erasmus`,
-            price: 1150.0
-          }
-        ]
-      }
-    ],
-    statsAvailable: 4,
-    statsSold: 2,
-    statsHighestSold: 28500.0,
-    statsFromPrice: 2750
+    ]
   },
   {
     id: `emile-cronje`,
@@ -1514,96 +1203,70 @@ Inspired by the legendary Gregoire Boonzaier, Emile masterfully weaves elements 
 For over two decades, Emile's works have graced the homes of South Africans. In 2004, an invitation to exhibit at the South African House of Art in London affirmed his standing as a true artistic luminary. His journey is a testament to the transformative power of art, a journey that continues to breathe life and color into the world.`,
     image: `https://thewinelandsartgallery.com/cdn/shop/collections/10_2.png?v=1695060711`,
     galleryUrl: `https://thewinelandsartgallery.com/collections/emile-cronje`,
+    statsAvailable: 5,
+    statsSold: 0,
+    statsHighestSold: 0,
     works: [
-      {
-        title: `Emile Cronje - Acrylic on Panel (600mm x 300mm) Seascape 1`,
-        price: 3850,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260011.png?v=1774538327`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260011.png?v=1774538327`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260012.png?v=1774538328`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260013600x300mm.jpg?v=1774538327`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260021.png?v=1774538280`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260022.png?v=1774538281`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260023600x300mmcopy.jpg?v=1774538280`
-        ],
-        variants: [
-          {
-            label: `Emile Cronje - Acrylic on Panel (600mm x 300mm) Seascape 1`,
-            price: 3850
-          }
-        ]
-      },
-      {
-        title: `Emile Cronje - Acrylic on Panel (600mm x 300mm) Seascape 2`,
-        price: 3850,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260011.png?v=1774538327`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260011.png?v=1774538327`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260012.png?v=1774538328`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260013600x300mm.jpg?v=1774538327`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260021.png?v=1774538280`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260022.png?v=1774538281`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260023600x300mmcopy.jpg?v=1774538280`
-        ],
-        variants: [
-          {
-            label: `Emile Cronje - Acrylic on Panel (600mm x 300mm) Seascape 2`,
-            price: 3850
-          }
-        ]
-      },
-      {
-        title: `Emile Cronje - Acrylic on Panel (580mm x 330mm) Seascape`,
-        price: 3850,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260031.png?v=1774538236`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260031.png?v=1774538236`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260032.png?v=1774538236`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260033580x330mmcopy.jpg?v=1774538236`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250011.png?v=1756725854`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250012.png?v=1756725854`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC0825001600mmx450mmcopy.jpg?v=1756725854`
-        ],
-        variants: [
-          {
-            label: `Emile Cronje - Acrylic on Panel (580mm x 330mm) Seascape`,
-            price: 3850
-          }
-        ]
-      },
-      {
-        title: `Emile Cronje - Acrylic on Panel (590mm x 330mm) Seascape`,
-        price: 3850,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC12250031.png?v=1765200668`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC12250031.png?v=1765200668`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC12250032.png?v=1765200668`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC12250033590mmx330mmcopy.jpg?v=1765200668`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250011.png?v=1756725854`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250012.png?v=1756725854`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC0825001600mmx450mmcopy.jpg?v=1756725854`
-        ],
-        variants: [
-          {
-            label: `Emile Cronje - Acrylic on Panel (590mm x 330mm) Seascape`,
-            price: 3850
-          }
-        ]
-      },
       {
         title: `Emile Cronje - Acrylic on Panel`,
         price: 6500.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260011.png?v=1774538327`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260011.png?v=1774538327`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260012.png?v=1774538328`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260013600x300mm.jpg?v=1774538327`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260013600x300mm.jpg?v=1774538327`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260021.png?v=1774538280`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260022.png?v=1774538281`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260023600x300mmcopy.jpg?v=1774538280`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260031.png?v=1774538236`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260032.png?v=1774538236`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260033580x330mmcopy.jpg?v=1774538236`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC12250041.png?v=1765200737`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC12250042.png?v=1765200737`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC12250043610mmx400mm.jpg?v=1765200737`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC12250031.png?v=1765200668`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC12250032.png?v=1765200668`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC12250033590mmx330mmcopy.jpg?v=1765200668`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC12250021450mmx300mm.png?v=1765200545`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC12250022450mmx300mm.png?v=1765200546`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC12250023450mmx300mm.jpg?v=1765200545`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC12250011450mmx300mm.png?v=1765200486`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC12250012450mmx300mm.png?v=1765200486`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC12250013450mmx300mm.jpg?v=1765200486`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250011.png?v=1756725854`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250012.png?v=1756725854`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC0825001600mmx450mmcopy.jpg?v=1756725854`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250041.png?v=1756725468`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250042.png?v=1756725468`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250043.jpg?v=1756725468`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250061.png?v=1756725392`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250062.png?v=1756725392`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250063.jpg?v=1756725391`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250051.png?v=1756725354`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250052.png?v=1756725354`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250053.jpg?v=1756725354`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC1224001.png?v=1739956801`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC12240011.png?v=1739956800`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC1224001copy.jpg?v=1739956800`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC01250021_cc41f188-8440-4d42-9843-58418a19914e.png?v=1752070421`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC01250023.png?v=1752070421`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC01250023copy.jpg?v=1752070421`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC01250011_3d0ed8b3-04e2-445b-9c93-f42ea1d98205.png?v=1752070384`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC01250012.png?v=1752070385`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC01250013copy.jpg?v=1752070384`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC0224005.png?v=1710317409`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC0224005copy.jpg?v=1710317409`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC0224004.png?v=1710317384`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC0224004copy.jpg?v=1710317384`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC0224003.png?v=1710317351`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC0224003copy.jpg?v=1710317352`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC0224002.png?v=1710317315`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC0224002copy.jpg?v=1710317315`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC1123002.png?v=1702039916`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC1123002copy.jpg?v=1702039916`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC1123001.png?v=1702039739`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC1123001copy.jpg?v=1702039739`
         ],
         variants: [
           {
@@ -1691,12 +1354,15 @@ For over two decades, Emile's works have graced the homes of South Africans. In 
       {
         title: `Emile Cronje - Acrylic on Stretched Canvas`,
         price: 2450.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250031.png?v=1756725989`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250031.png?v=1756725989`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250032.png?v=1756725989`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC0825003400mmx300mmcopy.jpg?v=1756725989`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC0825003400mmx300mmcopy.jpg?v=1756725989`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250021.png?v=1756725953`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC08250022.png?v=1756725953`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC0825002400mmx300mmcopy.jpg?v=1756725953`
         ],
         variants: [
           {
@@ -1712,12 +1378,15 @@ For over two decades, Emile's works have graced the homes of South Africans. In 
       {
         title: `Emile Cronje - 900mm x 340mm`,
         price: 3950.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC04250021.png?v=1752070529`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC04250021.png?v=1752070529`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC04250022.png?v=1752070529`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC04250023copy.jpg?v=1752070529`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC04250023copy.jpg?v=1752070529`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC04250011.png?v=1752070499`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC04250012.png?v=1752070499`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC04250013copy.jpg?v=1752070499`
         ],
         variants: [
           {
@@ -1733,12 +1402,21 @@ For over two decades, Emile's works have graced the homes of South Africans. In 
       {
         title: `Emile Cronje - 450mm x 300mm`,
         price: 2250.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250071.png?v=1752069237`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250071.png?v=1752069237`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250072.png?v=1752069238`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250073450x300copy.jpg?v=1752069238`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250073450x300copy.jpg?v=1752069238`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250061.png?v=1752069203`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250062.png?v=1752069203`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250063450x300copy.jpg?v=1752069203`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250051.png?v=1752069176`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250052.png?v=1752069177`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250053450x300copy.jpg?v=1752069176`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250041.png?v=1752069135`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250042.png?v=1752069135`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250043450x300copy.jpg?v=1752069135`
         ],
         variants: [
           {
@@ -1762,12 +1440,18 @@ For over two decades, Emile's works have graced the homes of South Africans. In 
       {
         title: `Emile Cronje - 590mm x 450mm`,
         price: 3850.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250031.png?v=1752069077`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250031.png?v=1752069077`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250032.png?v=1752069077`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250033590x450copy.jpg?v=1752069077`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250033590x450copy.jpg?v=1752069077`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250021.png?v=1752069045`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250022.png?v=1752069045`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250023590x450copy.jpg?v=1752069045`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250011.png?v=1752068972`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250012.png?v=1752068972`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC07250013590x450copy.jpg?v=1752068972`
         ],
         variants: [
           {
@@ -1783,624 +1467,8 @@ For over two decades, Emile's works have graced the homes of South Africans. In 
             price: 3450.0
           }
         ]
-      },
-      {
-        title: `Acrylic on Panel by Emile Cronje`,
-        price: 7500.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC0224001.png?v=1707984754`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC0224001.png?v=1707984754`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC0224001copy.jpg?v=1707984754`
-        ],
-        variants: [
-          {
-            label: `Acrylic on Panel by Emile Cronje`,
-            price: 6500.0
-          },
-          {
-            label: `Acrylic on Panel by Emile Cronje`,
-            price: 4750.0
-          },
-          {
-            label: `Acrylic on Panel by Emile Cronje`,
-            price: 4750.0
-          },
-          {
-            label: `Acrylic on Panel by Emile Cronje`,
-            price: 6450.0
-          },
-          {
-            label: `Acrylic on Panel by Emile Cronje`,
-            price: 7500.0
-          }
-        ]
       }
-    ],
-    statsAvailable: 4,
-    statsSold: 6,
-    statsHighestSold: 7500.0,
-    statsFromPrice: 3850
-  },
-  {
-    id: `marina-k`,
-    name: `Marina K`,
-    born: null,
-    birthplace: `Cape Town`,
-    medium: `Oil on Canvas`,
-    style: `Cape Town, Seascapes`,
-    bio: `Marina K: Painting Memory, Light, and Place
-
-Born and raised in Estonia, Marina K’s artistic sensibility was shaped by the quiet beauty and shifting seasons of Northern Europe. Nearly two decades ago, she made South Africa her home, where the country’s warmth, luminous skies, and vibrant energy awakened a new dimension in her work.
-
-Her paintings are distinguished by expressive colour, richly layered textures, and delicate touches of gold and light that evoke both atmosphere and emotion. Drawing inspiration from memory, place, and the poetry of ordinary life, Marina creates works that feel intimate yet universally familiar.
-
-There is a quiet nostalgia woven through her canvases—a gentle invitation for viewers to pause, reflect, and reconnect with moments often overlooked. Through her evolving body of work, Marina explores the enduring relationship between emotion and environment, revealing beauty not in grandeur, but in life’s quieter passages.`,
-    image: `https://thewinelandsartgallery.com/cdn/shop/collections/DSCF1074_edit_1317786427640832.jpg?v=1779197895`,
-    galleryUrl: `https://thewinelandsartgallery.com/collections/marina-k`,
-    works: [
-      {
-        title: `Marina K - After the Rain`,
-        price: 14950,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260041.png?v=1779199074`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260041.png?v=1779199074`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260042.png?v=1779199075`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK052600431200mmx900mm.jpg?v=1779199075`
-        ],
-        variants: [
-          {
-            label: `Marina K - After the Rain (1200mm x 900mm)`,
-            price: 14950
-          }
-        ]
-      },
-      {
-        title: `Marina K - Cape Town Dreams`,
-        price: 14950,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260031.png?v=1779199000`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260031.png?v=1779199000`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260032.png?v=1779199000`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK052600331200mmx900mm.jpg?v=1779199000`
-        ],
-        variants: [
-          {
-            label: `Marina K - Cape Town Dreams (1200mm x 900mm)`,
-            price: 14950
-          }
-        ]
-      },
-      {
-        title: `Marina K - Above the Atlantic`,
-        price: 3950,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260021.png?v=1779198928`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260021.png?v=1779198928`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260022.png?v=1779198928`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260023500mmx360mm.jpg?v=1779198928`
-        ],
-        variants: [
-          {
-            label: `Marina K - Above the Atlantic (500mm x 360mm)`,
-            price: 3950
-          }
-        ]
-      },
-      {
-        title: `Marina K - Keeper of the Light`,
-        price: 3950,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260011.png?v=1779198762`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260011.png?v=1779198762`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260012.png?v=1779198762`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260013500mmx360mm.jpg?v=1779198762`
-        ],
-        variants: [
-          {
-            label: `Marina K - Keeper of the Light (500mm x 360mm)`,
-            price: 3950
-          }
-        ]
-      }
-    ],
-    statsAvailable: 4,
-    statsSold: 0,
-    statsHighestSold: 0,
-    statsFromPrice: 3950
-  },
-  {
-    id: `gaynor`,
-    name: `Gaynor`,
-    born: 1947,
-    birthplace: `Cape Town`,
-    medium: `Oil`,
-    style: `Bo-Kaap, District Six, Kaapse Klopse`,
-    bio: `Gaynor: Illuminating the Cape and Beyond
-
-Born in 1947, Gaynor is an accomplished impressionist who predominantly wields oils as her artistic medium. While she may not call the Western Cape home, her oeuvre brilliantly encapsulates the region's rich history, effervescent culture, and picturesque landscapes. Her repertoire includes iconic Cape harbor scenes, evocative District 6 reminiscences, and the vibrant kaleidoscope of Bo Kaap.
-
-However, Gaynor's artistic canvas extends far beyond geographic boundaries. She seamlessly transports viewers to the Mediterranean, infusing her European-themed creations with the enchantment of bustling cafés. Her art, characterized by its charming naivety, speaks a universal language, appealing to a diverse global audience.
-
-With each brushstroke, Gaynor doesn't just depict scenes; she encapsulates emotions and distills the very essence of the places she holds dear. Her art invites a transcendent journey across continents, serving as a testament to the timeless allure of beauty that knows no limitations.`,
-    image: `https://thewinelandsartgallery.com/cdn/shop/collections/9_2.png?v=1695060906`,
-    galleryUrl: `https://thewinelandsartgallery.com/collections/gaynor`,
-    works: [
-      {
-        title: `Gaynor - Acrylic & Ink on Canvas Panel 200mm x 200mm`,
-        price: 1690,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225013_1.png?v=1765885143`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225013_1.png?v=1765885143`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225013_2.png?v=1765885143`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225013_3.jpg?v=1765885143`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225012_1.png?v=1765885104`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225012_2.png?v=1765885104`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225012_3.jpg?v=1765885104`
-        ],
-        variants: [
-          {
-            label: `Gaynor - Acrylic & Ink on Canvas Panel 200mm x 200mm`,
-            price: 1690
-          }
-        ]
-      },
-      {
-        title: `Gaynor - Oil on Stretched Canvas`,
-        price: 9890,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225007_1.png?v=1765884767`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225007_1.png?v=1765884767`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225007_2.png?v=1765884766`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225007_3.jpg?v=1765884766`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225006_1.png?v=1765884733`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225006_2.png?v=1765884733`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225006_3.jpg?v=1765884733`
-        ],
-        variants: [
-          {
-            label: `Gaynor - Oil on Stretched Canvas (400mm x 400mm)`,
-            price: 3490
-          },
-          {
-            label: `Gaynor - Oil on Stretched Canvas (street scene)`,
-            price: 9890
-          }
-        ]
-      },
-      {
-        title: `Oil on Stretched Canvas by Gaynor`,
-        price: 18500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA08230121.png?v=1696355678`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA08230121.png?v=1696355678`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0823012copy.jpg?v=1696355678`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA08230111.png?v=1696355633`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0823011copy.jpg?v=1696355633`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/80.png?v=1694607611`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0823009.jpg?v=1694607611`
-        ],
-        variants: [
-          {
-            label: `Oil on Stretched Canvas by Gaynor (large)`,
-            price: 18500
-          }
-        ]
-      },
-      {
-        title: `Gaynor -`,
-        price: 3490.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260061.png?v=1774538091`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260061.png?v=1774538091`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260062.png?v=1774538091`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260063.jpg?v=1774538091`
-        ],
-        variants: [
-          {
-            label: `Gaynor - (400mm x 400mm)`,
-            price: 3490.0
-          },
-          {
-            label: `Gaynor - (400mm x 400mm)`,
-            price: 3490.0
-          },
-          {
-            label: `Gaynor - (400mm x 400mm)`,
-            price: 3490.0
-          },
-          {
-            label: `Gaynor - (400mm x 400mm)`,
-            price: 3490.0
-          },
-          {
-            label: `Gaynor - (400mm x 400mm)`,
-            price: 3490.0
-          },
-          {
-            label: `Gaynor - (400mm x 400mm)`,
-            price: 3490.0
-          }
-        ]
-      },
-      {
-        title: `Gaynor - Acrylic on Stretched Canvas`,
-        price: 3490.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324002.png?v=1712051356`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324002.png?v=1712051356`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324002copy.jpg?v=1712051356`
-        ],
-        variants: [
-          {
-            label: `Gaynor - Acrylic on Stretched Canvas`,
-            price: 3490.0
-          },
-          {
-            label: `Gaynor - Acrylic on Stretched Canvas`,
-            price: 3490.0
-          }
-        ]
-      }
-    ],
-    statsAvailable: 3,
-    statsSold: 2,
-    statsHighestSold: 3490.0,
-    statsFromPrice: 1690
-  },
-  {
-    id: `jonel-scholtz`,
-    name: `Jonel Scholtz`,
-    born: null,
-    birthplace: `South Africa`,
-    medium: `Oil on Canvas`,
-    style: `Figurative, Impressionism`,
-    bio: `Jonel Scholtz: Painting the Interior Landscape
-
-Jonel Scholtz approaches art with both the discipline of a scientist and the sensitivity of a storyteller. After earning a degree in Chemistry and Biochemistry from the University of Johannesburg in 1994, she continued a painting journey that had begun years earlier under the guidance of American-born artist Louise Goudemond.
-
-Over the years, Scholtz has exhibited widely in South Africa and internationally, with her work appearing in galleries and exhibitions across New York, London, Monaco, Italy, Mauritius, and Paris. Her paintings—often deeply personal and emotionally reflective—have earned international recognition, including awards from the Los Angeles-based Teravarna Gallery.
-
-Yet beneath the accolades lies an artist more concerned with truth than acclaim. For Scholtz, painting is an act of discovery, a search for meaning within the complexities of memory, loss, love, and identity. She believes art should emerge from the soul rather than commerce, and this conviction gives her work its enduring emotional resonance.`,
-    image: `https://thewinelandsartgallery.com/cdn/shop/collections/3_755c4c39-8111-4ffc-911f-3edb35152101.png?v=1779884695`,
-    galleryUrl: `https://thewinelandsartgallery.com/collections/jonel-scholtz`,
-    works: [
-      {
-        title: `Jonel Scholtz - "I'm Still Here"`,
-        price: 18500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_1.png?v=1779886752`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_1.png?v=1779886752`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_2.png?v=1779886752`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_31220mmx920mm.jpg?v=1779886752`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_4.jpg?v=1779886752`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_5.jpg?v=1779886752`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_6.jpg?v=1779886752`
-        ],
-        variants: [
-          {
-            label: `Jonel Scholtz - "I'm Still Here" (1210mm x 910mm)`,
-            price: 18500
-          }
-        ]
-      },
-      {
-        title: `Jonel Scholtz - "The Weight of Quiet Things"`,
-        price: 18500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_1.png?v=1779886670`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_1.png?v=1779886670`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_2.png?v=1779886670`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_31220mmx920mm.jpg?v=1779886670`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_4.jpg?v=1779886670`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_5.jpg?v=1779886670`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_6.jpg?v=1779886671`
-        ],
-        variants: [
-          {
-            label: `Jonel Scholtz - "The Weight of Quiet Things" (1210mm x 910mm)`,
-            price: 18500
-          }
-        ]
-      },
-      {
-        title: `Jonel Scholtz - "As 'n Draai jou Omgooi"`,
-        price: 12850,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_1.png?v=1779886386`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_1.png?v=1779886386`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_2.png?v=1779886386`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_31010mmx760mm.jpg?v=1779886386`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_4.jpg?v=1779886386`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_5.jpg?v=1779886385`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_6.jpg?v=1779886385`
-        ],
-        variants: [
-          {
-            label: `Jonel Scholtz - "As 'n Draai jou Omgooi" (1010mm x 760mm)`,
-            price: 12850
-          }
-        ]
-      }
-    ],
-    statsAvailable: 3,
-    statsSold: 0,
-    statsHighestSold: 0,
-    statsFromPrice: 12850
-  },
-  {
-    id: `dante-ruben`,
-    name: `Dante Ruben`,
-    born: null,
-    birthplace: `South Africa`,
-    medium: `Oil on Canvas`,
-    style: `Figurative, Landscapes`,
-    bio: `Dante Ruben: Painter of Coastal Light and Working Lives
-
-Dante Ruben, now based in the coastal town of Langebaan, draws deeply from the landscapes and communities that have shaped her artistic life. For twelve formative years she lived in the Overberg, a region long associated with notable painters such as Gregoire Boonzaier, Marjorie Wallace, and Maggie Laubser. There she found inspiration not only in the scenery, but in the quiet dignity and colorful stories of working people—fishermen at sea and fynbos harvesters gathering proteas from surrounding farms.
-
-Those years left a lasting impression on her canvas. Today, with the Atlantic winds and luminous winter sunsets of Langebaan as her backdrop, Ruben continues to interpret the rhythms of coastal life. Her paintings, marked by an exuberant palette and an impressionistic touch, celebrate both landscape and humanity. The result is a body of work that resonates with collectors at home and abroad, drawn to her ability to transform everyday moments into scenes of warmth, color, and enduring character.`,
-    image: `https://thewinelandsartgallery.com/cdn/shop/collections/10_2_8610cc38-112e-4936-bd85-565c2bd17a75.png?v=1774948950`,
-    galleryUrl: `https://thewinelandsartgallery.com/collections/dante-ruben`,
-    works: [
-      {
-        title: `Dante Ruben - (610mm x 510mm) Table Mountain`,
-        price: 14950,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR05260011.png?v=1779199638`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR05260011.png?v=1779199638`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR05260012.png?v=1779199638`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR05260013610mmx510mm.jpg?v=1779199638`
-        ],
-        variants: [
-          {
-            label: `Dante Ruben - (610mm x 510mm) Table Mountain`,
-            price: 14950
-          }
-        ]
-      },
-      {
-        title: `Dante Ruben - (1500mm x 900mm) Figurative`,
-        price: 35000,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR03260021.png?v=1774949699`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR03260021.png?v=1774949699`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR03260022.png?v=1774949699`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR032600231500x900mm.jpg?v=1774949699`
-        ],
-        variants: [
-          {
-            label: `Dante Ruben - (1500mm x 900mm) Figurative`,
-            price: 35000
-          }
-        ]
-      },
-      {
-        title: `Dante Ruben - (900mm x 900mm) Landscape`,
-        price: 18900,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR03260011.png?v=1774949632`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR03260011.png?v=1774949632`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR03260012.png?v=1774949632`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR03260013900x900mm.jpg?v=1774949632`
-        ],
-        variants: [
-          {
-            label: `Dante Ruben - (900mm x 900mm) Landscape`,
-            price: 18900
-          }
-        ]
-      },
-      {
-        title: `Dante Ruben -`,
-        price: 35000.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR05260011.png?v=1779199638`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR05260011.png?v=1779199638`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR05260012.png?v=1779199638`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR05260013610mmx510mm.jpg?v=1779199638`
-        ],
-        variants: [
-          {
-            label: `Dante Ruben - (610mm x 510mm)`,
-            price: 14950.0
-          },
-          {
-            label: `Dante Ruben - (1500mm x 900mm)`,
-            price: 35000.0
-          },
-          {
-            label: `Dante Ruben - (900mm x 900mm)`,
-            price: 18900.0
-          }
-        ]
-      }
-    ],
-    statsAvailable: 3,
-    statsSold: 1,
-    statsHighestSold: 35000.0,
-    statsFromPrice: 14950
-  },
-  {
-    id: `ferdinand-kotze`,
-    name: `Ferdinand Kotze`,
-    born: null,
-    birthplace: `South Africa`,
-    medium: `Oil on Panel`,
-    style: `Surrealism`,
-    bio: `Ferdinand Kotze: Fragments of Memory and Modern Life
-
-Ferdinand Kotze is a multidisciplinary artist whose work moves between oil painting, video, and audio production, exploring the fragile relationship between memory, time, and technological change. Through layered compositions that combine oil paint, collage, and translucent figurative forms on trace paper, Kotze creates images that feel suspended between remembrance and disappearance.
-
-His paintings draw upon the visual traditions of Surrealism and early Modernism while engaging the fractured aesthetics of the digital age. Abandoned buildings, weathered vehicles, and quiet industrial spaces—deeply rooted in South Africa’s evolving landscape—form the backdrop to ghostlike figures and fleeting childhood memories.
-
-Beneath the stillness of his work lies a meditation on impermanence. Kotze examines how rapidly changing technology reshapes human experience, memory, and identity itself. His art occupies a thoughtful space between archaeology and psychology, asking what remains of our shared histories in a world moving ever faster toward the digital horizon.`,
-    image: `https://thewinelandsartgallery.com/cdn/shop/collections/Final.png?v=1779884834`,
-    galleryUrl: `https://thewinelandsartgallery.com/collections/ferdinand-kotze`,
-    works: [
-      {
-        title: `Ferdinand Kotze - "Fragments of Play: Red Balloon"`,
-        price: 23500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526003_1.png?v=1779886093`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526003_1.png?v=1779886093`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526003_2.png?v=1779886093`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526003_3760mmx1010mm.jpg?v=1779886093`
-        ],
-        variants: [
-          {
-            label: `Ferdinand Kotze - "Fragments of Play: Red Balloon" (1010mm x 760mm)`,
-            price: 23500
-          }
-        ]
-      },
-      {
-        title: `Ferdinand Kotze - "Fragments of Play: Leapfrog"`,
-        price: 23500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526002_1.png?v=1779886023`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526002_1.png?v=1779886023`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526002_2.png?v=1779886023`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526002_3760mmx1010mm.jpg?v=1779886023`
-        ],
-        variants: [
-          {
-            label: `Ferdinand Kotze - "Fragments of Play: Leapfrog" (1010mm x 760mm)`,
-            price: 23500
-          }
-        ]
-      },
-      {
-        title: `Ferdinand Kotze - "Fragments of Play: Toss The Baby"`,
-        price: 11500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526001_1.png?v=1779885791`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526001_1.png?v=1779885791`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526001_2.png?v=1779885791`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526001_3760mmx600mm.jpg?v=1779885791`
-        ],
-        variants: [
-          {
-            label: `Ferdinand Kotze - "Fragments of Play: Toss The Baby" (760mm x 600mm)`,
-            price: 11500
-          }
-        ]
-      }
-    ],
-    statsAvailable: 3,
-    statsSold: 0,
-    statsHighestSold: 0,
-    statsFromPrice: 11500
-  },
-  {
-    id: `craig-stuart`,
-    name: `Craig Stuart`,
-    born: null,
-    birthplace: `South Africa`,
-    medium: `Oil on Canvas`,
-    style: `Koi, Water Art`,
-    bio: `Craig Stuart: Painting the Quiet Power of Water
-
-Craig Stuart, a Scottish-born artist now based in Cape Town, is a graduate of the Glasgow School of Art. Water lies at the heart of his artistic vision—both as subject and as method—shaped by early encounters that stirred equal measures of curiosity and unease: dark depths set against sudden flashes of light.
-
-While living in Glasgow, Stuart often wandered the abandoned shipyards of Govan, where weathered steel and oxidised reds left a lasting impression on his palette. His approach reflects the discipline of printmaking—layered, restrained, and deliberate—while time spent along the coast of South Korea introduced an aesthetic of balance, clarity, and quiet movement.
-
-Working between control and chance, Stuart allows fluid elements to shape the final image. In recent years, forms such as koi and lilies have emerged more distinctly in his work—the koi, especially, symbolising perseverance and transformation. His paintings and prints have been exhibited in galleries internationally.`,
-    image: `https://thewinelandsartgallery.com/cdn/shop/collections/10_2_df1040aa-e9b9-4b18-a255-58193f59913c.png?v=1774950871`,
-    galleryUrl: `https://thewinelandsartgallery.com/collections/craig-stuart`,
-    works: [
-      {
-        title: `Craig Stuart - (613mm x 307mm) Koi 1`,
-        price: 6900,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260051.png?v=1774952470`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260051.png?v=1774952470`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260052.png?v=1774952471`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260053613x307.jpg?v=1774952471`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260041.png?v=1774952430`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260042.png?v=1774952431`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260043613x307.jpg?v=1774952430`
-        ],
-        variants: [
-          {
-            label: `Craig Stuart - (613mm x 307mm) Koi 1`,
-            price: 6900
-          }
-        ]
-      },
-      {
-        title: `Craig Stuart - (613mm x 307mm) Koi 2`,
-        price: 6900,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260051.png?v=1774952470`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260051.png?v=1774952470`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260052.png?v=1774952471`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260053613x307.jpg?v=1774952471`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260041.png?v=1774952430`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260042.png?v=1774952431`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260043613x307.jpg?v=1774952430`
-        ],
-        variants: [
-          {
-            label: `Craig Stuart - (613mm x 307mm) Koi 2`,
-            price: 6900
-          }
-        ]
-      },
-      {
-        title: `Craig Stuart -`,
-        price: 35000,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260051.png?v=1774952470`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260051.png?v=1774952470`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260052.png?v=1774952471`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260053613x307.jpg?v=1774952471`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260041.png?v=1774952430`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260042.png?v=1774952431`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260043613x307.jpg?v=1774952430`
-        ],
-        variants: [
-          {
-            label: `Craig Stuart - (607mm x 457mm)`,
-            price: 14500
-          },
-          {
-            label: `Craig Stuart - (840mm x 595mm)`,
-            price: 23000
-          },
-          {
-            label: `Craig Stuart - (1189mm x 840mm)`,
-            price: 35000
-          }
-        ]
-      }
-    ],
-    statsAvailable: 3,
-    statsSold: 0,
-    statsHighestSold: 0,
-    statsFromPrice: 6900
+    ]
   },
   {
     id: `corne-weideman`,
@@ -2426,10 +1494,37 @@ In the wake of Boshoff's passing in 2007, Corne embarked on a quest to explore t
 With unwavering dedication and a deep reverence for the craft, Corne Weideman continues his journey towards artistic perfection. In the footsteps of those who inspired him, he seeks not just to paint but to capture life's profound moments on canvas, preserving them for generations to come.`,
     image: `https://thewinelandsartgallery.com/cdn/shop/collections/12_4fb15bc2-e4ff-469e-8efc-65d3ba12f108.png?v=1757592363`,
     galleryUrl: `https://thewinelandsartgallery.com/collections/corne-weideman-capturing-lifes-essence-on-canvas`,
+    statsAvailable: 4,
+    statsSold: 0,
+    statsHighestSold: 0,
     works: [
       {
+        title: `Corne Weideman - 460mm x 270mm`,
+        price: 1750.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250271.png?v=1752068829`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250271.png?v=1752068829`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250272.png?v=1752068829`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250273460x270Panel-fotor-20250709142319.png?v=1752068830`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250261.png?v=1752068795`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250262.png?v=1752068795`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250263460x270Panel-fotor-20250709142215.png?v=1752068797`
+        ],
+        variants: [
+          {
+            label: `Corne Weideman - 460mm x 270mm`,
+            price: 1750.0
+          },
+          {
+            label: `Corne Weideman - 460mm x 270mm`,
+            price: 1750.0
+          }
+        ]
+      },
+      {
         title: `Corne Weideman - 460mm x 310mm`,
-        price: 1850,
+        price: 1850.0,
         status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250251.png?v=1752068695`,
         images: [
@@ -2438,26 +1533,92 @@ With unwavering dedication and a deep reverence for the craft, Corne Weideman co
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0725025460x310Panel.jpg?v=1752068734`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250241.png?v=1752068662`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250242.png?v=1752068662`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250243460x310Panelcopy.jpg?v=1752068662`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250243460x310Panelcopy.jpg?v=1752068662`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250231.png?v=1752068635`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250232.png?v=1752068635`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250233460x310Panel-fotor-2025070914202.png?v=1752068636`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250221.png?v=1752068596`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250222.png?v=1752068596`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250223460x310Panelcopy.jpg?v=1752068595`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250211.png?v=1752068570`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250212.png?v=1752068569`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250213460x310Panel-fotor-20250709141856.png?v=1752068570`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250201.png?v=1752068532`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250202.png?v=1752068532`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250203460x310Panelcopy.jpg?v=1752068532`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250191.png?v=1752068503`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250192.png?v=1752068502`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250193460x310Panel-fotor-20250709141729.png?v=1752068504`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250181.png?v=1752068468`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250182.png?v=1752068468`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250183460x310Panel-fotor-20250709141622.png?v=1752068469`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250171.png?v=1752068403`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250172.png?v=1752068403`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250173460x310Panel-fotor-20250709141514.png?v=1752068404`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250161.png?v=1752068368`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250162.png?v=1752068368`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250163460x310Panel-fotor-20250709141413.png?v=1752068370`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250151.png?v=1752068315`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250152.png?v=1752068315`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250153460x310Panel-fotor-20250709141220.png?v=1752068315`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250141.png?v=1752068283`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250142.png?v=1752068284`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250143460x310Panel-fotor-2025070914116.png?v=1752068284`
         ],
         variants: [
           {
-            label: `Corne Weideman - 460mm x 310mm (Flowers yellow bg 1)`,
-            price: 1850
+            label: `Corne Weideman - 460mm x 310mm`,
+            price: 1850.0
           },
           {
-            label: `Corne Weideman - 460mm x 310mm (Flowers yellow bg 2)`,
-            price: 1850
+            label: `Corne Weideman - 460mm x 310mm`,
+            price: 1850.0
           },
           {
-            label: `Corne Weideman - 460mm x 310mm (Flowers blue vase)`,
-            price: 1850
+            label: `Corne Weideman - 460mm x 310mm`,
+            price: 1850.0
+          },
+          {
+            label: `Corne Weideman - 460mm x 310mm`,
+            price: 1850.0
+          },
+          {
+            label: `Corne Weideman - 460mm x 310mm`,
+            price: 1850.0
+          },
+          {
+            label: `Corne Weideman - 460mm x 310mm`,
+            price: 1850.0
+          },
+          {
+            label: `Corne Weideman - 460mm x 310mm`,
+            price: 1850.0
+          },
+          {
+            label: `Corne Weideman - 460mm x 310mm`,
+            price: 1850.0
+          },
+          {
+            label: `Corne Weideman - 460mm x 310mm`,
+            price: 1850.0
+          },
+          {
+            label: `Corne Weideman - 460mm x 310mm`,
+            price: 1850.0
+          },
+          {
+            label: `Corne Weideman - 460mm x 310mm`,
+            price: 890.0
+          },
+          {
+            label: `Corne Weideman - 460mm x 310mm`,
+            price: 1850.0
           }
         ]
       },
       {
         title: `Corne Weideman - 420mm x 300mm`,
-        price: 1690,
+        price: 1690.0,
         status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250131.png?v=1752068095`,
         images: [
@@ -2466,46 +1627,99 @@ With unwavering dedication and a deep reverence for the craft, Corne Weideman co
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250133400x300Canvas-fotor-2025070914939.png?v=1752068096`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250121.png?v=1752068058`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250122.png?v=1752068058`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250123400x300Canvascopy.jpg?v=1752068058`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250123400x300Canvascopy.jpg?v=1752068058`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250111.png?v=1752068027`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250112.png?v=1752068027`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250113400x300Canvascopy.jpg?v=1752068027`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250101.png?v=1752067993`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250102.png?v=1752067993`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250103400x300Canvascopy.jpg?v=1752067993`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250091.png?v=1752067960`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250092.png?v=1752067960`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250093400x300Canvascopy.jpg?v=1752067960`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250081.png?v=1752067924`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250082.png?v=1752067924`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250083400x300Canvascopy.jpg?v=1752067924`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250071.png?v=1752067895`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250072.png?v=1752067895`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250073400x300Canvascopy.jpg?v=1752067895`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250061.png?v=1752067863`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250062.png?v=1752067863`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250063400x300Canvascopy.jpg?v=1752067863`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250051.png?v=1752067827`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250052.png?v=1752067827`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250053400x300Canvascopy.jpg?v=1752067827`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250041.png?v=1752067794`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250042.png?v=1752067794`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250043400x300Canvascopy.jpg?v=1752067794`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250031.png?v=1752067749`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250032.png?v=1752067749`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250033400x300Canvascopy.jpg?v=1752067749`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250021.png?v=1752067719`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250022.png?v=1752067719`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250023400x300Canvas-fotor-2025070914737.png?v=1752067719`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250011.png?v=1752067658`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250012.png?v=1752067658`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250013400x300Canvas-fotor-20250709142427.png?v=1752067659`
         ],
         variants: [
           {
-            label: `Corne Weideman - 420mm x 300mm (Flowers blue bg 1)`,
-            price: 1690
+            label: `Corne Weideman - 420mm x 300mm`,
+            price: 1690.0
           },
           {
-            label: `Corne Weideman - 420mm x 300mm (Flowers pink bg)`,
-            price: 1690
+            label: `Corne Weideman - 420mm x 300mm`,
+            price: 1690.0
           },
           {
-            label: `Corne Weideman - 420mm x 300mm (Flowers yellow bg 1)`,
-            price: 1690
+            label: `Corne Weideman - 420mm x 300mm`,
+            price: 1690.0
           },
           {
-            label: `Corne Weideman - 420mm x 300mm (Flowers yellow bg 2)`,
-            price: 1690
+            label: `Corne Weideman - 420mm x 300mm`,
+            price: 1690.0
           },
           {
-            label: `Corne Weideman - 420mm x 300mm (Flowers yellow bg 3)`,
-            price: 1690
+            label: `Corne Weideman - 420mm x 300mm`,
+            price: 1690.0
           },
           {
-            label: `Corne Weideman - 420mm x 300mm (Flowers green bg)`,
-            price: 1690
+            label: `Corne Weideman - 420mm x 300mm`,
+            price: 1690.0
           },
           {
-            label: `Corne Weideman - 420mm x 300mm (Flowers red bg)`,
-            price: 1690
+            label: `Corne Weideman - 420mm x 300mm`,
+            price: 1690.0
           },
           {
-            label: `Corne Weideman - 420mm x 300mm (Flowers yellow bg 4)`,
-            price: 1690
+            label: `Corne Weideman - 420mm x 300mm`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - 420mm x 300mm`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - 420mm x 300mm`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - 420mm x 300mm`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - 420mm x 300mm`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - 420mm x 300mm`,
+            price: 1690.0
           }
         ]
       },
       {
         title: `Corne Weideman - Acrylic on Stretched Canvas`,
-        price: 1690,
+        price: 1690.0,
         status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924124a.png?v=1727084857`,
         images: [
@@ -2514,49 +1728,965 @@ With unwavering dedication and a deep reverence for the craft, Corne Weideman co
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924124C.jpg?v=1727084857`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924123a.png?v=1727084823`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924123b.png?v=1727084823`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924123C.jpg?v=1727084823`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924123C.jpg?v=1727084823`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924122a.png?v=1727084789`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924122b.png?v=1727084789`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924122C.jpg?v=1727084789`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924121a.png?v=1727084752`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924121b.png?v=1727084752`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924121C.jpg?v=1727084752`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924120a.png?v=1727084718`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924120b.png?v=1727084719`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924120C.jpg?v=1727084719`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924119a.png?v=1727084672`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924119b.png?v=1727084671`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924119C.jpg?v=1727084672`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924118a.png?v=1727084635`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924118b.png?v=1727084635`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924118C.jpg?v=1727084635`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924117a.png?v=1727084544`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924117b.png?v=1727084544`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924117C.jpg?v=1727084544`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924116A.png?v=1726228830`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924116B.png?v=1726228830`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924116C.jpg?v=1726228830`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924115A.png?v=1726228798`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924115B.png?v=1726228798`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924115C.jpg?v=1726228798`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924114A.png?v=1726228764`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924114B.png?v=1726228765`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924114C.jpg?v=1726228765`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924113A.png?v=1726228723`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924113B.png?v=1726228722`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924113C.jpg?v=1726228722`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924112A.png?v=1726228689`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924112B.png?v=1726228689`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924112C.jpg?v=1726228689`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924111A.png?v=1726228648`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924111B.png?v=1726228648`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924111C.jpg?v=1726228648`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924110A.png?v=1726228612`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924110B.png?v=1726228612`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924110C.jpg?v=1726228612`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924109A.png?v=1726228472`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924109B.png?v=1726228472`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924109C.jpg?v=1726228472`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924108A.png?v=1726228430`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924108B.png?v=1726228431`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924108C.jpg?v=1726228430`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924107A.png?v=1726228394`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924107B.png?v=1726228394`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924107C.jpg?v=1726228394`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924106A.png?v=1726228353`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924106B.png?v=1726228353`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924106C.jpg?v=1726228353`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924105A.png?v=1726228311`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924105B.png?v=1726228311`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924105C.jpg?v=1726228311`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924104A.png?v=1726228268`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924104B.png?v=1726228268`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924104C.jpg?v=1726228268`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924103A.png?v=1726228223`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924103B.png?v=1726228223`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924103C.jpg?v=1726228222`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924102A.png?v=1726227974`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924102B.png?v=1726227974`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924102C.jpg?v=1726227974`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924101A.png?v=1726227933`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924101B.png?v=1726227933`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924101C.jpg?v=1726227933`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924100a.png?v=1726153226`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924100b.png?v=1726153226`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924100c.jpg?v=1726153226`
         ],
         variants: [
           {
-            label: `Corne Weideman - Acrylic on Stretched Canvas (Red flowers yellow)`,
-            price: 1690
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
           },
           {
-            label: `Corne Weideman - Acrylic on Stretched Canvas (Red flowers 1)`,
-            price: 1690
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
           },
           {
-            label: `Corne Weideman - Acrylic on Stretched Canvas (Pink flowers yellow)`,
-            price: 1690
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          },
+          {
+            label: `Corne Weideman - Acrylic on Stretched Canvas`,
+            price: 1690.0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: `gaynor`,
+    name: `Gaynor`,
+    born: 1947,
+    birthplace: `Cape Town`,
+    medium: `Oil`,
+    style: `Bo-Kaap, District Six, Kaapse Klopse`,
+    bio: `Gaynor: Illuminating the Cape and Beyond
+
+Born in 1947, Gaynor is an accomplished impressionist who predominantly wields oils as her artistic medium. While she may not call the Western Cape home, her oeuvre brilliantly encapsulates the region's rich history, effervescent culture, and picturesque landscapes. Her repertoire includes iconic Cape harbor scenes, evocative District 6 reminiscences, and the vibrant kaleidoscope of Bo Kaap.
+
+However, Gaynor's artistic canvas extends far beyond geographic boundaries. She seamlessly transports viewers to the Mediterranean, infusing her European-themed creations with the enchantment of bustling cafés. Her art, characterized by its charming naivety, speaks a universal language, appealing to a diverse global audience.
+
+With each brushstroke, Gaynor doesn't just depict scenes; she encapsulates emotions and distills the very essence of the places she holds dear. Her art invites a transcendent journey across continents, serving as a testament to the timeless allure of beauty that knows no limitations.`,
+    image: `https://thewinelandsartgallery.com/cdn/shop/collections/9_2.png?v=1695060906`,
+    galleryUrl: `https://thewinelandsartgallery.com/collections/gaynor`,
+    statsAvailable: 4,
+    statsSold: 0,
+    statsHighestSold: 0,
+    works: [
+      {
+        title: `Gaynor -`,
+        price: 3490.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260061.png?v=1774538091`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260061.png?v=1774538091`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260062.png?v=1774538091`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260063.jpg?v=1774538091`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260051.png?v=1774538058`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260052.png?v=1774538058`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260053.jpg?v=1774538058`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260041.png?v=1774538022`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260042.png?v=1774538022`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260043.jpg?v=1774538022`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260031.png?v=1774537985`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260032.png?v=1774537986`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260033.jpg?v=1774537985`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260021.png?v=1774537947`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260022.png?v=1774537947`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260023.jpg?v=1774537946`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260011.png?v=1774537908`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260012.png?v=1774537909`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA03260013.jpg?v=1774537908`
+        ],
+        variants: [
+          {
+            label: `Gaynor - (400mm x 400mm)`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - (400mm x 400mm)`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - (400mm x 400mm)`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - (400mm x 400mm)`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - (400mm x 400mm)`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - (400mm x 400mm)`,
+            price: 3490.0
           }
         ]
       },
       {
-        title: `Corne Weideman - 460mm x 270mm`,
-        price: 1750.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250271.png?v=1752068829`,
+        title: `Gaynor - Acrylic & Ink on Canvas Panel 200mm x 200mm`,
+        price: 1690.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225013_1.png?v=1765885143`,
         images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250271.png?v=1752068829`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250272.png?v=1752068829`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250273460x270Panel-fotor-20250709142319.png?v=1752068830`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225013_1.png?v=1765885143`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225013_2.png?v=1765885143`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225013_3.jpg?v=1765885143`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225012_1.png?v=1765885104`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225012_2.png?v=1765885104`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225012_3.jpg?v=1765885104`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225011_1.png?v=1765885047`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225011_2.png?v=1765885048`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225011_3.jpg?v=1765885047`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225010_1.png?v=1765885006`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225010_2.png?v=1765885006`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225010_3.jpg?v=1765885006`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225009_1_3cae3cd5-2409-497d-b879-69f306334355.png?v=1765884970`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225009_2_33c4f59c-cf0a-420e-aa8c-95b966a2e88e.png?v=1765884970`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225009_3_ca1b9511-9efc-4811-90d6-84e77f9793cf.jpg?v=1765884970`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225008_1.png?v=1765884857`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225008_2.png?v=1765884857`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225008_3.jpg?v=1765884857`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA11250021_65b0bc69-3971-4436-80ef-941c68a7b1d3.png?v=1764748751`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA11250022_6fcfe33d-9019-4880-a388-07e75dc49950.png?v=1764748751`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA11250023_045b7517-90bd-4829-a758-b82272c9bdaa.jpg?v=1764748751`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA11250031.png?v=1764169220`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA11250032.png?v=1764169220`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA11250033.jpg?v=1764169220`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA11250041_1ca733f9-bfb7-46a1-b3f8-61174128acb2.png?v=1764748723`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA11250042_7bf11ccb-7f4b-4160-8600-0d3f9a07ad62.png?v=1764748723`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA11250043_f0ea6a9b-016c-4c19-b3b9-12b552f35cfb.jpg?v=1764748723`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA11250011.png?v=1764169058`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA11250012.png?v=1764169058`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA11250013.jpg?v=1764169058`
         ],
         variants: [
           {
-            label: `Corne Weideman - 460mm x 270mm`,
-            price: 1750.0
+            label: `Gaynor - Acrylic & Ink on Canvas Panel 200mm x 200mm`,
+            price: 795.0
           },
           {
-            label: `Corne Weideman - 460mm x 270mm`,
-            price: 1750.0
+            label: `Gaynor - Acrylic & Ink on Canvas Panel 200mm x 200mm`,
+            price: 1690.0
+          },
+          {
+            label: `Gaynor - Acrylic & Ink on Canvas Panel 200mm x 200mm`,
+            price: 1690.0
+          },
+          {
+            label: `Gaynor - Acrylic & Ink on Canvas Panel 200mm x 200mm`,
+            price: 1690.0
+          },
+          {
+            label: `Gaynor - Acrylic & Ink on Canvas Panel 200mm x 200mm`,
+            price: 1690.0
+          },
+          {
+            label: `Gaynor - Acrylic & Ink on Canvas Panel 200mm x 200mm`,
+            price: 1690.0
+          },
+          {
+            label: `Gaynor - Acrylic & Ink on Canvas Panel 200mm x 200mm`,
+            price: 795.0
+          },
+          {
+            label: `Gaynor - Acrylic & Ink on Canvas Panel 200mm x 200mm`,
+            price: 795.0
+          },
+          {
+            label: `Gaynor - Acrylic & Ink on Canvas Panel 200mm x 200mm`,
+            price: 795.0
+          },
+          {
+            label: `Gaynor - Acrylic & Ink on Canvas Panel 200mm x 200mm`,
+            price: 795.0
+          }
+        ]
+      },
+      {
+        title: `Gaynor - Oil on Stretched Canvas`,
+        price: 9890.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225007_1.png?v=1765884767`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225007_1.png?v=1765884767`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225007_2.png?v=1765884766`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225007_3.jpg?v=1765884766`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225006_1.png?v=1765884733`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225006_2.png?v=1765884733`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1225006_3.jpg?v=1765884733`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA12250051.png?v=1765200342`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA12250052.png?v=1765200342`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA12250053.jpg?v=1765200342`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA12250041.png?v=1765200274`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA12250042.png?v=1765200275`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA12250043.jpg?v=1765200274`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA12250031.png?v=1765200109`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA12250032.png?v=1765200109`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA12250033.jpg?v=1765200109`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA12250021_a88edf47-be01-487c-bb99-6b489fb628aa.png?v=1765200240`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA12250022_e72148a9-24aa-46f0-afba-d913f57edb2d.png?v=1765200240`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA12250023_363a32af-05a8-4d29-9115-74927b9e1bc3.jpg?v=1765200240`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA12250011.png?v=1765200006`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA12250012.png?v=1765200006`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA12250013.jpg?v=1765200006`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0625006_1.png?v=1750406265`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0625006_2.png?v=1750406265`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0625006_3.jpg?v=1750406265`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0625005_1.png?v=1750406236`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0625005_2.png?v=1750406236`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0625005_3.jpg?v=1750406236`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0625004_1.png?v=1750406193`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0625004_2.png?v=1750406193`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0625004_3.jpg?v=1750406193`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0625003_1.png?v=1750406140`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0625003_2.png?v=1750406140`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0625003_3.jpg?v=1750406140`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0625002_1.png?v=1750406086`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0625002_2.png?v=1750406086`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0625002_3.jpg?v=1750406086`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0625001_1.png?v=1750405993`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0625001_2.png?v=1750405993`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0625001_3.jpg?v=1750405993`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0225005.png?v=1739776654`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA02250051.png?v=1739776653`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0225005.jpg?v=1739776666`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0225004.png?v=1739776521`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA02250041.png?v=1739776521`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0225004.jpg?v=1739776576`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0225003.png?v=1739776422`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA02250031.png?v=1739776422`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0225003.jpg?v=1739776438`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0225002.png?v=1739776305`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA02250021.png?v=1739776305`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0225002.jpg?v=1739776326`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0225001.png?v=1739775979`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA02250011.png?v=1739775979`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0225001.jpg?v=1739775983`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324008.png?v=1712051808`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324008copy.jpg?v=1712051808`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324007.png?v=1712051776`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324007copy.jpg?v=1712051776`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324006.png?v=1712051736`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324006copy.jpg?v=1712051736`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324005.png?v=1712051704`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324005copy.jpg?v=1712051704`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324004.png?v=1712051678`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324004copy.jpg?v=1712051677`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324003.png?v=1712051635`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324003copy.jpg?v=1712051635`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1123003.png?v=1701331903`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1123003copy.jpg?v=1701331903`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1123002.png?v=1701331869`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1123002copy.jpg?v=1701331868`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1123001.png?v=1701331826`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1123001copy.jpg?v=1701331826`
+        ],
+        variants: [
+          {
+            label: `Gaynor - Oil on Stretched Canvas (400mm x 400mm)`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas (400mm x 400mm)`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas (400mm x 400mm)`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas (400mm x 400mm)`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas (400mm x 400mm)`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas (400mm x 400mm)`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas (400mm x 400mm)`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas`,
+            price: 1950.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas`,
+            price: 1950.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas`,
+            price: 9890.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas`,
+            price: 2950.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas`,
+            price: 2950.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas`,
+            price: 2950.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas`,
+            price: 2250.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas`,
+            price: 2250.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas`,
+            price: 750.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas`,
+            price: 750.0
+          },
+          {
+            label: `Gaynor - Oil on Stretched Canvas`,
+            price: 750.0
+          }
+        ]
+      },
+      {
+        title: `Gaynor - Acrylic on Stretched Canvas`,
+        price: 3490.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324002.png?v=1712051356`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324002.png?v=1712051356`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324002copy.jpg?v=1712051356`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324001.png?v=1712051320`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA0324001copy.jpg?v=1712051319`
+        ],
+        variants: [
+          {
+            label: `Gaynor - Acrylic on Stretched Canvas`,
+            price: 3490.0
+          },
+          {
+            label: `Gaynor - Acrylic on Stretched Canvas`,
+            price: 3490.0
           }
         ]
       }
-    ],
-    statsAvailable: 3,
+    ]
+  },
+  {
+    id: `harry-erasmus`,
+    name: `Harry Erasmus`,
+    born: null,
+    birthplace: `South Africa`,
+    medium: `Oil & Acrylic`,
+    style: `Whimsical, Fantasy, Naïve`,
+    bio: `Harry Erasmus: Painting the Whimsy of Life
+
+Harry Erasmus stands as one of South Africa's most delightfully idiosyncratic artists, known for his unparalleled talent in translating a whimsical imagination onto canvas. Born in Pretoria in 1961, Harry's love affair with art ignited at an early age, a passion that would become his life's defining narrative.
+
+In the crucible of adversity, Harry's art became a beacon of light. Despite early hardships, he chose to infuse his creations with the radiant world of his childhood imagination, steering clear of darker themes.
+
+Lacking formal training, Harry proudly carved his own artistic path, a journey that guides viewers into a realm of untamed whimsy. His works, described as "gesels-kuns" in Afrikaans, invite conversations with the soul.
+
+From 2016 to 2018, Harry found solace in his studio nestled within The Winelands Art Gallery. We are honored to showcase his enchanting masterpieces, each brushstroke a testament to his unique gift for evoking joy and fostering dialogue through art.`,
+    image: `https://thewinelandsartgallery.com/cdn/shop/collections/8_3.png?v=1695061014`,
+    galleryUrl: `https://thewinelandsartgallery.com/collections/harry-erasmus`,
+    statsAvailable: 4,
     statsSold: 1,
-    statsHighestSold: 1750.0,
-    statsFromPrice: 1690
+    statsHighestSold: 28500.0,
+    works: [
+      {
+        title: `Harry Erasmus - 760mm x 380mm`,
+        price: 10950.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0526003_1.png?v=1777556294`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0526003_1.png?v=1777556294`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0526003_2.png?v=1777556294`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0526003_3.jpg?v=1777556294`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0526002_1.png?v=1777556240`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0526002_2.png?v=1777556240`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0526002_3.jpg?v=1777556240`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0526001_1.png?v=1777556192`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0526001_2.png?v=1777556192`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0526001_3.jpg?v=1777556192`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE03260021.png?v=1777556146`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE03260022.png?v=1777556145`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0326002760x380copy.jpg?v=1777556145`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE03260011.png?v=1777556092`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE03260012.png?v=1777556092`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE03260013.jpg?v=1777556092`
+        ],
+        variants: [
+          {
+            label: `Harry Erasmus - 760mm x 380mm`,
+            price: 10950.0
+          },
+          {
+            label: `Harry Erasmus - 760mm x 380mm`,
+            price: 10950.0
+          },
+          {
+            label: `Harry Erasmus - 760mm x 380mm`,
+            price: 10950.0
+          },
+          {
+            label: `Harry Erasmus - 760mm x 380mm`,
+            price: 10950.0
+          },
+          {
+            label: `Harry Erasmus - 760mm x 380mm`,
+            price: 10950.0
+          }
+        ]
+      },
+      {
+        title: `Harry Erasmus - 410mm x 200mm`,
+        price: 4750.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260031.png?v=1777555988`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260031.png?v=1777555988`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260032.png?v=1777555988`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0226003410mmx200mmcopy.jpg?v=1777555987`
+        ],
+        variants: [
+          {
+            label: `Harry Erasmus - 410mm x 200mm`,
+            price: 4750.0
+          }
+        ]
+      },
+      {
+        title: `Harry Erasmus - 350mm x 250mm`,
+        price: 2750.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260021.png?v=1771590720`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260021.png?v=1771590720`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260022.png?v=1771590719`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260023.jpg?v=1771590720`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260011.png?v=1771590659`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260012.png?v=1771590659`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260013.jpg?v=1771590659`
+        ],
+        variants: [
+          {
+            label: `Harry Erasmus - 350mm x 250mm`,
+            price: 2750.0
+          },
+          {
+            label: `Harry Erasmus - 350mm x 250mm`,
+            price: 2750.0
+          }
+        ]
+      },
+      {
+        title: `Harry Erasmus - 1600mm x 600mm`,
+        price: 19500.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250041.png?v=1758526812`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250041.png?v=1758526812`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250042.png?v=1758526812`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250043.jpg?v=1758526812`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250031.png?v=1758526779`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250032.png?v=1758526779`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250033.jpg?v=1758526779`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250021.png?v=1758526659`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250022.png?v=1758526659`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250023.png?v=1758526659`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250024.jpg?v=1758526659`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250011.png?v=1758525953`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250012.png?v=1758525953`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250013.png?v=1758525953`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250014.jpg?v=1758525953`
+        ],
+        variants: [
+          {
+            label: `Harry Erasmus - 1600mm x 600mm`,
+            price: 19500.0
+          },
+          {
+            label: `Harry Erasmus - 1600mm x 600mm`,
+            price: 19500.0
+          },
+          {
+            label: `Harry Erasmus - 1600mm x 600mm`,
+            price: 19500.0
+          },
+          {
+            label: `Harry Erasmus - 1600mm x 600mm`,
+            price: 19500.0
+          }
+        ]
+      },
+      {
+        title: `Harry Erasmus - Acrylic on Stretched Canvas`,
+        price: 28500.0,
+        status: `sold`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0924001A1000x750.png?v=1726230578`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0924001A1000x750.png?v=1726230578`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0924001B.png?v=1726230578`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0924001copy.jpg?v=1726230578`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/35.png?v=1694979613`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE08230011500mmx1200mm.jpg?v=1694979613`
+        ],
+        variants: [
+          {
+            label: `Harry Erasmus - Acrylic on Stretched Canvas`,
+            price: 11900.0
+          },
+          {
+            label: `Harry Erasmus - Acrylic on Stretched Canvas`,
+            price: 28500.0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: `marina-k`,
+    name: `Marina K`,
+    born: null,
+    birthplace: `Cape Town`,
+    medium: `Oil on Canvas`,
+    style: `Cape Town, Seascapes`,
+    bio: `Marina K: Painting Memory, Light, and Place
+
+Born and raised in Estonia, Marina K’s artistic sensibility was shaped by the quiet beauty and shifting seasons of Northern Europe. Nearly two decades ago, she made South Africa her home, where the country’s warmth, luminous skies, and vibrant energy awakened a new dimension in her work.
+
+Her paintings are distinguished by expressive colour, richly layered textures, and delicate touches of gold and light that evoke both atmosphere and emotion. Drawing inspiration from memory, place, and the poetry of ordinary life, Marina creates works that feel intimate yet universally familiar.
+
+There is a quiet nostalgia woven through her canvases—a gentle invitation for viewers to pause, reflect, and reconnect with moments often overlooked. Through her evolving body of work, Marina explores the enduring relationship between emotion and environment, revealing beauty not in grandeur, but in life’s quieter passages.`,
+    image: `https://thewinelandsartgallery.com/cdn/shop/collections/DSCF1074_edit_1317786427640832.jpg?v=1779197895`,
+    galleryUrl: `https://thewinelandsartgallery.com/collections/marina-k`,
+    statsAvailable: 4,
+    statsSold: 0,
+    statsHighestSold: 0,
+    works: [
+      {
+        title: `Marina K - After the Rain`,
+        price: 14950.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260041.png?v=1779199074`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260041.png?v=1779199074`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260042.png?v=1779199075`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK052600431200mmx900mm.jpg?v=1779199075`
+        ],
+        variants: [
+          {
+            label: `Marina K - After the Rain (1200mm x 900mm)`,
+            price: 14950.0
+          }
+        ]
+      },
+      {
+        title: `Marina K - Cape Town Dreams`,
+        price: 14950.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260031.png?v=1779199000`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260031.png?v=1779199000`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260032.png?v=1779199000`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK052600331200mmx900mm.jpg?v=1779199000`
+        ],
+        variants: [
+          {
+            label: `Marina K - Cape Town Dreams (1200mm x 900mm)`,
+            price: 14950.0
+          }
+        ]
+      },
+      {
+        title: `Marina K - Above the Atlantic`,
+        price: 3950.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260021.png?v=1779198928`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260021.png?v=1779198928`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260022.png?v=1779198928`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260023500mmx360mm.jpg?v=1779198928`
+        ],
+        variants: [
+          {
+            label: `Marina K - Above the Atlantic (500mm x 360mm)`,
+            price: 3950.0
+          }
+        ]
+      },
+      {
+        title: `Marina K - Keeper of the Light`,
+        price: 3950.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260011.png?v=1779198762`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260011.png?v=1779198762`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260012.png?v=1779198762`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260013500mmx360mm.jpg?v=1779198762`
+        ],
+        variants: [
+          {
+            label: `Marina K - Keeper of the Light (500mm x 360mm)`,
+            price: 3950.0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: `ferdinand-kotze`,
+    name: `Ferdinand Kotze`,
+    born: null,
+    birthplace: `South Africa`,
+    medium: `Oil on Panel`,
+    style: `Surrealism`,
+    bio: `Ferdinand Kotze: Fragments of Memory and Modern Life
+
+Ferdinand Kotze is a multidisciplinary artist whose work moves between oil painting, video, and audio production, exploring the fragile relationship between memory, time, and technological change. Through layered compositions that combine oil paint, collage, and translucent figurative forms on trace paper, Kotze creates images that feel suspended between remembrance and disappearance.
+
+His paintings draw upon the visual traditions of Surrealism and early Modernism while engaging the fractured aesthetics of the digital age. Abandoned buildings, weathered vehicles, and quiet industrial spaces—deeply rooted in South Africa’s evolving landscape—form the backdrop to ghostlike figures and fleeting childhood memories.
+
+Beneath the stillness of his work lies a meditation on impermanence. Kotze examines how rapidly changing technology reshapes human experience, memory, and identity itself. His art occupies a thoughtful space between archaeology and psychology, asking what remains of our shared histories in a world moving ever faster toward the digital horizon.`,
+    image: `https://thewinelandsartgallery.com/cdn/shop/collections/Final.png?v=1779884834`,
+    galleryUrl: `https://thewinelandsartgallery.com/collections/ferdinand-kotze`,
+    statsAvailable: 3,
+    statsSold: 0,
+    statsHighestSold: 0,
+    works: [
+      {
+        title: `Ferdinand Kotze - "Fragments of Play: Red Balloon"`,
+        price: 23500.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526003_1.png?v=1779886093`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526003_1.png?v=1779886093`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526003_2.png?v=1779886093`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526003_3760mmx1010mm.jpg?v=1779886093`
+        ],
+        variants: [
+          {
+            label: `Ferdinand Kotze - "Fragments of Play: Red Balloon" (1010mm x 760mm)`,
+            price: 23500.0
+          }
+        ]
+      },
+      {
+        title: `Ferdinand Kotze - "Fragments of Play: Leapfrog"`,
+        price: 23500.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526002_1.png?v=1779886023`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526002_1.png?v=1779886023`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526002_2.png?v=1779886023`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526002_3760mmx1010mm.jpg?v=1779886023`
+        ],
+        variants: [
+          {
+            label: `Ferdinand Kotze - "Fragments of Play: Leapfrog" (1010mm x 760mm)`,
+            price: 23500.0
+          }
+        ]
+      },
+      {
+        title: `Ferdinand Kotze - "Fragments of Play: Toss The Baby"`,
+        price: 11500.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526001_1.png?v=1779885791`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526001_1.png?v=1779885791`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526001_2.png?v=1779885791`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526001_3760mmx600mm.jpg?v=1779885791`
+        ],
+        variants: [
+          {
+            label: `Ferdinand Kotze - "Fragments of Play: Toss The Baby" (760mm x 600mm)`,
+            price: 11500.0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: `jonel-scholtz`,
+    name: `Jonel Scholtz`,
+    born: null,
+    birthplace: `South Africa`,
+    medium: `Oil on Canvas`,
+    style: `Figurative, Impressionism`,
+    bio: `Jonel Scholtz: Painting the Interior Landscape
+
+Jonel Scholtz approaches art with both the discipline of a scientist and the sensitivity of a storyteller. After earning a degree in Chemistry and Biochemistry from the University of Johannesburg in 1994, she continued a painting journey that had begun years earlier under the guidance of American-born artist Louise Goudemond.
+
+Over the years, Scholtz has exhibited widely in South Africa and internationally, with her work appearing in galleries and exhibitions across New York, London, Monaco, Italy, Mauritius, and Paris. Her paintings—often deeply personal and emotionally reflective—have earned international recognition, including awards from the Los Angeles-based Teravarna Gallery.
+
+Yet beneath the accolades lies an artist more concerned with truth than acclaim. For Scholtz, painting is an act of discovery, a search for meaning within the complexities of memory, loss, love, and identity. She believes art should emerge from the soul rather than commerce, and this conviction gives her work its enduring emotional resonance.`,
+    image: `https://thewinelandsartgallery.com/cdn/shop/collections/3_755c4c39-8111-4ffc-911f-3edb35152101.png?v=1779884695`,
+    galleryUrl: `https://thewinelandsartgallery.com/collections/jonel-scholtz`,
+    statsAvailable: 3,
+    statsSold: 0,
+    statsHighestSold: 0,
+    works: [
+      {
+        title: `Jonel Scholtz - "I'm Still Here"`,
+        price: 18500.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_1.png?v=1779886752`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_1.png?v=1779886752`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_2.png?v=1779886752`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_31220mmx920mm.jpg?v=1779886752`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_4.jpg?v=1779886752`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_5.jpg?v=1779886752`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_6.jpg?v=1779886752`
+        ],
+        variants: [
+          {
+            label: `Jonel Scholtz - "I'm Still Here" (1210mm x 910mm)`,
+            price: 18500.0
+          }
+        ]
+      },
+      {
+        title: `Jonel Scholtz - "The Weight of Quiet Things"`,
+        price: 18500.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_1.png?v=1779886670`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_1.png?v=1779886670`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_2.png?v=1779886670`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_31220mmx920mm.jpg?v=1779886670`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_4.jpg?v=1779886670`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_5.jpg?v=1779886670`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_6.jpg?v=1779886671`
+        ],
+        variants: [
+          {
+            label: `Jonel Scholtz - "The Weight of Quiet Things" (1210mm x 910mm)`,
+            price: 18500.0
+          }
+        ]
+      },
+      {
+        title: `Jonel Scholtz - "As 'n Draai jou Omgooi"`,
+        price: 12850.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_1.png?v=1779886386`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_1.png?v=1779886386`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_2.png?v=1779886386`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_31010mmx760mm.jpg?v=1779886386`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_4.jpg?v=1779886386`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_5.jpg?v=1779886385`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_6.jpg?v=1779886385`
+        ],
+        variants: [
+          {
+            label: `Jonel Scholtz - "As 'n Draai jou Omgooi" (1010mm x 760mm)`,
+            price: 12850.0
+          }
+        ]
+      }
+    ]
   },
   {
     id: `niki-mcqueen`,
@@ -2574,10 +2704,13 @@ Inspired by vintage medical and scientific illustrations, surrealism, street art
 With over 600 artworks, Niki's portfolio is divided into two parts: her surreal and symbolic fine art under "Niki McQueen Art," and the playful, childlike expressions of "Life Beyond Reason." Through her art, Niki channels psychological and emotional experiences, creating works that evoke both introspection and joy.`,
     image: `https://thewinelandsartgallery.com/cdn/shop/collections/2.jpg?v=1716198912`,
     galleryUrl: `https://thewinelandsartgallery.com/collections/niki-mcqueen`,
+    statsAvailable: 3,
+    statsSold: 0,
+    statsHighestSold: 0,
     works: [
       {
         title: `Niki McQueen - "Travels by Moonlight" Mixed Media on Archival Paper`,
-        price: 17900,
+        price: 17900.0,
         status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524003.png?v=1716200536`,
         images: [
@@ -2588,13 +2721,13 @@ With over 600 artworks, Niki's portfolio is divided into two parts: her surreal 
         variants: [
           {
             label: `Niki McQueen - "Travels by Moonlight" Mixed Media on Archival Paper`,
-            price: 17900
+            price: 17900.0
           }
         ]
       },
       {
         title: `Niki McQueen - "Queer Flock" Mixed Media on Archival Paper`,
-        price: 16200,
+        price: 16200.0,
         status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524002.png?v=1716200381`,
         images: [
@@ -2605,13 +2738,13 @@ With over 600 artworks, Niki's portfolio is divided into two parts: her surreal 
         variants: [
           {
             label: `Niki McQueen - "Queer Flock" Mixed Media on Archival Paper`,
-            price: 16200
+            price: 16200.0
           }
         ]
       },
       {
         title: `Niki McQueen - "Whale Gazing" Mixed Media on Archival Paper`,
-        price: 8750,
+        price: 8750.0,
         status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524001.png?v=1716200116`,
         images: [
@@ -2622,15 +2755,210 @@ With over 600 artworks, Niki's portfolio is divided into two parts: her surreal 
         variants: [
           {
             label: `Niki McQueen - "Whale Gazing" Mixed Media on Archival Paper`,
-            price: 8750
+            price: 8750.0
           }
         ]
       }
-    ],
-    statsAvailable: 3,
+    ]
+  },
+  {
+    id: `gerhard-fourie`,
+    name: `Gerhard Fourie`,
+    born: null,
+    birthplace: `South Africa`,
+    medium: `Acrylic on Canvas`,
+    style: `Landscapes, Seascapes`,
+    bio: `Gerhard Fourie: Painting the Color of a Life Well Lived
+
+Gerhard Fourie’s artistic journey began long before he ever lifted a paintbrush professionally. As a schoolboy, he was known for sketching biology illustrations for classmates and drawing the sleek lines of Ferraris and Lamborghinis—early signs of a creative spirit quietly taking shape.
+
+After school, he studied Physical Education at the University of the Orange Free State, earned a teaching degree, and completed two years of military service, as many young South Africans of his generation did. Teaching posts in Steytlerville, Velddrift, and later Port Elizabeth followed, where he built both a career and a family life.
+
+Following twenty years in education, Fourie entered the business world, investing in a filling station. Yet it was during this season of life that painting truly called him home. Today, he is celebrated for his vibrant landscapes, richly infused with color and warmth.
+
+Now living in Still Bay, surrounded by river and sea, Fourie continues to paint the beauty of the world around him.`,
+    image: `https://thewinelandsartgallery.com/cdn/shop/collections/1_9c964a70-620a-47bf-bca0-d550678d0995.png?v=1779197428`,
+    galleryUrl: `https://thewinelandsartgallery.com/collections/gerhard-fourie`,
+    statsAvailable: 2,
     statsSold: 0,
     statsHighestSold: 0,
-    statsFromPrice: 8750
+    works: [
+      {
+        title: `Gerhard Fourie - 700mm x 500mm`,
+        price: 4750.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260061.png?v=1779198545`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260061.png?v=1779198545`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260062.png?v=1779198545`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260063700mmx500mm.jpg?v=1779198545`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260051.png?v=1779198494`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260052.png?v=1779198494`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260053700mmx500mm.jpg?v=1779198493`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260041.png?v=1779198435`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260042.png?v=1779198435`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260043700mmx500mm.jpg?v=1779198436`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260031.png?v=1779198378`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260032.png?v=1779198378`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260033700mmx500mm.jpg?v=1779198378`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260021.png?v=1779198319`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260022.png?v=1779198318`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260023700mmx500mm.jpg?v=1779198319`
+        ],
+        variants: [
+          {
+            label: `Gerhard Fourie - 700mm x 500mm`,
+            price: 4750.0
+          },
+          {
+            label: `Gerhard Fourie - 700mm x 500mm`,
+            price: 4750.0
+          },
+          {
+            label: `Gerhard Fourie - 700mm x 500mm`,
+            price: 4750.0
+          },
+          {
+            label: `Gerhard Fourie - 700mm x 500mm`,
+            price: 4750.0
+          },
+          {
+            label: `Gerhard Fourie - 700mm x 500mm`,
+            price: 4750.0
+          }
+        ]
+      },
+      {
+        title: `Gerhard Fourie - 600mm x 300mm`,
+        price: 2300.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260011.png?v=1779198135`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260011.png?v=1779198135`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260012.png?v=1779198135`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260013600x300.jpg?v=1779198135`
+        ],
+        variants: [
+          {
+            label: `Gerhard Fourie - 600mm x 300mm`,
+            price: 2300.0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: `ian-hertslet`,
+    name: `Ian Hertslet`,
+    born: null,
+    birthplace: `South Africa`,
+    medium: `Oil`,
+    style: `Landscapes, Seascapes`,
+    bio: `Ian Hertslet: The Visionary Brush of Contemporary South African Art
+
+Ian Hertslet is a beacon in the realm of contemporary South African art, renowned for his uniquely expressive oil paintings. His canvases serve as captivating explorations of diverse themes, marked by the remarkable fusion of abstract and figurative forms.
+
+Hertslet's art defies convention with bold splashes of color and dynamic brushwork, challenging artistic traditions and sparking profound reflection. His vision has resonated deeply, amassing a passionate following both locally and across borders. His creations grace galleries and art fairs worldwide, a testament to their universal appeal.
+
+In essence, Ian Hertslet's paintings strike a chord with art enthusiasts who seek not only artistic mastery but also a contemporary relevance that invites us to push the boundaries of creativity.`,
+    image: `https://thewinelandsartgallery.com/cdn/shop/collections/6_2.png?v=1695061104`,
+    galleryUrl: `https://thewinelandsartgallery.com/collections/ian-hertslet`,
+    statsAvailable: 2,
+    statsSold: 0,
+    statsHighestSold: 0,
+    works: [
+      {
+        title: `Ian Hertslet - Oil on Canvas`,
+        price: 34500.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0226005.png?v=1770370442`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0226005.png?v=1770370442`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260050.png?v=1770370441`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH022600501020x760copy.jpg?v=1770370441`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260051copy.jpg?v=1770370441`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260052copy.jpg?v=1770370441`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260053copy.jpg?v=1770370442`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0226004.png?v=1770370376`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260040.png?v=1770370376`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH022600401020x760copy.jpg?v=1770370376`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260041copy.jpg?v=1770370376`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260042copy.jpg?v=1770370376`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260043copy.jpg?v=1770370376`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260044copy.jpg?v=1770370376`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0226003.png?v=1770370248`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260030.png?v=1770370249`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH022600301020x760copy.jpg?v=1770370248`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260031copy.jpg?v=1770370248`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260032copy.jpg?v=1770370248`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260033copy.jpg?v=1770370248`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0226002.png?v=1770370204`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260020.png?v=1770370205`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260020900x600copy.jpg?v=1770370205`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260021copy.jpg?v=1770370204`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260022copy.jpg?v=1770370204`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260023copy.jpg?v=1770370204`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260024copy.jpg?v=1770370204`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0226001.png?v=1770369801`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260010.png?v=1770369801`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260010920x6610copy.jpg?v=1770369801`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260011copy.jpg?v=1770369801`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260012copy.jpg?v=1770369801`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260013copy.jpg?v=1770369801`
+        ],
+        variants: [
+          {
+            label: `Ian Hertslet - Oil on Canvas`,
+            price: 34500.0
+          },
+          {
+            label: `Ian Hertslet - Oil on Canvas`,
+            price: 34500.0
+          },
+          {
+            label: `Ian Hertslet - Oil on Canvas`,
+            price: 27600.0
+          },
+          {
+            label: `Ian Hertslet - Oil on Canvas`,
+            price: 19750.0
+          },
+          {
+            label: `Ian Hertslet - Oil on Canvas`,
+            price: 19750.0
+          }
+        ]
+      },
+      {
+        title: `Ian Hertslet - Oil on Stretched Canvas`,
+        price: 14500.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0224001.png?v=1708942994`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0224001.png?v=1708942994`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02240011.png?v=1708942994`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0224001copy.jpg?v=1708942994`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0124002.png?v=1705572010`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0124002copy.jpg?v=1705572011`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0124001.png?v=1705571953`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0124001copy.jpg?v=1705571953`
+        ],
+        variants: [
+          {
+            label: `Ian Hertslet - Oil on Stretched Canvas`,
+            price: 14500.0
+          },
+          {
+            label: `Ian Hertslet - Oil on Stretched Canvas`,
+            price: 9450.0
+          },
+          {
+            label: `Ian Hertslet - Oil on Stretched Canvas`,
+            price: 4750.0
+          }
+        ]
+      }
+    ]
   },
   {
     id: `solly-manthata`,
@@ -2654,10 +2982,13 @@ Solly Manthata, the first exclusive artist to grace the hallowed halls of The Wi
 With no formal art training, Solly's gift is a divine endowment, an unspoken poetry of colors and images. He draws inspiration from the great South African masters of old, such as Adriaan Boshoff, Errol Boyle, Chris Tugwell, George Pemba, and Gerard Sekoto. In his words, "Visual art is silent poetry of colors and images," a testament to the profound storytelling woven into each of his works.`,
     image: `https://thewinelandsartgallery.com/cdn/shop/collections/1_b7f9f56f-a290-4c16-a6fb-f77614888956.png?v=1757589820`,
     galleryUrl: `https://thewinelandsartgallery.com/collections/solly-manthata-1`,
+    statsAvailable: 2,
+    statsSold: 9,
+    statsHighestSold: 14700.0,
     works: [
       {
         title: `Solly Manthata - 1200mm x 800mm`,
-        price: 14750,
+        price: 14750.0,
         status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526002_1.png?v=1779871044`,
         images: [
@@ -2666,40 +2997,50 @@ With no formal art training, Solly's gift is a divine endowment, an unspoken poe
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526002_3.jpg?v=1779871044`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526002_4.jpg?v=1779871044`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526002_5.jpg?v=1779871044`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526002_6.jpg?v=1779871044`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526002_6.jpg?v=1779871044`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526001_1.png?v=1779870935`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526001_2.png?v=1779870936`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526001_3.jpg?v=1779870935`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526001_4.jpg?v=1779870935`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526001_5.jpg?v=1779870935`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526001_6.jpg?v=1779870935`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM06240071_be73068b-828c-46f2-875b-a975c0750fdc.png?v=1779262670`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM06240072_6ad06143-0040-44d5-b5c0-913a5f6f35bb.png?v=1779262671`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM06240073_e1497d4f-77de-4534-bc64-a5a86a81c5d4.jpg?v=1779262670`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09250011.png?v=1768818751`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09250012.png?v=1768818751`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09250011200mmx800mmcopy.jpg?v=1768818751`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260051.png?v=1768818666`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260052.png?v=1768818669`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260051200mmx800mmcopy.jpg?v=1768818666`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260041.png?v=1768818603`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260042.png?v=1768818604`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260041200mmx800mmcopy.jpg?v=1768818603`
         ],
         variants: [
           {
             label: `Solly Manthata - 1200mm x 800mm`,
-            price: 14750
+            price: 14750.0
           },
           {
             label: `Solly Manthata - 1200mm x 800mm`,
-            price: 13800
+            price: 14750.0
           },
           {
             label: `Solly Manthata - 1200mm x 800mm`,
-            price: 12990
-          }
-        ]
-      },
-      {
-        title: `Solly Manthata - Triptych (3 in 1) Oil & Acrylic on Stretched Canvas`,
-        price: 10950,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526002_1.png?v=1779871044`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526002_1.png?v=1779871044`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526002_2.png?v=1779871044`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526002_3.jpg?v=1779871044`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526002_4.jpg?v=1779871044`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526002_5.jpg?v=1779871044`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0526002_6.jpg?v=1779871044`
-        ],
-        variants: [
+            price: 13800.0
+          },
           {
-            label: `Solly Manthata - Triptych (3 in 1) Oil & Acrylic on Stretched Canvas (400mm x 300mm each)`,
-            price: 10950
+            label: `Solly Manthata - 1200mm x 800mm`,
+            price: 12990.0
+          },
+          {
+            label: `Solly Manthata - 1200mm x 800mm`,
+            price: 12990.0
+          },
+          {
+            label: `Solly Manthata - 1200mm x 800mm`,
+            price: 12990.0
           }
         ]
       },
@@ -2791,13 +3132,14 @@ With no formal art training, Solly's gift is a divine endowment, an unspoken poe
       {
         title: `Solly Manthata - Triptych (3 in 1 ) Oil & Acrylic on Stretched Canvas`,
         price: 10950.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/xSM1225001_1_61379b31-5cd1-4ede-9294-81ac409d2b5f.png?v=1765456252`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/xSM1225001_1_61379b31-5cd1-4ede-9294-81ac409d2b5f.png?v=1765456252`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/xSM1225001_2.png?v=1765456252`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/xSM1225001_3.jpg?v=1765456252`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/xSM1225001_4.jpg?v=1765456252`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/xSM1225001_4.jpg?v=1765456252`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/xSM1225001_5.jpg?v=1765456252`
         ],
         variants: [
           {
@@ -2814,7 +3156,64 @@ With no formal art training, Solly's gift is a divine endowment, an unspoken poe
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225013_1.png?v=1765455843`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225013_2.png?v=1765455843`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225013_3.jpg?v=1765455843`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225013_3.jpg?v=1765455843`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225012_1_65ca8ecc-5b40-423e-bba8-a0eef2604d56.png?v=1765455802`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225012_2_f473d5cc-80a6-4fea-be93-038e0ab7cdca.png?v=1765455803`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225012_3_4e938341-875f-4c4e-8e08-ca396b33148f.jpg?v=1765455802`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225011_1.png?v=1765455695`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225011_2.png?v=1765455696`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225011_3.jpg?v=1765455695`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225010_1.png?v=1765455641`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225010_2.png?v=1765455641`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225010_3.jpg?v=1765455641`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225009_1.png?v=1765455593`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225009_2.png?v=1765455593`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225009_3.jpg?v=1765455593`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225008_1.png?v=1765455544`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225008_2.png?v=1765455543`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225008_3.jpg?v=1765455544`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225007_1_37d47d14-986b-4e32-84b5-b1f90b26f75c.png?v=1765455469`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225007_2_17ef4811-5610-4f75-82fd-aeff5ca23b1f.png?v=1765455469`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225007_3_43f4bc36-8602-4412-b78e-a2fe33bdb85f.jpg?v=1765455469`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225006_1.png?v=1765455387`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225006_2.png?v=1765455387`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225006_3.jpg?v=1765455387`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225005_1.png?v=1765455335`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225005_2.png?v=1765455335`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225005_3.jpg?v=1765455335`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225004_1.png?v=1765455294`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225004_2.png?v=1765455294`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225004_3.jpg?v=1765455294`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225003_1.png?v=1765455134`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225003_2.png?v=1765455133`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225003_3.jpg?v=1765455133`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225002_1.png?v=1765455015`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225002_2.png?v=1765455016`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1225002_3.jpg?v=1765455015`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09250041.png?v=1758528782`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09250042.png?v=1758528782`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09250043.png?v=1758528781`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09250044.jpg?v=1758528781`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09250031.png?v=1758528748`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09250032.png?v=1758528748`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09250033.png?v=1758528748`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09250034.jpg?v=1758528748`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09250021.png?v=1758528665`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09250022.png?v=1758528665`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09250023.png?v=1758528665`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09250024.jpg?v=1758528665`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0124003.png?v=1706263152`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0124003copy.jpg?v=1706263151`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1123011.png?v=1702040245`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1123011copy.jpg?v=1702040245`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM11230081.png?v=1701237481`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1123008.jpg?v=1701237481`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM11230071.png?v=1701237442`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1123007.jpg?v=1701237442`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM11230061.png?v=1701237360`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1123006.jpg?v=1701237360`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM11230041.png?v=1699602547`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1123004.jpg?v=1699602547`
         ],
         variants: [
           {
@@ -2912,7 +3311,8 @@ With no formal art training, Solly's gift is a divine endowment, an unspoken poe
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250071.png?v=1756729649`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250072.png?v=1756729649`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250073.jpg?v=1756729649`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0825007Reverse.png?v=1756729649`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0825007Reverse.png?v=1756729649`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0825007Reversecopy.jpg?v=1756729649`
         ],
         variants: [
           {
@@ -2929,7 +3329,219 @@ With no formal art training, Solly's gift is a divine endowment, an unspoken poe
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250061.png?v=1756729579`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250062.png?v=1756729579`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250063.jpg?v=1756729579`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250063.jpg?v=1756729579`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250051.png?v=1756729478`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250052.png?v=1756729478`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250053.jpg?v=1756729478`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM12230021.png?v=1756729418`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM12230022.png?v=1756729418`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM12230023.jpg?v=1756729418`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM11230121.png?v=1756729380`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM11230122.png?v=1756729381`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM11230123.jpg?v=1756729380`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM10230031.png?v=1756729332`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM10230032.png?v=1756729331`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM10230033.jpg?v=1756729331`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM06240071_cfdf8a44-87fe-48de-b378-977b91f7878e.png?v=1756729293`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM06240072_8be75906-1a82-480f-b5af-b0f0c467c261.png?v=1756729293`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM06240073_cf674999-cfb3-411b-8c92-145ed2f5c2b1.jpg?v=1756729293`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM03250011.png?v=1756729102`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM03250012.png?v=1756729103`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM03250013.jpg?v=1756729102`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250041.png?v=1756201847`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250042.png?v=1756201847`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250043.jpg?v=1756201847`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0825004fcopy.jpg?v=1756201847`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250031_33ef27f5-15d6-4c37-a1c0-6f6b426f67e4.png?v=1756201773`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250031a_a3576895-31a4-4417-8b38-13c406851527.png?v=1756201773`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250032_dc184ba0-bce9-4369-9fc1-266115b97e36.jpg?v=1756201773`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0825002.png?v=1756201695`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250022.png?v=1756201695`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250023.jpg?v=1756201695`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0825002fcopy.jpg?v=1756201695`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0825001.png?v=1756201637`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250012.png?v=1756201637`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08250013.jpg?v=1756201637`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0825001Fcopy.jpg?v=1756201637`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM05250041.png?v=1752155861`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM05250042.png?v=1752155861`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM052500431200x800copy.jpg?v=1752155861`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM06250051.png?v=1751281607`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM06250052.png?v=1751281607`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM06250053.jpg?v=1751281608`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM06250041.png?v=1751281558`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM06250042.png?v=1751281559`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM06250043.jpg?v=1751281558`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM06250031.png?v=1751281479`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM06250032.png?v=1751281479`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM06250033.jpg?v=1751281479`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM06250021.png?v=1749808756`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM06250022.png?v=1749808756`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM06250023.jpg?v=1749808756`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM06250011.png?v=1749808715`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM06250012.png?v=1749808715`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM06250013.jpg?v=1749808714`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM05250031.png?v=1749808665`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM05250032.png?v=1749808665`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM05250033.jpg?v=1749808664`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0125018.png?v=1739878464`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250181.png?v=1739878464`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0125018800x6401copy.jpg?v=1739878464`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0125008.png?v=1739878425`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250081.png?v=1739878425`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0125008800x640copy.jpg?v=1739878425`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0125007.png?v=1739878342`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250071.png?v=1739878342`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0125007800x640copy.jpg?v=1739878342`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1124006.png?v=1739878264`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM11240061.png?v=1739878264`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM11240061200x800copy.jpg?v=1739878264`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1124005.png?v=1739878114`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM11240051.png?v=1739878114`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1124005800x650copy.jpg?v=1739878114`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1124002.png?v=1739878061`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM11240021.png?v=1739878061`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1124002copy.jpg?v=1739878061`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1124001.png?v=1739877989`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM11240011.png?v=1739877989`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1124001copy.jpg?v=1739877989`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250151.png?v=1739877923`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250152.png?v=1739877923`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250151200x800copy.jpg?v=1739877923`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0125014.png?v=1739877868`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250141.png?v=1739877868`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250141200x800copy.jpg?v=1739877868`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0125013.png?v=1739877826`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250131.png?v=1739877827`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250131200x800copy.jpg?v=1739877827`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0125012.png?v=1739877785`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250121.png?v=1739877786`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250121200x800copy.jpg?v=1739877785`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0125011.png?v=1739877675`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250111.png?v=1739877675`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250111200x800copy.jpg?v=1739877675`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0125010.png?v=1739877618`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250101.png?v=1739877617`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250101200x800copy.jpg?v=1739877618`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0125006.png?v=1739877548`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250061.png?v=1739877548`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250061200x800acopy.jpg?v=1739877548`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0125005.png?v=1739877498`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250051.png?v=1739877498`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250051200x800acopy.jpg?v=1739877498`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0125001.png?v=1739877372`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250011.png?v=1739877371`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01250011200x800acopy.jpg?v=1739877371`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1024004a.png?v=1728911887`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1024004b.png?v=1728911887`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1024004copy.jpg?v=1728911887`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1024002a.png?v=1728911854`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1024002b.png?v=1728911854`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1024002copy.jpg?v=1728911854`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1024001a.png?v=1728911814`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1024001b.png?v=1728911814`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1024001copy.jpg?v=1728911814`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1024005a.png?v=1728898234`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1024005b.png?v=1728898235`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1024005copy.jpg?v=1728898234`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1024003a.png?v=1728898176`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1024003b.png?v=1728898176`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1024003copy.jpg?v=1728898175`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0924011a.png?v=1728898062`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0924011b.png?v=1728898062`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0924011copy.jpg?v=1728898063`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0924010a.png?v=1728898014`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0924010b.png?v=1728898014`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0924010copy.jpg?v=1728898014`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0924009a.png?v=1728897974`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0924009b.png?v=1728897974`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0924009copy.jpg?v=1728897974`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0924008a.png?v=1728897913`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0924008b.png?v=1728897913`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0924008copy.jpg?v=1728897912`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0724010a.png?v=1728897724`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0724010b.png?v=1728897724`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0724010copy.jpg?v=1728897724`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM092400211.png?v=1726234128`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0924002111.png?v=1726234128`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09240021200x800copy.jpg?v=1726234128`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM092400111.png?v=1726234082`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0924001111.png?v=1726234082`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09240011200x8002copy.jpg?v=1726234082`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0924006101.png?v=1726233806`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0924006102.png?v=1726233806`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09240061030x340copy.jpg?v=1726233806`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM07240117.png?v=1726233717`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM072401171.png?v=1726233718`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0724011800x640copy.jpg?v=1726233718`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09240056.png?v=1726233597`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09240057.png?v=1726233597`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0924005800x650copy.jpg?v=1726233597`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09240036.png?v=1726233449`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09240037.png?v=1726233449`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0924003850x800copy.jpg?v=1726233449`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM082400311.png?v=1726233386`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0824003111.png?v=1726233386`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM08240031200x8002copy.jpg?v=1726233386`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0624016a.png?v=1726233218`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0624016b.png?v=1726233218`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0624016copy.jpg?v=1726233218`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0724009.png?v=1723466165`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0724009800x650copy.jpg?v=1723466166`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0724005.png?v=1723466117`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0724005copy.jpg?v=1723466117`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0724004.png?v=1723466078`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0724004copy.jpg?v=1723466078`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0724003.png?v=1723466031`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM07240031200x770copy2.jpg?v=1723466030`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0524004.png?v=1716452006`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0524004copy.jpg?v=1716452005`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0524001.png?v=1716451923`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0524001copy.jpg?v=1716451923`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0424006.png?v=1715167425`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0424006copy.jpg?v=1715167425`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0424009.png?v=1715167380`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0424009copy.jpg?v=1715167380`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0424003.png?v=1715167337`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0424003copy.jpg?v=1715167337`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0324002.png?v=1712051146`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0324002copy.jpg?v=1712051146`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0224008.png?v=1709797749`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0224008copy.jpg?v=1709797749`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0224002.png?v=1708943170`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0224002copy.jpg?v=1708943170`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1223007.png?v=1705318137`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1223007copy.jpg?v=1705318137`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1223005.png?v=1705318037`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1223005copy.jpg?v=1705318037`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1223004.png?v=1705317993`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1223004copy.jpg?v=1705317993`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1223001.png?v=1702471660`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1223001copy.jpg?v=1702471660`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM11230031.png?v=1699602484`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1123003.jpg?v=1699602484`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM11230021.png?v=1699602447`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1123002.jpg?v=1699602447`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM10230121.png?v=1698823918`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1023012.jpg?v=1698823918`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM10230081.png?v=1698217442`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1023008.jpg?v=1698217442`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM10230071.png?v=1698217407`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1023007.jpg?v=1698217407`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM10230061.png?v=1698217346`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1023006.jpg?v=1698217346`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1023005.png?v=1697623402`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1023005.jpg?v=1697623402`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM10230011.png?v=1696417263`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM1023001copy.jpg?v=1696417263`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09230181.png?v=1696417213`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0923018copy.jpg?v=1696417213`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09230171.png?v=1696417136`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0923017copy.jpg?v=1696417136`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09230161.png?v=1696417089`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0923016copy.jpg?v=1696417089`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM09230151.png?v=1696417004`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0923015copy.jpg?v=1696417004`
         ],
         variants: [
           {
@@ -3262,7 +3874,13 @@ With no formal art training, Solly's gift is a divine endowment, an unspoken poe
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0225003.png?v=1739878715`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM02250031.png?v=1739878715`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0225003copy.jpg?v=1739878715`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0225003copy.jpg?v=1739878715`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0225002.png?v=1739878661`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM02250021.png?v=1739878661`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0225002copy.jpg?v=1739878661`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0225001.png?v=1739878598`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM02250011.png?v=1739878598`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0225001copy.jpg?v=1739878597`
         ],
         variants: [
           {
@@ -3276,164 +3894,10 @@ With no formal art training, Solly's gift is a divine endowment, an unspoken poe
           {
             label: `Solly Manthata - Oil & Acrylic on Canvas (1500mm x 500mm)`,
             price: 11750.0
-          }
-        ]
-      },
-      {
-        title: `Oil & Acrylic on Panel by Solly Manthata`,
-        price: 13800.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0923013copy1.png?v=1696340089`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0923013copy1.png?v=1696340089`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM0923013copy.jpg?v=1696340089`
-        ],
-        variants: [
-          {
-            label: `Oil & Acrylic on Panel by Solly Manthata`,
-            price: 10950.0
-          },
-          {
-            label: `Oil & Acrylic on Panel by Solly Manthata`,
-            price: 12990.0
-          },
-          {
-            label: `Oil & Acrylic on Panel by Solly Manthata`,
-            price: 12990.0
-          },
-          {
-            label: `Oil & Acrylic on Panel by Solly Manthata`,
-            price: 10950.0
-          },
-          {
-            label: `Oil & Acrylic on Panel by Solly Manthata`,
-            price: 10950.0
-          },
-          {
-            label: `Oil & Acrylic on Panel by Solly Manthata`,
-            price: 9700.0
-          },
-          {
-            label: `Oil & Acrylic on Panel by Solly Manthata`,
-            price: 10950.0
-          },
-          {
-            label: `Oil & Acrylic on Panel by Solly Manthata`,
-            price: 10950.0
-          },
-          {
-            label: `Oil & Acrylic on Panel by Solly Manthata`,
-            price: 12990.0
-          },
-          {
-            label: `Oil & Acrylic on Panel by Solly Manthata`,
-            price: 10950.0
-          },
-          {
-            label: `Oil & Acrylic on Panel by Solly Manthata`,
-            price: 13800.0
-          },
-          {
-            label: `Oil & Acrylic on Panel by Solly Manthata`,
-            price: 10950.0
-          },
-          {
-            label: `Oil & Acrylic on Panel by Solly Manthata`,
-            price: 10950.0
-          },
-          {
-            label: `Oil & Acrylic on Panel by Solly Manthata`,
-            price: 7900.0
-          },
-          {
-            label: `Oil & Acrylic on Panel by Solly Manthata`,
-            price: 11250.0
           }
         ]
       }
-    ],
-    statsAvailable: 2,
-    statsSold: 11,
-    statsHighestSold: 14700.0,
-    statsFromPrice: 10950
-  },
-  {
-    id: `gerhard-fourie`,
-    name: `Gerhard Fourie`,
-    born: null,
-    birthplace: `South Africa`,
-    medium: `Acrylic on Canvas`,
-    style: `Landscapes, Seascapes`,
-    bio: `Gerhard Fourie: Painting the Color of a Life Well Lived
-
-Gerhard Fourie’s artistic journey began long before he ever lifted a paintbrush professionally. As a schoolboy, he was known for sketching biology illustrations for classmates and drawing the sleek lines of Ferraris and Lamborghinis—early signs of a creative spirit quietly taking shape.
-
-After school, he studied Physical Education at the University of the Orange Free State, earned a teaching degree, and completed two years of military service, as many young South Africans of his generation did. Teaching posts in Steytlerville, Velddrift, and later Port Elizabeth followed, where he built both a career and a family life.
-
-Following twenty years in education, Fourie entered the business world, investing in a filling station. Yet it was during this season of life that painting truly called him home. Today, he is celebrated for his vibrant landscapes, richly infused with color and warmth.
-
-Now living in Still Bay, surrounded by river and sea, Fourie continues to paint the beauty of the world around him.`,
-    image: `https://thewinelandsartgallery.com/cdn/shop/collections/1_9c964a70-620a-47bf-bca0-d550678d0995.png?v=1779197428`,
-    galleryUrl: `https://thewinelandsartgallery.com/collections/gerhard-fourie`,
-    works: [
-      {
-        title: `Gerhard Fourie - 700mm x 500mm`,
-        price: 4750,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260061.png?v=1779198545`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260061.png?v=1779198545`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260062.png?v=1779198545`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260063700mmx500mm.jpg?v=1779198545`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260051.png?v=1779198494`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260052.png?v=1779198494`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260053700mmx500mm.jpg?v=1779198493`
-        ],
-        variants: [
-          {
-            label: `Gerhard Fourie - 700mm x 500mm (Mountain landscape 1)`,
-            price: 4750
-          },
-          {
-            label: `Gerhard Fourie - 700mm x 500mm (Mountain landscape 2)`,
-            price: 4750
-          },
-          {
-            label: `Gerhard Fourie - 700mm x 500mm (Table Mountain fields)`,
-            price: 4750
-          },
-          {
-            label: `Gerhard Fourie - 700mm x 500mm (Farm landscape)`,
-            price: 4750
-          },
-          {
-            label: `Gerhard Fourie - 700mm x 500mm (Vineyard)`,
-            price: 4750
-          }
-        ]
-      },
-      {
-        title: `Gerhard Fourie - 600mm x 300mm`,
-        price: 2300,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260011.png?v=1779198135`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260011.png?v=1779198135`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260012.png?v=1779198135`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260013600x300.jpg?v=1779198135`
-        ],
-        variants: [
-          {
-            label: `Gerhard Fourie - 600mm x 300mm (Coastal)`,
-            price: 2300
-          }
-        ]
-      }
-    ],
-    statsAvailable: 2,
-    statsSold: 0,
-    statsHighestSold: 0,
-    statsFromPrice: 2300
+    ]
   },
   {
     id: `anton-gericke`,
@@ -3451,10 +3915,13 @@ Beyond his academic pursuits, Anton instilled in his daughters, Murentia Moffat 
 Now, in the fullness of time, Anton Gericke embarks on a new chapter as a full-time artist. With each brushstroke, he seeks to capture the expression of God's boundless creation. In his own words, "Art gives expression to the beauty of God's creation!" With Anton, the canvas becomes a symphony, a testament to the enduring beauty that surrounds us all.`,
     image: `https://thewinelandsartgallery.com/cdn/shop/collections/13_2.png?v=1694446219`,
     galleryUrl: `https://thewinelandsartgallery.com/collections/anton-gericke-the-symphony-of-creation-in-art`,
+    statsAvailable: 1,
+    statsSold: 0,
+    statsHighestSold: 0,
     works: [
       {
-        title: `Anton Gericke - Acrylic on Panel Framed`,
-        price: 37800,
+        title: `Anton Gericke - Acrylic on Panel`,
+        price: 37800.0,
         status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924010.png?v=1726150241`,
         images: [
@@ -3463,81 +3930,41 @@ Now, in the fullness of time, Anton Gericke embarks on a new chapter as a full-t
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924010900x600Panelcopy.jpg?v=1726150240`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240101200x900FramedPanelcopy.jpg?v=1726150240`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924009.png?v=1726150203`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240098.png?v=1726150203`
-        ],
-        variants: [
-          {
-            label: `Anton Gericke - Acrylic on Panel Framed (Orchestra 1)`,
-            price: 27000
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel Framed (Orchestra 2)`,
-            price: 27000
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel Framed (Landscape clouds)`,
-            price: 27000
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel Framed (Landscape purple)`,
-            price: 37800
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel Framed (Orchestra dancing)`,
-            price: 23880
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel Framed (Orchestra red)`,
-            price: 24880
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel Framed (Harbour boats)`,
-            price: 23880
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel Framed (Poppies)`,
-            price: 27000
-          }
-        ]
-      },
-      {
-        title: `Acrylic on Panel by Anton Gericke`,
-        price: 15480,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/18.png?v=1694444220`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/18.png?v=1694444220`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0823008.jpg?v=1694444220`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/17.png?v=1694444128`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0823007.jpg?v=1694444129`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/16.png?v=1694444081`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0823006600x240.jpg?v=1726147359`
-        ],
-        variants: [
-          {
-            label: `Acrylic on Panel by Anton Gericke (Karoo windmill)`,
-            price: 15480
-          },
-          {
-            label: `Acrylic on Panel by Anton Gericke (Bo-Kaap street)`,
-            price: 15480
-          },
-          {
-            label: `Acrylic on Panel by Anton Gericke (Karoo landscape)`,
-            price: 15480
-          }
-        ]
-      },
-      {
-        title: `Anton Gericke - Acrylic on Panel`,
-        price: 37800.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924010.png?v=1726150241`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924010.png?v=1726150241`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240108.png?v=1726150240`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924010900x600Panelcopy.jpg?v=1726150240`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240101200x900FramedPanelcopy.jpg?v=1726150240`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240098.png?v=1726150203`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924009900x600Canvascopy.jpg?v=1726150204`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240091200x900FramedCanvascopy.jpg?v=1726150203`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924008.png?v=1726150107`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240088.png?v=1726150107`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924008900x600Canvascopy.jpg?v=1726150107`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240081200x900FramedCanvascopy.jpg?v=1726150107`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924007.png?v=1726149938`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240071.png?v=1726149938`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240071100x750copy.jpg?v=1726149938`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240071400x1050Framedcopy.jpg?v=1726149938`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924006.png?v=1726149473`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240066.png?v=1726149473`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924006750x500copy.jpg?v=1726149472`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240061000x750copy.jpg?v=1726149472`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924005.png?v=1726149405`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240057.png?v=1726149405`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924005800x500Canvascopy.jpg?v=1726149404`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240051100x800FramedCanvascopy.jpg?v=1726149405`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924004.png?v=1726149276`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240046.png?v=1726149276`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924004750x510copy.jpg?v=1726149276`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240041050x810copy.jpg?v=1726149276`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924003.png?v=1726149093`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240038.png?v=1726149092`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924003900x600copy.jpg?v=1726149092`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240031200x900copy.jpg?v=1726149092`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924002.png?v=1726148948`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240028.png?v=1726148948`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924002900x350copy.jpg?v=1726148948`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240021200x650copy.jpg?v=1726148948`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924001.png?v=1726146059`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240018.png?v=1726146059`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924001900x300copy.jpg?v=1726146059`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240011170x570Framedcopy.jpg?v=1726146059`
         ],
         variants: [
           {
@@ -3582,108 +4009,125 @@ Now, in the fullness of time, Anton Gericke embarks on a new chapter as a full-t
           }
         ]
       }
-    ],
-    statsAvailable: 2,
-    statsSold: 1,
-    statsHighestSold: 37800.0,
-    statsFromPrice: 15480
+    ]
   },
   {
-    id: `ian-hertslet`,
-    name: `Ian Hertslet`,
+    id: `craig-stuart`,
+    name: `Craig Stuart`,
     born: null,
     birthplace: `South Africa`,
-    medium: `Oil`,
-    style: `Landscapes, Seascapes`,
-    bio: `Ian Hertslet: The Visionary Brush of Contemporary South African Art
+    medium: `Oil on Canvas`,
+    style: `Koi, Water Art`,
+    bio: `Craig Stuart: Painting the Quiet Power of Water
 
-Ian Hertslet is a beacon in the realm of contemporary South African art, renowned for his uniquely expressive oil paintings. His canvases serve as captivating explorations of diverse themes, marked by the remarkable fusion of abstract and figurative forms.
+Craig Stuart, a Scottish-born artist now based in Cape Town, is a graduate of the Glasgow School of Art. Water lies at the heart of his artistic vision—both as subject and as method—shaped by early encounters that stirred equal measures of curiosity and unease: dark depths set against sudden flashes of light.
 
-Hertslet's art defies convention with bold splashes of color and dynamic brushwork, challenging artistic traditions and sparking profound reflection. His vision has resonated deeply, amassing a passionate following both locally and across borders. His creations grace galleries and art fairs worldwide, a testament to their universal appeal.
+While living in Glasgow, Stuart often wandered the abandoned shipyards of Govan, where weathered steel and oxidised reds left a lasting impression on his palette. His approach reflects the discipline of printmaking—layered, restrained, and deliberate—while time spent along the coast of South Korea introduced an aesthetic of balance, clarity, and quiet movement.
 
-In essence, Ian Hertslet's paintings strike a chord with art enthusiasts who seek not only artistic mastery but also a contemporary relevance that invites us to push the boundaries of creativity.`,
-    image: `https://thewinelandsartgallery.com/cdn/shop/collections/6_2.png?v=1695061104`,
-    galleryUrl: `https://thewinelandsartgallery.com/collections/ian-hertslet`,
+Working between control and chance, Stuart allows fluid elements to shape the final image. In recent years, forms such as koi and lilies have emerged more distinctly in his work—the koi, especially, symbolising perseverance and transformation. His paintings and prints have been exhibited in galleries internationally.`,
+    image: `https://thewinelandsartgallery.com/cdn/shop/collections/10_2_df1040aa-e9b9-4b18-a255-58193f59913c.png?v=1774950871`,
+    galleryUrl: `https://thewinelandsartgallery.com/collections/craig-stuart`,
+    statsAvailable: 1,
+    statsSold: 0,
+    statsHighestSold: 0,
     works: [
       {
-        title: `Ian Hertslet - Oil on Canvas`,
-        price: 34500,
+        title: `Craig Stuart -`,
+        price: 35000.0,
         status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0226005.png?v=1770370442`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260051.png?v=1774952470`,
         images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0226005.png?v=1770370442`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260050.png?v=1770370441`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH022600501020x760copy.jpg?v=1770370441`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260051copy.jpg?v=1770370441`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260052copy.jpg?v=1770370441`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260053copy.jpg?v=1770370442`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260051.png?v=1774952470`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260052.png?v=1774952471`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260053613x307.jpg?v=1774952471`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260041.png?v=1774952430`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260042.png?v=1774952431`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260043613x307.jpg?v=1774952430`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260031.png?v=1774952300`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260032.png?v=1774952300`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260033607x457.jpg?v=1774952300`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260021.png?v=1774952224`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260022.png?v=1774952224`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260023840x595.jpg?v=1774952223`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260011.png?v=1774952033`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260012.png?v=1774952034`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS032600131189x840.jpg?v=1774952033`
         ],
         variants: [
           {
-            label: `Ian Hertslet - Oil on Canvas (Landscape grey)`,
-            price: 34500
+            label: `Craig Stuart - (613mm x 307mm)`,
+            price: 6900.0
           },
           {
-            label: `Ian Hertslet - Oil on Canvas (Flowers vase)`,
-            price: 27600
+            label: `Craig Stuart - (613mm x 307mm)`,
+            price: 6900.0
           },
           {
-            label: `Ian Hertslet - Oil on Canvas (Coastal rocks)`,
-            price: 19750
-          },
-          {
-            label: `Ian Hertslet - Oil on Canvas (Coastal cliffs)`,
-            price: 19750
-          }
-        ]
-      },
-      {
-        title: `Oil on Stretched Canvas by Ian Hertslet`,
-        price: 28500,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0823001.png?v=1770369626`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0823001.png?v=1770369626`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH08230010.png?v=1770369626`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH08230011200mmx900mmcopy.jpg?v=1770369626`
-        ],
-        variants: [
-          {
-            label: `Oil on Stretched Canvas by Ian Hertslet (Koi)`,
-            price: 28500
-          }
-        ]
-      },
-      {
-        title: `Ian Hertslet - Oil on Stretched Canvas`,
-        price: 14500.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0224001.png?v=1708942994`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0224001.png?v=1708942994`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02240011.png?v=1708942994`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0224001copy.jpg?v=1708942994`
-        ],
-        variants: [
-          {
-            label: `Ian Hertslet - Oil on Stretched Canvas`,
+            label: `Craig Stuart - (607mm x 457mm)`,
             price: 14500.0
           },
           {
-            label: `Ian Hertslet - Oil on Stretched Canvas`,
-            price: 9450.0
+            label: `Craig Stuart - (840mm x 595mm)`,
+            price: 23000.0
           },
           {
-            label: `Ian Hertslet - Oil on Stretched Canvas`,
-            price: 4750.0
+            label: `Craig Stuart - (1189mm x 840mm)`,
+            price: 35000.0
           }
         ]
       }
-    ],
-    statsAvailable: 2,
-    statsSold: 1,
-    statsHighestSold: 14500.0,
-    statsFromPrice: 28500
+    ]
+  },
+  {
+    id: `dante-ruben`,
+    name: `Dante Ruben`,
+    born: null,
+    birthplace: `South Africa`,
+    medium: `Oil on Canvas`,
+    style: `Figurative, Landscapes`,
+    bio: `Dante Ruben: Painter of Coastal Light and Working Lives
+
+Dante Ruben, now based in the coastal town of Langebaan, draws deeply from the landscapes and communities that have shaped her artistic life. For twelve formative years she lived in the Overberg, a region long associated with notable painters such as Gregoire Boonzaier, Marjorie Wallace, and Maggie Laubser. There she found inspiration not only in the scenery, but in the quiet dignity and colorful stories of working people—fishermen at sea and fynbos harvesters gathering proteas from surrounding farms.
+
+Those years left a lasting impression on her canvas. Today, with the Atlantic winds and luminous winter sunsets of Langebaan as her backdrop, Ruben continues to interpret the rhythms of coastal life. Her paintings, marked by an exuberant palette and an impressionistic touch, celebrate both landscape and humanity. The result is a body of work that resonates with collectors at home and abroad, drawn to her ability to transform everyday moments into scenes of warmth, color, and enduring character.`,
+    image: `https://thewinelandsartgallery.com/cdn/shop/collections/10_2_8610cc38-112e-4936-bd85-565c2bd17a75.png?v=1774948950`,
+    galleryUrl: `https://thewinelandsartgallery.com/collections/dante-ruben`,
+    statsAvailable: 1,
+    statsSold: 0,
+    statsHighestSold: 0,
+    works: [
+      {
+        title: `Dante Ruben -`,
+        price: 35000.0,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR05260011.png?v=1779199638`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR05260011.png?v=1779199638`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR05260012.png?v=1779199638`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR05260013610mmx510mm.jpg?v=1779199638`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR03260021.png?v=1774949699`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR03260022.png?v=1774949699`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR032600231500x900mm.jpg?v=1774949699`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR03260011.png?v=1774949632`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR03260012.png?v=1774949632`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR03260013900x900mm.jpg?v=1774949632`
+        ],
+        variants: [
+          {
+            label: `Dante Ruben - (610mm x 510mm)`,
+            price: 14950.0
+          },
+          {
+            label: `Dante Ruben - (1500mm x 900mm)`,
+            price: 35000.0
+          },
+          {
+            label: `Dante Ruben - (900mm x 900mm)`,
+            price: 18900.0
+          }
+        ]
+      }
+    ]
   },
   {
     id: `junior-fungai`,
@@ -3703,57 +4147,24 @@ Fungai's art finds itself in prestigious galleries, including The Winelands Art 
 In August 2010, Fungai's art crossed borders for a special exhibition at Amazwi Contemporary Art in Saugatuck, Michigan, USA, further solidifying his status as a venerated African artist whose brush strokes resonate across continents.`,
     image: `https://thewinelandsartgallery.com/cdn/shop/collections/19_1.png?v=1695061428`,
     galleryUrl: `https://thewinelandsartgallery.com/collections/junior-fungai`,
+    statsAvailable: 1,
+    statsSold: 0,
+    statsHighestSold: 0,
     works: [
-      {
-        title: `Acrylic on Stretched Canvas by Junior Fungai`,
-        price: 3850,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/95.png?v=1694704121`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/95.png?v=1694704121`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF003750mmx500mm.jpg?v=1694704121`
-        ],
-        variants: [
-          {
-            label: `Acrylic on Stretched Canvas by Junior Fungai (Beach scene)`,
-            price: 3850
-          }
-        ]
-      },
-      {
-        title: `Acrylic on Rolled Canvas by Junior Fungai`,
-        price: 6900,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF091E.png?v=1696356176`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF091E.png?v=1696356176`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF091.jpg?v=1696356176`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/99.png?v=1694704006`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF094.jpg?v=1694704006`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/98.png?v=1694703941`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF092.jpg?v=1694703941`
-        ],
-        variants: [
-          {
-            label: `Acrylic on Rolled Canvas by Junior Fungai (Market)`,
-            price: 6900
-          },
-          {
-            label: `Acrylic on Rolled Canvas by Junior Fungai (Beach walkers)`,
-            price: 6900
-          }
-        ]
-      },
       {
         title: `Junior Fungai - Acrylic on Canvas Panel`,
         price: 8500.0,
-        status: `sold`,
+        status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF1123002.png?v=1699952075`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF1123002.png?v=1699952075`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF11230021.jpg?v=1699952074`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF11230022.png?v=1699952075`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF11230024.jpg?v=1699952075`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF11230024.jpg?v=1699952075`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF1123001.png?v=1699951994`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF11230011.jpg?v=1699951995`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF11230012.png?v=1699951994`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF11230014.jpg?v=1699951994`
         ],
         variants: [
           {
@@ -3765,28 +4176,8 @@ In August 2010, Fungai's art crossed borders for a special exhibition at Amazwi 
             price: 8500.0
           }
         ]
-      },
-      {
-        title: `Acrylic on Canvas Panel by Junior Fungai`,
-        price: 8500.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/94.png?v=1694608729`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/94.png?v=1694608729`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF002880mmx680mmF920mmx720mmAcryliconcanvaspanel1.jpg?v=1694608729`
-        ],
-        variants: [
-          {
-            label: `Acrylic on Canvas Panel by Junior Fungai`,
-            price: 8500.0
-          }
-        ]
       }
-    ],
-    statsAvailable: 2,
-    statsSold: 2,
-    statsHighestSold: 8500.0,
-    statsFromPrice: 3850
+    ]
   },
   {
     id: `louise-de-klerk`,
@@ -3810,10 +4201,13 @@ Her preferred medium is oils, though acrylics and mixed media also dance upon he
 Louise's artistic journey has graced numerous group and solo exhibitions, leaving an indelible mark on art enthusiasts and galleries throughout the country. Her works have become cherished pieces, breathing life into the spaces they adorn, and inviting all to explore the kaleidoscope of her creativity.`,
     image: `https://thewinelandsartgallery.com/cdn/shop/collections/Artist_Photos_LDK.png?v=1696534757`,
     galleryUrl: `https://thewinelandsartgallery.com/collections/louise-de-klerk`,
+    statsAvailable: 1,
+    statsSold: 0,
+    statsHighestSold: 0,
     works: [
       {
         title: `Louise de Klerk Oil on Stretched Canvas`,
-        price: 8900,
+        price: 8900.0,
         status: `available`,
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/LDK10230051.png?v=1696534532`,
         images: [
@@ -3822,91 +4216,289 @@ Louise's artistic journey has graced numerous group and solo exhibitions, leavin
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/LDK10230041.png?v=1696534491`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/LDK1023004copy.jpg?v=1696534491`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/LDK10230031.png?v=1696534449`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/LDK1023003copy.jpg?v=1696534449`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/LDK1023003copy.jpg?v=1696534449`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/LDK10230021.png?v=1696534379`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/LDK1023002copy.jpg?v=1696534378`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/LDK10230011.png?v=1696534254`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/LDK1023001copy.jpg?v=1696534254`
         ],
         variants: [
           {
-            label: `Louise de Klerk Oil on Stretched Canvas (Musician 1)`,
-            price: 8900
+            label: `Louise de Klerk Oil on Stretched Canvas`,
+            price: 8900.0
           },
           {
-            label: `Louise de Klerk Oil on Stretched Canvas (Musician 2)`,
-            price: 8900
+            label: `Louise de Klerk Oil on Stretched Canvas`,
+            price: 8900.0
           },
           {
-            label: `Louise de Klerk Oil on Stretched Canvas (Musician 3)`,
-            price: 8900
+            label: `Louise de Klerk Oil on Stretched Canvas`,
+            price: 8900.0
           },
           {
-            label: `Louise de Klerk Oil on Stretched Canvas (Musician 4)`,
-            price: 8900
+            label: `Louise de Klerk Oil on Stretched Canvas`,
+            price: 8900.0
+          },
+          {
+            label: `Louise de Klerk Oil on Stretched Canvas`,
+            price: 8900.0
           }
         ]
       }
-    ],
-    statsAvailable: 1,
-    statsSold: 0,
-    statsHighestSold: 0,
-    statsFromPrice: 8900
+    ]
   },
   {
-    id: `stef-van-den-berg`,
-    name: `Stef van den Berg`,
+    id: `aj-burns`,
+    name: `AJ Burns`,
     born: null,
     birthplace: `South Africa`,
-    medium: `Acrylic on Panel`,
-    style: `Florals, Still Life`,
-    bio: `Stef van den Berg: A Professor of Art
+    medium: `Blown Acrylic`,
+    style: `Koi, Water, Underwater`,
+    bio: `AJ Burns: Breathing Life into Colours
 
-Known by both Stef and Riaan van den Berg, this artistic talent forged a remarkable path in the world of art. After retiring from his role as a professor of art at the University of Potchefstroom, Stef transitioned into a new chapter, opening a thriving business in Parys.
+AJ Burns' artistic journey has been a testament to the enduring nature of creativity. Though he painted prodigiously as a child, he faced discouragement from teachers and family during his high school years. As the world tried to suppress his artistic spark, AJ turned to civil engineering, swapping paintbrushes for setsquares and pencils.
 
-His artistic legacy stretches far beyond the borders of South Africa, leaving an indelible mark on both local and international art markets. Collectors from around the world have sought and cherished his works, transforming his creations into prized treasures that transcend geographic boundaries.
+After thriving as an entrepreneur in both the UK and South Africa, he ventured into the world of vodka distillery. However, the advent of Covid prohibition left him at a crossroads. It was during this uncertain period that AJ rekindled his artistic flame. A chance art class with an old friend led him back to the world of acrylics, a staggering 35 years after he had set them aside.
 
-In the vivid strokes and nuanced palettes of Stef van den Berg's art, we glimpse a lifetime of passion, dedication, and unwavering commitment to the craft. His canvas becomes a reflection of a life lived in brilliance, where art knows no bounds, and creativity flows freely.`,
-    image: `https://thewinelandsartgallery.com/cdn/shop/collections/Stef_van_den_Berg.png?v=1695061975`,
-    galleryUrl: `https://thewinelandsartgallery.com/collections/stef-van-den-berg`,
+AJ's unique approach to painting emerged from curiosity and circumstance. In a garage without electricity, he experimented with the movement of paint. Lacking conventional tools, he resorted to blowing air with his own breath, watching in awe as one color gracefully danced through another.
+
+Today, AJ continues to infuse life into his abstract masterpieces. With a deliberate yet unpredictable technique, he layers one color upon another and then breathes his own life into the canvas, creating vibrant and evocative compositions. His paintings become a burst of energy, a symphony of colors and textures that provoke a spectrum of emotions.
+
+"The unpredictability of it fascinates me," AJ enthuses. "The paint seems to come to life; it keeps moving even when I've finished. And the colors evolve during the drying process, which can take up to two weeks in winter. It's always exciting to come back the next day to see what's happened to the painting."
+
+In AJ Burns' world of art, creativity knows no bounds, and the canvas is a dynamic realm where colors and emotions entwine, breathing life into each stroke and reminding us that creativity is timeless.`,
+    image: `https://thewinelandsartgallery.com/cdn/shop/collections/15_c21be0eb-39e9-43e9-8ecb-89142dc1b2d4.png?v=1757591409`,
+    galleryUrl: `https://thewinelandsartgallery.com/collections/aj-burns`,
+    statsAvailable: 0,
+    statsSold: 2,
+    statsHighestSold: 20000.0,
     works: [
       {
-        title: `Acrylic on Panel by Stef van den Berg`,
-        price: 4950,
-        status: `available`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/133.png?v=1694971561`,
+        title: `AJ Burns -`,
+        price: 15600.0,
+        status: `sold`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/1_1.png?v=1776685361`,
         images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/133.png?v=1694971561`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SVDB0823004400x300framed600x500F1.jpg?v=1694971561`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/132.png?v=1694971510`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SVDB0823003400x300framed600x500F.jpg?v=1694971510`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/131.png?v=1694971429`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SVDB0823002300x220framed500x420F.jpg?v=1694971428`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/1_1.png?v=1776685361`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/1_2.png?v=1776685361`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/1_2AJBLIT001900x700.jpg?v=1776685361`
         ],
         variants: [
           {
-            label: `Acrylic on Panel by Stef van den Berg (Blue flowers dark frame)`,
-            price: 4950
-          },
+            label: `AJ Burns - (900mm x 700mm)`,
+            price: 15600.0
+          }
+        ]
+      },
+      {
+        title: `AJ Burns - Go With The Flow`,
+        price: 20000.0,
+        status: `sold`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJBAV001_16dc74fe-5af0-4a92-9ced-d9daa2b29bcc.jpg?v=1771066286`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJBAV001_16dc74fe-5af0-4a92-9ced-d9daa2b29bcc.jpg?v=1771066286`
+        ],
+        variants: [
           {
-            label: `Acrylic on Panel by Stef van den Berg (Yellow flower dark frame)`,
-            price: 4950
-          },
-          {
-            label: `Acrylic on Panel by Stef van den Berg (White flowers dark frame)`,
-            price: 3950
-          },
-          {
-            label: `Acrylic on Panel by Stef van den Berg (Blue flowers grey frame)`,
-            price: 3950
-          },
-          {
-            label: `Acrylic on Panel by Stef van den Berg (White flowers grey frame)`,
-            price: 3950
+            label: `AJ Burns - Go With The Flow (1600mm x 1000mm)`,
+            price: 20000.0
           }
         ]
       }
-    ],
-    statsAvailable: 1,
+    ]
+  },
+  {
+    id: `anmari`,
+    name: `Anmari`,
+    born: null,
+    birthplace: `South Africa`,
+    medium: `Acrylic`,
+    style: `Figurative`,
+    bio: `Anmari: Painting a Legacy of Compassion
+
+Anmari's life has been a journey defined by the pursuit of bettering the human condition. Trained as a social worker, she dedicated herself to making a profound difference in the lives of others. Yet, it was in the later chapters of her life that a hidden talent, an uncharted passion, was unveiled: the gift of artistry.
+
+
+Today, Anmari proudly finds her place among the represented artists of The Winelands Art Gallery. In a retirement home, where many might see an end to creative potential, she discovered a vibrant new beginning. As a self-taught artist, her canvases now resonate with the colors of her soul, each stroke a testament to a lifetime of experiences and an unwavering commitment to paint her way through the years ahead.
+
+For Anmari, art isn't just a newfound pursuit; it's a lifelong commitment—a promise to herself and the world. In her work, she continues to touch hearts, leaving behind a legacy of compassion that speaks to the enduring power of the human spirit in every stroke of the brush.`,
+    image: `https://thewinelandsartgallery.com/cdn/shop/collections/14_2.png?v=1693929176`,
+    galleryUrl: `https://thewinelandsartgallery.com/collections/anmari-painting-a-legacy-of-compassion`,
+    statsAvailable: 0,
+    statsSold: 1,
+    statsHighestSold: 1500.0,
+    works: [
+      {
+        title: `Anmari - Acrylic on Blocked Panel`,
+        price: 1500.0,
+        status: `sold`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/ANG10230031.png?v=1698329490`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/ANG10230031.png?v=1698329490`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/ANG1023003.jpg?v=1698329490`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/ANG10230021.png?v=1698329443`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/ANG1023002.jpg?v=1698329443`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/ANG10230011.png?v=1698329362`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/ANG1023001.jpg?v=1698329362`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/ANG0823004AcryliconBlockedPanel600mmx400mm4.png?v=1696354320`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/ANG0823004AcryliconBlockedPanel600mmx400mm.jpg?v=1696354320`
+        ],
+        variants: [
+          {
+            label: `Anmari - Acrylic on Blocked Panel`,
+            price: 1500.0
+          },
+          {
+            label: `Anmari - Acrylic on Blocked Panel`,
+            price: 1500.0
+          },
+          {
+            label: `Anmari - Acrylic on Blocked Panel`,
+            price: 1500.0
+          },
+          {
+            label: `Anmari - Acrylic on Blocked Panel`,
+            price: 1500.0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: `frances-wedepohl`,
+    name: `Frances Wedepohl`,
+    born: null,
+    birthplace: `South Africa`,
+    medium: `Oil & Acrylic`,
+    style: `Landscapes, Still Life`,
+    bio: `Frances Wedepohl: Capturing the Soul of South Africa Through Art
+
+Frances Wedepohl's artistic journey began in the heart of Johannesburg, where her love for art and creativity bloomed from a young age. She had a penchant for bright colors, shapes, and textures, and her youthful enthusiasm found expression on every canvas of her world.
+
+A transformative encounter with the work of JH Pierneef left an enduring imprint on her creative spirit. "I'd like to think his work has strongly influenced mine," Frances reflects, "I feel a deep connection to his play of light, lines, balance, and serenity."
+
+When she paints, the world falls into a hushed reverence, accompanied only by the melodies of her beloved 70s music collection. Frances draws inspiration from her journeys, both real and imagined, preserving landscapes in her art to etch them into her heart. The South African landscape, with its sun-drenched soil, heat, and expansive sky, remains her eternal muse.
+
+With a diverse background in architectural draughting and a preference for a creamy palette of oil paints, Frances intricately weaves details and wields precise brushwork. Her palette may be limited, but it yields a rich spectrum of hues, a secret handed down by Louis Audie, another of South Africa's artistic luminaries.
+
+Frances's art has graced the pages of The Art Times magazine and adorned galleries worldwide. Her works have found homes across continents, from South Africa to Australia, Saudi Arabia to Sweden, testifying to the universal appeal of her craft.
+
+As she reflects on her journey, Frances expresses gratitude for the support of family, friends, and cherished clients who have walked alongside her. In the timeless words of William Shakespeare, she finds her guiding principle: "To thine own self be true." Frances Wedepohl's artistic truth shines through her canvases, capturing the essence of South Africa with every stroke.`,
+    image: `https://thewinelandsartgallery.com/cdn/shop/collections/17_1.png?v=1695060799`,
+    galleryUrl: `https://thewinelandsartgallery.com/collections/frances-wedepohl`,
+    statsAvailable: 0,
     statsSold: 0,
     statsHighestSold: 0,
-    statsFromPrice: 4950
+    works: []
+  },
+  {
+    id: `isabel-le-roux`,
+    name: `Isabel le Roux`,
+    born: null,
+    birthplace: `South Africa`,
+    medium: `Oil on Canvas`,
+    style: `Landscapes, Figurative`,
+    bio: `Isabel le Roux: Isabel le Roux: Capturing the Vibrancy of South Africa
+
+Born in Rustenburg, nestled at the base of South Africa's majestic Magaliesberg mountain range, Isabel le Roux embarked on a lifelong odyssey through the world of art. Her story began as an art teacher, but it was in 1974 that she took the leap into the professional realm of painting.
+
+Isabel's artistic voice is a dynamic tapestry woven with threads of expressionism and contemporary flair. Her canvas bursts to life with the vivid, audacious strokes of color, capturing the essence of South African landscapes and its people, particularly the Cape. Oils are her favored medium, yet she boldly explores acrylics, watercolors, pen on paper, and mixed media, shaping each creation with unwavering passion.
+
+What sets Isabel apart is her boundless commitment to her craft. Her artwork breathes with life, a testament to her ceaseless exploration and her enriching travels across the globe. Through the lens of her creativity, South Africa unfurls in all its resplendent beauty.
+
+Isabel le Roux is not just an artist; she is a phenomenon. Her artistic journey has been studded with milestones—a staggering thirty-seven solo and group exhibitions both locally and on international stages. Her dedication recently earned her a three-month sabbatical in the "Cite International Des Artes" in the heart of Paris, a recognition of her indomitable spirit and unwavering contribution to the world of art.
+
+Isabel's canvas is more than a surface; it's a gateway to South Africa's soul, and her art is an invitation to explore the vivid palette of a nation through her eyes.`,
+    image: `https://thewinelandsartgallery.com/cdn/shop/collections/2_7.png?v=1695061240`,
+    galleryUrl: `https://thewinelandsartgallery.com/collections/isabel-le-roux`,
+    statsAvailable: 0,
+    statsSold: 1,
+    statsHighestSold: 37500.0,
+    works: [
+      {
+        title: `Isabel le Roux - Oil on Stretched Canvas`,
+        price: 37500.0,
+        status: `sold`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IL0524002.png?v=1716451836`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IL0524002.png?v=1716451836`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IL0524002copy.jpg?v=1716451836`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IL0524001.png?v=1716451719`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IL0524001copy.jpg?v=1716451719`
+        ],
+        variants: [
+          {
+            label: `Isabel le Roux - Oil on Stretched Canvas`,
+            price: 16500.0
+          },
+          {
+            label: `Isabel le Roux - Oil on Stretched Canvas`,
+            price: 37500.0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: `jeanne-pretorius`,
+    name: `Jeanne Marais Pretorius`,
+    born: null,
+    birthplace: `South Africa`,
+    medium: `Oil on Canvas`,
+    style: `Figurative, Landscapes`,
+    bio: `Jeanne Marais Pretorius: Crafting Life's Palette
+
+Jeanne Marais, now Jeanne Pretorius, blossomed in a nurturing childhood, where the seeds of her remarkable talent were sown. Today, she stands as a dynamic, self-taught artist of boundless versatility.
+
+Her artistry is a tapestry of exclusive and unique female figure studies, yet her prowess extends gracefully into various other themes. With a masterful command of color, she paints vibrant landscapes and cityscapes that pulse with dramatic intensity. For the past 13 years, she has wielded the brush and palette knife with finesse in her exploration of oils.
+
+Jeanne's oeuvre has graced three remarkable solo exhibitions (2010, 2012, & 2015), and her works find homes in galleries across Pretoria, Hartebeespoort, Clarens, and beyond. Her international clientele bears testimony to the timeless allure of her creations.
+
+Nestled in Centurion, South Africa, Jeanne shares her life with her husband Louis and their two daughters. In her own words, "The real advantage of my career as an artist is being in the fortunate position to do what I love for a living!" Her art embodies that love, enriching lives with every stroke of her brush.`,
+    image: `https://thewinelandsartgallery.com/cdn/shop/collections/3_6.png?v=1695061361`,
+    galleryUrl: `https://thewinelandsartgallery.com/collections/jeanne-marais-pretorius`,
+    statsAvailable: 0,
+    statsSold: 0,
+    statsHighestSold: 0,
+    works: []
+  },
+  {
+    id: `nicolaas-roos`,
+    name: `Nicolaas Roos`,
+    born: null,
+    birthplace: `South Africa`,
+    medium: `Oil on Canvas`,
+    style: `Landscapes`,
+    bio: `Nicolaas Roos: A Harmonious Fusion of Mind and Canvas
+
+Nicolaas Roos, an abstract expressionist, weaves a tapestry of inspiration drawn from Eastern philosophy, introspection, and diverse artistic experimentation. His paintings, described as lyrical, atmospheric, and ethereal yet serene, reflect a lifelong immersion in classical music and a profound connection to the sea as a passionate scuba diver.
+
+Choosing large brushes over detailed realism, Roos explores the textured realms of paint, capturing a strong melancholic undertone in his work. His academic background in theology, philosophy, and clinical psychology, combined with a deep interest in sciences and history, forms the intellectual foundation of his creations.
+
+Living mindfully, Roos infuses his daily routines with a non-judgmental awareness, allowing his paintings to speak eloquently without the need for excessive explanation. Each canvas, a harmonious blend of inner contemplation and artistic expression, invites viewers to revel in the beauty of the present moment.`,
+    image: `https://thewinelandsartgallery.com/cdn/shop/collections/NR_Photo.jpg?v=1707985708`,
+    galleryUrl: `https://thewinelandsartgallery.com/collections/nicolaas-roos`,
+    statsAvailable: 0,
+    statsSold: 1,
+    statsHighestSold: 25000.0,
+    works: [
+      {
+        title: `Nicolaas Roos Oil on Stretched Canvas`,
+        price: 25000.0,
+        status: `sold`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NR0224001.png?v=1707986677`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NR0224001.png?v=1707986677`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NR0224001copy.jpg?v=1707986676`
+        ],
+        variants: [
+          {
+            label: `Nicolaas Roos Oil on Stretched Canvas`,
+            price: 25000.0
+          }
+        ]
+      }
+    ]
   },
   {
     id: `rozanne-henning`,
@@ -3923,6 +4515,9 @@ Rozanne's voyage into the realm of art was a homecoming to a world steeped in cr
 Yet, nature's timeless elegance beckoned. Rozanne's portraits, brought to life with acrylic and oil on canvas, stand as living testaments to her enduring love affair with the natural world. Her art captures the essence of nature's beauty and its vibrant tapestry of colors, inviting us to behold the world through her eyes—a world where creativity knows no bounds.`,
     image: `https://thewinelandsartgallery.com/cdn/shop/collections/Artist_Photos_1.png?v=1695061673`,
     galleryUrl: `https://thewinelandsartgallery.com/collections/rozanne-henning`,
+    statsAvailable: 0,
+    statsSold: 1,
+    statsHighestSold: 8500.0,
     works: [
       {
         title: `Rozanne Henning Oil on Stretched Canvas`,
@@ -3931,7 +4526,17 @@ Yet, nature's timeless elegance beckoned. Rozanne's portraits, brought to life w
         image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/RH1123005910mmx610mm1.png?v=1699343104`,
         images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/RH1123005910mmx610mm1.png?v=1699343104`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/RH1123005910mmx610mm.jpg?v=1699343104`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/RH1123005910mmx610mm.jpg?v=1699343104`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/RH1123003720mmx560mm1.png?v=1699342954`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/RH1123003720mmx560mm.jpg?v=1699342954`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/RH1123001900mmx750mm1.png?v=1699342821`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/RH1123001900mmx750mm.jpg?v=1699342821`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/RH0923004490mmx450mmcopy4.png?v=1696356807`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/RH0923004490mmx450mmcopy.jpg?v=1696356807`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/RH0923003610mmx460mmcopy3.png?v=1696356723`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/RH0923003610mmx460mmcopy.jpg?v=1696356723`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/RH0923002400mmx400mmcopy2.png?v=1696356634`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/RH0923002400mmx400mmcopy.jpg?v=1696356634`
         ],
         variants: [
           {
@@ -3960,246 +4565,28 @@ Yet, nature's timeless elegance beckoned. Rozanne's portraits, brought to life w
           }
         ]
       }
-    ],
-    statsAvailable: 0,
-    statsSold: 1,
-    statsHighestSold: 8500.0,
-    statsFromPrice: 0
+    ]
   },
   {
-    id: `isabel-le-roux`,
-    name: `Isabel le Roux`,
+    id: `stef-van-den-berg`,
+    name: `Stef van den Berg`,
     born: null,
     birthplace: `South Africa`,
-    medium: `Oil on Canvas`,
-    style: `Landscapes, Figurative`,
-    bio: `Isabel le Roux: Isabel le Roux: Capturing the Vibrancy of South Africa
+    medium: `Acrylic on Panel`,
+    style: `Florals, Still Life`,
+    bio: `Stef van den Berg: A Professor of Art
 
-Born in Rustenburg, nestled at the base of South Africa's majestic Magaliesberg mountain range, Isabel le Roux embarked on a lifelong odyssey through the world of art. Her story began as an art teacher, but it was in 1974 that she took the leap into the professional realm of painting.
+Known by both Stef and Riaan van den Berg, this artistic talent forged a remarkable path in the world of art. After retiring from his role as a professor of art at the University of Potchefstroom, Stef transitioned into a new chapter, opening a thriving business in Parys.
 
-Isabel's artistic voice is a dynamic tapestry woven with threads of expressionism and contemporary flair. Her canvas bursts to life with the vivid, audacious strokes of color, capturing the essence of South African landscapes and its people, particularly the Cape. Oils are her favored medium, yet she boldly explores acrylics, watercolors, pen on paper, and mixed media, shaping each creation with unwavering passion.
+His artistic legacy stretches far beyond the borders of South Africa, leaving an indelible mark on both local and international art markets. Collectors from around the world have sought and cherished his works, transforming his creations into prized treasures that transcend geographic boundaries.
 
-What sets Isabel apart is her boundless commitment to her craft. Her artwork breathes with life, a testament to her ceaseless exploration and her enriching travels across the globe. Through the lens of her creativity, South Africa unfurls in all its resplendent beauty.
-
-Isabel le Roux is not just an artist; she is a phenomenon. Her artistic journey has been studded with milestones—a staggering thirty-seven solo and group exhibitions both locally and on international stages. Her dedication recently earned her a three-month sabbatical in the "Cite International Des Artes" in the heart of Paris, a recognition of her indomitable spirit and unwavering contribution to the world of art.
-
-Isabel's canvas is more than a surface; it's a gateway to South Africa's soul, and her art is an invitation to explore the vivid palette of a nation through her eyes.`,
-    image: `https://thewinelandsartgallery.com/cdn/shop/collections/2_7.png?v=1695061240`,
-    galleryUrl: `https://thewinelandsartgallery.com/collections/isabel-le-roux`,
-    works: [
-      {
-        title: `Isabel le Roux - Oil on Stretched Canvas`,
-        price: 37500.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IL0524002.png?v=1716451836`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IL0524002.png?v=1716451836`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IL0524002copy.jpg?v=1716451836`
-        ],
-        variants: [
-          {
-            label: `Isabel le Roux - Oil on Stretched Canvas`,
-            price: 16500.0
-          },
-          {
-            label: `Isabel le Roux - Oil on Stretched Canvas`,
-            price: 37500.0
-          }
-        ]
-      },
-      {
-        title: `Oil on Stretched Canvas by Isabel le Roux`,
-        price: 22500.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IL0823003800mmx600mmcopy3.png?v=1696355922`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IL0823003800mmx600mmcopy3.png?v=1696355922`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IL0823003800mmx600mmcopy.jpg?v=1696355922`
-        ],
-        variants: [
-          {
-            label: `Oil on Stretched Canvas by Isabel le Roux`,
-            price: 22500.0
-          }
-        ]
-      }
-    ],
-    statsAvailable: 0,
-    statsSold: 2,
-    statsHighestSold: 37500.0,
-    statsFromPrice: 0
-  },
-  {
-    id: `anmari`,
-    name: `Anmari`,
-    born: null,
-    birthplace: `South Africa`,
-    medium: `Acrylic`,
-    style: `Figurative`,
-    bio: `Anmari: Painting a Legacy of Compassion
-
-Anmari's life has been a journey defined by the pursuit of bettering the human condition. Trained as a social worker, she dedicated herself to making a profound difference in the lives of others. Yet, it was in the later chapters of her life that a hidden talent, an uncharted passion, was unveiled: the gift of artistry.
-
-
-Today, Anmari proudly finds her place among the represented artists of The Winelands Art Gallery. In a retirement home, where many might see an end to creative potential, she discovered a vibrant new beginning. As a self-taught artist, her canvases now resonate with the colors of her soul, each stroke a testament to a lifetime of experiences and an unwavering commitment to paint her way through the years ahead.
-
-For Anmari, art isn't just a newfound pursuit; it's a lifelong commitment—a promise to herself and the world. In her work, she continues to touch hearts, leaving behind a legacy of compassion that speaks to the enduring power of the human spirit in every stroke of the brush.`,
-    image: `https://thewinelandsartgallery.com/cdn/shop/collections/14_2.png?v=1693929176`,
-    galleryUrl: `https://thewinelandsartgallery.com/collections/anmari-painting-a-legacy-of-compassion`,
-    works: [
-      {
-        title: `Anmari - Acrylic on Blocked Panel`,
-        price: 1500.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/ANG10230031.png?v=1698329490`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/ANG10230031.png?v=1698329490`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/ANG1023003.jpg?v=1698329490`
-        ],
-        variants: [
-          {
-            label: `Anmari - Acrylic on Blocked Panel`,
-            price: 1500.0
-          },
-          {
-            label: `Anmari - Acrylic on Blocked Panel`,
-            price: 1500.0
-          },
-          {
-            label: `Anmari - Acrylic on Blocked Panel`,
-            price: 1500.0
-          },
-          {
-            label: `Anmari - Acrylic on Blocked Panel`,
-            price: 1500.0
-          }
-        ]
-      }
-    ],
-    statsAvailable: 0,
-    statsSold: 1,
-    statsHighestSold: 1500.0,
-    statsFromPrice: 0
-  },
-  {
-    id: `frances-wedepohl`,
-    name: `Frances Wedepohl`,
-    born: null,
-    birthplace: `South Africa`,
-    medium: `Oil & Acrylic`,
-    style: `Landscapes, Still Life`,
-    bio: `Frances Wedepohl: Capturing the Soul of South Africa Through Art
-
-Frances Wedepohl's artistic journey began in the heart of Johannesburg, where her love for art and creativity bloomed from a young age. She had a penchant for bright colors, shapes, and textures, and her youthful enthusiasm found expression on every canvas of her world.
-
-A transformative encounter with the work of JH Pierneef left an enduring imprint on her creative spirit. "I'd like to think his work has strongly influenced mine," Frances reflects, "I feel a deep connection to his play of light, lines, balance, and serenity."
-
-When she paints, the world falls into a hushed reverence, accompanied only by the melodies of her beloved 70s music collection. Frances draws inspiration from her journeys, both real and imagined, preserving landscapes in her art to etch them into her heart. The South African landscape, with its sun-drenched soil, heat, and expansive sky, remains her eternal muse.
-
-With a diverse background in architectural draughting and a preference for a creamy palette of oil paints, Frances intricately weaves details and wields precise brushwork. Her palette may be limited, but it yields a rich spectrum of hues, a secret handed down by Louis Audie, another of South Africa's artistic luminaries.
-
-Frances's art has graced the pages of The Art Times magazine and adorned galleries worldwide. Her works have found homes across continents, from South Africa to Australia, Saudi Arabia to Sweden, testifying to the universal appeal of her craft.
-
-As she reflects on her journey, Frances expresses gratitude for the support of family, friends, and cherished clients who have walked alongside her. In the timeless words of William Shakespeare, she finds her guiding principle: "To thine own self be true." Frances Wedepohl's artistic truth shines through her canvases, capturing the essence of South Africa with every stroke.`,
-    image: `https://thewinelandsartgallery.com/cdn/shop/collections/17_1.png?v=1695060799`,
-    galleryUrl: `https://thewinelandsartgallery.com/collections/frances-wedepohl`,
-    works: [
-      {
-        title: `Oil on Stretched Canvas by Frances Wedepohl`,
-        price: 6500.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FW0823008710mmx560mm1.png?v=1696532437`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FW0823008710mmx560mm1.png?v=1696532437`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FW0823008710mmx560mm.jpg?v=1696532437`
-        ],
-        variants: [
-          {
-            label: `Oil on Stretched Canvas by Frances Wedepohl`,
-            price: 4550.0
-          },
-          {
-            label: `Oil on Stretched Canvas by Frances Wedepohl`,
-            price: 5850.0
-          },
-          {
-            label: `Oil on Stretched Canvas by Frances Wedepohl`,
-            price: 5950.0
-          },
-          {
-            label: `Oil on Stretched Canvas by Frances Wedepohl`,
-            price: 6500.0
-          }
-        ]
-      }
-    ],
-    statsAvailable: 0,
-    statsSold: 1,
-    statsHighestSold: 6500.0,
-    statsFromPrice: 0
-  },
-  {
-    id: `jeanne-pretorius`,
-    name: `Jeanne Marais Pretorius`,
-    born: null,
-    birthplace: `South Africa`,
-    medium: `Oil on Canvas`,
-    style: `Figurative, Landscapes`,
-    bio: `Jeanne Marais Pretorius: Crafting Life's Palette
-
-Jeanne Marais, now Jeanne Pretorius, blossomed in a nurturing childhood, where the seeds of her remarkable talent were sown. Today, she stands as a dynamic, self-taught artist of boundless versatility.
-
-Her artistry is a tapestry of exclusive and unique female figure studies, yet her prowess extends gracefully into various other themes. With a masterful command of color, she paints vibrant landscapes and cityscapes that pulse with dramatic intensity. For the past 13 years, she has wielded the brush and palette knife with finesse in her exploration of oils.
-
-Jeanne's oeuvre has graced three remarkable solo exhibitions (2010, 2012, & 2015), and her works find homes in galleries across Pretoria, Hartebeespoort, Clarens, and beyond. Her international clientele bears testimony to the timeless allure of her creations.
-
-Nestled in Centurion, South Africa, Jeanne shares her life with her husband Louis and their two daughters. In her own words, "The real advantage of my career as an artist is being in the fortunate position to do what I love for a living!" Her art embodies that love, enriching lives with every stroke of her brush.`,
-    image: `https://thewinelandsartgallery.com/cdn/shop/collections/3_6.png?v=1695061361`,
-    galleryUrl: `https://thewinelandsartgallery.com/collections/jeanne-marais-pretorius`,
-    works: [],
+In the vivid strokes and nuanced palettes of Stef van den Berg's art, we glimpse a lifetime of passion, dedication, and unwavering commitment to the craft. His canvas becomes a reflection of a life lived in brilliance, where art knows no bounds, and creativity flows freely.`,
+    image: `https://thewinelandsartgallery.com/cdn/shop/collections/Stef_van_den_Berg.png?v=1695061975`,
+    galleryUrl: `https://thewinelandsartgallery.com/collections/stef-van-den-berg`,
     statsAvailable: 0,
     statsSold: 0,
     statsHighestSold: 0,
-    statsFromPrice: 0
-  },
-  {
-    id: `nicolaas-roos`,
-    name: `Nicolaas Roos`,
-    born: null,
-    birthplace: `South Africa`,
-    medium: `Oil on Canvas`,
-    style: `Landscapes`,
-    bio: `Nicolaas Roos: A Harmonious Fusion of Mind and Canvas
-
-Nicolaas Roos, an abstract expressionist, weaves a tapestry of inspiration drawn from Eastern philosophy, introspection, and diverse artistic experimentation. His paintings, described as lyrical, atmospheric, and ethereal yet serene, reflect a lifelong immersion in classical music and a profound connection to the sea as a passionate scuba diver.
-
-Choosing large brushes over detailed realism, Roos explores the textured realms of paint, capturing a strong melancholic undertone in his work. His academic background in theology, philosophy, and clinical psychology, combined with a deep interest in sciences and history, forms the intellectual foundation of his creations.
-
-Living mindfully, Roos infuses his daily routines with a non-judgmental awareness, allowing his paintings to speak eloquently without the need for excessive explanation. Each canvas, a harmonious blend of inner contemplation and artistic expression, invites viewers to revel in the beauty of the present moment.`,
-    image: `https://thewinelandsartgallery.com/cdn/shop/collections/NR_Photo.jpg?v=1707985708`,
-    galleryUrl: `https://thewinelandsartgallery.com/collections/nicolaas-roos`,
-    works: [
-      {
-        title: `Nicolaas Roos Oil on Stretched Canvas`,
-        price: 25000.0,
-        status: `sold`,
-        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NR0224001.png?v=1707986677`,
-        images: [
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NR0224001.png?v=1707986677`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NR0224001copy.jpg?v=1707986676`
-        ],
-        variants: [
-          {
-            label: `Nicolaas Roos Oil on Stretched Canvas`,
-            price: 25000.0
-          }
-        ]
-      }
-    ],
-    statsAvailable: 0,
-    statsSold: 1,
-    statsHighestSold: 25000.0,
-    statsFromPrice: 0
+    works: []
   }
 ];
 
@@ -4824,6 +5211,7 @@ function ArtistCard({ artist, delay, mounted, onClick, onBacking }) {
 function ArtistDetail({ artist, setPage, isAdmin, getWorkStatus, onMarkSold, onMarkAvailable, loadingKey, basket, toggleBasket, inBasket }) {
   const [selectedWork, setSelectedWork] = useState(null);
   const [imgIdx, setImgIdx] = useState(0);
+  const [zoomOpen, setZoomOpen] = useState(false);
   const [calcSaleVal, setCalcSaleVal] = useState('');
   const [calcMonths, setCalcMonths] = useState('');
   const [mounted, setMounted] = useState(false);
@@ -4850,8 +5238,39 @@ function ArtistDetail({ artist, setPage, isAdmin, getWorkStatus, onMarkSold, onM
   const swBasketWork = sw ? { ...sw, artistName: artist.name, artistId: artist.id } : null;
   const swInBasket = sw && inBasket && swBasketWork ? inBasket(swBasketWork) : false;
 
+  const zoomImg = selectedWork ? ((selectedWork.images||[])[imgIdx] || selectedWork.image || '') : '';
+
   return (
     <div style={{ paddingTop: 72, minHeight: '100vh', background: C.ink }}>
+
+      {/* ── Zoom modal ── */}
+      {zoomOpen && zoomImg && (
+        <div onClick={() => setZoomOpen(false)} style={{
+          position: 'fixed', inset: 0, zIndex: 600,
+          background: 'rgba(0,0,0,0.96)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'zoom-out', padding: 20,
+        }}>
+          <button onClick={() => setZoomOpen(false)} style={{
+            position: 'absolute', top: 20, right: 24, background: 'none', border: 'none',
+            color: C.fog, fontSize: 36, cursor: 'pointer', lineHeight: 1, zIndex: 1,
+          }}>×</button>
+          {(selectedWork.images||[]).length > 1 && (<>
+            <button onClick={e => { e.stopPropagation(); setImgIdx(i => i > 0 ? i-1 : (selectedWork.images||[]).length-1); }}
+              style={{ position: 'absolute', left: 20, top: '50%', transform: 'translateY(-50%)', background: 'rgba(26,39,68,0.85)', border: `1px solid ${C.goldBorder}`, borderRadius: '50%', width: 44, height: 44, color: C.gold, fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>‹</button>
+            <button onClick={e => { e.stopPropagation(); setImgIdx(i => i < (selectedWork.images||[]).length-1 ? i+1 : 0); }}
+              style={{ position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)', background: 'rgba(26,39,68,0.85)', border: `1px solid ${C.goldBorder}`, borderRadius: '50%', width: 44, height: 44, color: C.gold, fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>›</button>
+          </>)}
+          <img src={zoomImg} alt={selectedWork?.title} onClick={e => e.stopPropagation()}
+            style={{ maxWidth: '90vw', maxHeight: '88vh', objectFit: 'contain', cursor: 'default', borderRadius: 4 }} />
+          <div style={{ position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)', textAlign: 'center', pointerEvents: 'none' }}>
+            <div style={{ fontFamily: gF, fontSize: 16, color: C.cream, marginBottom: 4 }}>{selectedWork?.title}</div>
+            {(selectedWork.images||[]).length > 1 && (
+              <div style={{ fontSize: 11, color: C.fog }}>{imgIdx+1} / {(selectedWork.images||[]).length}</div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── Hero ── */}
       <div style={{
@@ -5035,13 +5454,18 @@ function ArtistDetail({ artist, setPage, isAdmin, getWorkStatus, onMarkSold, onM
             ) : (
               <div style={{ border: `1px solid ${C.goldBorder}`, borderRadius: 6, background: C.inkMid, overflow: 'hidden' }}>
                 {/* Main image */}
-                <div style={{ position: 'relative', paddingBottom: '80%', overflow: 'hidden', background: C.ink }}>
+                <div
+                  onClick={() => setZoomOpen(true)}
+                  style={{ position: 'relative', paddingBottom: '80%', overflow: 'hidden', background: C.ink, cursor: 'zoom-in' }}>
                   <img
                     key={imgIdx}
                     src={(selectedWork.images || [])[imgIdx] || selectedWork.image || ""}
                     alt={selectedWork.title}
                     style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', animation: 'fadeIn 0.3s ease' }}
                   />
+                  <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(26,39,68,0.85)', border: `1px solid ${C.goldBorder}`, borderRadius: 4, padding: '4px 10px', fontSize: 10, color: C.gold, pointerEvents: 'none' }}>
+                    ⊕ Zoom
+                  </div>
                   {/* Nav arrows */}
                   {(selectedWork.images || []).length > 1 && (
                     <>
