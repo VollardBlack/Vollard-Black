@@ -2158,7 +2158,14 @@ function HomePage({ setPage }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setTimeout(() => setMounted(true), 50); }, []);
 
-  const featuredArtist = ARTISTS[0];
+  const [heroIdx, setHeroIdx] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setHeroIdx(i => (i + 1) % ARTISTS.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+  const featuredArtist = ARTISTS[heroIdx];
   const recentSales = ARTISTS.flatMap(a => a.works.filter(w => w.status === 'sold').map(w => ({ ...w, artist: a.name })));
 
   return (
@@ -2172,6 +2179,7 @@ function HomePage({ setPage }) {
         <div style={{
           position: 'absolute', inset: 0,
           backgroundImage: `url(${featuredArtist.image})`,
+          transition: 'opacity 1s ease',
           backgroundSize: 'cover', backgroundPosition: 'center',
           filter: 'brightness(0.25)',
           transform: 'scale(1.05)',
@@ -2192,6 +2200,13 @@ function HomePage({ setPage }) {
                   }}>
           <div style={{ fontSize: 11, letterSpacing: '0.45em', textTransform: 'uppercase', color: C.gold, marginBottom: 24, opacity: 0.9 }}>
             Fine Art · South African Masters
+          </div>
+          <div style={{
+            fontSize: 11, letterSpacing: '0.3em', textTransform: 'uppercase',
+            color: 'rgba(201,168,76,0.7)', marginBottom: 8,
+            transition: 'opacity 0.5s ease',
+          }}>
+            Featuring {featuredArtist.name}
           </div>
           <h1 style={{
             fontFamily: gF, fontSize: 'clamp(52px, 10vw, 96px)', fontWeight: 300,
@@ -2225,6 +2240,26 @@ function HomePage({ setPage }) {
               Calculate Earnings
             </button>
           </div>
+        </div>
+
+        {/* Artist indicator */}
+        <div style={{
+          position: 'absolute', bottom: 100, left: '50%', transform: 'translateX(-50%)',
+          display: 'flex', gap: 8, alignItems: 'center',
+        }}>
+          {ARTISTS.map((_, i) => (
+            <div
+              key={i}
+              onClick={() => setHeroIdx(i)}
+              style={{
+                width: heroIdx === i ? 24 : 6,
+                height: 6, borderRadius: 3,
+                background: heroIdx === i ? C.gold : 'rgba(201,168,76,0.3)',
+                transition: 'all 0.4s ease',
+                cursor: 'pointer',
+              }}
+            />
+          ))}
         </div>
 
         {/* Scroll indicator */}
@@ -3040,7 +3075,7 @@ function ArtistDetail({ artist, setPage, isAdmin, getWorkStatus, onMarkSold, onM
                             background: isSel ? C.goldDim : 'transparent',
                           }}>
                           <span style={{ color: isSel ? C.gold : C.fog }}>Mo {i+1}{isSel?' ◆':''}</span>
-                          <span style={{ color: C.green }}>R {fmt(s.backerShare)}</span>
+                          <span style={{ color: s.netReturn >= 0 ? C.green : C.red }}>{ s.netReturn >= 0 ? '+' : ''}R {fmt(s.netReturn)}</span>
                         </div>
                       );
                     }) : null}
