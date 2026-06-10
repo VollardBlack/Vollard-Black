@@ -429,16 +429,29 @@ From 2016 to 2018, Harry found solace in his studio nestled within The Winelands
           `https://thewinelandsartgallery.com/cdn/shop/files/HE0526002_1.png`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE03260011.png?v=1777556092`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE03260012.png?v=1777556092`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE03260013.jpg?v=1777556092`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/HE03260021.png`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE03260013.jpg?v=1777556092`
+        ],
+        variants: [{ label: `Harry Erasmus - 760mm x 380mm`, price: 10950 }]
+      },
+      {
+        title: `Harry Erasmus - 760mm x 380mm`,
+        price: 10950,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/HE03260021.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/HE03260021.png`
+        ],
+        variants: [{ label: `Harry Erasmus - 760mm x 380mm`, price: 10950 }]
+      },
+      {
+        title: `Harry Erasmus - 760mm x 380mm`,
+        price: 10950,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/HE03260011.png`,
+        images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/HE03260011.png`
         ],
-        variants: [
-          {
-            label: `Harry Erasmus - 760mm x 380mm`,
-            price: 10950
-          }
-]
+        variants: [{ label: `Harry Erasmus - 760mm x 380mm`, price: 10950 }]
       },
       {
         title: `Harry Erasmus - 410mm x 200mm`,
@@ -451,12 +464,7 @@ From 2016 to 2018, Harry found solace in his studio nestled within The Winelands
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260032.png?v=1777555988`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE0226003410mmx200mmcopy.jpg?v=1777555987`
         ],
-        variants: [
-          {
-            label: `Harry Erasmus - 410mm x 200mm`,
-            price: 4750
-          }
-]
+        variants: [{ label: `Harry Erasmus - 410mm x 200mm`, price: 4750 }]
       },
       {
         title: `Harry Erasmus - 350mm x 250mm`,
@@ -469,12 +477,7 @@ From 2016 to 2018, Harry found solace in his studio nestled within The Winelands
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260012.png?v=1771590659`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE02260013.jpg?v=1771590659`
         ],
-        variants: [
-          {
-            label: `Harry Erasmus - 350mm x 250mm`,
-            price: 2750
-          }
-]
+        variants: [{ label: `Harry Erasmus - 350mm x 250mm`, price: 2750 }]
       },
       {
         title: `Harry Erasmus - 1600mm x 600mm`,
@@ -486,15 +489,19 @@ From 2016 to 2018, Harry found solace in his studio nestled within The Winelands
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250011.png?v=1758525953`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250012.png?v=1758525953`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250013.png?v=1758525953`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250014.jpg?v=1758525953`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/HE09250014.jpg?v=1758525953`
+        ],
+        variants: [{ label: `Harry Erasmus - 1600mm x 600mm`, price: 19500 }]
+      },
+      {
+        title: `Harry Erasmus - 1600mm x 600mm`,
+        price: 19500,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/HE09250031.png`,
+        images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/HE09250031.png`
         ],
-        variants: [
-          {
-            label: `Harry Erasmus - 1600mm x 600mm`,
-            price: 19500
-          }
-]
+        variants: [{ label: `Harry Erasmus - 1600mm x 600mm`, price: 19500 }]
       }
     ]
   },
