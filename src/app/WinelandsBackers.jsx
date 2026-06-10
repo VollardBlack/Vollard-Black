@@ -2726,7 +2726,7 @@ function ArtistDetail({ artist, setPage, isAdmin, getWorkStatus, onMarkSold, onM
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 14 }}>
                   {available.map((work, i) => {
                     const wk = { ...work, artistName: artist.name, artistId: artist.id };
-                    const isSelected = selectedWork && selectedWork.title === work.title;
+                    const isSelected = selectedWork && selectedWork.title === work.title && selectedWork.image === work.image;
                     const isInBasket = inBasket && inBasket(wk);
                     return (
                       <div
@@ -3594,13 +3594,13 @@ export default function WinelandsBackers() {
   const [basket, setBasket] = useState([]);
 
   const toggleBasket = (work) => {
-    const key = `${work.artistId}|${work.title}`;
+    const key = `${work.artistId}|${work.title}|${work.image}`;
     setBasket(prev => {
-      const exists = prev.find(w => `${w.artistId}|${w.title}` === key);
-      return exists ? prev.filter(w => `${w.artistId}|${w.title}` !== key) : [...prev, work];
+      const exists = prev.find(w => `${w.artistId}|${w.title}|${w.image}` === key);
+      return exists ? prev.filter(w => `${w.artistId}|${w.title}|${w.image}` !== key) : [...prev, work];
     });
   };
-  const inBasket = (work) => basket.some(w => `${w.artistId}|${w.title}` === `${work.artistId}|${work.title}`);
+  const inBasket = (work) => basket.some(w => `${w.artistId}|${w.title}|${w.image}` === `${work.artistId}|${work.title}|${work.image}`);
 
   // Check auth on mount + load sold overrides
   useEffect(() => {
