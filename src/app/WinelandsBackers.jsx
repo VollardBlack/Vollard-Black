@@ -189,16 +189,10 @@ In AJ Burns' world of art, creativity knows no bounds, and the canvas is a dynam
         image: `https://thewinelandsartgallery.com/cdn/shop/files/AJB02260071.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/AJB02260071.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB02260071.png?v=1771842480`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB02260072.png?v=1771842480`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB0226007AJBurnsManypartstoeachofus60x40cmcopy.jpg?v=1771842480`
         ],
-        variants: [
-          {
-            label: `Many Parts To Each Of Us by AJ Burns (600mm x 400mm)`,
-            price: 5500
-          }
-]
+        variants: [{ label: `Many Parts To Each Of Us by AJ Burns`, price: 5500 }]
       },
       {
         title: `Fiery Redheads by AJ Burns`,
@@ -207,16 +201,10 @@ In AJ Burns' world of art, creativity knows no bounds, and the canvas is a dynam
         image: `https://thewinelandsartgallery.com/cdn/shop/files/AJB02260061.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/AJB02260061.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB02260061.png?v=1771842397`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB02260062.png?v=1771842397`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB0226006AJBurnsFieryRedheads60x40cm3copy.jpg?v=1771842397`
         ],
-        variants: [
-          {
-            label: `Fiery Redheads by AJ Burns (600mm x 400mm)`,
-            price: 5500
-          }
-]
+        variants: [{ label: `Fiery Redheads by AJ Burns`, price: 5500 }]
       },
       {
         title: `Close but different by AJ Burns`,
@@ -225,16 +213,10 @@ In AJ Burns' world of art, creativity knows no bounds, and the canvas is a dynam
         image: `https://thewinelandsartgallery.com/cdn/shop/files/AJB02260041.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/AJB02260041.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB02260041.png?v=1771842248`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB02260042.png?v=1771842248`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB0226004AJBurnsClosebutDifferent60x40cmcopy.jpg?v=1771842248`
         ],
-        variants: [
-          {
-            label: `Close but different by AJ Burns (600mm x 400mm)`,
-            price: 5500
-          }
-]
+        variants: [{ label: `Close but different by AJ Burns`, price: 5500 }]
       },
       {
         title: `A Little Left of Centre by AJ Burns`,
@@ -243,16 +225,10 @@ In AJ Burns' world of art, creativity knows no bounds, and the canvas is a dynam
         image: `https://thewinelandsartgallery.com/cdn/shop/files/AJB1025007AJBurnsALittleLeftofCentre120x74cm1.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/AJB1025007AJBurnsALittleLeftofCentre120x74cm1.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025007AJBurnsALittleLeftofCentre120x74cm1.png?v=1761295746`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025007AJBurnsALittleLeftofCentre120x74cm2.png?v=1761295746`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025007AJBurnsALittleLeftofCentre120x74cm3.jpg?v=1761295747`
         ],
-        variants: [
-          {
-            label: `A Little Left of Centre by AJ Burns (1200mm x 740mm)`,
-            price: 21500
-          }
-]
+        variants: [{ label: `A Little Left of Centre by AJ Burns`, price: 21500 }]
       },
       {
         title: `Keep Exploring by AJ Burns`,
@@ -261,16 +237,10 @@ In AJ Burns' world of art, creativity knows no bounds, and the canvas is a dynam
         image: `https://thewinelandsartgallery.com/cdn/shop/files/AJB1025004AJBurnsKeepExploring90x70cm1.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/AJB1025004AJBurnsKeepExploring90x70cm1.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025004AJBurnsKeepExploring90x70cm1.png?v=1761295443`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025004AJBurnsKeepExploring90x70cm2.png?v=1761295443`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AJB1025004AJBurnsKeepExploring90x70cm3.jpg?v=1761295443`
         ],
-        variants: [
-          {
-            label: `Keep Exploring by AJ Burns (900mm x 700mm)`,
-            price: 15400
-          }
-]
+        variants: [{ label: `Keep Exploring by AJ Burns`, price: 15400 }]
       }
     ]
   },
@@ -303,17 +273,11 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         image: `https://thewinelandsartgallery.com/cdn/shop/files/PVR03260061.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/PVR03260061.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260061.png?v=1773316368`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260062.png?v=1773316369`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260063.png?v=1773316369`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR03260061270mmx1010mmcopy.jpg?v=1773316368`
         ],
-        variants: [
-          {
-            label: `Paul van Rensburg - Exclusive USA Series #1 (1270mm x 1010mm)`,
-            price: 74497
-          }
-]
+        variants: [{ label: `Paul van Rensburg - Exclusive USA Series #1 (1270mm x 1010mm)`, price: 74497 }]
       },
       {
         title: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`,
@@ -321,19 +285,32 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         status: `available`,
         image: `https://thewinelandsartgallery.com/cdn/shop/files/PVR03260051.png`,
         images: [
-          `https://thewinelandsartgallery.com/cdn/shop/files/PVR03260051.png`,
+          `https://thewinelandsartgallery.com/cdn/shop/files/PVR03260051.png`
+        ],
+        variants: [{ label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`, price: 16500 }]
+      },
+      {
+        title: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`,
+        price: 16500,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425012.png?v=1744871692`,
+        images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425012.png?v=1744871692`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425012copy.jpg?v=1744871692`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425012x.png?v=1744871693`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425012y.png?v=1744871692`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR0425012copy.jpg?v=1744871692`
+        ],
+        variants: [{ label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`, price: 16500 }]
+      },
+      {
+        title: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`,
+        price: 16500,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/PVR0126031.png`,
+        images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/PVR0126031.png`
         ],
-        variants: [
-          {
-            label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`,
-            price: 16500
-          }
-]
+        variants: [{ label: `Paul van Rensburg - Acrylic on Stretched Canvas 1270mm x 1010mm`, price: 16500 }]
       },
       {
         title: `Paul van Rensburg - 850mm x 600mm`,
@@ -341,23 +318,81 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         status: `available`,
         image: `https://thewinelandsartgallery.com/cdn/shop/files/PVR03260041.png`,
         images: [
-          `https://thewinelandsartgallery.com/cdn/shop/files/PVR03260041.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260171.png?v=1771592093`,
+          `https://thewinelandsartgallery.com/cdn/shop/files/PVR03260041.png`
+        ],
+        variants: [{ label: `Paul van Rensburg - 850mm x 600mm`, price: 5750 }]
+      },
+      {
+        title: `Paul van Rensburg - 850mm x 600mm`,
+        price: 5750,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/PVR01260171.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/PVR01260171.png`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260172.png?v=1771592093`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260173850mmx600mmcopy.jpg?v=1771592093`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/PVR03260021.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/PVR03260011.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/PVR01260351.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/PVR01260321.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/PVR01260211.png`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260173850mmx600mmcopy.jpg?v=1771592093`
+        ],
+        variants: [{ label: `Paul van Rensburg - 850mm x 600mm`, price: 5750 }]
+      },
+      {
+        title: `Paul van Rensburg - 850mm x 600mm`,
+        price: 5750,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/PVR03260021.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/PVR03260021.png`
+        ],
+        variants: [{ label: `Paul van Rensburg - 850mm x 600mm`, price: 5750 }]
+      },
+      {
+        title: `Paul van Rensburg - 850mm x 600mm`,
+        price: 5750,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/PVR03260011.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/PVR03260011.png`
+        ],
+        variants: [{ label: `Paul van Rensburg - 850mm x 600mm`, price: 5750 }]
+      },
+      {
+        title: `Paul van Rensburg - 850mm x 600mm`,
+        price: 5750,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/PVR01260351.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/PVR01260351.png`
+        ],
+        variants: [{ label: `Paul van Rensburg - 850mm x 600mm`, price: 5750 }]
+      },
+      {
+        title: `Paul van Rensburg - 850mm x 600mm`,
+        price: 5750,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/PVR01260321.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/PVR01260321.png`
+        ],
+        variants: [{ label: `Paul van Rensburg - 850mm x 600mm`, price: 5750 }]
+      },
+      {
+        title: `Paul van Rensburg - 850mm x 600mm`,
+        price: 5750,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/PVR01260211.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/PVR01260211.png`
+        ],
+        variants: [{ label: `Paul van Rensburg - 850mm x 600mm`, price: 5750 }]
+      },
+      {
+        title: `Paul van Rensburg - 850mm x 600mm`,
+        price: 5750,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/PVR01260201_76ec930c-7a0f-4db6-8462-cd26cf3b3704.png`,
+        images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/PVR01260201_76ec930c-7a0f-4db6-8462-cd26cf3b3704.png`
         ],
-        variants: [
-          {
-            label: `Paul van Rensburg - 850mm x 600mm`,
-            price: 5750
-          }
-]
+        variants: [{ label: `Paul van Rensburg - 850mm x 600mm`, price: 5750 }]
       },
       {
         title: `Paul van Rensburg - 1270mm x 1010mm`,
@@ -366,16 +401,10 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         image: `https://thewinelandsartgallery.com/cdn/shop/files/PVR01260291.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/PVR01260291.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260291.png?v=1771592585`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260292.png?v=1771592585`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR012602931270mmx1010mmcopy.jpg?v=1771592585`
         ],
-        variants: [
-          {
-            label: `Paul van Rensburg - 1270mm x 1010mm`,
-            price: 28500
-          }
-]
+        variants: [{ label: `Paul van Rensburg - 1270mm x 1010mm`, price: 28500 }]
       },
       {
         title: `Paul van Rensburg - 1200mm x 600mm`,
@@ -384,17 +413,11 @@ In pursuit of his craft, Paul eventually found his way to the enchanting shores 
         image: `https://thewinelandsartgallery.com/cdn/shop/files/PVR01260281.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/PVR01260281.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260281.png?v=1771592490`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260282.png?v=1771592490`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR01260283.png?v=1771592491`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/PVR012602841200x600copy.jpg?v=1771592490`
         ],
-        variants: [
-          {
-            label: `Paul van Rensburg - 1200mm x 600mm`,
-            price: 8950
-          }
-]
+        variants: [{ label: `Paul van Rensburg - 1200mm x 600mm`, price: 8950 }]
       }
     ]
   },
@@ -532,16 +555,10 @@ There is a quiet nostalgia woven through her canvases—a gentle invitation for 
         image: `https://thewinelandsartgallery.com/cdn/shop/files/MK05260041.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/MK05260041.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260041.png?v=1779199074`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260042.png?v=1779199075`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK052600431200mmx900mm.jpg?v=1779199075`
         ],
-        variants: [
-          {
-            label: `Marina K - After the Rain (1200mm x 900mm)`,
-            price: 14950
-          }
-]
+        variants: [{ label: `Marina K - After the Rain`, price: 14950 }]
       },
       {
         title: `Marina K - Cape Town Dreams`,
@@ -550,16 +567,10 @@ There is a quiet nostalgia woven through her canvases—a gentle invitation for 
         image: `https://thewinelandsartgallery.com/cdn/shop/files/MK05260031.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/MK05260031.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260031.png?v=1779199000`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260032.png?v=1779199000`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK052600331200mmx900mm.jpg?v=1779199000`
         ],
-        variants: [
-          {
-            label: `Marina K - Cape Town Dreams (1200mm x 900mm)`,
-            price: 14950
-          }
-]
+        variants: [{ label: `Marina K - Cape Town Dreams`, price: 14950 }]
       },
       {
         title: `Marina K - Above the Atlantic`,
@@ -568,16 +579,10 @@ There is a quiet nostalgia woven through her canvases—a gentle invitation for 
         image: `https://thewinelandsartgallery.com/cdn/shop/files/MK05260021.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/MK05260021.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260021.png?v=1779198928`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260022.png?v=1779198928`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260023500mmx360mm.jpg?v=1779198928`
         ],
-        variants: [
-          {
-            label: `Marina K - Above the Atlantic (500mm x 360mm)`,
-            price: 3950
-          }
-]
+        variants: [{ label: `Marina K - Above the Atlantic`, price: 3950 }]
       },
       {
         title: `Marina K - Keeper of the Light`,
@@ -586,16 +591,10 @@ There is a quiet nostalgia woven through her canvases—a gentle invitation for 
         image: `https://thewinelandsartgallery.com/cdn/shop/files/MK05260011.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/MK05260011.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260011.png?v=1779198762`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260012.png?v=1779198762`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/MK05260013500mmx360mm.jpg?v=1779198762`
         ],
-        variants: [
-          {
-            label: `Marina K - Keeper of the Light (500mm x 360mm)`,
-            price: 3950
-          }
-]
+        variants: [{ label: `Marina K - Keeper of the Light`, price: 3950 }]
       }
     ]
   },
@@ -635,17 +634,29 @@ With unwavering dedication and a deep reverence for the craft, Corne Weideman co
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/CW07250231.png`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250141.png?v=1752068283`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250142.png?v=1752068284`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250143460x310Panel-fotor-2025070914116.png?v=1752068284`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/CW07250221.png`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250143460x310Panel-fotor-2025070914116.png?v=1752068284`
+        ],
+        variants: [{ label: `Corne Weideman - 460mm x 310mm`, price: 1850 }]
+      },
+      {
+        title: `Corne Weideman - 460mm x 310mm`,
+        price: 1850,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/CW07250221.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/CW07250221.png`
+        ],
+        variants: [{ label: `Corne Weideman - 460mm x 310mm`, price: 1850 }]
+      },
+      {
+        title: `Corne Weideman - 460mm x 310mm`,
+        price: 1850,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/CW07250201.png`,
+        images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/CW07250201.png`
         ],
-        variants: [
-          {
-            label: `Corne Weideman - 460mm x 310mm`,
-            price: 1850
-          }
-]
+        variants: [{ label: `Corne Weideman - 460mm x 310mm`, price: 1850 }]
       },
       {
         title: `Corne Weideman - 420mm x 300mm`,
@@ -655,22 +666,79 @@ With unwavering dedication and a deep reverence for the craft, Corne Weideman co
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/CW07250131.png`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250011.png?v=1752067658`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250012.png?v=1752067658`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250013400x300Canvas-fotor-20250709142427.png?v=1752067659`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/CW07250121.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/CW07250081.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/CW07250071.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/CW07250061.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/CW07250051.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/CW07250021.png`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW07250013400x300Canvas-fotor-20250709142427.png?v=1752067659`
+        ],
+        variants: [{ label: `Corne Weideman - 420mm x 300mm`, price: 1690 }]
+      },
+      {
+        title: `Corne Weideman - 420mm x 300mm`,
+        price: 1690,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/CW07250121.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/CW07250121.png`
+        ],
+        variants: [{ label: `Corne Weideman - 420mm x 300mm`, price: 1690 }]
+      },
+      {
+        title: `Corne Weideman - 420mm x 300mm`,
+        price: 1690,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/CW07250081.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/CW07250081.png`
+        ],
+        variants: [{ label: `Corne Weideman - 420mm x 300mm`, price: 1690 }]
+      },
+      {
+        title: `Corne Weideman - 420mm x 300mm`,
+        price: 1690,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/CW07250071.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/CW07250071.png`
+        ],
+        variants: [{ label: `Corne Weideman - 420mm x 300mm`, price: 1690 }]
+      },
+      {
+        title: `Corne Weideman - 420mm x 300mm`,
+        price: 1690,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/CW07250061.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/CW07250061.png`
+        ],
+        variants: [{ label: `Corne Weideman - 420mm x 300mm`, price: 1690 }]
+      },
+      {
+        title: `Corne Weideman - 420mm x 300mm`,
+        price: 1690,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/CW07250051.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/CW07250051.png`
+        ],
+        variants: [{ label: `Corne Weideman - 420mm x 300mm`, price: 1690 }]
+      },
+      {
+        title: `Corne Weideman - 420mm x 300mm`,
+        price: 1690,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/CW07250021.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/CW07250021.png`
+        ],
+        variants: [{ label: `Corne Weideman - 420mm x 300mm`, price: 1690 }]
+      },
+      {
+        title: `Corne Weideman - 420mm x 300mm`,
+        price: 1690,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/CW07250011.png`,
+        images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/CW07250011.png`
         ],
-        variants: [
-          {
-            label: `Corne Weideman - 420mm x 300mm`,
-            price: 1690
-          }
-]
+        variants: [{ label: `Corne Weideman - 420mm x 300mm`, price: 1690 }]
       },
       {
         title: `Corne Weideman - Acrylic on Stretched Canvas`,
@@ -683,12 +751,17 @@ With unwavering dedication and a deep reverence for the craft, Corne Weideman co
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924100b.png?v=1726153226`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924100c.jpg?v=1726153226`
         ],
-        variants: [
-          {
-            label: `Corne Weideman - Acrylic on Stretched Canvas`,
-            price: 1690
-          }
-]
+        variants: [{ label: `Corne Weideman - Acrylic on Stretched Canvas`, price: 1690 }]
+      },
+      {
+        title: `Corne Weideman - Acrylic on Stretched Canvas`,
+        price: 1690,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924100a.png?v=1726153226`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CW0924100a.png?v=1726153226`
+        ],
+        variants: [{ label: `Corne Weideman - Acrylic on Stretched Canvas`, price: 1690 }]
       }
     ]
   },
@@ -719,16 +792,10 @@ Beneath the stillness of his work lies a meditation on impermanence. Kotze exami
         image: `https://thewinelandsartgallery.com/cdn/shop/files/FK0526003_1.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/FK0526003_1.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526003_1.png?v=1779886093`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526003_2.png?v=1779886093`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526003_3760mmx1010mm.jpg?v=1779886093`
         ],
-        variants: [
-          {
-            label: `Ferdinand Kotze - "Fragments of Play: Red Balloon" (1010mm x 760mm)`,
-            price: 23500
-          }
-]
+        variants: [{ label: `Ferdinand Kotze - "Fragments of Play: Red Balloon"`, price: 23500 }]
       },
       {
         title: `Ferdinand Kotze - "Fragments of Play: Leapfrog"`,
@@ -737,16 +804,10 @@ Beneath the stillness of his work lies a meditation on impermanence. Kotze exami
         image: `https://thewinelandsartgallery.com/cdn/shop/files/FK0526002_1.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/FK0526002_1.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526002_1.png?v=1779886023`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526002_2.png?v=1779886023`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526002_3760mmx1010mm.jpg?v=1779886023`
         ],
-        variants: [
-          {
-            label: `Ferdinand Kotze - "Fragments of Play: Leapfrog" (1010mm x 760mm)`,
-            price: 23500
-          }
-]
+        variants: [{ label: `Ferdinand Kotze - "Fragments of Play: Leapfrog"`, price: 23500 }]
       },
       {
         title: `Ferdinand Kotze - "Fragments of Play: Toss The Baby"`,
@@ -755,16 +816,10 @@ Beneath the stillness of his work lies a meditation on impermanence. Kotze exami
         image: `https://thewinelandsartgallery.com/cdn/shop/files/FK0526001_1.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/FK0526001_1.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526001_1.png?v=1779885791`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526001_2.png?v=1779885791`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/FK0526001_3760mmx600mm.jpg?v=1779885791`
         ],
-        variants: [
-          {
-            label: `Ferdinand Kotze - "Fragments of Play: Toss The Baby" (760mm x 600mm)`,
-            price: 11500
-          }
-]
+        variants: [{ label: `Ferdinand Kotze - "Fragments of Play: Toss The Baby"`, price: 11500 }]
       }
     ]
   },
@@ -799,37 +854,41 @@ With each brushstroke, Gaynor doesn't just depict scenes; she encapsulates emoti
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA11250012.png?v=1764169058`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA11250013.jpg?v=1764169058`
         ],
-        variants: [
-          {
-            label: `Gaynor - Acrylic & Ink on Canvas Panel 200mm x 200mm`,
-            price: 1690
-          }
-]
+        variants: [{ label: `Gaynor - Acrylic & Ink on Canvas Panel 200mm x 200mm`, price: 1690 }]
       },
       {
-        title: `Gaynor - Oil on Stretched Canvas`,
-        price: 9890,
+        title: `Gaynor - Oil on Stretched Canvas (400mm x 400mm)`,
+        price: 3490,
         status: `available`,
         image: `https://thewinelandsartgallery.com/cdn/shop/files/GA12250021_a88edf47-be01-487c-bb99-6b489fb628aa.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/GA12250021_a88edf47-be01-487c-bb99-6b489fb628aa.png`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA12250011.png?v=1765200006`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA12250012.png?v=1765200006`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA12250013.jpg?v=1765200006`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/GA0225001.png`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA12250013.jpg?v=1765200006`
+        ],
+        variants: [{ label: `Gaynor - Oil on Stretched Canvas (400mm x 400mm)`, price: 3490 }]
+      },
+      {
+        title: `Gaynor - Oil on Stretched Canvas`,
+        price: 9890,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/GA0225001.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/GA0225001.png`
+        ],
+        variants: [{ label: `Gaynor - Oil on Stretched Canvas`, price: 9890 }]
+      },
+      {
+        title: `Gaynor - Oil on Stretched Canvas`,
+        price: 9890,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1123001.png?v=1701331826`,
+        images: [
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1123001.png?v=1701331826`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA1123001copy.jpg?v=1701331826`
         ],
-        variants: [
-          {
-            label: `Gaynor - Oil on Stretched Canvas (400mm x 400mm)`,
-            price: 3490
-          },
-          {
-            label: `Gaynor - Oil on Stretched Canvas`,
-            price: 9890
-          }
-]
+        variants: [{ label: `Gaynor - Oil on Stretched Canvas`, price: 9890 }]
       },
       {
         title: `Oil on Stretched Canvas by Gaynor`,
@@ -840,12 +899,7 @@ With each brushstroke, Gaynor doesn't just depict scenes; she encapsulates emoti
           `https://thewinelandsartgallery.com/cdn/shop/files/GA08230121.png`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GA26102201400x400.jpg?v=1694601136`
         ],
-        variants: [
-          {
-            label: `Oil on Stretched Canvas by Gaynor`,
-            price: 18500
-          }
-]
+        variants: [{ label: `Oil on Stretched Canvas by Gaynor`, price: 18500 }]
       }
     ]
   },
@@ -876,19 +930,13 @@ Yet beneath the accolades lies an artist more concerned with truth than acclaim.
         image: `https://thewinelandsartgallery.com/cdn/shop/files/JS0526003_1.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/JS0526003_1.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_1.png?v=1779886752`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_2.png?v=1779886752`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_31220mmx920mm.jpg?v=1779886752`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_4.jpg?v=1779886752`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_5.jpg?v=1779886752`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526003_6.jpg?v=1779886752`
         ],
-        variants: [
-          {
-            label: `Jonel Scholtz - "I'm Still Here" (1210mm x 910mm)`,
-            price: 18500
-          }
-]
+        variants: [{ label: `Jonel Scholtz - "I'm Still Here"`, price: 18500 }]
       },
       {
         title: `Jonel Scholtz - "The Weight of Quiet Things"`,
@@ -897,19 +945,13 @@ Yet beneath the accolades lies an artist more concerned with truth than acclaim.
         image: `https://thewinelandsartgallery.com/cdn/shop/files/JS0526002_1.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/JS0526002_1.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_1.png?v=1779886670`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_2.png?v=1779886670`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_31220mmx920mm.jpg?v=1779886670`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_4.jpg?v=1779886670`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_5.jpg?v=1779886670`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526002_6.jpg?v=1779886671`
         ],
-        variants: [
-          {
-            label: `Jonel Scholtz - "The Weight of Quiet Things" (1210mm x 910mm)`,
-            price: 18500
-          }
-]
+        variants: [{ label: `Jonel Scholtz - "The Weight of Quiet Things"`, price: 18500 }]
       },
       {
         title: `Jonel Scholtz - "As 'n Draai jou Omgooi"`,
@@ -918,19 +960,13 @@ Yet beneath the accolades lies an artist more concerned with truth than acclaim.
         image: `https://thewinelandsartgallery.com/cdn/shop/files/JS0526001_1.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/JS0526001_1.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_1.png?v=1779886386`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_2.png?v=1779886386`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_31010mmx760mm.jpg?v=1779886386`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_4.jpg?v=1779886386`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_5.jpg?v=1779886385`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JS0526001_6.jpg?v=1779886385`
         ],
-        variants: [
-          {
-            label: `Jonel Scholtz - "As 'n Draai jou Omgooi" (1010mm x 760mm)`,
-            price: 12850
-          }
-]
+        variants: [{ label: `Jonel Scholtz - "As 'n Draai jou Omgooi"`, price: 12850 }]
       }
     ]
   },
@@ -961,16 +997,10 @@ With over 600 artworks, Niki's portfolio is divided into two parts: her surreal 
         image: `https://thewinelandsartgallery.com/cdn/shop/files/NM0524003.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/NM0524003.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524003.png?v=1716200536`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524003Travel-by-moonligh-webt.jpg?v=1716200536`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524003travels-by-moonlight.jpgFramed.jpg?v=1716200535`
         ],
-        variants: [
-          {
-            label: `Niki McQueen - "Travels by Moonlight" Mixed Media on Archival Paper`,
-            price: 17900
-          }
-]
+        variants: [{ label: `Niki McQueen - "Travels by Moonlight" Mixed Media on Archival Paper`, price: 17900 }]
       },
       {
         title: `Niki McQueen - "Queer Flock" Mixed Media on Archival Paper`,
@@ -979,16 +1009,10 @@ With over 600 artworks, Niki's portfolio is divided into two parts: her surreal 
         image: `https://thewinelandsartgallery.com/cdn/shop/files/NM0524002.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/NM0524002.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524002.png?v=1716200381`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524002QF-2024-a2-nw.jpg?v=1716200380`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524002queer-flock.jpg?v=1716200380`
         ],
-        variants: [
-          {
-            label: `Niki McQueen - "Queer Flock" Mixed Media on Archival Paper`,
-            price: 16200
-          }
-]
+        variants: [{ label: `Niki McQueen - "Queer Flock" Mixed Media on Archival Paper`, price: 16200 }]
       },
       {
         title: `Niki McQueen - "Whale Gazing" Mixed Media on Archival Paper`,
@@ -997,16 +1021,10 @@ With over 600 artworks, Niki's portfolio is divided into two parts: her surreal 
         image: `https://thewinelandsartgallery.com/cdn/shop/files/NM0524001.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/NM0524001.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524001.png?v=1716200116`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/whale-gazing.jpg?v=1716200116`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/NM0524001whale-gazing.jpgFramed.jpg?v=1716200113`
         ],
-        variants: [
-          {
-            label: `Niki McQueen - "Whale Gazing" Mixed Media on Archival Paper`,
-            price: 8750
-          }
-]
+        variants: [{ label: `Niki McQueen - "Whale Gazing" Mixed Media on Archival Paper`, price: 8750 }]
       }
     ]
   },
@@ -1031,42 +1049,97 @@ Now, in the fullness of time, Anton Gericke embarks on a new chapter as a full-t
     statsHighestSold: 0,
     works: [
       {
-        title: `Anton Gericke - Acrylic on Panel`,
+        title: `Anton Gericke - Acrylic on Panel (Framed)`,
         price: 37800,
         status: `available`,
         image: `https://thewinelandsartgallery.com/cdn/shop/files/AG0924010.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/AG0924010.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924001.png?v=1726146059`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240018.png?v=1726146059`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0924001900x300copy.jpg?v=1726146059`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240011170x570Framedcopy.jpg?v=1726146059`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/AG0924009.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/AG0924008.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/AG0924007.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/AG0924006.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/AG0924005.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/AG0924004.png`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240011170x570Framedcopy.jpg?v=1726146059`
+        ],
+        variants: [{ label: `Anton Gericke - Acrylic on Panel (Framed)`, price: 37800 }]
+      },
+      {
+        title: `Anton Gericke - Acrylic on Panel (Framed)`,
+        price: 27000,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/AG0924009.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/AG0924009.png`
+        ],
+        variants: [{ label: `Anton Gericke - Acrylic on Panel (Framed)`, price: 27000 }]
+      },
+      {
+        title: `Anton Gericke - Acrylic on Panel (Framed)`,
+        price: 27000,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/AG0924008.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/AG0924008.png`
+        ],
+        variants: [{ label: `Anton Gericke - Acrylic on Panel (Framed)`, price: 27000 }]
+      },
+      {
+        title: `Anton Gericke - Acrylic on Panel (Framed)`,
+        price: 27000,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/AG0924007.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/AG0924007.png`
+        ],
+        variants: [{ label: `Anton Gericke - Acrylic on Panel (Framed)`, price: 27000 }]
+      },
+      {
+        title: `Anton Gericke - Acrylic on Panel (Framed)`,
+        price: 27000,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/AG0924006.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/AG0924006.png`
+        ],
+        variants: [{ label: `Anton Gericke - Acrylic on Panel (Framed)`, price: 27000 }]
+      },
+      {
+        title: `Anton Gericke - Acrylic on Panel (Framed)`,
+        price: 23880,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/AG0924005.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/AG0924005.png`
+        ],
+        variants: [{ label: `Anton Gericke - Acrylic on Panel (Framed)`, price: 23880 }]
+      },
+      {
+        title: `Anton Gericke - Acrylic on Panel (Framed)`,
+        price: 24880,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/AG0924004.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/AG0924004.png`
+        ],
+        variants: [{ label: `Anton Gericke - Acrylic on Panel (Framed)`, price: 24880 }]
+      },
+      {
+        title: `Anton Gericke - Acrylic on Panel (Framed)`,
+        price: 23880,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/AG0924003.png`,
+        images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/AG0924003.png`
         ],
-        variants: [
-          {
-            label: `Anton Gericke - Acrylic on Panel (Framed)`,
-            price: 27000
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel (Framed)`,
-            price: 37800
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel (Framed)`,
-            price: 23880
-          },
-          {
-            label: `Anton Gericke - Acrylic on Panel (Framed)`,
-            price: 24880
-          }
-]
+        variants: [{ label: `Anton Gericke - Acrylic on Panel (Framed)`, price: 23880 }]
+      },
+      {
+        title: `Anton Gericke - Acrylic on Panel (Framed)`,
+        price: 27000,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/AG0924001.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/AG0924001.png`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG09240018.png?v=1726146059`
+        ],
+        variants: [{ label: `Anton Gericke - Acrylic on Panel (Framed)`, price: 27000 }]
       },
       {
         title: `Acrylic on Panel by Anton Gericke`,
@@ -1074,19 +1147,31 @@ Now, in the fullness of time, Anton Gericke embarks on a new chapter as a full-t
         status: `available`,
         image: `https://thewinelandsartgallery.com/cdn/shop/files/14.png`,
         images: [
-          `https://thewinelandsartgallery.com/cdn/shop/files/14.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/11_80dc09a4-925b-4742-8a82-7fbc40bb260d.png?v=1694443620`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0823001900x300.jpg?v=1726147106`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0823001.jpg?v=1726147112`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/12.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/11_80dc09a4-925b-4742-8a82-7fbc40bb260d.png`
+          `https://thewinelandsartgallery.com/cdn/shop/files/14.png`
         ],
-        variants: [
-          {
-            label: `Acrylic on Panel by Anton Gericke`,
-            price: 15480
-          }
-]
+        variants: [{ label: `Acrylic on Panel by Anton Gericke`, price: 15480 }]
+      },
+      {
+        title: `Acrylic on Panel by Anton Gericke`,
+        price: 15480,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/12.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/12.png`
+        ],
+        variants: [{ label: `Acrylic on Panel by Anton Gericke`, price: 15480 }]
+      },
+      {
+        title: `Acrylic on Panel by Anton Gericke`,
+        price: 15480,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/11_80dc09a4-925b-4742-8a82-7fbc40bb260d.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/11_80dc09a4-925b-4742-8a82-7fbc40bb260d.png`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0823001900x300.jpg?v=1726147106`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/AG0823001.jpg?v=1726147112`
+        ],
+        variants: [{ label: `Acrylic on Panel by Anton Gericke`, price: 15480 }]
       }
     ]
   },
@@ -1118,21 +1203,51 @@ Now living in Still Bay, surrounded by river and sea, Fourie continues to paint 
         status: `available`,
         image: `https://thewinelandsartgallery.com/cdn/shop/files/GF05260061.png`,
         images: [
-          `https://thewinelandsartgallery.com/cdn/shop/files/GF05260061.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260021.png?v=1779198319`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260022.png?v=1779198318`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260023700mmx500mm.jpg?v=1779198319`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/GF05260051.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/GF05260041.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/GF05260031.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/GF05260021.png`
+          `https://thewinelandsartgallery.com/cdn/shop/files/GF05260061.png`
         ],
-        variants: [
-          {
-            label: `Gerhard Fourie - 700mm x 500mm`,
-            price: 4750
-          }
-]
+        variants: [{ label: `Gerhard Fourie - 700mm x 500mm`, price: 4750 }]
+      },
+      {
+        title: `Gerhard Fourie - 700mm x 500mm`,
+        price: 4750,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/GF05260051.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/GF05260051.png`
+        ],
+        variants: [{ label: `Gerhard Fourie - 700mm x 500mm`, price: 4750 }]
+      },
+      {
+        title: `Gerhard Fourie - 700mm x 500mm`,
+        price: 4750,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/GF05260041.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/GF05260041.png`
+        ],
+        variants: [{ label: `Gerhard Fourie - 700mm x 500mm`, price: 4750 }]
+      },
+      {
+        title: `Gerhard Fourie - 700mm x 500mm`,
+        price: 4750,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/GF05260031.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/GF05260031.png`
+        ],
+        variants: [{ label: `Gerhard Fourie - 700mm x 500mm`, price: 4750 }]
+      },
+      {
+        title: `Gerhard Fourie - 700mm x 500mm`,
+        price: 4750,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/GF05260021.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/GF05260021.png`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260022.png?v=1779198318`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260023700mmx500mm.jpg?v=1779198319`
+        ],
+        variants: [{ label: `Gerhard Fourie - 700mm x 500mm`, price: 4750 }]
       },
       {
         title: `Gerhard Fourie - 600mm x 300mm`,
@@ -1141,16 +1256,10 @@ Now living in Still Bay, surrounded by river and sea, Fourie continues to paint 
         image: `https://thewinelandsartgallery.com/cdn/shop/files/GF05260011.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/GF05260011.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260011.png?v=1779198135`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260012.png?v=1779198135`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/GF05260013600x300.jpg?v=1779198135`
         ],
-        variants: [
-          {
-            label: `Gerhard Fourie - 600mm x 300mm`,
-            price: 2300
-          }
-]
+        variants: [{ label: `Gerhard Fourie - 600mm x 300mm`, price: 2300 }]
       }
     ]
   },
@@ -1180,31 +1289,44 @@ In essence, Ian Hertslet's paintings strike a chord with art enthusiasts who see
         status: `available`,
         image: `https://thewinelandsartgallery.com/cdn/shop/files/IH0226004.png`,
         images: [
-          `https://thewinelandsartgallery.com/cdn/shop/files/IH0226004.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0226001.png?v=1770369801`,
+          `https://thewinelandsartgallery.com/cdn/shop/files/IH0226004.png`
+        ],
+        variants: [{ label: `Ian Hertslet - Oil on Canvas`, price: 34500 }]
+      },
+      {
+        title: `Ian Hertslet - Oil on Canvas`,
+        price: 27600,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/IH0226003.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/IH0226003.png`
+        ],
+        variants: [{ label: `Ian Hertslet - Oil on Canvas`, price: 27600 }]
+      },
+      {
+        title: `Ian Hertslet - Oil on Canvas`,
+        price: 19750,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/IH0226002.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/IH0226002.png`
+        ],
+        variants: [{ label: `Ian Hertslet - Oil on Canvas`, price: 19750 }]
+      },
+      {
+        title: `Ian Hertslet - Oil on Canvas`,
+        price: 19750,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/IH0226001.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/IH0226001.png`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260010.png?v=1770369801`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260010920x6610copy.jpg?v=1770369801`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260011copy.jpg?v=1770369801`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260012copy.jpg?v=1770369801`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260013copy.jpg?v=1770369801`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/IH0226003.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/IH0226002.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/IH0226001.png`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH02260013copy.jpg?v=1770369801`
         ],
-        variants: [
-          {
-            label: `Ian Hertslet - Oil on Canvas`,
-            price: 34500
-          },
-          {
-            label: `Ian Hertslet - Oil on Canvas`,
-            price: 27600
-          },
-          {
-            label: `Ian Hertslet - Oil on Canvas`,
-            price: 19750
-          }
-]
+        variants: [{ label: `Ian Hertslet - Oil on Canvas`, price: 19750 }]
       },
       {
         title: `Oil on Stretched Canvas by Ian Hertslet`,
@@ -1213,16 +1335,10 @@ In essence, Ian Hertslet's paintings strike a chord with art enthusiasts who see
         image: `https://thewinelandsartgallery.com/cdn/shop/files/IH0823001.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/IH0823001.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH0823001.png?v=1770369626`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH08230010.png?v=1770369626`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/IH08230011200mmx900mmcopy.jpg?v=1770369626`
         ],
-        variants: [
-          {
-            label: `Oil on Stretched Canvas by Ian Hertslet`,
-            price: 28500
-          }
-]
+        variants: [{ label: `Oil on Stretched Canvas by Ian Hertslet`, price: 28500 }]
       }
     ]
   },
@@ -1250,19 +1366,14 @@ In August 2010, Fungai's art crossed borders for a special exhibition at Amazwi 
     works: [
       {
         title: `Acrylic on Stretched Canvas by Junior Fungai`,
-        price: 7475,
+        price: 3850,
         status: `available`,
         image: `https://thewinelandsartgallery.com/cdn/shop/files/95.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/95.png`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF003750mmx500mm.jpg?v=1694704121`
         ],
-        variants: [
-          {
-            label: `Acrylic on Stretched Canvas by Junior Fungai`,
-            price: 7475
-          }
-]
+        variants: [{ label: `Acrylic on Stretched Canvas by Junior Fungai`, price: 3850 }]
       },
       {
         title: `Acrylic on Rolled Canvas by Junior Fungai`,
@@ -1271,16 +1382,29 @@ In August 2010, Fungai's art crossed borders for a special exhibition at Amazwi 
         image: `https://thewinelandsartgallery.com/cdn/shop/files/98.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/98.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/96_9ad335bb-aa59-45b2-82ce-5674090fa784.png?v=1694703718`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF090_ad1d8105-4f34-4b77-84c0-bb2607d7b983.jpg?v=1694703718`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/JF090_ad1d8105-4f34-4b77-84c0-bb2607d7b983.jpg?v=1694703718`
+        ],
+        variants: [{ label: `Acrylic on Rolled Canvas by Junior Fungai`, price: 6900 }]
+      },
+      {
+        title: `Acrylic on Rolled Canvas by Junior Fungai`,
+        price: 6900,
+        status: `available`,
+        image: `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/96_9ad335bb-aa59-45b2-82ce-5674090fa784.png?v=1694703718`,
+        images: [
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/96_9ad335bb-aa59-45b2-82ce-5674090fa784.png?v=1694703718`
+        ],
+        variants: [{ label: `Acrylic on Rolled Canvas by Junior Fungai`, price: 6900 }]
+      },
+      {
+        title: `Acrylic on Rolled Canvas by Junior Fungai`,
+        price: 6900,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/99.png`,
+        images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/99.png`
         ],
-        variants: [
-          {
-            label: `Acrylic on Rolled Canvas by Junior Fungai`,
-            price: 6900
-          }
-]
+        variants: [{ label: `Acrylic on Rolled Canvas by Junior Fungai`, price: 6900 }]
       }
     ]
   },
@@ -1316,47 +1440,45 @@ With no formal art training, Solly's gift is a divine endowment, an unspoken poe
         status: `available`,
         image: `https://thewinelandsartgallery.com/cdn/shop/files/SM0526002_1.png`,
         images: [
-          `https://thewinelandsartgallery.com/cdn/shop/files/SM0526002_1.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260041.png?v=1768818603`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260042.png?v=1768818604`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260041200mmx800mmcopy.jpg?v=1768818603`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/SM06240071_be73068b-828c-46f2-875b-a975c0750fdc.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/SM01260041.png`
+          `https://thewinelandsartgallery.com/cdn/shop/files/SM0526002_1.png`
         ],
-        variants: [
-          {
-            label: `Solly Manthata - 1200mm x 800mm`,
-            price: 14750
-          },
-          {
-            label: `Solly Manthata - 1200mm x 800mm`,
-            price: 13800
-          },
-          {
-            label: `Solly Manthata - 1200mm x 800mm`,
-            price: 12990
-          }
-]
+        variants: [{ label: `Solly Manthata - 1200mm x 800mm`, price: 14750 }]
       },
       {
-        title: `Solly Manthata - Triptych (3 in 1 ) Oil & Acrylic on Stretched Canvas`,
+        title: `Solly Manthata - 1200mm x 800mm`,
+        price: 13800,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/SM06240071_be73068b-828c-46f2-875b-a975c0750fdc.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/SM06240071_be73068b-828c-46f2-875b-a975c0750fdc.png`
+        ],
+        variants: [{ label: `Solly Manthata - 1200mm x 800mm`, price: 13800 }]
+      },
+      {
+        title: `Solly Manthata - 1200mm x 800mm`,
+        price: 12990,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/SM01260041.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/SM01260041.png`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260042.png?v=1768818604`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SM01260041200mmx800mmcopy.jpg?v=1768818603`
+        ],
+        variants: [{ label: `Solly Manthata - 1200mm x 800mm`, price: 12990 }]
+      },
+      {
+        title: `Solly Manthata - Triptych (3 in 1) Oil & Acrylic on Stretched Canvas`,
         price: 10950,
         status: `available`,
         image: `https://thewinelandsartgallery.com/cdn/shop/files/xSM1225001_1_61379b31-5cd1-4ede-9294-81ac409d2b5f.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/xSM1225001_1_61379b31-5cd1-4ede-9294-81ac409d2b5f.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/xSM1225001_1_61379b31-5cd1-4ede-9294-81ac409d2b5f.png?v=1765456252`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/xSM1225001_2.png?v=1765456252`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/xSM1225001_3.jpg?v=1765456252`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/xSM1225001_4.jpg?v=1765456252`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/xSM1225001_5.jpg?v=1765456252`
         ],
-        variants: [
-          {
-            label: `Solly Manthata - Triptych (3 in 1 ) Oil & Acrylic on Stretched Canvas (400mm x 300mm each)`,
-            price: 10950
-          }
-]
+        variants: [{ label: `Solly Manthata - Triptych (3 in 1) Oil & Acrylic on Stretched Canvas`, price: 10950 }]
       }
     ]
   },
@@ -1381,47 +1503,62 @@ Working between control and chance, Stuart allows fluid elements to shape the fi
     statsHighestSold: 0,
     works: [
       {
-        title: `Craig Stuart -`,
+        title: `Craig Stuart - (613mm x 307mm)`,
+        price: 6900,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/CS03260041.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/CS03260041.png`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260042.png?v=1774952431`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260043613x307.jpg?v=1774952430`
+        ],
+        variants: [{ label: `Craig Stuart - (613mm x 307mm)`, price: 6900 }]
+      },
+      {
+        title: `Craig Stuart - (607mm x 457mm)`,
+        price: 14500,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/CS03260031.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/CS03260031.png`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260032.png?v=1774952300`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260033607x457.jpg?v=1774952300`
+        ],
+        variants: [{ label: `Craig Stuart - (607mm x 457mm)`, price: 14500 }]
+      },
+      {
+        title: `Craig Stuart - (840mm x 595mm)`,
+        price: 23000,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/CS03260021.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/CS03260021.png`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260022.png?v=1774952224`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260023840x595.jpg?v=1774952223`
+        ],
+        variants: [{ label: `Craig Stuart - (840mm x 595mm)`, price: 23000 }]
+      },
+      {
+        title: `Craig Stuart - (1189mm x 840mm)`,
         price: 35000,
         status: `available`,
-        image: `https://thewinelandsartgallery.com/cdn/shop/files/CS03260051.png`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/CS03260011.png`,
         images: [
-          `https://thewinelandsartgallery.com/cdn/shop/files/CS03260051.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260041.png?v=1774952430`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260042.png?v=1774952431`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260043613x307.jpg?v=1774952430`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/CS03260041.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/CS03260031.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260031.png?v=1774952300`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260032.png?v=1774952300`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260033607x457.jpg?v=1774952300`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/CS03260021.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260021.png?v=1774952224`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260022.png?v=1774952224`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260023840x595.jpg?v=1774952223`,
           `https://thewinelandsartgallery.com/cdn/shop/files/CS03260011.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260011.png?v=1774952033`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS03260012.png?v=1774952034`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/CS032600131189x840.jpg?v=1774952033`
         ],
-        variants: [
-          {
-            label: `Craig Stuart - (613mm x 307mm)`,
-            price: 6900
-          },
-          {
-            label: `Craig Stuart - (607mm x 457mm)`,
-            price: 14500
-          },
-          {
-            label: `Craig Stuart - (840mm x 595mm)`,
-            price: 23000
-          },
-          {
-            label: `Craig Stuart - (1189mm x 840mm)`,
-            price: 35000
-          }
-]
+        variants: [{ label: `Craig Stuart - (1189mm x 840mm)`, price: 35000 }]
+      },
+      {
+        title: `Craig Stuart - (613mm x 307mm)`,
+        price: 6900,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/CS03260051.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/CS03260051.png`
+        ],
+        variants: [{ label: `Craig Stuart - (613mm x 307mm)`, price: 6900 }]
       }
     ]
   },
@@ -1444,38 +1581,40 @@ Those years left a lasting impression on her canvas. Today, with the Atlantic wi
     statsHighestSold: 0,
     works: [
       {
-        title: `Dante Ruben -`,
-        price: 35000,
+        title: `Dante Ruben - (610mm x 510mm)`,
+        price: 14950,
         status: `available`,
         image: `https://thewinelandsartgallery.com/cdn/shop/files/DR05260011.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/DR05260011.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR05260011.png?v=1779199638`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR05260012.png?v=1779199638`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR05260013610mmx510mm.jpg?v=1779199638`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR05260013610mmx510mm.jpg?v=1779199638`
+        ],
+        variants: [{ label: `Dante Ruben - (610mm x 510mm)`, price: 14950 }]
+      },
+      {
+        title: `Dante Ruben - (1500mm x 900mm)`,
+        price: 35000,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/DR03260021.png`,
+        images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/DR03260021.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR03260021.png?v=1774949699`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR03260022.png?v=1774949699`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR032600231500x900mm.jpg?v=1774949699`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR032600231500x900mm.jpg?v=1774949699`
+        ],
+        variants: [{ label: `Dante Ruben - (1500mm x 900mm)`, price: 35000 }]
+      },
+      {
+        title: `Dante Ruben - (900mm x 900mm)`,
+        price: 18900,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/DR03260011.png`,
+        images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/DR03260011.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR03260011.png?v=1774949632`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR03260012.png?v=1774949632`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/DR03260013900x900mm.jpg?v=1774949632`
         ],
-        variants: [
-          {
-            label: `Dante Ruben - (610mm x 510mm)`,
-            price: 14950
-          },
-          {
-            label: `Dante Ruben - (1500mm x 900mm)`,
-            price: 35000
-          },
-          {
-            label: `Dante Ruben - (900mm x 900mm)`,
-            price: 18900
-          }
-]
+        variants: [{ label: `Dante Ruben - (900mm x 900mm)`, price: 18900 }]
       }
     ]
   },
@@ -1502,39 +1641,50 @@ For over two decades, Emile's works have graced the homes of South Africans. In 
     statsHighestSold: 0,
     works: [
       {
-        title: `Emile Cronje - Acrylic on Panel`,
+        title: `Emile Cronje - Acrylic on Panel (600mm x 300mm)`,
         price: 3850,
         status: `available`,
         image: `https://thewinelandsartgallery.com/cdn/shop/files/EC03260011.png`,
         images: [
-          `https://thewinelandsartgallery.com/cdn/shop/files/EC03260011.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260021.png?v=1774538280`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260022.png?v=1774538281`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260023600x300mmcopy.jpg?v=1774538280`,
+          `https://thewinelandsartgallery.com/cdn/shop/files/EC03260011.png`
+        ],
+        variants: [{ label: `Emile Cronje - Acrylic on Panel (600mm x 300mm)`, price: 3850 }]
+      },
+      {
+        title: `Emile Cronje - Acrylic on Panel (600mm x 300mm)`,
+        price: 3850,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/EC03260021.png`,
+        images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/EC03260021.png`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260022.png?v=1774538281`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260023600x300mmcopy.jpg?v=1774538280`
+        ],
+        variants: [{ label: `Emile Cronje - Acrylic on Panel (600mm x 300mm)`, price: 3850 }]
+      },
+      {
+        title: `Emile Cronje - Acrylic on Panel (580mm x 330mm)`,
+        price: 3850,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/EC03260031.png`,
+        images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/EC03260031.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260031.png?v=1774538236`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260032.png?v=1774538236`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260033580x330mmcopy.jpg?v=1774538236`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC03260033580x330mmcopy.jpg?v=1774538236`
+        ],
+        variants: [{ label: `Emile Cronje - Acrylic on Panel (580mm x 330mm)`, price: 3850 }]
+      },
+      {
+        title: `Emile Cronje - Acrylic on Panel (590mm x 330mm)`,
+        price: 3850,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/EC12250031.png`,
+        images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/EC12250031.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC12250031.png?v=1765200668`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC12250032.png?v=1765200668`,
           `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/EC12250033590mmx330mmcopy.jpg?v=1765200668`
         ],
-        variants: [
-          {
-            label: `Emile Cronje - Acrylic on Panel (600mm x 300mm)`,
-            price: 3850
-          },
-          {
-            label: `Emile Cronje - Acrylic on Panel (580mm x 330mm)`,
-            price: 3850
-          },
-          {
-            label: `Emile Cronje - Acrylic on Panel (590mm x 330mm)`,
-            price: 3850
-          }
-]
+        variants: [{ label: `Emile Cronje - Acrylic on Panel (590mm x 330mm)`, price: 3850 }]
       }
     ]
   },
@@ -1571,18 +1721,40 @@ Louise's artistic journey has graced numerous group and solo exhibitions, leavin
         image: `https://thewinelandsartgallery.com/cdn/shop/files/LDK10230051.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/LDK10230051.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/LDK10230011.png?v=1696534254`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/LDK1023001copy.jpg?v=1696534254`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/LDK10230031.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/LDK10230021.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/LDK10230011.png`
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/LDK1023001copy.jpg?v=1696534254`
         ],
-        variants: [
-          {
-            label: `Louise de Klerk Oil on Stretched Canvas`,
-            price: 8900
-          }
-]
+        variants: [{ label: `Louise de Klerk Oil on Stretched Canvas`, price: 8900 }]
+      },
+      {
+        title: `Louise de Klerk Oil on Stretched Canvas`,
+        price: 8900,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/LDK10230031.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/LDK10230031.png`
+        ],
+        variants: [{ label: `Louise de Klerk Oil on Stretched Canvas`, price: 8900 }]
+      },
+      {
+        title: `Louise de Klerk Oil on Stretched Canvas`,
+        price: 8900,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/LDK10230021.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/LDK10230021.png`
+        ],
+        variants: [{ label: `Louise de Klerk Oil on Stretched Canvas`, price: 8900 }]
+      },
+      {
+        title: `Louise de Klerk Oil on Stretched Canvas`,
+        price: 8900,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/LDK10230011.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/LDK10230011.png`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/LDK10230011.png?v=1696534254`
+        ],
+        variants: [{ label: `Louise de Klerk Oil on Stretched Canvas`, price: 8900 }]
       }
     ]
   },
@@ -1613,22 +1785,49 @@ In the vivid strokes and nuanced palettes of Stef van den Berg's art, we glimpse
         image: `https://thewinelandsartgallery.com/cdn/shop/files/133.png`,
         images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/133.png`,
-          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SVDB001300x220framed500x420F2.jpg?v=1694971230`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/132.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/131.png`,
-          `https://thewinelandsartgallery.com/cdn/shop/files/129.png`,
+          `https://cdn.shopify.com/s/files/1/0817/0510/7760/files/SVDB001300x220framed500x420F2.jpg?v=1694971230`
+        ],
+        variants: [{ label: `Acrylic on Panel by Stef van den Berg`, price: 4950 }]
+      },
+      {
+        title: `Acrylic on Panel by Stef van den Berg`,
+        price: 4950,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/132.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/132.png`
+        ],
+        variants: [{ label: `Acrylic on Panel by Stef van den Berg`, price: 4950 }]
+      },
+      {
+        title: `Acrylic on Panel by Stef van den Berg`,
+        price: 3950,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/131.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/131.png`
+        ],
+        variants: [{ label: `Acrylic on Panel by Stef van den Berg`, price: 3950 }]
+      },
+      {
+        title: `Acrylic on Panel by Stef van den Berg`,
+        price: 3950,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/129.png`,
+        images: [
+          `https://thewinelandsartgallery.com/cdn/shop/files/129.png`
+        ],
+        variants: [{ label: `Acrylic on Panel by Stef van den Berg`, price: 3950 }]
+      },
+      {
+        title: `Acrylic on Panel by Stef van den Berg`,
+        price: 3950,
+        status: `available`,
+        image: `https://thewinelandsartgallery.com/cdn/shop/files/128.png`,
+        images: [
           `https://thewinelandsartgallery.com/cdn/shop/files/128.png`
         ],
-        variants: [
-          {
-            label: `Acrylic on Panel by Stef van den Berg`,
-            price: 4950
-          },
-          {
-            label: `Acrylic on Panel by Stef van den Berg`,
-            price: 3950
-          }
-]
+        variants: [{ label: `Acrylic on Panel by Stef van den Berg`, price: 3950 }]
       }
     ]
   },
