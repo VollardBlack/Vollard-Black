@@ -3214,6 +3214,8 @@ function BackingPage({ preloadWork, preloadBasket, basket: liveBaket }) {
   const [mode, setMode] = useState('manual');
   const [selArtist, setSelArtist] = useState('');
   const [selWork, setSelWork] = useState('');
+  const [calcMonthSold, setCalcMonthSold] = useState(12);
+  const [calcSalePct, setCalcSalePct] = useState(100);
 
   // Build list of artworks to show — live basket takes priority
   const basketItems = (liveBaket && liveBaket.length > 0)
@@ -3294,6 +3296,78 @@ function BackingPage({ preloadWork, preloadBasket, basket: liveBaket }) {
                       <div style={{ fontFamily: gF, fontSize: 22, color }}>{val}</div>
                     </div>
                   ))}
+                </div>
+              );
+            })()}
+
+            {/* ── Backer Earnings Calculator ── */}
+            {(() => {
+              const totalVal = basketItems.reduce((s,w) => s+(w.price||0), 0);
+              if (totalVal === 0) return null;
+              const salePrice = totalVal * (calcSalePct / 100);
+              const totalDeposit = basketItems.reduce((s,w) => s+((w.price||0)*getDepositPct(w.price||0)), 0);
+              const totalMonthly = basketItems.reduce((s,w) => s+((w.price||0)*(0.5-getDepositPct(w.price||0))/24), 0);
+              const feesPaid = Math.min(calcMonthSold, 24) * totalMonthly;
+              const totalPaid = totalDeposit + feesPaid;
+              const backerShare = calcMonthSold > 24 ? salePrice : salePrice * 0.5;
+              const netReturn = backerShare - totalPaid;
+              const roi = totalPaid > 0 ? (netReturn / totalPaid * 100) : 0;
+              return (
+                <div style={{ marginBottom: 32, border: `1px solid ${C.goldBorder}`, borderRadius: 8, background: C.inkMid, overflow: 'hidden' }}>
+                  <div style={{ height: 3, background: `linear-gradient(90deg, ${C.gold}, transparent)` }} />
+                  <div style={{ padding: '24px 28px' }}>
+                    <div style={{ fontSize: 10, letterSpacing: '0.35em', textTransform: 'uppercase', color: C.gold, marginBottom: 6 }}>Backer Earnings Calculator</div>
+                    <div style={{ fontSize: 13, color: C.fog, marginBottom: 24 }}>Adjust the sliders to model your return across different sale scenarios</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
+                      {/* Controls */}
+                      <div>
+                        <div style={{ marginBottom: 24 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                            <label style={{ fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: C.gold }}>Month Sold</label>
+                            <span style={{ fontFamily: gF, fontSize: 18, color: C.cream }}>Month {calcMonthSold}</span>
+                          </div>
+                          <input type="range" min="1" max="36" value={calcMonthSold}
+                            onChange={e => setCalcMonthSold(Number(e.target.value))}
+                            style={{ width: '100%', accentColor: C.gold, cursor: 'pointer' }} />
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: C.fog, marginTop: 4 }}>
+                            <span>Month 1</span><span style={{ color: C.green }}>Month 25 = 100% yours</span><span>Month 36</span>
+                          </div>
+                        </div>
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                            <label style={{ fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: C.gold }}>Sale Price</label>
+                            <span style={{ fontFamily: gF, fontSize: 18, color: C.cream }}>{calcSalePct}% of value = R {fmt(Math.round(salePrice))}</span>
+                          </div>
+                          <input type="range" min="50" max="200" value={calcSalePct}
+                            onChange={e => setCalcSalePct(Number(e.target.value))}
+                            style={{ width: '100%', accentColor: C.gold, cursor: 'pointer' }} />
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: C.fog, marginTop: 4 }}>
+                            <span>50% (below value)</span><span>100% (at value)</span><span>200% (double)</span>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Results */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, alignContent: 'start' }}>
+                        {[
+                          { label: 'Total You Invest', val: `R ${fmt(Math.round(totalPaid))}`, color: C.goldLight, sub: `${fmt(Math.round(totalDeposit))} upfront + fees` },
+                          { label: calcMonthSold > 24 ? 'Your 100% Share' : 'Your 50% Share', val: `R ${fmt(Math.round(backerShare))}`, color: C.gold, sub: calcMonthSold > 24 ? 'fully paid off' : 'at sale' },
+                          { label: 'Net Profit', val: `${netReturn >= 0 ? '+' : ''}R ${fmt(Math.round(netReturn))}`, color: netReturn >= 0 ? C.green : C.red, sub: 'after all fees' },
+                          { label: 'Return on Capital', val: `${roi >= 0 ? '+' : ''}${roi.toFixed(1)}%`, color: netReturn >= 0 ? C.green : C.red, sub: 'ROI on fees paid' },
+                        ].map(card => (
+                          <div key={card.label} style={{ padding: '16px', background: C.goldGlow, border: `1px solid ${C.goldBorder}`, borderRadius: 6, textAlign: 'center' }}>
+                            <div style={{ fontSize: 9, letterSpacing: '0.15em', textTransform: 'uppercase', color: C.fog, marginBottom: 8 }}>{card.label}</div>
+                            <div style={{ fontFamily: gF, fontSize: 22, color: card.color, marginBottom: 4 }}>{card.val}</div>
+                            <div style={{ fontSize: 10, color: C.fog }}>{card.sub}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    {calcMonthSold > 24 && (
+                      <div style={{ marginTop: 16, padding: '10px 16px', background: 'rgba(90,170,122,0.1)', border: `1px solid rgba(90,170,122,0.3)`, borderRadius: 4, fontSize: 12, color: C.green }}>
+                        ★ From Month 25 the artwork is fully paid off — any sale returns 100% to you. Year 3 (months 25–36) is free on the platform.
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })()}
