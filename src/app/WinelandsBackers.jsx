@@ -3357,6 +3357,79 @@ function BackingPage({ preloadWork, preloadBasket, basket: liveBaket }) {
                 <div style={{ marginTop: 16, fontSize: 10, color: C.fog, lineHeight: 1.7 }}>
                   <strong style={{ color: C.gold }}>FAIS:</strong> Backer platform arrangement. Auction platform fees fund online auctions, live auctions and exhibitions at the gallery's discretion. Not a financial investment product.
                 </div>
+
+                {/* 24-month breakdown table */}
+                <div style={{ marginTop: 32, borderTop: `1px solid ${C.goldBorder}`, paddingTop: 28 }}>
+                  <div style={{ fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: C.gold, marginBottom: 16 }}>
+                    Month-by-Month Breakdown — All {basketItems.length} Artworks Combined
+                  </div>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                      <thead>
+                        <tr>
+                          {['Month', 'Backing Fee', 'Fees Paid to Date', 'Total Invested', 'Your Share at Sale', 'Net Profit', 'ROI'].map((h, i) => (
+                            <th key={h} style={{
+                              padding: '10px 16px', textAlign: i === 0 ? 'left' : 'right',
+                              fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
+                              color: C.fog, borderBottom: `1px solid ${C.goldBorder}`, background: C.inkMid,
+                              whiteSpace: 'nowrap',
+                            }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Array.from({ length: 24 }, (_, i) => {
+                          const mo         = i + 1;
+                          const feesThisMo = totalMonthly * mo;
+                          const paid       = totalDeposit + feesThisMo;
+                          const share      = salePrice * 0.5;
+                          const net        = share - paid;
+                          const roiMo      = paid > 0 ? (net / paid) * 100 : 0;
+                          const isSelected = mo === calcMonthSold;
+                          return (
+                            <tr key={mo}
+                              onClick={() => setCalcMonthSold(mo)}
+                              style={{
+                                background: isSelected
+                                  ? 'rgba(201,168,76,0.12)'
+                                  : mo % 2 === 0 ? 'rgba(201,168,76,0.02)' : 'transparent',
+                                cursor: 'pointer',
+                                transition: 'background 0.15s',
+                              }}>
+                              <td style={{ padding: '9px 16px', borderBottom: `1px solid rgba(201,168,76,0.06)`, color: isSelected ? C.gold : C.cream, fontWeight: isSelected ? 700 : 400 }}>
+                                Month {mo} {isSelected ? '◆' : ''}
+                              </td>
+                              <td style={{ padding: '9px 16px', textAlign: 'right', borderBottom: `1px solid rgba(201,168,76,0.06)`, color: C.fog }}>
+                                R {fmt(Math.round(totalDeposit))}
+                              </td>
+                              <td style={{ padding: '9px 16px', textAlign: 'right', borderBottom: `1px solid rgba(201,168,76,0.06)`, color: C.fog }}>
+                                R {fmt(Math.round(feesThisMo))}
+                              </td>
+                              <td style={{ padding: '9px 16px', textAlign: 'right', borderBottom: `1px solid rgba(201,168,76,0.06)`, color: C.goldLight }}>
+                                R {fmt(Math.round(paid))}
+                              </td>
+                              <td style={{ padding: '9px 16px', textAlign: 'right', borderBottom: `1px solid rgba(201,168,76,0.06)`, color: C.gold, fontWeight: 600 }}>
+                                R {fmt(Math.round(share))}
+                              </td>
+                              <td style={{ padding: '9px 16px', textAlign: 'right', borderBottom: `1px solid rgba(201,168,76,0.06)`, fontFamily: gF, fontSize: 15, color: net >= 0 ? C.green : C.red, fontWeight: 600 }}>
+                                {net >= 0 ? '+' : ''}R {fmt(Math.round(net))}
+                              </td>
+                              <td style={{ padding: '9px 16px', textAlign: 'right', borderBottom: `1px solid rgba(201,168,76,0.06)`, color: roiMo >= 0 ? C.green : C.red, fontWeight: 600 }}>
+                                {roiMo >= 0 ? '+' : ''}{roiMo.toFixed(1)}%
+                              </td>
+                            </tr>
+                          );
+                        })}
+                        <tr style={{ background: 'rgba(90,170,122,0.06)' }}>
+                          <td colSpan={7} style={{ padding: '14px 16px', color: C.green, fontSize: 11, lineHeight: 1.7 }}>
+                            ★ <strong>From Month 25</strong> — all artworks fully paid off. Any sale returns <strong>100% to you</strong>. Months 25–36 are free on the platform.
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
               </div>
             </div>
           </>
