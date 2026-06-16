@@ -3336,7 +3336,7 @@ function BackingPage({ preloadWork, preloadBasket, basket: liveBaket }) {
                   {[
                     { label: 'Total Artwork Value',     val: `R ${fmt(totalVal)}`,                                          color: C.cream },
                     { label: 'Total You Invest',        val: `R ${fmt(Math.round(totalPaid))}`,                             color: C.gold,      sub: `R ${fmt(Math.round(totalDeposit))} upfront + R ${fmt(Math.round(feesPaid))} fees` },
-                    { label: fullyPaidOff ? '100% Share at Sale' : '50% Share at Sale', val: `R ${fmt(Math.round(backerShare))}`, color: C.goldLight, sub: fullyPaidOff ? 'fully paid off — yours' : '50/50 split' },
+                    { label: fullyPaidOff ? 'Your 100% Share' : 'Your Fixed 50% Share', val: `R ${fmt(Math.round(backerShare))}`, color: C.goldLight, sub: fullyPaidOff ? 'fully paid off — yours' : 'fixed — what you earn back' },
                     { label: 'Net Profit',              val: `${netReturn >= 0 ? '+' : ''}R ${fmt(Math.round(netReturn))}`, color: netReturn >= 0 ? C.green : C.red, sub: 'after all fees deducted' },
                     { label: 'Return on Capital',       val: `${roi >= 0 ? '+' : ''}${roi.toFixed(1)}%`,                   color: netReturn >= 0 ? C.green : C.red, sub: 'ROI on capital deployed' },
                   ].map(card => (
@@ -3354,7 +3354,10 @@ function BackingPage({ preloadWork, preloadBasket, basket: liveBaket }) {
                   </div>
                 )}
 
-                <div style={{ marginTop: 16, fontSize: 10, color: C.fog, lineHeight: 1.7 }}>
+                <div style={{ marginTop: 16, padding: '12px 16px', background: C.goldGlow, border: `1px solid ${C.goldBorder}`, borderRadius: 4, fontSize: 11, color: C.fog, lineHeight: 1.8, marginBottom: 12 }}>
+                  <strong style={{ color: C.gold }}>How it works:</strong> Your 50% share is fixed at R {fmt(Math.round(totalVal * 0.5))} regardless of when the artwork sells. Every month you pay us more, so the amount you <em>take home</em> decreases. Sell early = take home more. At Month 24 you break even. From Month 25 you own your half outright and receive 100% of any sale.
+                </div>
+                <div style={{ marginTop: 0, fontSize: 10, color: C.fog, lineHeight: 1.7 }}>
                   <strong style={{ color: C.gold }}>FAIS:</strong> Backer platform arrangement. Auction platform fees fund online auctions, live auctions and exhibitions at the gallery's discretion. Not a financial investment product.
                 </div>
 
@@ -3367,7 +3370,7 @@ function BackingPage({ preloadWork, preloadBasket, basket: liveBaket }) {
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                       <thead>
                         <tr>
-                          {['Month', 'Backing Fee', 'Fees Paid to Date', 'Total Invested', 'Your Share at Sale', 'Net Profit', 'ROI'].map((h, i) => (
+                          {['Month', 'Paid to Us', 'Fees Paid to Date', 'Total Paid to Us', 'Your 50% (Fixed)', 'You Take Home', 'ROI'].map((h, i) => (
                             <th key={h} style={{
                               padding: '10px 16px', textAlign: i === 0 ? 'left' : 'right',
                               fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
