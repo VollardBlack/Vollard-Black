@@ -3198,15 +3198,17 @@ function ArtistDetail({ artist, setPage, isAdmin, getWorkStatus, onMarkSold, onM
 }
 
 // ─── BACKING / CALCULATOR ─────────────────────────────────────────────
-function BackingPage({ preloadWork, preloadBasket }) {
+function BackingPage({ preloadWork, preloadBasket, basket: liveBaket }) {
   const [manualVal, setManualVal] = useState('');
   const [manualSale, setManualSale] = useState('');
   const [mode, setMode] = useState('manual');
   const [selArtist, setSelArtist] = useState('');
   const [selWork, setSelWork] = useState('');
 
-  // Build list of artworks to show — basket takes priority
-  const basketItems = (preloadBasket && preloadBasket.length > 0)
+  // Build list of artworks to show — live basket takes priority
+  const basketItems = (liveBaket && liveBaket.length > 0)
+    ? liveBaket
+    : (preloadBasket && preloadBasket.length > 0)
     ? preloadBasket
     : (preloadWork ? [preloadWork] : []);
 
@@ -3826,7 +3828,7 @@ export default function WinelandsBackers() {
           inBasket={inBasket}
         />
       )}
-      {page === 'backing' && <BackingPage preloadWork={calcWork} preloadBasket={calcBasket} />}
+      {page === 'backing' && <BackingPage preloadWork={calcWork} preloadBasket={calcBasket} basket={basket} />}
     </>
   );
 }
