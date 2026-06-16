@@ -2227,7 +2227,7 @@ function Nav({ page, setPage, isAdmin, onAdminLogin, onSignOut }) {
 
       <button
         className="gold-btn"
-        onClick={() => setPage('backing')}
+        onClick={() => { setCalcBasket(basket); navigateTo('backing'); }}
         style={{
           fontFamily: sF, fontSize: 11, fontWeight: 600, letterSpacing: '0.14em',
           textTransform: 'uppercase', padding: '10px 22px',
@@ -2334,7 +2334,7 @@ function HomePage({ setPage }) {
             }}>
               Meet the Artists
             </button>
-            <button className="gold-btn" onClick={() => setPage('backing')} style={{
+            <button className="gold-btn" onClick={() => { setCalcBasket(basket); navigateTo('backing'); }} style={{
               fontFamily: sF, fontSize: 13, fontWeight: 600, letterSpacing: '0.12em',
               textTransform: 'uppercase', padding: '16px 36px',
               background: 'transparent',
@@ -2483,7 +2483,7 @@ function HomePage({ setPage }) {
           </div>
 
           <div style={{ textAlign: 'center', marginTop: 56 }}>
-            <button className="gold-btn" onClick={() => setPage('backing')} style={{
+            <button className="gold-btn" onClick={() => { setCalcBasket(basket); navigateTo('backing'); }} style={{
               fontFamily: sF, fontSize: 13, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase',
               padding: '18px 44px', background: `linear-gradient(135deg, ${C.gold}, #a07828)`,
               border: 'none', borderRadius: 4, color: '#1a2744', cursor: 'pointer',
@@ -2538,7 +2538,7 @@ function HomePage({ setPage }) {
 }
 
 // ─── ARTISTS PAGE ────────────────────────────────────────────────────
-function ArtistsPage({ setSelectedArtist, setPage }) {
+function ArtistsPage({ setSelectedArtist, setPage, basket, setCalcBasket }) {
   const [search, setSearch] = useState('');
   const [mediumFilter, setMediumFilter] = useState('all');
   const [mounted, setMounted] = useState(false);
@@ -2602,7 +2602,7 @@ function ArtistsPage({ setSelectedArtist, setPage }) {
               delay={i * 0.07}
               mounted={mounted}
               onClick={() => { setSelectedArtist(artist); setPage('artist-detail'); }}
-              onBacking={() => setPage('backing')}
+              onBacking={() => { setCalcBasket(basket); setPage('backing'); }}
             />
           ))}
         </div>
@@ -3822,7 +3822,7 @@ export default function WinelandsBackers() {
       {showLogin && <AdminLogin onLogin={() => setIsAdmin(true)} onClose={() => setShowLogin(false)} />}
       <BackingTray basket={basket} toggleBasket={toggleBasket} onOpenCalc={() => navigateTo('backing')} setCalcWork={setCalcWork} setCalcBasket={setCalcBasket} />
       {page === 'home' && <HomePage setPage={navigateTo} />}
-      {page === 'artists' && <ArtistsPage setSelectedArtist={setSelectedArtist} setPage={navigateTo} />}
+      {page === 'artists' && <ArtistsPage setSelectedArtist={setSelectedArtist} setPage={navigateTo} basket={basket} setCalcBasket={setCalcBasket} />}
       {page === 'artist-detail' && (
         <ArtistDetail
           artist={selectedArtist}
